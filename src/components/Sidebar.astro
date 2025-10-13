@@ -87,6 +87,23 @@ const { selectedItem } = Astro.props;
         />
         <div>Personal projects</div>
       </a>
+      
+      <div class="nav-separator"></div>
+      
+      <a
+        href="/admin/login"
+        class={`nav-link-container admin-link w-inline-block ${
+          selectedItem === 'admin' ? 'w--current' : ''
+        }`}
+      >
+        <img
+          src="/assets/dns.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Teacher Dashboard</div>
+      </a>
     </nav>
 
     <div
@@ -119,3 +136,16 @@ const { selectedItem } = Astro.props;
     });
   </script>
 </aside>
+
+<style>
+  .nav-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 10px 0;
+    width: 100%;
+  }
+  
+  .admin-link {
+    color: rgb(136, 58, 234);
+  }
+</style>

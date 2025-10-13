@@ -1,0 +1,192 @@
+---
+const { selectedItem } = Astro.props;
+---
+
+<aside
+  data-animation="default"
+  data-collapse="medium"
+  data-duration="400"
+  data-easing="ease"
+  data-easing2="ease"
+  role="banner"
+  class="sidebar admin-sidebar w-nav"
+>
+  <div class="nav-content">
+    <a href="/admin/dashboard" class="w-nav-brand" aria-label="admin dashboard">
+      <div class="niv-data">
+        <div class="admin-logo">
+          <img
+            src="/assets/admin-icon.svg"
+            loading="eager"
+            alt="Admin dashboard"
+            class="niv-image"
+            onerror="this.src='/assets/dns.svg'"
+          />
+        </div>
+        <div>
+          <div class="label-white">Teacher Dashboard</div>
+          <div class="label-gray">Admin Area</div>
+        </div>
+      </div>
+    </a>
+
+    <nav role="navigation" class="w-nav-menu">
+      <a
+        href="/admin/dashboard"
+        class={`nav-link-container w-inline-block ${
+          selectedItem === 'dashboard' ? 'w--current' : ''
+        }`}
+      >
+        <img
+          src="/assets/home.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Dashboard</div>
+      </a>
+      <a
+        href="/admin/students"
+        class={`nav-link-container w-inline-block ${
+          selectedItem === 'students' ? 'w--current' : ''
+        }`}
+      >
+        <img
+          src="/assets/code.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Students</div>
+      </a>
+      <a
+        href="/admin/assignments"
+        class={`nav-link-container w-inline-block ${
+          selectedItem === 'assignments' ? 'w--current' : ''
+        }`}
+      >
+        <img
+          src="/assets/dns.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Assignments</div>
+      </a>
+      <a
+        href="/admin/grades"
+        class={`nav-link-container w-inline-block ${
+          selectedItem === 'grades' ? 'w--current' : ''
+        }`}
+      >
+        <img
+          src="/assets/favorite.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Grades</div>
+      </a>
+      <div class="nav-separator"></div>
+      <a
+        href="/"
+        class="nav-link-container w-inline-block"
+      >
+        <img
+          src="/assets/home.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Main Site</div>
+      </a>
+      <button id="logout-btn" class="nav-link-container logout-btn w-inline-block">
+        <img
+          src="/assets/menu.svg"
+          loading="eager"
+          alt=""
+          class="nav-link-image"
+        />
+        <div>Logout</div>
+      </button>
+    </nav>
+
+    <div
+      class="navbar-icon-button w-nav-button"
+      style="-webkit-user-select: text;"
+      aria-label="menu"
+      role="button"
+      tabindex="0"
+    >
+      <img
+        src="/assets/menu.svg"
+        loading="eager"
+        alt=""
+        class="navbar-icon"
+      />
+    </div>
+  </div>
+
+  <script>
+    import { logout } from '../lib/firebase';
+    import { setupNav } from '../scripts/nav.js';
+    
+    // Set up navigation
+    let cleanup;
+    document.addEventListener('astro:page-load', () => {
+      if (cleanup) cleanup();
+      cleanup = setupNav();
+      
+      // Add logout functionality
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+          try {
+            await logout();
+            window.location.href = '/admin/login';
+          } catch (error) {
+            console.error('Logout failed:', error);
+          }
+        });
+      }
+    });
+
+    document.addEventListener('astro:before-swap', () => {
+      if (cleanup) cleanup();
+    });
+  </script>
+</aside>
+
+<style>
+  .admin-sidebar {
+    background-color: #1a1c25;
+  }
+  
+  .admin-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background-color: rgba(136, 58, 234, 0.2);
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .nav-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 10px 0;
+    width: 100%;
+  }
+  
+  .logout-btn {
+    cursor: pointer;
+    color: #ff4d4d;
+    transition: background-color 0.2s;
+  }
+  
+  .logout-btn:hover {
+    background-color: rgba(255, 77, 77, 0.1);
+  }
+</style>

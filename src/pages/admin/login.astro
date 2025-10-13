@@ -1,0 +1,260 @@
+---
+import Header from "../../components/Header.astro";
+import Layout from "../../layouts/Layout.astro";
+
+const title = "Admin Login";
+---
+
+<Layout title={title}>
+  <div class="admin-login-container">
+    <div class="admin-login-card">
+      <div class="admin-login-header">
+        <h1>Teacher Dashboard</h1>
+        <p>Please login to continue</p>
+      </div>
+      
+      <form id="login-form" class="admin-login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required 
+            placeholder="Enter your email"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required 
+            placeholder="Enter your password"
+          />
+        </div>
+        
+        <div id="login-error" class="login-error hidden"></div>
+        
+        <button type="submit" class="login-button">
+          <span id="login-text">Login</span>
+          <div id="login-spinner" class="button-spinner hidden"></div>
+        </button>
+      </form>
+      
+      <div class="admin-login-footer">
+        <a href="/">Return to main site</a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { login, getCurrentUser } from "../../lib/firebase";
+  
+  // Check if user is already logged in
+  const checkAuthState = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        // If user is already logged in, redirect to dashboard
+        window.location.href = "/admin/dashboard";
+      }
+    } catch (error) {
+      console.error("Auth state check error:", error);
+    }
+  };
+  
+  // Handle login form submission
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginError = document.getElementById("login-error");
+    const loginText = document.getElementById("login-text");
+    const loginSpinner = document.getElementById("login-spinner");
+    
+    if (!emailInput || !passwordInput || !loginError || !loginText || !loginSpinner) {
+      return;
+    }
+    
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    
+    // Show loading state
+    loginText.classList.add("hidden");
+    loginSpinner.classList.remove("hidden");
+    loginError.classList.add("hidden");
+    
+    try {
+      await login(email, password);
+      window.location.href = "/admin/dashboard";
+    } catch (error) {
+      // Show error message
+      loginError.textContent = "Invalid email or password. Please try again.";
+      loginError.classList.remove("hidden");
+      
+      // Reset loading state
+      loginText.classList.remove("hidden");
+      loginSpinner.classList.add("hidden");
+    }
+  };
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    // Check if user is already logged in
+    checkAuthState();
+    
+    // Add form submission handler
+    const loginForm = document.getElementById("login-form");
+    if (loginForm) {
+      loginForm.addEventListener("submit", handleLogin);
+    }
+  });
+</script>
+
+<style>
+  .admin-login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #13151a;
+    padding: 1rem;
+  }
+  
+  .admin-login-card {
+    background-color: #1a1c25;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+  }
+  
+  .admin-login-header {
+    background: linear-gradient(
+      45deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-light)) 60%
+    );
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: white;
+  }
+  
+  .admin-login-header h1 {
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+  }
+  
+  .admin-login-header p {
+    opacity: 0.8;
+    margin: 0;
+  }
+  
+  .admin-login-form {
+    padding: 2rem 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: white;
+    font-weight: 500;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: rgb(var(--accent));
+  }
+  
+  .login-button {
+    position: relative;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: none;
+    background: linear-gradient(
+      45deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-light)) 90%
+    );
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  
+  .login-button:hover {
+    opacity: 0.9;
+  }
+  
+  .login-error {
+    background-color: rgba(255, 77, 77, 0.1);
+    border-left: 3px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  .admin-login-footer {
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .admin-login-footer a {
+    color: rgb(var(--accent-light));
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+  }
+  
+  .admin-login-footer a:hover {
+    opacity: 0.8;
+  }
+  
+  .hidden {
+    display: none !important;
+  }
+  
+  .button-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -10px;
+    margin-left: -10px;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
