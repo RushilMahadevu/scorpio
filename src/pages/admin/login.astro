@@ -1,14 +1,23 @@
 ---
-import Header from "../../components/Header.astro";
 import Layout from "../../layouts/Layout.astro";
 
-const title = "Admin Login";
+const title = "Teacher Login";
 ---
 
 <Layout title={title}>
   <div class="admin-login-container">
     <div class="admin-login-card">
       <div class="admin-login-header">
+        <div class="login-logo">
+          <img
+            src="/assets/admin-icon.svg"
+            loading="eager"
+            alt="Teacher Dashboard"
+            width="48"
+            height="48"
+            onerror="this.src='/assets/dns.svg'"
+          />
+        </div>
         <h1>Teacher Dashboard</h1>
         <p>Please login to continue</p>
       </div>
@@ -71,8 +80,8 @@ const title = "Admin Login";
   const handleLogin = async (event) => {
     event.preventDefault();
     
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
+    const emailInput = document.getElementById("email") as HTMLInputElement;
+    const passwordInput = document.getElementById("password") as HTMLInputElement;
     const loginError = document.getElementById("login-error");
     const loginText = document.getElementById("login-text");
     const loginSpinner = document.getElementById("login-spinner");
@@ -121,38 +130,64 @@ const title = "Admin Login";
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #13151a;
+    background-color: var(--color-bg, #0f1116);
     padding: 1rem;
   }
   
   .admin-login-card {
-    background-color: #1a1c25;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-card-bg, #1a1c25);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     overflow: hidden;
+    animation: fadeInUp 0.5s ease-out;
   }
   
   .admin-login-header {
     background: linear-gradient(
       45deg,
-      rgb(var(--accent)),
-      rgb(var(--accent-light)) 60%
+      rgb(136, 58, 234),
+      rgb(150, 88, 236) 60%
     );
-    padding: 2rem 1.5rem;
+    padding: 2.5rem 1.5rem;
     text-align: center;
     color: white;
+  }
+  
+  .login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    width: 80px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    padding: 1rem;
   }
   
   .admin-login-header h1 {
     margin-bottom: 0.5rem;
     font-size: 1.75rem;
+    font-weight: 600;
   }
   
   .admin-login-header p {
     opacity: 0.8;
     margin: 0;
+    font-size: 1.1rem;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   .admin-login-form {
@@ -172,49 +207,78 @@ const title = "Admin Login";
   
   .form-group input {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
     background-color: rgba(255, 255, 255, 0.05);
     color: white;
     font-size: 1rem;
-    transition: border-color 0.2s;
+    transition: all 0.3s;
   }
   
   .form-group input:focus {
     outline: none;
-    border-color: rgb(var(--accent));
+    border-color: rgb(136, 58, 234);
+    box-shadow: 0 0 0 2px rgba(136, 58, 234, 0.2);
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
   }
   
   .login-button {
     position: relative;
     width: 100%;
-    padding: 0.75rem;
-    border-radius: 4px;
+    padding: 0.9rem;
+    border-radius: 8px;
     border: none;
     background: linear-gradient(
       45deg,
-      rgb(var(--accent)),
-      rgb(var(--accent-light)) 90%
+      rgb(136, 58, 234),
+      rgb(150, 88, 236) 90%
     );
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(136, 58, 234, 0.3);
   }
   
   .login-button:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(136, 58, 234, 0.4);
+  }
+  
+  .login-button:active {
+    transform: translateY(0);
   }
   
   .login-error {
     background-color: rgba(255, 77, 77, 0.1);
-    border-left: 3px solid #ff4d4d;
+    border-left: 4px solid #ff4d4d;
     color: #ff4d4d;
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     margin-bottom: 1.5rem;
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.95rem;
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+  
+  @keyframes shake {
+    10%, 90% {
+      transform: translateX(-1px);
+    }
+    20%, 80% {
+      transform: translateX(2px);
+    }
+    30%, 50%, 70% {
+      transform: translateX(-4px);
+    }
+    40%, 60% {
+      transform: translateX(4px);
+    }
   }
   
   .admin-login-footer {
@@ -224,14 +288,24 @@ const title = "Admin Login";
   }
   
   .admin-login-footer a {
-    color: rgb(var(--accent-light));
+    color: rgb(136, 58, 234);
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: opacity 0.2s;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
   }
   
   .admin-login-footer a:hover {
-    opacity: 0.8;
+    color: rgb(150, 88, 236);
+    text-decoration: underline;
+  }
+  
+  .admin-login-footer a::before {
+    content: "←";
+    font-size: 1.1rem;
   }
   
   .hidden {

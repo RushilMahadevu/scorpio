@@ -1,0 +1,513 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+const title = "Create Assignment";
+---
+
+<AdminLayout title={title} selectedItem="assignments">
+  <div class="admin-create-assignment">
+    <div class="admin-header">
+      <h1>Create Assignment</h1>
+      <p>Create a new assignment for your students</p>
+    </div>
+    
+    <div class="assignment-form-container">
+      <form id="create-assignment-form">
+        <div class="form-section">
+          <h2 class="section-title">Basic Information</h2>
+          
+          <div class="form-group">
+            <label for="title">Assignment Title <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="title" 
+              name="title" 
+              required 
+              placeholder="e.g., Algebra Quiz #3"
+            />
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="class">Class <span class="required">*</span></label>
+              <select id="class" name="class" required>
+                <option value="" disabled selected>Select a class</option>
+                <option value="math101">Mathematics 101</option>
+                <option value="science102">Science 102</option>
+                <option value="history201">History 201</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="type">Assignment Type <span class="required">*</span></label>
+              <select id="type" name="type" required>
+                <option value="" disabled selected>Select type</option>
+                <option value="quiz">Quiz</option>
+                <option value="homework">Homework</option>
+                <option value="exam">Exam</option>
+                <option value="project">Project</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea 
+              id="description" 
+              name="description" 
+              rows="4" 
+              placeholder="Provide a detailed description of the assignment"
+            ></textarea>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h2 class="section-title">Schedule & Settings</h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="due-date">Due Date <span class="required">*</span></label>
+              <input type="date" id="due-date" name="dueDate" required />
+            </div>
+            
+            <div class="form-group">
+              <label for="due-time">Due Time</label>
+              <input type="time" id="due-time" name="dueTime" value="23:59" />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="points">Maximum Points <span class="required">*</span></label>
+              <input 
+                type="number" 
+                id="points" 
+                name="points" 
+                min="0" 
+                step="1" 
+                required 
+                placeholder="e.g., 100"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status" name="status">
+                <option value="draft">Draft (hidden from students)</option>
+                <option value="published">Published (visible to students)</option>
+                <option value="scheduled">Scheduled (release on specific date)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="schedule-container" class="form-row hidden">
+            <div class="form-group">
+              <label for="publish-date">Publish Date</label>
+              <input type="date" id="publish-date" name="publishDate" />
+            </div>
+            
+            <div class="form-group">
+              <label for="publish-time">Publish Time</label>
+              <input type="time" id="publish-time" name="publishTime" value="08:00" />
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h2 class="section-title">Assignment Content</h2>
+          
+          <div class="form-group">
+            <label for="instructions">Instructions <span class="required">*</span></label>
+            <textarea 
+              id="instructions" 
+              name="instructions" 
+              rows="6" 
+              required 
+              placeholder="Detailed instructions for students"
+            ></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="file-upload-label">
+              <div class="file-upload-container">
+                <div class="file-upload-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="file-upload-text">
+                  <span class="upload-title">Attachment Files</span>
+                  <span class="upload-subtitle" id="upload-file-names">Drag and drop files or click to browse</span>
+                </div>
+              </div>
+              <input type="file" id="attachments" name="attachments" multiple class="file-input" />
+            </label>
+          </div>
+        </div>
+        
+        <div id="form-error" class="form-error hidden"></div>
+        
+        <div class="form-actions">
+          <button type="button" id="save-draft-button" class="secondary-button">Save as Draft</button>
+          <button type="submit" id="publish-button" class="primary-button">
+            <span id="submit-text">Publish Assignment</span>
+            <div id="submit-spinner" class="button-spinner hidden"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Status change handler
+    const statusSelect = document.getElementById("status");
+    const scheduleContainer = document.getElementById("schedule-container");
+    
+    if (statusSelect && scheduleContainer) {
+      statusSelect.addEventListener("change", (e) => {
+        if (e.target.value === "scheduled") {
+          scheduleContainer.classList.remove("hidden");
+        } else {
+          scheduleContainer.classList.add("hidden");
+        }
+      });
+    }
+    
+    // File upload handler
+    const attachmentsInput = document.getElementById("attachments");
+    const uploadFileNames = document.getElementById("upload-file-names");
+    
+    if (attachmentsInput && uploadFileNames) {
+      attachmentsInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files);
+        
+        if (files.length > 0) {
+          uploadFileNames.textContent = files.map(file => file.name).join(", ");
+        } else {
+          uploadFileNames.textContent = "Drag and drop files or click to browse";
+        }
+      });
+    }
+    
+    // Form submission
+    const form = document.getElementById("create-assignment-form");
+    const saveDraftButton = document.getElementById("save-draft-button");
+    const submitText = document.getElementById("submit-text");
+    const submitSpinner = document.getElementById("submit-spinner");
+    const formError = document.getElementById("form-error");
+    
+    if (form && saveDraftButton) {
+      // Save draft button handler
+      saveDraftButton.addEventListener("click", () => {
+        if (statusSelect) {
+          statusSelect.value = "draft";
+        }
+        form.dispatchEvent(new Event("submit"));
+      });
+      
+      // Form submission
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        if (submitText && submitSpinner && formError) {
+          // Show loading state
+          submitText.classList.add("hidden");
+          submitSpinner.classList.remove("hidden");
+          formError.classList.add("hidden");
+          
+          // Here you would normally save the form data to your database
+          // For now, we'll just simulate a delay and show a success message
+          setTimeout(() => {
+            // Success! Show success message and redirect
+            const status = statusSelect ? statusSelect.value : "draft";
+            const statusText = status === "published" ? "published" : "saved as a draft";
+            
+            formError.textContent = `Assignment ${statusText} successfully!`;
+            formError.classList.remove("hidden");
+            formError.classList.add("form-success");
+            
+            // Reset loading state
+            submitText.classList.remove("hidden");
+            submitSpinner.classList.add("hidden");
+            
+            // Redirect after a short delay
+            setTimeout(() => {
+              window.location.href = "/admin/assignments";
+            }, 1500);
+          }, 1000);
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .admin-create-assignment {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  
+  .admin-header {
+    margin-bottom: 2rem;
+  }
+  
+  .admin-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .admin-header p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .assignment-form-container {
+    background-color: #1a1c25;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .form-section:last-child {
+    margin-bottom: 2rem;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group {
+    flex: 1;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-row .form-group {
+    margin-bottom: 0;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: white;
+    font-weight: 500;
+  }
+  
+  .required {
+    color: rgb(231, 76, 60);
+  }
+  
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="date"]:focus,
+  input[type="time"]:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: rgb(136, 58, 234);
+  }
+  
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .file-upload-label {
+    display: block;
+    cursor: pointer;
+  }
+  
+  .file-upload-container {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    transition: border-color 0.2s, background-color 0.2s;
+  }
+  
+  .file-upload-container:hover {
+    border-color: rgb(136, 58, 234);
+    background-color: rgba(136, 58, 234, 0.05);
+  }
+  
+  .file-upload-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    margin-right: 1rem;
+  }
+  
+  .file-upload-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .file-upload-text {
+    flex: 1;
+  }
+  
+  .upload-title {
+    display: block;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  
+  .upload-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+  }
+  
+  .file-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .primary-button,
+  .secondary-button {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .primary-button {
+    background-color: rgb(136, 58, 234);
+    color: white;
+    border: none;
+  }
+  
+  .primary-button:hover {
+    background-color: rgba(136, 58, 234, 0.8);
+  }
+  
+  .secondary-button {
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .secondary-button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .form-error {
+    background-color: rgba(255, 77, 77, 0.1);
+    border-left: 3px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 0.75rem 1rem;
+    margin-top: 1.5rem;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  .form-success {
+    background-color: rgba(46, 204, 113, 0.1);
+    border-left: 3px solid rgb(46, 204, 113);
+    color: rgb(46, 204, 113);
+  }
+  
+  .hidden {
+    display: none !important;
+  }
+  
+  .button-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -10px;
+    margin-left: -10px;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .form-row {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .form-actions {
+      flex-direction: column-reverse;
+    }
+    
+    .primary-button, .secondary-button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

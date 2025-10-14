@@ -1,7 +1,21 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  updateProfile
+} from "firebase/auth";
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc,
+  getDocs 
+} from "firebase/firestore";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
@@ -51,6 +65,62 @@ export const getCurrentUser = () => {
       reject
     );
   });
+};
+
+// Admin management functions
+export const createAdminUser = async (email: string, password: string, displayName: string) => {
+  try {
+    // Create a new user in Firebase Authentication
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Update the user's display name
+    await updateProfile(user, { displayName });
+    
+    // Store admin metadata in Firestore
+    await setDoc(doc(db, "admins", user.uid), {
+      email,
+      displayName,
+      role: "admin",
+      createdAt: new Date(),
+      active: true
+    });
+    
+    return user;
+  } catch (error) {
+    console.error("Create admin error:", error);
+    throw error;
+  }
+};
+
+// Get all admin users from Firestore
+export const getAdminUsers = async () => {
+  try {
+    const adminsRef = collection(db, "admins");
+    const querySnapshot = await getDocs(adminsRef);
+    
+    const admins = [];
+    querySnapshot.forEach((doc) => {
+      admins.push({ id: doc.id, ...doc.data() });
+    });
+    
+    return admins;
+  } catch (error) {
+    console.error("Get admin users error:", error);
+    throw error;
+  }
+};
+
+// Check if the current user is an admin
+export const checkIsAdmin = async (userId) => {
+  try {
+    const adminRef = doc(db, "admins", userId);
+    const adminDoc = await getDoc(adminRef);
+    return adminDoc.exists();
+  } catch (error) {
+    console.error("Check admin error:", error);
+    return false;
+  }
 };
 
 export { auth, db };

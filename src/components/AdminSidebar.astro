@@ -8,24 +8,24 @@ const { selectedItem } = Astro.props;
   data-duration="400"
   data-easing="ease"
   data-easing2="ease"
-  role="banner"
+  role="navigation"
   class="sidebar admin-sidebar w-nav"
 >
   <div class="nav-content">
-    <a href="/admin/dashboard" class="w-nav-brand" aria-label="admin dashboard">
+    <a href="/admin/dashboard" class="w-nav-brand" aria-label="teacher dashboard">
       <div class="niv-data">
         <div class="admin-logo">
           <img
             src="/assets/admin-icon.svg"
             loading="eager"
-            alt="Admin dashboard"
+            alt="Teacher dashboard"
             class="niv-image"
             onerror="this.src='/assets/dns.svg'"
           />
         </div>
         <div>
           <div class="label-white">Teacher Dashboard</div>
-          <div class="label-gray">Admin Area</div>
+          <div class="label-gray">Teacher Area</div>
         </div>
       </div>
     </a>
@@ -37,12 +37,12 @@ const { selectedItem } = Astro.props;
           selectedItem === 'dashboard' ? 'w--current' : ''
         }`}
       >
-        <img
-          src="/assets/home.svg"
-          loading="eager"
-          alt=""
-          class="nav-link-image"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <rect x="3" y="3" width="7" height="9" />
+          <rect x="14" y="3" width="7" height="5" />
+          <rect x="14" y="12" width="7" height="9" />
+          <rect x="3" y="16" width="7" height="5" />
+        </svg>
         <div>Dashboard</div>
       </a>
       <a
@@ -51,12 +51,12 @@ const { selectedItem } = Astro.props;
           selectedItem === 'students' ? 'w--current' : ''
         }`}
       >
-        <img
-          src="/assets/code.svg"
-          loading="eager"
-          alt=""
-          class="nav-link-image"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
         <div>Students</div>
       </a>
       <a
@@ -65,12 +65,13 @@ const { selectedItem } = Astro.props;
           selectedItem === 'assignments' ? 'w--current' : ''
         }`}
       >
-        <img
-          src="/assets/dns.svg"
-          loading="eager"
-          alt=""
-          class="nav-link-image"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
         <div>Assignments</div>
       </a>
       <a
@@ -79,51 +80,68 @@ const { selectedItem } = Astro.props;
           selectedItem === 'grades' ? 'w--current' : ''
         }`}
       >
-        <img
-          src="/assets/favorite.svg"
-          loading="eager"
-          alt=""
-          class="nav-link-image"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <path d="M12 20v-6M6 20V10M18 20V4"></path>
+        </svg>
         <div>Grades</div>
+      </a>
+      <a
+        href="/admin/admins"
+        class={`nav-link-container w-inline-block ${
+          selectedItem === 'admins' ? 'w--current' : ''
+        }`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <div>Manage Admins</div>
+      </a>
+      <a
+        href="/admin/settings"
+        class={`nav-link-container w-inline-block ${
+          selectedItem === 'settings' ? 'w--current' : ''
+        }`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <div>Settings</div>
       </a>
       <div class="nav-separator"></div>
       <a
         href="/"
         class="nav-link-container w-inline-block"
       >
-        <img
-          src="/assets/home.svg"
-          loading="eager"
-          alt=""
-          class="nav-link-image"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
         <div>Main Site</div>
       </a>
       <button id="logout-btn" class="nav-link-container logout-btn w-inline-block">
-        <img
-          src="/assets/menu.svg"
-          loading="eager"
-          alt=""
-          class="nav-link-image"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-link-image">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
         <div>Logout</div>
       </button>
     </nav>
 
     <div
       class="navbar-icon-button w-nav-button"
-      style="-webkit-user-select: text;"
-      aria-label="menu"
+      aria-label="Toggle menu"
+      aria-expanded="false"
       role="button"
       tabindex="0"
     >
-      <img
-        src="/assets/menu.svg"
-        loading="eager"
-        alt=""
-        class="navbar-icon"
-      />
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="navbar-icon">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
     </div>
   </div>
 
@@ -149,6 +167,40 @@ const { selectedItem } = Astro.props;
           }
         });
       }
+      
+      // Add mobile menu toggle functionality
+      const navMenuToggle = document.querySelector('.navbar-icon-button');
+      const navMenu = document.querySelector('.w-nav-menu');
+      
+      if (navMenuToggle && navMenu) {
+        navMenuToggle.addEventListener('click', () => {
+          navMenu.classList.toggle('is-open');
+          navMenuToggle.setAttribute('aria-expanded', 
+            navMenu.classList.contains('is-open') ? 'true' : 'false'
+          );
+        });
+      }
+      
+      // Close menu when clicking outside on mobile
+      document.addEventListener('click', (event) => {
+        if (window.innerWidth <= 768) {
+          const isClickInside = navMenuToggle?.contains(event.target as Node) || 
+                              navMenu?.contains(event.target as Node);
+          
+          if (!isClickInside && navMenu?.classList.contains('is-open')) {
+            navMenu.classList.remove('is-open');
+            navMenuToggle?.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+      
+      // Close mobile menu when window resizes beyond mobile breakpoint
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 768 && navMenu?.classList.contains('is-open')) {
+          navMenu.classList.remove('is-open');
+          navMenuToggle?.setAttribute('aria-expanded', 'false');
+        }
+      });
     });
 
     document.addEventListener('astro:before-swap', () => {
@@ -160,33 +212,231 @@ const { selectedItem } = Astro.props;
 <style>
   .admin-sidebar {
     background-color: #1a1c25;
+    width: 280px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    left: 0;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .nav-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem 0;
+  }
+  
+  .w-nav-brand {
+    text-decoration: none;
+    padding: 0.5rem 1.5rem 1.5rem;
+    display: block;
+    transition: opacity 0.2s;
+  }
+
+  .w-nav-brand:hover {
+    opacity: 0.9;
+  }
+
+  .niv-data {
+    display: flex;
+    align-items: center;
   }
   
   .admin-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     background-color: rgba(136, 58, 234, 0.2);
-    border-radius: 50%;
-    margin-right: 10px;
+    border-radius: 12px;
+    margin-right: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .admin-logo img {
+    width: 28px;
+    height: 28px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+  
+  .label-white {
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .label-gray {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+  }
+
+  .w-nav-menu {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 0.5rem 1rem;
+    gap: 0.4rem;
+  }
+  
+  .nav-link-container {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+  
+  .nav-link-container:hover {
+    background-color: rgba(136, 58, 234, 0.08);
+    color: white;
+    transform: translateX(4px);
+  }
+  
+  .nav-link-container.w--current {
+    background-color: rgba(136, 58, 234, 0.15);
+    color: white;
+    border-left: 3px solid rgb(136, 58, 234);
+    font-weight: 600;
+  }
+  
+  .nav-link-image {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    opacity: 0.8;
+  }
+  
+  .w--current .nav-link-image {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgba(136, 58, 234, 0.5));
   }
   
   .nav-separator {
     height: 1px;
     background-color: rgba(255, 255, 255, 0.1);
-    margin: 10px 0;
-    width: 100%;
+    margin: 0.8rem 1rem;
+    width: calc(100% - 2rem);
   }
   
   .logout-btn {
     cursor: pointer;
     color: #ff4d4d;
-    transition: background-color 0.2s;
+    margin-top: auto;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    font-size: inherit;
+    font-family: inherit;
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
   }
   
   .logout-btn:hover {
     background-color: rgba(255, 77, 77, 0.1);
+    transform: translateX(4px);
+  }
+
+  .logout-btn svg {
+    color: #ff4d4d;
+  }
+  
+  .navbar-icon-button {
+    display: none;
+    padding: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+  }
+  
+  .navbar-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Subtle animation for menu items */
+  .w-nav-menu > a, .w-nav-menu > button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .w-nav-menu > a::after, .w-nav-menu > button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background-color: rgb(136, 58, 234);
+    transition: width 0.3s ease;
+  }
+
+  .w-nav-menu > a:hover::after, .w-nav-menu > button:hover::after {
+    width: 100%;
+  }
+
+  .w-nav-menu > a.w--current::after {
+    width: 100%;
+    opacity: 0.6;
+  }
+  
+  @media (max-width: 992px) {
+    .admin-sidebar {
+      width: 240px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .admin-sidebar {
+      width: 100%;
+      height: auto;
+      position: relative;
+      box-shadow: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-content {
+      padding: 1rem;
+    }
+    
+    .w-nav-brand {
+      padding: 0.5rem 0 1rem;
+    }
+    
+    .w-nav-menu {
+      display: none;
+      padding: 1rem 0;
+      margin-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .w-nav-menu.is-open {
+      display: flex;
+    }
+    
+    .navbar-icon-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .nav-link-container:hover {
+      transform: none;
+    }
   }
 </style>
