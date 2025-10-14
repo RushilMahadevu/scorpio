@@ -17,6 +17,8 @@ import {
   getDocs 
 } from "firebase/firestore";
 // https://firebase.google.com/docs/web/setup#available-libraries
+import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -32,6 +34,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const firebaseApp = initializeApp(firebaseConfig);
+const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
+const model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
+
 
 // Authentication functions
 export const login = async (email: string, password: string) => {
@@ -123,5 +129,5 @@ export const checkIsAdmin = async (userId) => {
   }
 };
 
-export { auth, db };
+export { auth, db, model, ai };
 export default app;

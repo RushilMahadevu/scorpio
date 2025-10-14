@@ -7,10 +7,16 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test:ai": "tsx run-ai-tests.ts"
   },
   "dependencies": {
     "astro": "^5.14.4",
     "firebase": "^12.4.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }

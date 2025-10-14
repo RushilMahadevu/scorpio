@@ -16,17 +16,14 @@ const { selectedItem } = Astro.props;
       <div class="niv-data">
         <div class="admin-logo">
           <img
-            src="/assets/admin-icon.svg"
+            src="/assets/scorpio-logo.png"
             loading="eager"
-            alt="Teacher dashboard"
-            class="niv-image"
-            onerror="this.src='/assets/dns.svg'"
           />
         </div>
-        <div>
-          <div class="label-white">Teacher Dashboard</div>
-          <div class="label-gray">Teacher Area</div>
-        </div>
+      </div>
+      <div>
+        <div class="label-white">Teacher Dashboard</div>
+        <div class="label-gray">Manage Students & Assignments</div>
       </div>
     </a>
 
@@ -250,17 +247,18 @@ const { selectedItem } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    height: 52px;
+    width: 400px;
+    height: 100px;
     background-color: rgba(136, 58, 234, 0.2);
     border-radius: 12px;
     margin-right: 12px;
     transition: all 0.3s ease;
+    margin-bottom: 25px;
   }
 
   .admin-logo img {
-    width: 28px;
-    height: 28px;
+    width: 156px;
+    height: 100px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
   }
   

@@ -1,0 +1,1 @@
+function o(){const t=document.querySelector(".navbar-icon-button"),e=document.querySelector(".w-nav-menu");if(!t||!e)return;const s=()=>{const n=e.classList.contains("is-open");e.classList.toggle("is-visible",!n),setTimeout(()=>{e.classList.toggle("is-open",!n)},n?300:10)};return t.addEventListener("click",s),()=>t.removeEventListener("click",s)}export{o as s};
