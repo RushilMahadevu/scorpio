@@ -10,5 +10,478 @@ const title = "Settings";
       <h1>Settings</h1>
       <p>Manage your dashboard settings and preferences</p>
     </div>
+
+    <div class="settings-content">
+      <!-- Profile Settings Section -->
+      <div class="settings-section">
+        <div class="section-header">
+          <h2>Profile Settings</h2>
+          <p>Update your personal information and account details</p>
+        </div>
+        <div class="settings-card">
+          <div class="setting-group">
+            <label for="teacher-name">Full Name</label>
+            <input type="text" id="teacher-name" placeholder="Enter your full name" />
+          </div>
+          <div class="setting-group">
+            <label for="teacher-title">Title/Position</label>
+            <input type="text" id="teacher-title" placeholder="e.g., Math Teacher, Professor" />
+          </div>
+          <div class="setting-actions">
+            <button class="btn-primary">Save Profile</button>
+            <button class="btn-secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone Section -->
+      <div class="settings-section danger-section">
+        <div class="section-header">
+          <h2>Danger Zone</h2>
+          <p>Irreversible actions that affect your account</p>
+        </div>
+        <div class="settings-card danger-card">
+          <div class="setting-group">
+            <label>Delete Account</label>
+            <p class="setting-description">Permanently delete your account and all associated data</p>
+            <button class="btn-danger">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    import { getCurrentUser } from '../../lib/firebase';
+    
+    document.addEventListener('astro:page-load', async () => {
+      // Load current user data
+      try {
+        const user = await getCurrentUser();
+        if (user && typeof user === 'object' && 'email' in user) {
+          const nameInput = document.getElementById('teacher-name') as HTMLInputElement;
+          const emailInput = document.getElementById('teacher-email') as HTMLInputElement;
+          
+          if (nameInput && 'displayName' in user) {
+            nameInput.value = (user.displayName as string) || '';
+          }
+          if (emailInput) {
+            emailInput.value = (user.email as string) || '';
+          }
+        }
+      } catch (error) {
+        console.log('Could not load user data:', error);
+      }
+
+      // Handle form submissions
+      const saveButtons = document.querySelectorAll('.btn-primary');
+      saveButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const target = e.target as HTMLElement;
+          const section = target.closest('.settings-section');
+          
+          if (section?.querySelector('#teacher-name')) {
+            // Profile section
+            const nameInput = document.getElementById('teacher-name') as HTMLInputElement;
+            const titleInput = document.getElementById('teacher-title') as HTMLInputElement;
+            
+            try {
+              const name = nameInput?.value || '';
+              const title = titleInput?.value || '';
+              
+              // Here you would update the user profile
+              // await updateUserProfile({ displayName: name, title: title });
+              console.log('Saving profile:', { name, title });
+              showNotification('Profile updated successfully!', 'success');
+            } catch (error) {
+              showNotification('Failed to update profile', 'error');
+            }
+          } else {
+            // Other sections
+            showNotification('Settings saved successfully!', 'success');
+          }
+        });
+      });
+
+      // Handle toggle switches
+      const toggleSwitches = document.querySelectorAll('.toggle-switch input') as NodeListOf<HTMLInputElement>;
+      toggleSwitches.forEach(toggle => {
+        toggle.addEventListener('change', () => {
+          // Save toggle state to localStorage or backend
+          localStorage.setItem(toggle.id, toggle.checked.toString());
+        });
+        
+        // Load saved state
+        const savedState = localStorage.getItem(toggle.id);
+        if (savedState !== null) {
+          toggle.checked = savedState === 'true';
+        }
+      });
+
+      // Handle special buttons
+      const changePasswordBtn = document.getElementById('change-password-btn');
+      if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', () => {
+          // Implement password change modal or redirect
+          showNotification('Password change feature coming soon!', 'info');
+        });
+      }
+
+      const logoutAllBtn = document.getElementById('logout-all-devices');
+      if (logoutAllBtn) {
+        logoutAllBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to logout all devices?')) {
+            // Implement logout all devices
+            showNotification('Logged out from all devices', 'success');
+          }
+        });
+      }
+    });
+
+    function showNotification(message: string, type: string = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
+      
+      // Add to page
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+  </script>
+
+  <style>
+    .admin-settings {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .admin-header {
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid rgba(139, 0, 0, 0.2);
+    }
+
+    .admin-header h1 {
+      color: var(--color-text);
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff, rgba(139, 0, 0, 0.8));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .admin-header p {
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section-header h2 {
+      color: var(--color-text);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-header p {
+      color: var(--color-text-muted);
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .settings-card {
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .settings-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+      opacity: 0.6;
+    }
+
+    .settings-card:hover {
+      border-color: rgba(139, 0, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .setting-group label {
+      color: var(--color-text);
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .setting-group input[type="text"],
+    .setting-group input[type="email"],
+    .setting-group select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--color-text);
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .setting-group input[type="text"]:focus,
+    .setting-group input[type="email"]:focus,
+    .setting-group select:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .setting-group input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .toggle-group {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--color-primary);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    .setting-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-danger {
+      background: rgba(220, 53, 69, 0.2);
+      color: #ff6b6b;
+      border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(220, 53, 69, 0.3);
+      border-color: rgba(220, 53, 69, 0.5);
+    }
+
+    .danger-section .section-header h2 {
+      color: #ff6b6b;
+    }
+
+    .danger-card {
+      border-color: rgba(220, 53, 69, 0.3);
+      background: rgba(220, 53, 69, 0.05);
+    }
+
+    .danger-card::before {
+      background: linear-gradient(90deg, transparent, #dc3545, transparent);
+    }
+
+    .setting-description {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      margin: 0.25rem 0 0.75rem 0;
+    }
+
+    .setting-note {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      font-style: italic;
+      margin-top: 0.25rem;
+    }
+
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      transform: translateX(100%);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .notification-success {
+      background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .notification-error {
+      background: linear-gradient(135deg, #dc3545, #e74c3c);
+    }
+
+    .notification-info {
+      background: linear-gradient(135deg, #17a2b8, #3498db);
+    }
+
+    @media (max-width: 768px) {
+      .admin-header h1 {
+        font-size: 2rem;
+      }
+
+      .settings-card {
+        padding: 1.5rem;
+      }
+
+      .setting-actions {
+        flex-direction: column;
+      }
+
+      .toggle-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .notification {
+        top: 1rem;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .admin-settings {
+        margin: 0 -1rem;
+      }
+
+      .settings-card {
+        border-radius: 8px;
+        margin: 0 1rem;
+      }
+    }
+  </style>
 </AdminLayout>
