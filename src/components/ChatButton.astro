@@ -21,7 +21,7 @@
     <div class="chat-area">
       <div class="messages" id="chat-messages">
         <div class="message ai-message">
-          <p>Hello! I'm Scorpio AI, your intelligent assistant. How can I help you today?</p>
+          <p>Hello! I'm Scorpio AI, your AP Physics C: Mechanics tutor. I can help you understand concepts, solve problems, and prepare for the AP exam. What would you like to work on today?</p>
         </div>
       </div>
       <div class="input-area">
@@ -50,7 +50,7 @@
     right: 24px;
     width: 64px;
     height: 64px;
-    background: #dc2626;
+    background: var(--color-primary, rgb(139, 0, 0));
     border: none;
     border-radius: 50%;
     color: white;
@@ -58,15 +58,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 6px 16px var(--color-primary, rgba(139, 0, 0, 0.4));
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     z-index: 9999;
   }
 
   .chat-button:hover {
-    background: #b91c1c;
+    background: var(--color-primary-hover, rgba(139, 0, 0, 0.8));
     transform: scale(1.08);
-    box-shadow: 0 8px 18px rgba(220, 38, 38, 0.6);
+    box-shadow: 0 8px 18px var(--color-primary, rgba(139, 0, 0, 0.6));
   }
 
   .chat-button:active {
@@ -78,21 +78,21 @@
     height: 26px;
   }
 
-  /* Sidebar Styles */
+  /* Sidebar Styles - Matching Admin Design */
   .sidebar {
     position: fixed;
     top: 0;
     right: 0;
     width: 400px;
     height: 100vh;
-    background: #1c1c1c;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+    background: var(--color-bg, #1c1c1c);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.15);
     transform: translateX(100%);
     transition: transform 0.3s ease;
     z-index: 10000;
     display: flex;
     flex-direction: column;
-    border-left: 1px solid #353535;
+    overflow-y: auto;
   }
 
   .sidebar.open {
@@ -107,37 +107,45 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #353535;
-    background: #1c1c1c;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    background: var(--color-bg, #1c1c1c);
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
   .sidebar-header h2 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    color: #fff;
-    font-family: IBM Plex Sans, sans-serif;
+    color: var(--color-text, white);
+    font-family: inherit;
   }
 
   .close-button {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    color: #a8a8a8;
-    transition: background-color 0.2s ease;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    color: var(--color-text-muted, rgba(255, 255, 255, 0.7));
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
   }
 
   .close-button:hover {
-    background: #353535;
-    color: #fff;
+    background-color: var(--color-hover-bg, rgba(139, 0, 0, 0.08));
+    color: var(--color-text, white);
+    transform: translateX(-4px);
   }
 
   .close-button svg {
     width: 20px;
     height: 20px;
+    opacity: 0.8;
   }
 
   .sidebar-content {
@@ -156,85 +164,160 @@
 
   .messages {
     flex: 1;
-    padding: 20px;
+    padding: 1.5rem;
     overflow-y: auto;
-    background: #161616;
+    background: var(--color-bg, #1c1c1c);
   }
 
   .message {
     margin-bottom: 16px;
-    padding: 12px 16px;
-    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
     max-width: 85%;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
   }
 
   .ai-message {
-    background: #2b2b2b;
-    color: #fff;
+    background-color: var(--color-hover-bg, rgba(139, 0, 0, 0.08));
+    color: var(--color-text-muted, rgba(255, 255, 255, 0.9));
     align-self: flex-start;
-    border: 1px solid #353535;
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
   }
 
   .user-message {
-    background: #dc2626;
-    color: white;
+    background-color: var(--color-hover-bg, rgba(139, 0, 0, 0.15));
+    color: var(--color-text, white);
     align-self: flex-end;
     margin-left: auto;
+    border-left: 3px solid var(--color-primary, rgb(139, 0, 0));
+    font-weight: 500;
   }
 
   .message p {
     margin: 0;
     line-height: 1.5;
-    font-family: IBM Plex Sans, sans-serif;
+    font-family: inherit;
+  }
+
+  /* Typing indicator styles */
+  .typing {
+    opacity: 0.8;
+  }
+
+  .typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing 1.4s infinite ease-in-out;
+    font-size: 0;
+  }
+
+  .typing-dots span:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    30% {
+      transform: translateY(-10px);
+      opacity: 1;
+    }
   }
 
   .input-area {
-    padding: 20px;
-    border-top: 1px solid #353535;
-    background: #1c1c1c;
+    padding: 1.5rem;
+    border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    background: var(--color-bg, #1c1c1c);
     display: flex;
-    gap: 12px;
+    gap: 0.4rem;
     align-items: center;
   }
 
   .chat-input {
     flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #353535;
-    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-radius: 10px;
     font-size: 14px;
     outline: none;
-    transition: border-color 0.2s ease;
-    background: #161616;
-    color: #fff;
-    font-family: IBM Plex Sans, sans-serif;
+    transition: all 0.2s ease;
+    background: var(--color-hover-bg, rgba(255, 255, 255, 0.05));
+    color: var(--color-text-muted, rgba(255, 255, 255, 0.9));
+    font-family: inherit;
+    font-weight: 500;
   }
 
   .chat-input:focus {
-    border-color: #dc2626;
+    border-color: var(--color-primary, rgb(139, 0, 0));
+    background: var(--color-hover-bg, rgba(139, 0, 0, 0.08));
+    transform: translateY(-1px);
   }
 
   .chat-input::placeholder {
-    color: #a8a8a8;
+    color: var(--color-text-muted, rgba(255, 255, 255, 0.6));
   }
 
   .send-button {
-    background: #dc2626;
-    border: none;
-    border-radius: 8px;
-    color: white;
+    background: transparent;
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-radius: 10px;
+    color: var(--color-text-muted, rgba(255, 255, 255, 0.7));
     cursor: pointer;
-    padding: 12px;
-    transition: background-color 0.2s ease;
+    padding: 0.85rem 1rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
   }
 
   .send-button:hover {
-    background: #b91c1c;
+    background-color: var(--color-hover-bg, rgba(139, 0, 0, 0.08));
+    color: var(--color-text, white);
+    transform: translateX(4px);
+  }
+
+  .send-button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background-color: var(--color-primary, rgb(139, 0, 0));
+    transition: width 0.3s ease;
+  }
+
+  .send-button:hover::after {
+    width: 100%;
   }
 
   .send-button svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
   }
 
   .sidebar-overlay {
@@ -259,6 +342,12 @@
     display: none;
   }
 
+  @media (max-width: 992px) {
+    .sidebar {
+      width: 340px;
+    }
+  }
+
   @media (max-width: 768px) {
     .chat-button {
       width: 56px;
@@ -275,24 +364,24 @@
     .sidebar {
       width: 100vw;
     }
+    
+    .sidebar-header {
+      padding: 1rem;
+    }
+    
+    .input-area {
+      padding: 1rem;
+    }
+    
+    .messages {
+      padding: 1rem;
+    }
   }
 
   @media (max-width: 480px) {
     .chat-button {
       bottom: 16px;
       right: 16px;
-    }
-
-    .sidebar-header {
-      padding: 16px;
-    }
-
-    .input-area {
-      padding: 16px;
-    }
-
-    .messages {
-      padding: 16px;
     }
   }
 </style>
@@ -340,31 +429,220 @@
     function addMessage(content, isUser = false) {
       const messageDiv = document.createElement('div');
       messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-      messageDiv.innerHTML = `<p>${content}</p>`;
+      
+      // Format the content for better display (simple markdown-like formatting)
+      let formattedContent = content;
+      if (!isUser) {
+        // Convert **bold** to <strong>bold</strong>
+        formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Convert *italic* to <em>italic</em>
+        formattedContent = formattedContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Convert newlines to <br> for better formatting
+        formattedContent = formattedContent.replace(/\n/g, '<br>');
+      }
+      
+      messageDiv.innerHTML = `<p>${formattedContent}</p>`;
       messagesContainer?.appendChild(messageDiv);
       messagesContainer?.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
     }
 
-    function sendMessage() {
+    // Conversation history for context-aware responses
+    let conversationHistory = [];
+    
+    // Question categorization for adaptive prompting
+    function categorizeQuestion(message) {
+      const lowerMessage = message.toLowerCase();
+      
+      if (lowerMessage.includes('derivative') || lowerMessage.includes('velocity') || lowerMessage.includes('acceleration')) {
+        return 'kinematics_calculus';
+      } else if (lowerMessage.includes('force') || lowerMessage.includes('newton') || lowerMessage.includes('mass')) {
+        return 'dynamics';
+      } else if (lowerMessage.includes('energy') || lowerMessage.includes('work') || lowerMessage.includes('kinetic') || lowerMessage.includes('potential')) {
+        return 'energy';
+      } else if (lowerMessage.includes('momentum') || lowerMessage.includes('collision') || lowerMessage.includes('impulse')) {
+        return 'momentum';
+      } else if (lowerMessage.includes('rotation') || lowerMessage.includes('angular') || lowerMessage.includes('torque')) {
+        return 'rotational';
+      } else if (lowerMessage.includes('oscillation') || lowerMessage.includes('harmonic') || lowerMessage.includes('pendulum') || lowerMessage.includes('spring')) {
+        return 'oscillations';
+      } else if (lowerMessage.includes('gravity') || lowerMessage.includes('orbit') || lowerMessage.includes('satellite')) {
+        return 'gravitation';
+      } else {
+        return 'general';
+      }
+    }
+
+    async function sendMessage() {
       const message = (chatInput as HTMLInputElement)?.value.trim();
       if (!message) return;
 
-      // Add user message
+      // Add user message to conversation history
+      conversationHistory.push({ role: 'user', content: message });
+      
+      // Add user message to UI
       addMessage(message, true);
       (chatInput as HTMLInputElement).value = '';
 
-      // Simulate AI response (replace with actual AI integration)
-      setTimeout(() => {
-        const responses = [
-          "I'm here to help you with any questions you have!",
-          "That's an interesting question. Let me think about that...",
-          "I understand what you're asking. Here's what I think...",
-          "Great question! I'd be happy to help you with that.",
-          "Let me provide you with some information about that topic."
-        ];
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-        addMessage(randomResponse, false);
-      }, 1000);
+      // Show typing indicator
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'message ai-message typing';
+      typingIndicator.innerHTML = '<p><span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></p>';
+      messagesContainer?.appendChild(typingIndicator);
+      messagesContainer?.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+
+      try {
+        // Import the model from firebase
+        const { model } = await import('../lib/firebase');
+        
+        // Categorize the question for adaptive prompting
+        const questionCategory = categorizeQuestion(message);
+        
+        // Build conversation context (last 3 exchanges max for token efficiency)
+        const recentHistory = conversationHistory.slice(-6).map(entry => 
+          `${entry.role === 'user' ? 'Student' : 'Scorpio AI'}: ${entry.content}`
+        ).join('\n');
+        
+        // Category-specific prompting
+        const categoryPrompts = {
+          'kinematics_calculus': `
+# SPECIALIZED FOCUS: Calculus-Based Kinematics
+Pay special attention to:
+- Position, velocity, acceleration relationships: x(t), v(t) = dx/dt, a(t) = dv/dt
+- Integration techniques for finding position from acceleration
+- Graph interpretation and slope/area relationships
+- Relative motion problems`,
+          
+          'dynamics': `
+# SPECIALIZED FOCUS: Newton's Laws & Forces
+Pay special attention to:
+- Free body diagrams and force analysis
+- Newton's 2nd Law: ΣF = ma (vector form)
+- Friction (static μs, kinetic μk)
+- Inclined planes and constraint forces`,
+          
+          'energy': `
+# SPECIALIZED FOCUS: Work-Energy Theorem
+Pay special attention to:
+- Work: W = ∫F⃗·dr⃗ (calculus definition)
+- Kinetic Energy: KE = ½mv²
+- Potential Energy: gravitational (mgh), elastic (½kx²)
+- Conservation of mechanical energy`,
+          
+          'momentum': `
+# SPECIALIZED FOCUS: Momentum & Collisions
+Pay special attention to:
+- Linear momentum: p⃗ = mv⃗
+- Impulse-momentum theorem: J⃗ = Δp⃗ = ∫F⃗dt
+- Conservation in collisions (elastic vs inelastic)
+- Center of mass motion`,
+          
+          'rotational': `
+# SPECIALIZED FOCUS: Rotational Motion
+Pay special attention to:
+- Angular kinematics: θ, ω = dθ/dt, α = dω/dt
+- Rotational dynamics: τ = Iα
+- Moment of inertia calculations
+- Angular momentum: L = Iω`,
+          
+          'oscillations': `
+# SPECIALIZED FOCUS: Simple Harmonic Motion
+Pay special attention to:
+- SHM equations: x(t) = A cos(ωt + φ)
+- Period and frequency relationships
+- Energy in oscillatory systems
+- Physical vs simple pendulum`,
+          
+          'gravitation': `
+# SPECIALIZED FOCUS: Universal Gravitation
+Pay special attention to:
+- Newton's law of gravitation: F = Gm₁m₂/r²
+- Gravitational potential energy: U = -Gm₁m₂/r
+- Orbital mechanics and Kepler's laws
+- Escape velocity calculations`,
+          
+          'general': ''
+        };
+
+        // Advanced prompt engineering for AP Physics C: Mechanics
+        const contextPrompt = `# ROLE & EXPERTISE
+You are Scorpio AI, an expert AP Physics C: Mechanics tutor with deep knowledge of calculus-based physics. You have years of experience helping students master complex concepts and excel on the AP exam.
+
+# CORE COMPETENCIES
+- Kinematics with calculus (derivatives for velocity/acceleration)
+- Newton's Laws and their applications
+- Work-Energy Theorem and Conservation of Energy  
+- Linear and Angular Momentum Conservation
+- Rotational Motion and Moment of Inertia
+- Simple Harmonic Motion and Oscillations
+- Universal Gravitation and Orbital Mechanics
+
+${categoryPrompts[questionCategory]}
+
+# RESPONSE FRAMEWORK
+When answering questions, follow this structure:
+1. **Concept Identification**: Identify the key physics principles involved
+2. **Equation Setup**: Present relevant equations with clear variable definitions
+3. **Step-by-Step Solution**: Break down problem-solving into logical steps
+4. **Conceptual Explanation**: Explain the underlying physics concepts
+5. **Common Pitfalls**: Highlight frequent student mistakes to avoid
+6. **AP Exam Context**: Relate to typical AP exam question types when relevant
+
+# COMMUNICATION STYLE
+- Use clear, concise language appropriate for high school students
+- Include mathematical notation when helpful: use * for multiplication, ^ for exponents
+- Provide analogies and real-world examples to illustrate abstract concepts
+- Ask follow-up questions to gauge understanding
+- Encourage active problem-solving rather than just giving answers
+
+# CONSTRAINTS
+- Focus exclusively on AP Physics C: Mechanics curriculum
+- Use calculus when appropriate (derivatives, integrals)
+- Provide hints before full solutions to promote learning
+- Limit responses to 200-300 words for clarity
+
+# CONVERSATION CONTEXT
+${recentHistory ? `Recent conversation:\n${recentHistory}\n` : ''}
+
+# STUDENT CONTEXT
+This student is preparing for the AP Physics C: Mechanics exam and needs support with both conceptual understanding and problem-solving techniques.
+
+---
+
+**Current Student Question**: ${message}
+
+**Response**:`;
+
+        // Generate AI response using Gemini
+        const result = await model.generateContent(contextPrompt);
+        const response = await result.response;
+        const aiText = response.text();
+
+        // Remove typing indicator
+        if (typingIndicator) {
+          typingIndicator.remove();
+        }
+
+        // Add AI response to conversation history
+        conversationHistory.push({ role: 'assistant', content: aiText });
+        
+        // Keep conversation history manageable (last 10 exchanges)
+        if (conversationHistory.length > 20) {
+          conversationHistory = conversationHistory.slice(-20);
+        }
+
+        // Add AI response to UI
+        addMessage(aiText, false);
+      } catch (error) {
+        console.error('AI response error:', error);
+        
+        // Remove typing indicator
+        if (typingIndicator) {
+          typingIndicator.remove();
+        }
+
+        // Add fallback response
+        addMessage("I apologize, but I'm having trouble processing your request right now. Please try again in a moment.", false);
+      }
     }
 
     // Event listeners

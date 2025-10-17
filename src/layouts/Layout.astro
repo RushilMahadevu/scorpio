@@ -34,11 +34,24 @@ const { title } = Astro.props;
 			rgb(var(--accent-light)) 30%,
 			white 60%
 		);
+		/* Admin-consistent color variables for ChatButton */
+		--color-bg: #1c1c1c;
+		--color-text: #ffffff;
+		--color-text-muted: rgba(255, 255, 255, 0.7);
+		--color-primary: rgb(139, 0, 0);
+		--color-primary-hover: rgba(139, 0, 0, 0.8);
+		--color-card-bg: #1a1c25;
+		--color-border: rgba(255, 255, 255, 0.1);
+		--color-hover-bg: rgba(255, 255, 255, 0.05);
 	}
 	html {
 		font-family: system-ui, sans-serif;
-		background: #13151a;
+		background: var(--color-bg);
 		background-size: 224px;
+	}
+	body {
+		background-color: var(--color-bg);
+		color: var(--color-text);
 	}
 	code {
 		font-family:
