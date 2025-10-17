@@ -2,6 +2,7 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import AdminSidebar from "../components/AdminSidebar.astro";
+import ChatButton from "../components/ChatButton.astro";
 
 const { title, selectedItem } = Astro.props;
 
@@ -25,6 +26,8 @@ const { title, selectedItem } = Astro.props;
         <slot />
       </main>
     </div>
+
+    <ChatButton />
 
     <script>
       import { onAuthStateChanged } from "firebase/auth";
