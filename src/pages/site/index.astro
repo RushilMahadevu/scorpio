@@ -1,0 +1,30 @@
+---
+import Header from "../components/Header.astro";
+import Sidebar from "../components/Sidebar.astro";
+import Layout from "../layouts/Layout.astro";
+import ChatButton from "../components/ChatButton.astro";
+---
+
+<!DOCTYPE html>
+<html>
+  <Header title="Scorpio AI - AP Physics C: Mechanics" />
+  <body>
+    <div class="content">
+      <Sidebar selectedItem="home" />
+      <nav class="main">
+        <div class="container">
+          <main class="fold-content-container">
+            <div class="fold-content">
+              <h1>Scorpio AI<br />AP Physics C: Mechanics</h1>
+              <p class="lead">
+                Your intelligent learning companion for AP Physics C: Mechanics. Mastering complex physics concepts through personalized problem-solving, interactive simulations, and comprehensive concept explanations.
+              </p>
+            </div>
+          </main>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <ChatButton />
+  </body>
+</html>

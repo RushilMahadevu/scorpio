@@ -1,0 +1,828 @@
+---
+import StudentLayout from "../layouts/StudentLayout.astro";
+
+const title = "Grades";
+
+// Sample grades data
+const grades = [
+  {
+    id: 1,
+    assignment: 'Wave Motion',
+    category: 'Lab Report',
+    dueDate: 'Sep 15, 2024',
+    submittedDate: 'Sep 14, 2024',
+    grade: 'A-',
+    percentage: 92,
+    points: '92/100',
+    maxPoints: 100,
+    feedback: 'Excellent understanding of wave properties and mathematical relationships. Your analysis of interference patterns was particularly insightful. Minor points deducted for calculation errors in section 3.',
+    rubric: [
+      { criteria: 'Understanding of Concepts', points: '38/40', grade: 'A' },
+      { criteria: 'Mathematical Analysis', points: '22/25', grade: 'B+' },
+      { criteria: 'Lab Procedure', points: '25/25', grade: 'A' },
+      { criteria: 'Writing Quality', points: '7/10', grade: 'B-' }
+    ],
+    status: 'graded'
+  },
+  {
+    id: 2,
+    assignment: 'Thermodynamics Problem Set',
+    category: 'Homework',
+    dueDate: 'Sep 22, 2024',
+    submittedDate: 'Sep 21, 2024',
+    grade: 'B+',
+    percentage: 87,
+    points: '87/100',
+    maxPoints: 100,
+    feedback: 'Good grasp of thermodynamic principles. Some calculation errors in problems 4 and 7. Review the ideal gas law applications.',
+    rubric: [
+      { criteria: 'Problem Solving', points: '32/35', grade: 'A-' },
+      { criteria: 'Mathematical Accuracy', points: '25/30', grade: 'B' },
+      { criteria: 'Show Work', points: '22/25', grade: 'B+' },
+      { criteria: 'Units & Formatting', points: '8/10', grade: 'B+' }
+    ],
+    status: 'graded'
+  },
+  {
+    id: 3,
+    assignment: 'Optics Lab Experiment',
+    category: 'Lab Report',
+    dueDate: 'Oct 1, 2024',
+    submittedDate: 'Sep 30, 2024',
+    grade: 'A',
+    percentage: 96,
+    points: '96/100',
+    maxPoints: 100,
+    feedback: 'Outstanding experimental technique and data analysis. Your understanding of refraction and reflection principles is excellent. Great use of error analysis.',
+    rubric: [
+      { criteria: 'Experimental Design', points: '24/25', grade: 'A' },
+      { criteria: 'Data Collection', points: '25/25', grade: 'A' },
+      { criteria: 'Analysis & Calculations', points: '23/25', grade: 'A-' },
+      { criteria: 'Conclusion', points: '24/25', grade: 'A' }
+    ],
+    status: 'graded'
+  },
+  {
+    id: 4,
+    assignment: 'Motion & Forces',
+    category: 'Assignment',
+    dueDate: 'Oct 20, 2024',
+    submittedDate: 'Oct 15, 2024',
+    grade: 'Pending',
+    percentage: null,
+    points: 'Pending',
+    maxPoints: 100,
+    feedback: null,
+    rubric: [],
+    status: 'submitted'
+  },
+  {
+    id: 5,
+    assignment: 'Angular Momentum',
+    category: 'Assignment',
+    dueDate: 'Oct 25, 2024',
+    submittedDate: null,
+    grade: 'Not Submitted',
+    percentage: null,
+    points: 'In Progress',
+    maxPoints: 150,
+    feedback: null,
+    rubric: [],
+    status: 'in-progress'
+  }
+];
+
+// Calculate overall statistics
+const gradedAssignments = grades.filter(g => g.status === 'graded' && g.percentage !== null);
+const totalPointsEarned = gradedAssignments.reduce((sum, g) => sum + (g.percentage * g.maxPoints / 100), 0);
+const totalPointsPossible = gradedAssignments.reduce((sum, g) => sum + g.maxPoints, 0);
+const overallPercentage = totalPointsPossible > 0 ? Math.round((totalPointsEarned / totalPointsPossible) * 100) : 0;
+
+// Grade distribution
+const gradeDistribution = {
+  'A': gradedAssignments.filter(g => g.percentage >= 90).length,
+  'B': gradedAssignments.filter(g => g.percentage >= 80 && g.percentage < 90).length,
+  'C': gradedAssignments.filter(g => g.percentage >= 70 && g.percentage < 80).length,
+  'D': gradedAssignments.filter(g => g.percentage >= 60 && g.percentage < 70).length,
+  'F': gradedAssignments.filter(g => g.percentage < 60).length,
+};
+
+function getLetterGrade(percentage) {
+  if (percentage >= 97) return 'A+';
+  if (percentage >= 93) return 'A';
+  if (percentage >= 90) return 'A-';
+  if (percentage >= 87) return 'B+';
+  if (percentage >= 83) return 'B';
+  if (percentage >= 80) return 'B-';
+  if (percentage >= 77) return 'C+';
+  if (percentage >= 73) return 'C';
+  if (percentage >= 70) return 'C-';
+  if (percentage >= 60) return 'D';
+  return 'F';
+}
+---
+
+<StudentLayout title={title} selectedItem="grades">
+  <div class="student-grades">
+    <div class="grades-header">
+      <div class="header-content">
+        <h1>My Grades</h1>
+        <p class="header-description">View your assignment grades and feedback</p>
+      </div>
+
+      <div class="grade-summary">
+        <div class="overall-grade">
+          <div class="grade-circle">
+            <div class="grade-text">
+              <span class="percentage">{overallPercentage}%</span>
+              <span class="letter">{getLetterGrade(overallPercentage)}</span>
+            </div>
+          </div>
+          <div class="grade-info">
+            <h3>Overall Grade</h3>
+            <p>{totalPointsEarned.toFixed(1)} / {totalPointsPossible} points</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grades-content">
+      <div class="grades-main">
+        <div class="grades-filter">
+          <button class="filter-btn active" data-filter="all">All Assignments</button>
+          <button class="filter-btn" data-filter="graded">Graded</button>
+          <button class="filter-btn" data-filter="submitted">Pending</button>
+          <button class="filter-btn" data-filter="in-progress">In Progress</button>
+        </div>
+
+        <div class="grades-list">
+          {grades.map(grade => (
+            <div class={`grade-card ${grade.status}`} data-status={grade.status}>
+              <div class="grade-card-header">
+                <div class="assignment-info">
+                  <h3>{grade.assignment}</h3>
+                  <div class="assignment-meta">
+                    <span class="category">{grade.category}</span>
+                    <span class="due-date">Due: {grade.dueDate}</span>
+                    {grade.submittedDate && (
+                      <span class="submitted-date">Submitted: {grade.submittedDate}</span>
+                    )}
+                  </div>
+                </div>
+                
+                <div class="grade-display">
+                  {grade.status === 'graded' && (
+                    <div class={`grade-badge grade-${grade.grade.replace(/[+-]/, '').toLowerCase()}`}>
+                      <span class="grade-letter">{grade.grade}</span>
+                      <span class="grade-percentage">{grade.percentage}%</span>
+                    </div>
+                  )}
+                  {grade.status === 'submitted' && (
+                    <div class="grade-badge pending">
+                      <span class="grade-letter">Pending</span>
+                    </div>
+                  )}
+                  {grade.status === 'in-progress' && (
+                    <div class="grade-badge in-progress">
+                      <span class="grade-letter">In Progress</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div class="points-info">
+                <span class="points">{grade.points}</span>
+                <span class="max-points">out of {grade.maxPoints} points</span>
+              </div>
+
+              {grade.feedback && (
+                <div class="feedback-section">
+                  <h4>Instructor Feedback:</h4>
+                  <p class="feedback-text">{grade.feedback}</p>
+                </div>
+              )}
+
+              {grade.rubric && grade.rubric.length > 0 && (
+                <div class="rubric-section">
+                  <h4>Grading Rubric:</h4>
+                  <div class="rubric-items">
+                    {grade.rubric.map(item => (
+                      <div class="rubric-item">
+                        <span class="criteria">{item.criteria}</span>
+                        <div class="rubric-grade">
+                          <span class="rubric-points">{item.points}</span>
+                          <span class={`rubric-letter grade-${item.grade.replace(/[+-]/, '').toLowerCase()}`}>
+                            {item.grade}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div class="grade-actions">
+                {grade.status === 'graded' && (
+                  <a href={`/assignments/${grade.id}/view`} class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    View Assignment
+                  </a>
+                )}
+                {grade.status === 'submitted' && (
+                  <a href={`/assignments/${grade.id}/view`} class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    View Submission
+                  </a>
+                )}
+                {grade.status === 'in-progress' && (
+                  <a href={`/assignments/${grade.id}/continue`} class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                    Continue Assignment
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="grades-sidebar">
+        <div class="stats-section">
+          <h3>Grade Distribution</h3>
+          <div class="distribution-chart">
+            {Object.entries(gradeDistribution).map(([letter, count]) => (
+              <div class="distribution-item">
+                <span class={`distribution-grade grade-${letter.toLowerCase()}`}>{letter}</span>
+                <div class="distribution-bar">
+                  <div 
+                    class="distribution-fill" 
+                    style={`width: ${gradedAssignments.length > 0 ? (count / gradedAssignments.length) * 100 : 0}%`}
+                  ></div>
+                </div>
+                <span class="distribution-count">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <h3>Class Progress</h3>
+          <div class="progress-stats">
+            <div class="progress-item">
+              <span class="progress-label">Completed</span>
+              <span class="progress-value">{grades.filter(g => g.status === 'graded').length}</span>
+            </div>
+            <div class="progress-item">
+              <span class="progress-label">Pending Review</span>
+              <span class="progress-value">{grades.filter(g => g.status === 'submitted').length}</span>
+            </div>
+            <div class="progress-item">
+              <span class="progress-label">In Progress</span>
+              <span class="progress-value">{grades.filter(g => g.status === 'in-progress').length}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</StudentLayout>
+
+<script>
+  // Filter functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const gradeCards = document.querySelectorAll('.grade-card');
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Update active filter button
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        const filter = (button as HTMLElement).dataset.filter;
+
+        // Show/hide grade cards based on filter
+        gradeCards.forEach(card => {
+          const cardElement = card as HTMLElement;
+          if (filter === 'all' || cardElement.dataset.status === filter) {
+            cardElement.style.display = 'block';
+            cardElement.style.animation = 'fadeIn 0.3s ease-in-out';
+          } else {
+            cardElement.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  :root {
+    --bg: #1c1c1c;
+    --panel: #242424;
+    --muted: var(--color-text-muted);
+    --accent1: rgb(139, 0, 0);
+    --accent2: rgba(139, 0, 0, 0.8);
+    --card-bg: rgba(139, 0, 0, 0.1);
+    --card-border: rgba(139, 0, 0, 0.2);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+  }
+
+  .student-grades {
+    padding: 0;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    width: 100%;
+    color: #E6EEF8;
+  }
+
+  .grades-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .header-content h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    background: linear-gradient(45deg, var(--accent1), #EF4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+  }
+
+  .header-description {
+    color: var(--muted);
+    margin: 0.25rem 0 0 0;
+  }
+
+  .grade-summary {
+    display: flex;
+    align-items: center;
+  }
+
+  .overall-grade {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--panel);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .grade-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent1) calc(var(--percentage, 0) * 1%), rgba(255, 255, 255, 0.1) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .grade-circle::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: var(--panel);
+    border-radius: 50%;
+  }
+
+  .grade-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+  }
+
+  .percentage {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .letter {
+    font-size: 0.9rem;
+    color: var(--accent1);
+    font-weight: 500;
+  }
+
+  .grade-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: white;
+  }
+
+  .grade-info p {
+    margin: 0.25rem 0 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .grades-content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+  }
+
+  .grades-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--panel);
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+  }
+
+  .filter-btn.active {
+    background: var(--accent1);
+    color: white;
+  }
+
+  .grades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .grade-card {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .grade-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--card-border);
+  }
+
+  .grade-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+  }
+
+  .assignment-info h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .assignment-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .category, .due-date, .submitted-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .category {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+  }
+
+  .grade-display {
+    display: flex;
+    align-items: center;
+  }
+
+  .grade-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 8px;
+    min-width: 80px;
+  }
+
+  .grade-badge.grade-a {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .grade-badge.grade-b {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .grade-badge.grade-c {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .grade-badge.pending {
+    background: rgba(156, 163, 175, 0.2);
+    border: 1px solid rgba(156, 163, 175, 0.3);
+  }
+
+  .grade-badge.in-progress {
+    background: rgba(139, 0, 0, 0.2);
+    border: 1px solid rgba(139, 0, 0, 0.3);
+  }
+
+  .grade-letter {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .grade-percentage {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .points-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .points {
+    font-weight: 600;
+    color: var(--accent1);
+  }
+
+  .max-points {
+    color: var(--muted);
+  }
+
+  .feedback-section, .rubric-section {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .feedback-section h4, .rubric-section h4 {
+    margin: 0 0 0.75rem 0;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .feedback-text {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+    font-size: 0.9rem;
+  }
+
+  .rubric-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .rubric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+  }
+
+  .criteria {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .rubric-grade {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rubric-points {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .rubric-letter {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .grade-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent1);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--muted);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+
+  /* Sidebar Styles */
+  .grades-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .stats-section, .progress-section {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stats-section h3, .progress-section h3 {
+    margin: 0 0 1rem 0;
+    color: white;
+    font-size: 1.1rem;
+  }
+
+  .distribution-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .distribution-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .distribution-grade {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .distribution-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .distribution-fill {
+    height: 100%;
+    background: var(--accent1);
+    transition: width 0.3s ease;
+  }
+
+  .distribution-count {
+    font-size: 0.8rem;
+    color: var(--muted);
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .progress-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .progress-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+  }
+
+  .progress-label {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .progress-value {
+    font-weight: 600;
+    color: var(--accent1);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 1024px) {
+    .grades-content {
+      grid-template-columns: 1fr;
+    }
+
+    .grades-sidebar {
+      grid-row: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .grades-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .overall-grade {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .grade-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .assignment-meta {
+      gap: 0.5rem;
+    }
+
+    .grade-actions {
+      flex-direction: column;
+    }
+
+    .distribution-item {
+      gap: 0.5rem;
+    }
+  }
+</style>
