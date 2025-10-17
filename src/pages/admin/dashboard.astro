@@ -1,15 +1,251 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { getCurrentUser } from "../../lib/firebase";
 
 const title = "Dashboard";
+
+// Sample data (rendered server-side but editable client-side via the small script below)
+const assignments = [
+  { id: 1, title: 'Motion & Forces', due: 'Oct 20', description: 'Understanding fundamental principles of motion and forces in physical systems.', submitted: 15, pending: 5 },
+  { id: 2, title: 'Angular Momentum', due: 'Oct 25', description: 'Exploring rotational motion through practical examples and simulations.', submitted: 12, pending: 8 }
+];
+
+const students = [
+  { id: 1, name: 'Alex Johnson', progress: 85 },
+  { id: 2, name: 'Sarah Williams', progress: 92 },
+  { id: 3, name: 'Michael Brown', progress: 78 }
+];
+
+const submissions = [
+  { id: 1, student: 'Alex Johnson', assignment: 'Motion & Forces', when: '2 hours ago', status: 'Submitted' },
+  { id: 2, student: 'Sarah Williams', assignment: 'Angular Momentum', when: '5 hours ago', status: 'Submitted' }
+];
 ---
 
 <AdminLayout title={title} selectedItem="dashboard">
   <div class="admin-dashboard">
-    <div class="admin-header">
-      <h1>Teacher Dashboard</h1>
-      <p class="welcome-message">Welcome back, <span id="teacher-name">Teacher</span>!</p>
+    <div class="dashboard-header">
+      <div class="header-content">
+        <h1>Teacher Dashboard</h1>
+        <p class="welcome-message">Welcome back — manage assignments, students, and submissions below.</p>
+      </div>
+
+      <a href="/admin/assignments/create" class="create-assignment">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Create Assignment
+      </a>
     </div>
- </div> 
+
+    <div class="dashboard-grid">
+      <section class="assignments-section">
+        <h2>Active Assignments</h2>
+        <div id="assignments" class="card-container">
+          {assignments.map(a => (
+            <article class="assignment-card" data-id={a.id}>
+              <div class="card-header">
+                <h3>{a.title}</h3>
+                <span class="due-date">{a.due}</span>
+              </div>
+              <p>{a.description}</p>
+              <div class="card-stats">
+                <div class="stat">
+                  <span class="number">{a.submitted}</span>
+                  <span class="label">Submitted</span>
+                </div>
+                <div class="stat">
+                  <span class="number">{a.pending}</span>
+                  <span class="label">Pending</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="students-section">
+        <h2>Student Progress</h2>
+        <div id="students" class="student-list">
+          {students.map(s => (
+            <div class="student-item" data-id={s.id}>
+              <div class="student-info">
+                <span class="student-name">{s.name}</span>
+                <div class="progress-bar">
+                  <div class="progress" style={`width: ${s.progress}%;`}></div>
+                </div>
+              </div>
+              <span class="progress-text">{s.progress}%</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="submissions-section">
+        <h2>Recent Submissions</h2>
+        <div id="submissions" class="submissions-list">
+          {submissions.map(sub => (
+            <div class="submission-item" data-id={sub.id}>
+              <div class="submission-header">
+                <span class="student-name">{sub.student}</span>
+                <span class="timestamp">{sub.when}</span>
+              </div>
+              <div class="submission-details">
+                <span class="assignment-name">{sub.assignment}</span>
+                <span class="status">{sub.status}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
 </AdminLayout>
+
+
+
+<style>
+  :root {
+    --bg: #1c1c1c;
+    --panel: #242424;
+    --muted: var(--color-text-muted);
+    --accent1: rgb(139, 0, 0);
+    --accent2: rgba(139, 0, 0, 0.8);
+    --card-bg: rgba(139, 0, 0, 0.1);
+    --card-border: rgba(139, 0, 0, 0.2);
+  }
+
+  .admin-dashboard {
+    padding: 0;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    color: #E6EEF8;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem 1.25rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .header-content h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    background: linear-gradient(45deg, var(--accent1), #EF4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+  }
+
+  .welcome-message { color: var(--muted); margin: 0.25rem 0 0 0; }
+
+  .create-assignment {
+    background: var(--accent1);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.15s ease;
+    font-size: 0.95rem;
+  }
+
+  .create-assignment:hover {
+    background: var(--accent2);
+  }
+
+  .create-assignment .icon {
+    stroke-width: 2;
+    width: 18px;
+    height: 18px;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 1.25rem;
+    max-width: 100%;
+    width: 100%;
+    padding: 1.5rem;
+    flex: 1;
+    height: calc(100vh - 80px);
+  }
+
+  @media (max-width: 1200px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+      grid-auto-rows: minmax(min-content, 400px);
+      height: auto;
+      overflow-y: auto;
+    }
+  }
+
+  section {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+    max-height: calc(100vh - 160px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  section > div {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding-right: 4px;
+  }
+
+  section > div::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  section > div::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+  }
+
+  section > div::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+
+  section h2 {
+    margin: 0 0 1rem 0;
+    color: #F8FAFC;
+  }
+
+  .card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .assignment-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 0.9rem;
+    border: 1px solid var(--card-border);
+    transition: all .15s;
