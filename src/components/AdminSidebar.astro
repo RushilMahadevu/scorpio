@@ -12,6 +12,13 @@ const { selectedItem } = Astro.props;
   class="sidebar admin-sidebar w-nav"
 >
   <div class="nav-content">
+    <div class="admin-badge">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="crown-icon">
+        <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5z"/>
+      </svg>
+      <span>TEACHER</span>
+    </div>
+    
     <a href="/admin/dashboard" class="w-nav-brand" aria-label="teacher dashboard">
       <div class="niv-data">
         <div class="admin-logo">
@@ -225,6 +232,48 @@ const { selectedItem } = Astro.props;
     flex-direction: column;
     height: 100%;
     padding: 1.5rem 0;
+  }
+
+  .admin-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #8B0000 0%, #B22222 50%, #DC143C 100%);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    margin: 0 1.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.4),
+                0 2px 4px rgba(139, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(139, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  .crown-icon {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
   }
   
   .w-nav-brand {
