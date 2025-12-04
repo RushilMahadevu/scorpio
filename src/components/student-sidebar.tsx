@@ -14,6 +14,7 @@ import {
   FileCheck,
   LogOut
 } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const navItems = [
   { href: "/student", label: "Dashboard", icon: LayoutDashboard },
@@ -59,7 +60,11 @@ export function StudentSidebar() {
           </nav>
         </ScrollArea>
 
-        <div className="border-t p-4">
+        <div className="border-t p-4 space-y-2">
+          <div className="flex items-center justify-between px-2">
+            <span className="text-sm text-muted-foreground">Theme</span>
+            <ModeToggle />
+          </div>
           <Button
             variant="ghost"
             className="w-full justify-start gap-3"
