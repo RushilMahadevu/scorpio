@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Send, User, Lightbulb, Calculator } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Message {
   id: string;
@@ -158,7 +160,15 @@ export default function AITutorPage() {
                           : "bg-primary text-primary-foreground"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                      {message.role === "assistant" ? (
+                        <div className="prose prose-sm dark:prose-invert break-words max-w-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                      )}
                     </div>
                   </div>
                 ))}
