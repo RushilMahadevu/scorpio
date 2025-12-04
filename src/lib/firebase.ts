@@ -17,19 +17,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Auth functions
-export const register = async (email: string, password: string, role: "teacher" | "student", name: string) => {
+export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
   
   // Create user document in Firestore
   const collectionName = role === "teacher" ? "teachers" : "students";
-  await setDoc(doc(db, collectionName, user.uid), {
+  const userData: any = {
     uid: user.uid,
     email: user.email,
     name: name,
     role: role,
     createdAt: new Date(),
-  });
+  };
+
+  if (role === "student" && classCode) {
+    userData.teacherId = classCode;
+  }
+
+  await setDoc(doc(db, collectionName, user.uid), userData);
 
   return user;
 };

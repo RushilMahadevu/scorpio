@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accessCode, setAccessCode] = useState(""); // Add state for access code
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,11 +25,23 @@ export default function SignupPage() {
       return;
     }
 
+    // Validate teacher access code
+    if (role === "teacher" && accessCode !== "PHYSICS2024") {
+      setError("Invalid Teacher Access Code");
+      return;
+    }
+
+    // Validate student class code
+    if (role === "student" && !accessCode) {
+      setError("Class Code is required");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      await register(email, password, role, name);
+      await register(email, password, role, name, role === "student" ? accessCode.trim() : undefined);
       router.push(role === "teacher" ? "/teacher" : "/student");
     } catch (err: any) {
       console.error(err);
@@ -87,6 +100,15 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="student-code">Class Code (Required)</Label>
+                <Input
+                  id="student-code"
+                  placeholder="Enter teacher's code to join class"
+                  value={accessCode}
+                  onChange={(e) => setAccessCode(e.target.value)}
+                />
+              </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button 
                 className="w-full" 
@@ -124,6 +146,16 @@ export default function SignupPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="teacher-code">Access Code</Label>
+                <Input
+                  id="teacher-code"
+                  type="password"
+                  placeholder="Required for teacher accounts"
+                  value={accessCode}
+                  onChange={(e) => setAccessCode(e.target.value)}
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}

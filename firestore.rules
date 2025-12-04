@@ -1,46 +1,38 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
     
-    // Helper function to check if user is accessing their own document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
     // Teachers collection
     match /teachers/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId;
     }
 
     // Students collection
     match /students/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && (request.auth.uid == userId || request.auth.uid == resource.data.teacherId);
+      allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
     // Assignments collection
     match /assignments/{assignmentId} {
-      allow read: if isAuthenticated();
-      // Ideally only teachers should write, but for simplicity in this demo:
-      allow write: if isAuthenticated(); 
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; 
     }
 
     // Submissions collection
     match /submissions/{submissionId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
     }
 
     // Resources collection
     match /resources/{resourceId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // Ideally only teachers
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
   }
 }
