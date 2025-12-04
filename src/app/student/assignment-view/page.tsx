@@ -9,6 +9,7 @@ import { gradeResponse } from "@/lib/gemini";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -18,7 +19,7 @@ import Link from "next/link";
 interface Question {
   id: string;
   text: string;
-  type: "text" | "multiple-choice";
+  type: "text" | "multiple-choice" | "true-false" | "short-answer";
   options?: string[];
 }
 
@@ -194,6 +195,28 @@ function AssignmentDetailContent() {
                     </div>
                   ))}
                 </RadioGroup>
+              ) : question.type === "true-false" ? (
+                <RadioGroup
+                  value={answers[question.id] || ""}
+                  onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+                  disabled={submitted}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="True" id={`${question.id}-true`} />
+                    <Label htmlFor={`${question.id}-true`}>True</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="False" id={`${question.id}-false`} />
+                    <Label htmlFor={`${question.id}-false`}>False</Label>
+                  </div>
+                </RadioGroup>
+              ) : question.type === "short-answer" ? (
+                <Input
+                  value={answers[question.id] || ""}
+                  onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                  placeholder="Type your answer here..."
+                  disabled={submitted}
+                />
               ) : (
                 <Textarea
                   value={answers[question.id] || ""}
