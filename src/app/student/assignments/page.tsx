@@ -105,7 +105,7 @@ export default function StudentAssignmentsPage() {
                       <p>{assignment.questions?.length || 0} questions</p>
                       <p>Due: {new Date(assignment.dueDate).toLocaleDateString()}</p>
                     </div>
-                    <Link href={`/student/assignments/${assignment.id}`}>
+                    <Link href={`/student/assignment-view?id=${assignment.id}`}>
                       <Button variant={isSubmitted ? "outline" : "default"}>
                         {isSubmitted ? "View" : "Start"}
                       </Button>

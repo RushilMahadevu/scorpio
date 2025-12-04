@@ -105,7 +105,7 @@ export default function AssignmentsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Link href={`/teacher/assignments/${assignment.id}`}>
+                        <Link href={`/teacher/assignment-view?id=${assignment.id}`}>
                           <Button variant="ghost" size="sm">
                             <Eye className="h-4 w-4" />
                           </Button>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,9 +28,9 @@ interface Submission {
   score?: number;
 }
 
-export default function AssignmentDetailsPage() {
-  const params = useParams();
-  const assignmentId = params.id as string;
+function AssignmentDetailsContent() {
+  const searchParams = useSearchParams();
+  const assignmentId = searchParams.get("id");
   
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -158,5 +158,13 @@ export default function AssignmentDetailsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AssignmentDetailsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AssignmentDetailsContent />
+    </Suspense>
   );
 }

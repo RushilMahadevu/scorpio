@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
@@ -30,8 +30,9 @@ interface Assignment {
   questions: Question[];
 }
 
-export default function AssignmentDetailPage() {
-  const params = useParams();
+function AssignmentDetailContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const router = useRouter();
   const { user } = useAuth();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
@@ -43,10 +44,10 @@ export default function AssignmentDetailPage() {
 
   useEffect(() => {
     async function fetchAssignment() {
-      if (!params.id || !user) return;
+      if (!id || !user) return;
       
       try {
-        const docSnap = await getDoc(doc(db, "assignments", params.id as string));
+        const docSnap = await getDoc(doc(db, "assignments", id));
         if (docSnap.exists()) {
           const data = docSnap.data();
           setAssignment({
@@ -61,7 +62,7 @@ export default function AssignmentDetailPage() {
         // Check for existing submission
         const submissionsQuery = query(
           collection(db, "submissions"),
-          where("assignmentId", "==", params.id),
+          where("assignmentId", "==", id),
           where("studentId", "==", user.uid)
         );
         const submissionsSnap = await getDocs(submissionsQuery);
@@ -84,7 +85,7 @@ export default function AssignmentDetailPage() {
       }
     }
     fetchAssignment();
-  }, [params.id, user]);
+  }, [id, user]);
 
   const handleSubmit = async () => {
     if (!assignment || !user) return;
@@ -218,5 +219,13 @@ export default function AssignmentDetailPage() {
         </Button>
       )}
     </div>
+  );
+}
+
+export default function AssignmentDetailPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AssignmentDetailContent />
+    </Suspense>
   );
 }
