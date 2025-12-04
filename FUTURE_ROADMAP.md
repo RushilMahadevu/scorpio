@@ -46,7 +46,7 @@ This document outlines planned features and improvements for the Scorpio Physics
 - **Goal:** Easy integration with external gradebooks.
 - **Implementation:**
   - Add functionality to export assignment grades to CSV or PDF formats.
-
+<!-- 
 ## Phase 3: Gamification & Engagement (Long Term)
 
 ### 7. Gamification System
@@ -71,4 +71,4 @@ This document outlines planned features and improvements for the Scorpio Physics
 
 - **PWA Support:** Make the app installable and work offline.
 - **Real-time Notifications:** Use Firestore listeners to notify students of new assignments or graded submissions instantly.
-- **Accessibility:** Ensure full WCAG compliance for all student-facing pages.
+- **Accessibility:** Ensure full WCAG compliance for all student-facing pages. -->

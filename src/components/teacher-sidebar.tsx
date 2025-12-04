@@ -16,6 +16,7 @@ import {
   PlusCircle
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
+import { CompassLogo } from "@/components/ui/compass-logo";
 
 const navItems = [
   { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
@@ -35,23 +36,30 @@ export function TeacherSidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full flex-col">
-        <div className="border-b p-6">
-          <h1 className="text-xl font-bold">Scorpio</h1>
-          <p className="text-sm text-muted-foreground">Teacher Dashboard</p>
+        <div className="p-6 pb-2">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <CompassLogo className="h-6 w-6 text-primary" />
+            </div>
+            <span className="font-bold text-lg tracking-tight">Scorpio</span>
+          </div>
+          <div className="px-3 py-1.5 bg-muted/50 rounded-md mb-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Teacher</p>
+          </div>
         </div>
         
-        <ScrollArea className="flex-1 px-3 py-4">
-          <nav className="space-y-2">
+        <ScrollArea className="flex-1 px-4 py-2">
+          <nav className="space-y-1">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <span
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent",
+                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all",
                     pathname === item.href
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -62,14 +70,14 @@ export function TeacherSidebar() {
           </nav>
         </ScrollArea>
 
-        <div className="border-t p-4 space-y-2">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-sm text-muted-foreground">Theme</span>
+        <div className="p-4 mt-auto border-t bg-muted/10">
+          <div className="flex items-center justify-between px-2 mb-2">
+            <span className="text-xs font-medium text-muted-foreground">Appearance</span>
             <ModeToggle />
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />
