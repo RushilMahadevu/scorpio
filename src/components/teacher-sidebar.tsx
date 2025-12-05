@@ -13,7 +13,9 @@ import {
   Upload, 
   Users, 
   LogOut,
-  PlusCircle
+  PlusCircle,
+  BarChart3,
+  GraduationCap
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
@@ -22,8 +24,10 @@ const navItems = [
   { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
   { href: "/teacher/assignments", label: "Assignments", icon: FileText },
   { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
-  { href: "/teacher/uploads", label: "PDF Uploads", icon: Upload },
+  { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },
   { href: "/teacher/students", label: "Students", icon: Users },
+  { href: "/teacher/grades", label: "Gradebook", icon: GraduationCap },
+  { href: "/teacher/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 export function TeacherSidebar() {

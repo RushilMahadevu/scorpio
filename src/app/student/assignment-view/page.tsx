@@ -21,6 +21,7 @@ interface Question {
   text: string;
   type: "text" | "multiple-choice" | "true-false" | "short-answer";
   options?: string[];
+  correctAnswer?: string;
 }
 
 interface Assignment {
@@ -29,6 +30,7 @@ interface Assignment {
   description: string;
   dueDate: Date;
   questions: Question[];
+  gradingType?: "ai" | "manual";
 }
 
 function AssignmentDetailContent() {
@@ -57,6 +59,7 @@ function AssignmentDetailContent() {
             description: data.description,
             dueDate: data.dueDate?.toDate?.() || new Date(data.dueDate),
             questions: data.questions || [],
+            gradingType: data.gradingType || "ai",
           });
         }
 
@@ -99,26 +102,43 @@ function AssignmentDetailContent() {
         answer: answers[q.id] || "",
       }));
 
-      // Use AI to grade free-response answers
+      // Grade answers
       let totalScore = 0;
-      const gradedAnswers = await Promise.all(
-        answersArray.map(async (ans) => {
-          const question = assignment.questions.find((q) => q.id === ans.questionId);
-          if (question?.type === "text" && ans.answer) {
-            const feedback = await gradeResponse(ans.questionText, ans.answer);
-            // Extract a simple score from feedback (this is a basic implementation)
-            const scoreMatch = feedback.match(/(\d+)\/10|\b(\d+)%/);
-            const score = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 70;
-            totalScore += score;
-            return { ...ans, feedback, score };
-          }
-          return ans;
-        })
-      );
+      let gradedCount = 0;
+      let gradedAnswers = answersArray;
+      let isGraded = false;
+      let averageScore = 0;
 
-      const averageScore = assignment.questions.length > 0 
-        ? Math.round(totalScore / assignment.questions.filter(q => q.type === "text").length) 
-        : 0;
+      if (assignment.gradingType === "ai") {
+        gradedAnswers = await Promise.all(
+          answersArray.map(async (ans) => {
+            const question = assignment.questions.find((q) => q.id === ans.questionId);
+            if (!question) return ans;
+
+            let score = 0;
+            let feedback = "";
+
+            if (question.type === "text" && ans.answer) {
+              feedback = await gradeResponse(ans.questionText, ans.answer);
+              const scoreMatch = feedback.match(/(\d+)\/10|\b(\d+)%/);
+              score = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 70;
+              // Normalize to 100 if it's out of 10
+              if (score <= 10) score *= 10;
+            } else if (question.correctAnswer) {
+              const isCorrect = ans.answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
+              score = isCorrect ? 100 : 0;
+              feedback = isCorrect ? "Correct!" : `Incorrect. The correct answer was: ${question.correctAnswer}`;
+            }
+
+            totalScore += score;
+            gradedCount++;
+            return { ...ans, feedback, score };
+          })
+        );
+
+        averageScore = gradedCount > 0 ? Math.round(totalScore / gradedCount) : 0;
+        isGraded = true;
+      }
 
       await addDoc(collection(db, "submissions"), {
         assignmentId: assignment.id,
@@ -126,8 +146,8 @@ function AssignmentDetailContent() {
         studentEmail: user.email,
         answers: gradedAnswers,
         submittedAt: new Date(),
-        graded: true,
-        score: averageScore,
+        graded: isGraded,
+        score: isGraded ? averageScore : null,
       });
 
       setSubmitted(true);

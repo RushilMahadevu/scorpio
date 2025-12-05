@@ -78,7 +78,7 @@ export default function ResourcesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Resources</h1>
+        <h1 className="text-3xl font-bold">Resource Uploads</h1>
         <p className="text-muted-foreground">Manage external learning resources for your students</p>
       </div>
 

@@ -47,18 +47,29 @@ export async function gradeResponse(question: string, answer: string): Promise<s
   }
 }
 
-export async function generateAssignmentQuestions(topic: string, count: number, difficulty: string): Promise<any[]> {
+export async function generateAssignmentQuestions(topic: string, count: number, difficulty: string, questionType: string = "mixed"): Promise<any[]> {
   try {
     const prompt = `Generate ${count} physics questions about "${topic}" at a ${difficulty} difficulty level.
+    The question type should be: ${questionType}.
+    If "mixed", generate a variety of types (multiple-choice, true-false, short-answer, text).
+    
     Return ONLY a raw JSON array of objects. Do not include any other text.
     Each object must have:
     - "text": The question text.
-    - "type": "multiple-choice"
-    - "options": An array of 4 strings.
-    - "correctAnswer": The correct answer string (must be one of the options).
+    - "type": One of "multiple-choice", "true-false", "short-answer", "text".
+    - "options": An array of strings (required for multiple-choice, optional for others).
+    - "correctAnswer": The correct answer string (or sample answer for "text").
+    
+    For "true-false", options should be ["True", "False"].
+    For "short-answer" and "text", options can be empty.
     
     Example format:
-    [{"text": "Q1", "type": "multiple-choice", "options": ["A", "B", "C", "D"], "correctAnswer": "A"}]`;
+    [
+      {"text": "Q1", "type": "multiple-choice", "options": ["A", "B", "C", "D"], "correctAnswer": "A"},
+      {"text": "Q2", "type": "true-false", "options": ["True", "False"], "correctAnswer": "True"},
+      {"text": "Q3", "type": "short-answer", "options": [], "correctAnswer": "The answer"},
+      {"text": "Q4", "type": "text", "options": [], "correctAnswer": "Detailed explanation..."}
+    ]`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;

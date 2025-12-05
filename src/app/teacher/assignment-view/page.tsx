@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
+import { downloadCSV } from "@/lib/utils";
 
 interface Assignment {
   id: string;
@@ -103,6 +104,26 @@ function AssignmentDetailsContent() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
+        <div className="ml-auto">
+          <Button
+            variant="outline"
+            onClick={() => {
+              // Prepare CSV rows from submissions
+              const rows = submissions.map((s) => ({
+                submissionId: s.id,
+                studentId: s.studentId,
+                studentName: s.studentName,
+                studentEmail: s.studentEmail,
+                submittedAt: s.submittedAt?.toString?.() || String(s.submittedAt),
+                score: s.score ?? "",
+                graded: s.score !== undefined ? "true" : "false",
+              }));
+              downloadCSV(`${assignment.title || 'assignment'}-grades.csv`, rows);
+            }}
+          >
+            Export Grades (CSV)
+          </Button>
+        </div>
         <div>
           <h1 className="text-3xl font-bold">{assignment.title}</h1>
           <p className="text-muted-foreground">Submissions</p>
@@ -145,10 +166,12 @@ function AssignmentDetailsContent() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <FileText className="h-4 w-4 mr-2" />
-                        View Details
-                      </Button>
+                      <Link href={`/teacher/submission/${submission.id}`}>
+                        <Button variant="ghost" size="sm">
+                          <FileText className="h-4 w-4 mr-2" />
+                          View Details
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}

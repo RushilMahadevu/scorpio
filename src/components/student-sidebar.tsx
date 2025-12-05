@@ -12,17 +12,23 @@ import {
   FileText, 
   Bot, 
   FileCheck,
-  LogOut
+  LogOut,
+  Library,
+  GraduationCap
 } from "lucide-react";
-import { ModeToggle } from "@/components/mode-toggle";
-import { CompassLogo } from "@/components/ui/compass-logo";
 
 const navItems = [
   { href: "/student", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/assignments", label: "Assignments", icon: FileText },
   { href: "/student/tutor", label: "AI Tutor", icon: Bot },
   { href: "/student/submissions", label: "My Submissions", icon: FileCheck },
+  { href: "/student/resources", label: "Resources", icon: Library },
+  { href: "/student/grades", label: "Grades", icon: GraduationCap },
 ];
+import { ModeToggle } from "@/components/mode-toggle";
+import { CompassLogo } from "@/components/ui/compass-logo";
+
+
 
 export function StudentSidebar() {
   const pathname = usePathname();
