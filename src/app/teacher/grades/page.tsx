@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, ChevronRight } from "lucide-react";
+import { User, ChevronRight, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 interface Student {
@@ -77,6 +77,24 @@ export default function TeacherGradesPage() {
     fetchStudentsAndGrades();
   }, []);
 
+  const deleteStudent = async (studentId: string) => {
+    if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions.")) return;
+    try {
+      const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
+      const snapshot = await getDocs(q);
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+      
+      setStudents(students.filter((s) => s.id !== studentId));
+    } catch (error: any) {
+      console.error("Error deleting student:", error);
+      alert(`Failed to delete student: ${error.message}`);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -123,12 +141,21 @@ export default function TeacherGradesPage() {
                     <TableCell>{student.submissionCount}</TableCell>
                     <TableCell>{student.averageScore}%</TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/teacher/grades/${student.id}`}>
-                        <Button variant="ghost" size="sm">
-                          View Details
-                          <ChevronRight className="h-4 w-4 ml-2" />
+                      <div className="flex justify-end gap-2">
+                        <Link href={`/teacher/grades/${student.id}`}>
+                          <Button variant="ghost" size="sm">
+                            View Details
+                            <ChevronRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteStudent(student.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
-                      </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

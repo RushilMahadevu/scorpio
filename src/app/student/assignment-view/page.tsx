@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play } from "lucide-react";
 import Link from "next/link";
 
 interface Question {
@@ -22,6 +22,7 @@ interface Question {
   type: "text" | "multiple-choice" | "true-false" | "short-answer";
   options?: string[];
   correctAnswer?: string;
+  points?: number;
 }
 
 interface Assignment {
@@ -31,6 +32,7 @@ interface Assignment {
   dueDate: Date;
   questions: Question[];
   gradingType?: "ai" | "manual";
+  timeLimit?: number;
 }
 
 function AssignmentDetailContent() {
@@ -44,6 +46,11 @@ function AssignmentDetailContent() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [existingSubmission, setExistingSubmission] = useState<any>(null);
+  
+  // Timer State
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [timerActive, setTimerActive] = useState(false);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -53,34 +60,61 @@ function AssignmentDetailContent() {
         const docSnap = await getDoc(doc(db, "assignments", id));
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setAssignment({
+          const assignmentData = {
             id: docSnap.id,
             title: data.title,
             description: data.description,
             dueDate: data.dueDate?.toDate?.() || new Date(data.dueDate),
             questions: data.questions || [],
             gradingType: data.gradingType || "ai",
-          });
-        }
+            timeLimit: data.timeLimit,
+          };
+          setAssignment(assignmentData);
 
-        // Check for existing submission
-        const submissionsQuery = query(
-          collection(db, "submissions"),
-          where("assignmentId", "==", id),
-          where("studentId", "==", user.uid)
-        );
-        const submissionsSnap = await getDocs(submissionsQuery);
-        if (!submissionsSnap.empty) {
-          const existingData = submissionsSnap.docs[0].data();
-          setExistingSubmission(existingData);
-          setSubmitted(true);
-          
-          // Populate answers from existing submission
-          const existingAnswers: Record<string, string> = {};
-          existingData.answers?.forEach((ans: any) => {
-            existingAnswers[ans.questionId] = ans.answer;
-          });
-          setAnswers(existingAnswers);
+          // Check for existing submission
+          const submissionsQuery = query(
+            collection(db, "submissions"),
+            where("assignmentId", "==", id),
+            where("studentId", "==", user.uid)
+          );
+          const submissionsSnap = await getDocs(submissionsQuery);
+          if (!submissionsSnap.empty) {
+            const existingData = submissionsSnap.docs[0].data();
+            setExistingSubmission(existingData);
+            setSubmitted(true);
+            setHasStarted(true); // Already submitted means started
+            
+            // Populate answers from existing submission
+            const existingAnswers: Record<string, string> = {};
+            existingData.answers?.forEach((ans: any) => {
+              existingAnswers[ans.questionId] = ans.answer;
+            });
+            setAnswers(existingAnswers);
+          } else {
+            // Check for local start time if not submitted
+            if (assignmentData.timeLimit) {
+              const storedStart = localStorage.getItem(`assignment_start_${id}_${user.uid}`);
+              if (storedStart) {
+                const startTime = parseInt(storedStart);
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const remaining = (assignmentData.timeLimit * 60) - elapsed;
+                
+                if (remaining > 0) {
+                  setTimeLeft(remaining);
+                  setHasStarted(true);
+                  setTimerActive(true);
+                } else {
+                  // Time expired while away
+                  setTimeLeft(0);
+                  setHasStarted(true);
+                  // We should probably auto-submit here or show expired state
+                  // For now, let's just set it to 0 and let the timer effect handle it
+                }
+              }
+            } else {
+              setHasStarted(true); // No timer, so "started" immediately
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching assignment:", error);
@@ -90,6 +124,51 @@ function AssignmentDetailContent() {
     }
     fetchAssignment();
   }, [id, user]);
+
+  // Timer Effect
+  useEffect(() => {
+    if (!timerActive || timeLeft === null) return;
+
+    if (timeLeft <= 0) {
+      setTimerActive(false);
+      handleSubmit(); // Auto-submit
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === null || prev <= 0) return 0;
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft]);
+
+  const handleStartAssignment = () => {
+    if (!assignment || !user) return;
+    
+    const now = Date.now();
+    localStorage.setItem(`assignment_start_${assignment.id}_${user.uid}`, now.toString());
+    
+    if (assignment.timeLimit) {
+      setTimeLeft(assignment.timeLimit * 60);
+      setTimerActive(true);
+    }
+    setHasStarted(true);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const calculateProgress = () => {
+    if (!assignment) return 0;
+    const answeredCount = Object.keys(answers).length;
+    return Math.round((answeredCount / assignment.questions.length) * 100);
+  };
 
   const handleSubmit = async () => {
     if (!assignment || !user) return;
@@ -104,10 +183,11 @@ function AssignmentDetailContent() {
 
       // Grade answers
       let totalScore = 0;
+      let maxScore = 0;
       let gradedCount = 0;
       let gradedAnswers = answersArray;
       let isGraded = false;
-      let averageScore = 0;
+      let finalScore = 0;
 
       if (assignment.gradingType === "ai") {
         gradedAnswers = await Promise.all(
@@ -115,28 +195,35 @@ function AssignmentDetailContent() {
             const question = assignment.questions.find((q) => q.id === ans.questionId);
             if (!question) return ans;
 
+            const points = question.points || 10; // Default to 10 if not set
+            maxScore += points;
+
             let score = 0;
             let feedback = "";
 
             if (question.type === "text" && ans.answer) {
               feedback = await gradeResponse(ans.questionText, ans.answer);
               const scoreMatch = feedback.match(/(\d+)\/10|\b(\d+)%/);
-              score = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 70;
-              // Normalize to 100 if it's out of 10
-              if (score <= 10) score *= 10;
+              let rawScore = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 70;
+              
+              // Normalize rawScore (which might be out of 10 or 100) to the question points
+              if (rawScore <= 10) rawScore = (rawScore / 10) * 100; // Convert to percentage
+              
+              score = (rawScore / 100) * points;
             } else if (question.correctAnswer) {
               const isCorrect = ans.answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
-              score = isCorrect ? 100 : 0;
+              score = isCorrect ? points : 0;
               feedback = isCorrect ? "Correct!" : `Incorrect. The correct answer was: ${question.correctAnswer}`;
             }
 
             totalScore += score;
             gradedCount++;
-            return { ...ans, feedback, score };
+            return { ...ans, feedback, score, maxPoints: points };
           })
         );
 
-        averageScore = gradedCount > 0 ? Math.round(totalScore / gradedCount) : 0;
+        // Calculate final percentage score
+        finalScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
         isGraded = true;
       }
 
@@ -147,7 +234,9 @@ function AssignmentDetailContent() {
         answers: gradedAnswers,
         submittedAt: new Date(),
         graded: isGraded,
-        score: isGraded ? averageScore : null,
+        score: isGraded ? finalScore : null,
+        totalPoints: maxScore,
+        earnedPoints: totalScore
       });
 
       setSubmitted(true);
@@ -167,12 +256,82 @@ function AssignmentDetailContent() {
     return <p className="text-destructive">Assignment not found</p>;
   }
 
+  if (!hasStarted && !submitted) {
+    return (
+      <div className="max-w-2xl mx-auto mt-10">
+        <Card className="text-center p-6">
+          <CardHeader>
+            <CardTitle className="text-2xl">{assignment.title}</CardTitle>
+            <CardDescription className="text-lg mt-2">{assignment.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center gap-4 p-4 bg-muted rounded-lg">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-5 w-5" />
+                <span>Time Limit</span>
+              </div>
+              <span className="text-2xl font-bold">
+                {assignment.timeLimit ? `${assignment.timeLimit} Minutes` : "No Time Limit"}
+              </span>
+            </div>
+            
+            <div className="flex flex-col items-center gap-4 p-4 bg-muted rounded-lg">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <CheckCircle className="h-5 w-5" />
+                <span>Total Questions</span>
+              </div>
+              <span className="text-2xl font-bold">{assignment.questions.length}</span>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm text-left">
+              <div className="flex items-center gap-2 font-semibold mb-1">
+                <AlertTriangle className="h-4 w-4" />
+                Important
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {assignment.timeLimit && <li>Once you start, the timer cannot be paused.</li>}
+                <li>Do not refresh the page or close the browser window.</li>
+                <li>Ensure you have a stable internet connection.</li>
+              </ul>
+            </div>
+
+            <Button size="lg" className="w-full text-lg" onClick={handleStartAssignment}>
+              <Play className="h-5 w-5 mr-2" />
+              Start Assignment
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Assignments
-      </Link>
+    <div className="max-w-3xl mx-auto space-y-6 pb-20">
+      <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
+        <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Link>
+        
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end">
+            <span className="text-xs text-muted-foreground">Progress</span>
+            <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-500" 
+                style={{ width: `${calculateProgress()}%` }}
+              />
+            </div>
+          </div>
+          
+          {timeLeft !== null && !submitted && (
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-md font-mono font-bold ${timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
+              <Clock className="h-4 w-4" />
+              {formatTime(timeLeft)}
+            </div>
+          )}
+        </div>
+      </div>
 
       <Card>
         <CardHeader>
@@ -198,8 +357,11 @@ function AssignmentDetailContent() {
         {assignment.questions.map((question, index) => (
           <Card key={question.id}>
             <CardHeader>
-              <Label className="text-base">Question {index + 1}</Label>
-              <p className="text-sm">{question.text}</p>
+              <div className="flex justify-between items-start">
+                <Label className="text-base">Question {index + 1}</Label>
+                <Badge variant="outline">{question.points || 10} pts</Badge>
+              </div>
+              <p className="text-sm mt-1">{question.text}</p>
             </CardHeader>
             <CardContent>
               {question.type === "multiple-choice" && question.options ? (

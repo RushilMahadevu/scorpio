@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 
 interface Student {
   id: string;
@@ -42,6 +42,17 @@ export default function StudentsPage() {
     }
     fetchStudents();
   }, [user]);
+
+  const deleteStudent = async (studentId: string) => {
+    if (!confirm("Are you sure you want to remove this student?")) return;
+    try {
+      await deleteDoc(doc(db, "students", studentId));
+      setStudents(students.filter((s) => s.id !== studentId));
+    } catch (error: any) {
+      console.error("Error deleting student:", error);
+      alert(`Failed to delete student: ${error.message}`);
+    }
+  };
 
   const copyClassCode = () => {
     if (user) {
@@ -93,6 +104,7 @@ export default function StudentsPage() {
                   <TableHead>Student</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -109,6 +121,15 @@ export default function StudentsPage() {
                     <TableCell>{student.email}</TableCell>
                     <TableCell>
                       <Badge>Active</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteStudent(student.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -20,6 +20,7 @@ interface Question {
   type: "text" | "multiple-choice" | "true-false" | "short-answer";
   options?: string[];
   correctAnswer?: string;
+  points: number;
 }
 
 export default function CreateAssignmentPage() {
@@ -27,6 +28,7 @@ export default function CreateAssignmentPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [timeLimit, setTimeLimit] = useState<number | "">("");
   const [gradingType, setGradingType] = useState<"ai" | "manual">("ai");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,6 @@ export default function CreateAssignmentPage() {
   const [aiDifficulty, setAiDifficulty] = useState("Medium");
   const [aiQuestionType, setAiQuestionType] = useState("mixed");
   const [aiLoading, setAiLoading] = useState(false);
-  const [previewQuestions, setPreviewQuestions] = useState<Question[]>([]);
 
   const addQuestion = () => {
     setQuestions([
@@ -48,6 +49,7 @@ export default function CreateAssignmentPage() {
         text: "",
         type: "text",
         options: [],
+        points: 10,
       },
     ]);
   };
@@ -91,46 +93,14 @@ export default function CreateAssignmentPage() {
         type: q.type,
         options: q.options || [],
         correctAnswer: q.correctAnswer,
+        points: 10,
       }));
-      // Show preview so teacher can edit before accepting
-      setPreviewQuestions(newQuestions);
-      // keep aiOpen true and show preview area
+      
+      setQuestions([...questions, ...newQuestions]);
+      setAiOpen(false);
+      setAiTopic("");
     } catch (error) {
       console.error("Failed to generate questions", error);
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
-  const acceptPreview = () => {
-    setQuestions([...questions, ...previewQuestions]);
-    setPreviewQuestions([]);
-    setAiOpen(false);
-    setAiTopic("");
-  };
-
-  const cancelPreview = () => {
-    setPreviewQuestions([]);
-  };
-
-  const regenerateQuestion = async (questionId: string) => {
-    const question = questions.find((q) => q.id === questionId);
-    if (!question) return;
-    setAiLoading(true);
-    try {
-      const topicForRegenerate = aiTopic || title || question.text || "physics";
-      const generated = await generateAssignmentQuestions(topicForRegenerate, 1, aiDifficulty, question.type === "text" ? "text" : question.type === "short-answer" ? "short-answer" : question.type === "true-false" ? "true-false" : "multiple-choice");
-      const q = generated[0];
-      if (q) {
-        updateQuestion(questionId, {
-          text: q.text,
-          type: q.type,
-          options: q.options || [],
-          correctAnswer: q.correctAnswer,
-        });
-      }
-    } catch (err) {
-      console.error("Error regenerating question", err);
     } finally {
       setAiLoading(false);
     }
@@ -144,11 +114,11 @@ export default function CreateAssignmentPage() {
         title,
         description,
         dueDate: new Date(dueDate),
+        timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
         questions,
         createdAt: new Date(),
       });
-      router.push("/teacher/assignments");
       router.push("/teacher/assignments");
     } catch (error) {
       console.error("Error creating assignment:", error);
@@ -171,7 +141,7 @@ export default function CreateAssignmentPage() {
               Generate with AI
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>Generate Questions with AI</DialogTitle>
               <DialogDescription>
@@ -179,37 +149,6 @@ export default function CreateAssignmentPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              {previewQuestions.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Preview Generated Questions</h3>
-                  {previewQuestions.map((pq, idx) => (
-                    <Card key={pq.id} className="p-3">
-                      <div className="space-y-2">
-                        <Label>Question {idx + 1}</Label>
-                        <Textarea value={pq.text} onChange={(e) => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, text: e.target.value } : x))} rows={2} />
-                        <div className="flex gap-2">
-                          <Button size="sm" variant={pq.type === 'multiple-choice' ? 'default' : 'outline'} onClick={() => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, type: 'multiple-choice', options: x.options?.length ? x.options : ['', '', '', ''] } : x))}>Multiple Choice</Button>
-                          <Button size="sm" variant={pq.type === 'true-false' ? 'default' : 'outline'} onClick={() => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, type: 'true-false', options: ['True', 'False'] } : x))}>True/False</Button>
-                          <Button size="sm" variant={pq.type === 'short-answer' ? 'default' : 'outline'} onClick={() => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, type: 'short-answer', options: [] } : x))}>Short Answer</Button>
-                          <Button size="sm" variant={pq.type === 'text' ? 'default' : 'outline'} onClick={() => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, type: 'text', options: [] } : x))}>Free Response</Button>
-                        </div>
-                        {pq.type === 'multiple-choice' && (
-                          <div className="space-y-2 pl-4">
-                            {pq.options?.map((opt, oi) => (
-                              <div key={oi} className="flex items-center gap-2">
-                                <Input value={opt} onChange={(e) => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, options: x.options!.map((o, k) => k === oi ? e.target.value : o) } : x))} placeholder={`Option ${oi + 1}`} />
-                                <input type="radio" name={`correct-${idx}`} checked={pq.correctAnswer === opt} onChange={() => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, correctAnswer: opt } : x))} />
-                              </div>
-                            ))}
-                            <Button size="sm" variant="outline" onClick={() => setPreviewQuestions(prev => prev.map((x, i) => i === idx ? { ...x, options: [...(x.options || []), ''] } : x))}>Add Option</Button>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <>
                 <div className="space-y-2">
                   <Label>Topic</Label>
                   <Input 
@@ -270,25 +209,12 @@ export default function CreateAssignmentPage() {
                     </div>
                   </RadioGroup>
                 </div>
-                </>
-              )}
             </div>
             <DialogFooter>
-              {previewQuestions.length > 0 ? (
-                <>
-                  <Button variant="secondary" onClick={acceptPreview} disabled={aiLoading}>
-                    Accept Questions
-                  </Button>
-                  <Button variant="ghost" onClick={cancelPreview}>
-                    Cancel
-                  </Button>
-                </>
-              ) : (
                 <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTopic}>
                   {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Generate
                 </Button>
-              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -332,6 +258,23 @@ export default function CreateAssignmentPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
+              <Input
+                id="timeLimit"
+                type="number"
+                min="0"
+                placeholder="Optional (leave empty for no limit)"
+                value={timeLimit}
+                onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Set a time limit in minutes. Leave empty for no time limit.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Grading Type</Label>
+            </div>
+            <div className="space-y-2">
               <Label>Grading Type</Label>
               <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex gap-4">
                 <div className="flex items-center space-x-2">
@@ -368,11 +311,6 @@ export default function CreateAssignmentPage() {
                       onClick={() => removeQuestion(question.id)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="button" size="sm" variant="outline" onClick={() => regenerateQuestion(question.id)}>
-                      Regenerate
                     </Button>
                   </div>
                   <Textarea

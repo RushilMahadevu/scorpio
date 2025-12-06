@@ -1,74 +1,27 @@
-# Scorpio Platform - Future Implementation Roadmap
+# Future Roadmap: Scorpio Physics Platform
 
-This document outlines planned features and improvements for the Scorpio Physics Platform, categorized by implementation phase.
+## Phase 1: Immediate Improvements & Polish
+- [ ] **Student Grades View**: Complete the implementation of the student grades page to show detailed breakdown of scores.
+- [ ] **Resource Organization**: Add categories or tags to "Resource Uploads" (e.g., "Notes", "Practice", "Video") for better filtering.
+- [ ] **Assignment Feedback**: Allow teachers to provide specific text feedback comments alongside numerical grades.
+- [ ] **Profile Settings**: Allow users (students/teachers) to update their profiles (avatars, display names).
+- [ ] **Mobile Responsiveness**: Audit and improve mobile view for complex tables and assignment interfaces.
 
-## Phase 1: Enhanced AI & User Experience (Short Term)
+## Phase 2: Enhanced Learning Experience
+- [ ] **Context-Aware AI Tutor**: Upgrade the AI Tutor to have context of the specific assignment or problem the student is working on.
+- [ ] **Rich Text Editor**: Implement a WYSIWYG editor for creating assignments (support images, LaTeX formulas directly in text).
+- [ ] **Real-time Notifications**: Notify students when a new assignment is posted or graded (In-app or Email).
+- [ ] **Discussion Forums**: Per-class or per-assignment discussion threads for peer-to-peer help.
+- [ ] **Practice Mode**: Allow students to generate their own practice problems based on topics they are weak in.
 
-### 1. Multimodal AI Support (Image Input)
-- **Goal:** Allow students to upload photos of physics problems or diagrams.
-- **Implementation:** 
-  - Update `src/lib/gemini.ts` to handle image inputs using Gemini's multimodal capabilities.
-  - Add an image upload button to the AI Tutor chat interface.
-  - Use Firebase Storage to temporarily store images if needed, or pass base64 directly to the model.
+## Phase 3: Advanced Analytics & Gamification
+- [ ] **Class Insights**: Visual graphs for teachers showing class average trends over time.
+- [ ] **Student Progress Tracking**: "Mastery" tracking for specific physics topics (e.g., Kinematics, Forces) based on assignment tags.
+- [ ] **Gamification**: Badges for completing assignments on time, streaks, or high scores.
+- [ ] **Export Options**: PDF export for assignment submissions and grade reports.
 
-### 2. Advanced Math Rendering
-- **Goal:** Display complex physics equations (LaTeX) properly in the chat.
-- **Implementation:**
-  - Integrate `rehype-katex` and `remark-math` into the React Markdown renderer.
-  - Ensure the AI model is prompted to output equations in LaTeX format.
-
-### 3. Enhanced UI/UX & Theming
-- **Goal:** Improve visual appeal and usability.
-- **Implementation:**
-  - **Dark Mode:** Implement a theme toggle (Light/Dark/System) using `next-themes`.
-  - **Animations:** Add smooth page transitions and component animations using `framer-motion`.
-  - **Responsive Design:** Polish mobile navigation and sidebar behavior.
-  - **Loading States:** Add skeleton loaders for data fetching states.
-
-## Phase 2: Teacher Tools & Analytics (Medium Term)
-
-### 4. Class Analytics Dashboard
-- **Goal:** Give teachers insights into student performance.
-- **Implementation:**
-  - Create charts (using `recharts` or similar) showing:
-    - Average class scores per assignment.
-    - Topics where students struggle the most (based on AI chat tags).
-    - Student engagement levels.
-
-### 5. Advanced Assignment Creation
-- **Goal:** More control over AI-generated assignments.
-- **Implementation:**
-  - Allow teachers to edit AI-generated questions before saving.
-  - Support for different question types (True/False, Short Answer, Diagram labeling).
-  - "Regenerate specific question" feature.
-
-### 6. Grade Export
-- **Goal:** Easy integration with external gradebooks.
-- **Implementation:**
-  - Add functionality to export assignment grades to CSV or PDF formats.
-<!-- 
-## Phase 3: Gamification & Engagement (Long Term)
-
-### 7. Gamification System
-- **Goal:** Increase student motivation.
-- **Implementation:**
-  - **XP System:** Earn points for completing assignments and chatting with the tutor.
-  - **Badges:** Unlock achievements (e.g., "Physics Whiz", "7-Day Streak").
-  - **Leaderboards:** Optional class-wide leaderboards.
-
-### 8. Interactive Simulations
-- **Goal:** Visual learning for abstract concepts.
-- **Implementation:**
-  - Integrate open-source physics simulations (like PhET) or build simple canvas-based simulations for core concepts (Projectile Motion, Pendulums).
-
-### 9. Peer Collaboration
-- **Goal:** Foster collaborative learning.
-- **Implementation:**
-  - Discussion boards for specific assignments.
-  - "Study Groups" feature where students can chat (moderated by AI).
-
-## Technical Improvements
-
-- **PWA Support:** Make the app installable and work offline.
-- **Real-time Notifications:** Use Firestore listeners to notify students of new assignments or graded submissions instantly.
-- **Accessibility:** Ensure full WCAG compliance for all student-facing pages. -->
+## Phase 4: Infrastructure & Scale
+- [ ] **Role-Based Access Control (RBAC)**: Admin panel to manage teachers and school-wide settings.
+- [ ] **Offline Support**: PWA capabilities for students with poor internet connection.
+- [ ] **Integration**: LTI support to integrate with other LMS (Canvas, Google Classroom).
+- [ ] **Bulk Import**: Allow teachers to bulk import students via CSV.

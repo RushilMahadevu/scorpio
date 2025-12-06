@@ -13,7 +13,7 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && (request.auth.uid == userId || request.auth.uid == resource.data.teacherId);
-      allow delete: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && (request.auth.uid == userId || request.auth.uid == resource.data.teacherId);
     }
 
     // Assignments collection
@@ -27,6 +27,7 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update: if request.auth != null;
+      allow delete: if request.auth != null;
     }
 
     // Resources collection

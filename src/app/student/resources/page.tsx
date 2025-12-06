@@ -5,7 +5,9 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExternalLink, FileText, Search, Video, File } from "lucide-react";
 import Link from "next/link";
 
 interface Resource {
@@ -13,11 +15,14 @@ interface Resource {
   title: string;
   url: string;
   createdAt: any;
+  type?: "video" | "document" | "link";
 }
 
 export default function StudentResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     async function fetchResources() {
@@ -38,11 +43,41 @@ export default function StudentResourcesPage() {
     fetchResources();
   }, []);
 
+  const filteredResources = resources.filter(resource => {
+    const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTab = activeTab === "all" || 
+      (resource.type === activeTab) || 
+      (activeTab === "video" && (resource.url.includes("youtube") || resource.url.includes("vimeo"))) ||
+      (activeTab === "document" && (resource.url.includes(".pdf") || resource.url.includes(".doc")));
+    return matchesSearch && matchesTab;
+  });
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Learning Resources</h1>
-        <p className="text-muted-foreground">Access study materials and external links provided by your teacher</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Learning Resources</h1>
+          <p className="text-muted-foreground">Access study materials and external links</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4 md:flex-row md:items-center space-y-2 md:space-y-0">
+        <div className="relative flex-1 md:max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search resources..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="video">Videos</TabsTrigger>
+            <TabsTrigger value="document">Documents</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {loading ? (
@@ -54,20 +89,27 @@ export default function StudentResourcesPage() {
             </Card>
           ))}
         </div>
-      ) : resources.length === 0 ? (
+      ) : filteredResources.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No resources available yet</p>
-            <p className="text-muted-foreground">Check back later for study materials</p>
+            <Search className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">No resources found</p>
+            <p className="text-muted-foreground">Try adjusting your search or filters</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {resources.map((resource) => (
+          {filteredResources.map((resource) => (
             <Card key={resource.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle className="line-clamp-2">{resource.title}</CardTitle>
+                <div className="flex justify-between items-start gap-2">
+                  <CardTitle className="line-clamp-2 text-lg">{resource.title}</CardTitle>
+                  {resource.type === 'video' || resource.url.includes('youtube') ? (
+                    <Video className="h-5 w-5 text-muted-foreground shrink-0" />
+                  ) : (
+                    <File className="h-5 w-5 text-muted-foreground shrink-0" />
+                  )}
+                </div>
                 <CardDescription>
                   Added {resource.createdAt?.toDate ? resource.createdAt.toDate().toLocaleDateString() : 'Recently'}
                 </CardDescription>

@@ -8,8 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, Eye } from "lucide-react";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Submission {
   id: string;
@@ -18,6 +26,7 @@ interface Submission {
   submittedAt: Date;
   score: number | null;
   graded: boolean;
+  feedback?: string;
 }
 
 export default function StudentGradesPage() {
@@ -52,6 +61,7 @@ export default function StudentGradesPage() {
             submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
             score: data.score,
             graded: data.graded,
+            feedback: data.feedback,
           };
         }));
 
@@ -114,14 +124,43 @@ export default function StudentGradesPage() {
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
-                    </TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/student/assignment-view?id=${submission.assignmentId}`}>
-                        <Button variant="ghost" size="sm">
-                          <FileText className="h-4 w-4 mr-2" />
-                          View
-                        </Button>
-                      </Link>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>{submission.assignmentTitle}</DialogTitle>
+                            <DialogDescription>
+                              Submitted on {submission.submittedAt.toLocaleDateString()}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
+                              <span className="font-medium">Score</span>
+                              <Badge variant={submission.graded ? "default" : "secondary"}>
+                                {submission.graded ? `${submission.score}%` : "Pending"}
+                              </Badge>
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-medium mb-2">Feedback</h4>
+                              <div className="p-4 border rounded-lg min-h-[100px] bg-card">
+                                {submission.feedback ? (
+                                  <p className="text-sm text-muted-foreground">{submission.feedback}</p>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground italic">No feedback provided yet.</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
                     </TableCell>
                   </TableRow>
                 ))}
