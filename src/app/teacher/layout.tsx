@@ -12,7 +12,7 @@ export default function TeacherLayout({
     <ProtectedRoute allowedRole="teacher">
       <div className="flex min-h-screen">
         <TeacherSidebar />
-        <main className="flex-1 ml-64 p-6">{children}</main>
+        <main className="flex-1 ml-72 p-8 max-w-7xl">{children}</main>
       </div>
     </ProtectedRoute>
   );

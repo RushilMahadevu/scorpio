@@ -12,7 +12,7 @@ export default function StudentLayout({
     <ProtectedRoute allowedRole="student">
       <div className="flex min-h-screen">
         <StudentSidebar />
-        <main className="flex-1 ml-64 p-6">{children}</main>
+        <main className="flex-1 ml-72 p-8 max-w-7xl">{children}</main>
       </div>
     </ProtectedRoute>
   );

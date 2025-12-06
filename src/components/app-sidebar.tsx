@@ -51,19 +51,19 @@ function SidebarContent({ roleLabel, navItems, onNavigate }: SidebarContentProps
         </div>
       </div>
       
-      <ScrollArea className="flex-1 px-4 py-2">
-        <nav className="space-y-1">
+      <ScrollArea className="flex-1 px-4 py-4">
+        <nav className="space-y-2">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href} onClick={onNavigate}>
               <span
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all",
+                  "flex items-center gap-4 rounded-xl px-4 py-3 text-base font-medium transition-all duration-200",
                   pathname === item.href
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground hover:pl-5"
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-5 w-5" />
                 {item.label}
               </span>
             </Link>
@@ -94,7 +94,7 @@ export function AppSidebar({ roleLabel, navItems }: AppSidebarProps) {
 
   return (
     <>
-      <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-72 border-r-0 shadow-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <SidebarContent roleLabel={roleLabel} navItems={navItems} />
       </aside>
 
