@@ -142,7 +142,7 @@ export default function TeacherGradesPage() {
                     <TableCell>{student.averageScore}%</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Link href={`/teacher/grades/${student.id}`}>
+                        <Link href={`/teacher/grades/student?studentId=${student.id}`}>
                           <Button variant="ghost" size="sm">
                             View Details
                             <ChevronRight className="h-4 w-4 ml-2" />

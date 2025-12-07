@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,13 +20,19 @@ interface Submission {
   graded: boolean;
 }
 
-export default function StudentDetailsPage({ params }: { params: Promise<{ studentId: string }> }) {
-  const { studentId } = use(params);
+export default function StudentDetailsPage() {
+  const searchParams = useSearchParams();
+  const studentId = searchParams.get('studentId');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [studentName, setStudentName] = useState("Student");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!studentId) {
+      setLoading(false);
+      return;
+    }
+
     async function fetchStudentData() {
       try {
         // Fetch submissions
@@ -70,6 +77,24 @@ export default function StudentDetailsPage({ params }: { params: Promise<{ stude
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!studentId) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/teacher/grades">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Error</h1>
+            <p className="text-muted-foreground">No student ID provided.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -125,7 +150,7 @@ export default function StudentDetailsPage({ params }: { params: Promise<{ stude
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/teacher/submission/${submission.id}`}>
+                      <Link href={`/teacher/submission/grade?id=${submission.id}`}>
                         <Button variant="outline" size="sm">
                           <FileText className="h-4 w-4 mr-2" />
                           {submission.graded ? "View" : "Grade"}

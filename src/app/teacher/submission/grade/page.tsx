@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface Answer {
   questionId: string;
@@ -32,8 +32,9 @@ interface Submission {
   graded: boolean;
 }
 
-export default function GradeSubmissionPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function GradeSubmissionPage() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const router = useRouter();
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,9 +43,14 @@ export default function GradeSubmissionPage({ params }: { params: Promise<{ id: 
   const [feedback, setFeedback] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     async function fetchSubmission() {
       try {
-        const docSnap = await getDoc(doc(db, "submissions", id));
+        const docSnap = await getDoc(doc(db, "submissions", id!));
         if (docSnap.exists()) {
           const data = docSnap.data();
           const sub = {
@@ -75,7 +81,7 @@ export default function GradeSubmissionPage({ params }: { params: Promise<{ id: 
   }, [id]);
 
   const handleSave = async () => {
-    if (!submission) return;
+    if (!submission || !id) return;
     setSaving(true);
 
     try {
@@ -109,6 +115,22 @@ export default function GradeSubmissionPage({ params }: { params: Promise<{ id: 
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!id) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Error</h1>
+            <p className="text-muted-foreground">No submission ID provided.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!submission) {
