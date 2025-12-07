@@ -19,6 +19,6 @@ const navItems = [
   { href: "/student/grades", label: "Grades", icon: GraduationCap },
 ];
 
-export function StudentSidebar() {
-  return <AppSidebar roleLabel="Student" navItems={navItems} />;
+export function StudentSidebar({ isCollapsed }: { isCollapsed: boolean }) {
+  return <AppSidebar roleLabel="Student" navItems={navItems} isCollapsed={isCollapsed} />;
 }

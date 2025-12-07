@@ -1,36 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import { ProtectedRoute } from "@/components/protected-route";
 import { StudentSidebar } from "@/components/student-sidebar";
 import { SpaceBackground } from "@/components/ui/space-background";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { Button } from "@/components/ui/button";
+import { PanelLeft } from "lucide-react";
 
 export default function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <ProtectedRoute allowedRole="student">
       <SpaceBackground />
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="min-h-screen relative"
-      >
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-          <div className="h-full">
-            <StudentSidebar />
-          </div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={80}>
-          <main className="flex-1 p-8 max-w-7xl">{children}</main>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <div className="flex h-screen">
+        <StudentSidebar isCollapsed={isCollapsed} />
+        <main className="flex-1 overflow-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="m-4"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
+          <div className="p-8 pt-0">{children}</div>
+        </main>
+      </div>
     </ProtectedRoute>
   );
 }
