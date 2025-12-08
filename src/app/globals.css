@@ -156,3 +156,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Theme transition */
+html {
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+html * {
+  transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease, fill 0.1s ease, stroke 0.1s ease !important;
+}

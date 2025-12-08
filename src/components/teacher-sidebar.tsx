@@ -20,6 +20,6 @@ const navItems = [
   { href: "/teacher/grades", label: "Gradebook", icon: GraduationCap },
 ];
 
-export function TeacherSidebar() {
-  return <AppSidebar roleLabel="Teacher" navItems={navItems} />;
+export function TeacherSidebar({ isCollapsed }: { isCollapsed: boolean }) {
+  return <AppSidebar roleLabel="Teacher" navItems={navItems} isCollapsed={isCollapsed} />;
 }
