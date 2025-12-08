@@ -18,17 +18,12 @@ export default function TeacherLayout({
     <ProtectedRoute allowedRole="teacher">
       <SpaceBackground />
       <div className="flex h-screen">
-        <TeacherSidebar isCollapsed={isCollapsed} />
+        <TeacherSidebar
+          isCollapsed={isCollapsed}
+          onToggle={() => setIsCollapsed(!isCollapsed)}
+        />
         <main className="flex-1 overflow-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="m-4"
-          >
-            <PanelLeft className="h-4 w-4" />
-          </Button>
-          <div className="p-8 pt-0">{children}</div>
+          <div className="p-8">{children}</div>
         </main>
       </div>
     </ProtectedRoute>

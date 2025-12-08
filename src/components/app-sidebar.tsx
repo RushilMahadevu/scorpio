@@ -7,7 +7,13 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LogOut, LucideIcon, Menu } from "lucide-react";
+import {
+  LogOut,
+  LucideIcon,
+  Menu,
+  PanelLeft,
+  PanelRight,
+} from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
 import { useState } from "react";
@@ -23,13 +29,20 @@ interface AppSidebarProps {
   roleLabel: string;
   navItems: NavItem[];
   isCollapsed: boolean;
+  onToggle: () => void;
 }
 
 interface SidebarContentProps extends AppSidebarProps {
   onNavigate?: () => void;
 }
 
-function SidebarContent({ roleLabel, navItems, isCollapsed, onNavigate }: SidebarContentProps) {
+function SidebarContent({
+  roleLabel,
+  navItems,
+  isCollapsed,
+  onNavigate,
+  onToggle,
+}: SidebarContentProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -75,9 +88,37 @@ function SidebarContent({ roleLabel, navItems, isCollapsed, onNavigate }: Sideba
         </nav>
       </ScrollArea>
 
-      <div className="p-4 mt-auto border-t bg-muted/10">
-        <div className={cn("flex items-center justify-between px-2 mb-2", isCollapsed && "justify-center")}>
-          {!isCollapsed && <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Appearance</span>}
+      <div className="p-4 mt-auto border-t bg-background/95">
+        <div
+          className={cn(
+            "flex items-center justify-between px-2 mb-2",
+            isCollapsed && "justify-center"
+          )}
+        >
+          {!isCollapsed && (
+            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+              Sidebar
+            </span>
+          )}
+          <Button variant="ghost" size="icon" onClick={onToggle}>
+            {isCollapsed ? (
+              <PanelRight className="h-4 w-4" />
+            ) : (
+              <PanelLeft className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+        <div
+          className={cn(
+            "flex items-center justify-between px-2 mb-2",
+            isCollapsed && "justify-center"
+          )}
+        >
+          {!isCollapsed && (
+            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+              Appearance
+            </span>
+          )}
           <ModeToggle />
         </div>
         <Button
@@ -96,31 +137,43 @@ function SidebarContent({ roleLabel, navItems, isCollapsed, onNavigate }: Sideba
   );
 }
 
-export function AppSidebar({ roleLabel, navItems, isCollapsed }: AppSidebarProps) {
+export function AppSidebar({
+  roleLabel,
+  navItems,
+  isCollapsed,
+  onToggle,
+}: AppSidebarProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <aside className={cn(
-        "hidden md:block h-full border-r-0 shadow-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300",
-        isCollapsed ? "w-20" : "w-64"
-      )}>
-        <SidebarContent roleLabel={roleLabel} navItems={navItems} isCollapsed={isCollapsed} />
+      <aside
+        className={cn(
+          "hidden md:flex md:flex-col h-full border-r-0 shadow-xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300",
+          isCollapsed ? "w-20" : "w-64"
+        )}
+      >
+        <SidebarContent
+          roleLabel={roleLabel}
+          navItems={navItems}
+          isCollapsed={isCollapsed}
+          onToggle={onToggle}
+        />
       </aside>
-
-      <div className="md:hidden fixed top-4 left-4 z-50">
+      <div className="md:hidden p-4">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="bg-background/95 backdrop-blur">
-              <Menu className="h-4 w-4" />
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64 border-r">
-            <SidebarContent 
-              roleLabel={roleLabel} 
-              navItems={navItems} 
+          <SheetContent side="left" className="w-64 p-0">
+            <SidebarContent
+              roleLabel={roleLabel}
+              navItems={navItems}
               isCollapsed={false}
-              onNavigate={() => setOpen(false)} 
+              onToggle={() => {}}
+              onNavigate={() => setOpen(false)}
             />
           </SheetContent>
         </Sheet>
