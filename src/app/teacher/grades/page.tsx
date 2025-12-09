@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { collection, getDocs, query, where, writeBatch, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -51,6 +51,28 @@ export default function TeacherGradesPage() {
             student.scores.push(data.score);
           }
         });
+
+        // Fetch names from students collection for any "Unknown Student" entries
+        const unknownStudents = Array.from(studentMap.entries())
+          .filter(([_, data]) => data.name === "Unknown Student");
+        
+        await Promise.all(
+          unknownStudents.map(async ([studentId, _]) => {
+            try {
+              const studentDoc = await getDoc(doc(db, "students", studentId));
+              if (studentDoc.exists()) {
+                const studentData = studentDoc.data();
+                const student = studentMap.get(studentId);
+                if (student) {
+                  student.name = studentData.name || "Unknown Student";
+                  student.email = studentData.email || student.email;
+                }
+              }
+            } catch (error) {
+              console.error(`Error fetching student ${studentId}:`, error);
+            }
+          })
+        );
 
         // Convert map to array
         const studentsArray: Student[] = Array.from(studentMap.entries()).map(([id, data]) => {

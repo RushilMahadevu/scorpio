@@ -232,9 +232,21 @@ function AssignmentDetailContent() {
         isGraded = true;
       }
 
+      // Fetch student name from students collection
+      let studentName = user.displayName || "";
+      try {
+        const studentDoc = await getDoc(doc(db, "students", user.uid));
+        if (studentDoc.exists()) {
+          studentName = studentDoc.data().name || studentName;
+        }
+      } catch (error) {
+        console.error("Error fetching student name:", error);
+      }
+
       await addDoc(collection(db, "submissions"), {
         assignmentId: assignment.id,
         studentId: user.uid,
+        studentName: studentName,
         studentEmail: user.email,
         answers: gradedAnswers,
         submittedAt: new Date(),
