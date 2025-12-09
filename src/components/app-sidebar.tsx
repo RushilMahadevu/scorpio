@@ -88,10 +88,10 @@ function SidebarContent({
         </nav>
       </ScrollArea>
 
-      <div className="p-4 mt-auto border-t bg-background/95">
+      <div className="p-4 mt-auto border-t bg-background/95 space-y-2">
         <div
           className={cn(
-            "flex items-center justify-between px-2 mb-2",
+            "flex items-center justify-between px-2",
             isCollapsed && "justify-center"
           )}
         >
@@ -110,7 +110,7 @@ function SidebarContent({
         </div>
         <div
           className={cn(
-            "flex items-center justify-between px-2 mb-2",
+            "flex items-center justify-between px-2",
             isCollapsed && "justify-center"
           )}
         >
@@ -121,17 +121,26 @@ function SidebarContent({
           )}
           <ModeToggle />
         </div>
-        <Button
-          variant="ghost"
+        <div
           className={cn(
-            "w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+            "flex items-center justify-between px-2",
             isCollapsed && "justify-center"
           )}
-          onClick={handleLogout}
         >
-          <LogOut className="h-4 w-4 flex-shrink-0" />
-          {!isCollapsed && <span className="whitespace-nowrap">Logout</span>}
-        </Button>
+          {!isCollapsed && (
+            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+              Logout
+            </span>
+          )}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 flex-shrink-0" />
+          </Button>
+        </div>
       </div>
     </div>
   );
