@@ -3,9 +3,33 @@ import { genAI } from "@/lib/firebase";
 
 const model = getGenerativeModel(genAI, { model: "gemini-2.5-flash" });
 
-export async function explainPhysicsConcept(concept: string): Promise<string> {
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+const CONTEXT_WINDOW_SIZE = 10; // Last 10 messages
+
+function formatChatHistory(messages: ChatMessage[]): string {
+  // Take last N messages for context
+  const recentMessages = messages.slice(-CONTEXT_WINDOW_SIZE);
+  
+  return recentMessages
+    .map(msg => `${msg.role === "user" ? "Student" : "Tutor"}: ${msg.content}`)
+    .join("\n\n");
+}
+
+export async function explainPhysicsConcept(
+  concept: string, 
+  chatHistory: ChatMessage[] = []
+): Promise<string> {
   try {
-    const prompt = `Explain the physics concept: "${concept}" in simple terms suitable for a high school student. Keep it concise.`;
+    const historyContext = chatHistory.length > 0 
+      ? `Previous conversation:\n${formatChatHistory(chatHistory)}\n\n` 
+      : "";
+    
+    const prompt = `${historyContext}Explain the physics concept: "${concept}" in simple terms suitable for a high school student. Keep it concise. If this relates to our previous conversation, build on that context.`;
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
     console.log("Explain concept response:", response);
@@ -19,9 +43,17 @@ export async function explainPhysicsConcept(concept: string): Promise<string> {
   }
 }
 
-export async function helpSolveProblem(problem: string): Promise<string> {
+export async function helpSolveProblem(
+  problem: string, 
+  chatHistory: ChatMessage[] = []
+): Promise<string> {
   try {
-    const prompt = `Help me solve this physics problem step-by-step: "${problem}". Do not just give the answer, explain the steps clearly.`;
+    const historyContext = chatHistory.length > 0 
+      ? `Previous conversation:\n${formatChatHistory(chatHistory)}\n\n` 
+      : "";
+    
+    const prompt = `${historyContext}Help me solve this physics problem step-by-step: "${problem}". Do not just give the answer, explain the steps clearly. If this relates to our previous conversation, reference earlier explanations.`;
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();

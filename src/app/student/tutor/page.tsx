@@ -50,9 +50,15 @@ export default function AITutorPage() {
     setLoading(true);
 
     try {
+      // Convert messages to ChatMessage format for context
+      const chatHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
       const response = mode === "concept" 
-        ? await explainPhysicsConcept(input)
-        : await helpSolveProblem(input);
+        ? await explainPhysicsConcept(input, chatHistory)
+        : await helpSolveProblem(input, chatHistory);
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
