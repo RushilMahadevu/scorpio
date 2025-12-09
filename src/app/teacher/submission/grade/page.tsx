@@ -12,6 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface Question {
   id: string;
@@ -253,7 +257,14 @@ export default function GradeSubmissionPage() {
                       </Badge>
                     </div>
                     <CardDescription className="text-foreground font-medium mt-2">
-                      {ans.questionText}
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                        >
+                          {ans.questionText}
+                        </ReactMarkdown>
+                      </div>
                     </CardDescription>
                   </div>
                 </div>
@@ -264,15 +275,27 @@ export default function GradeSubmissionPage() {
                     <Label className="text-xs text-green-700 dark:text-green-400 uppercase mb-1 block">
                       Correct Answer
                     </Label>
-                    <p className="text-green-900 dark:text-green-200 font-medium">
-                      {question.correctAnswer}
-                    </p>
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-green-900 dark:text-green-200 font-medium">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                      >
+                        {question.correctAnswer}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 )}
 
                 <div className="bg-muted p-4 rounded-md">
                   <Label className="text-xs text-muted-foreground uppercase mb-1 block">Student Answer</Label>
-                  <p className="whitespace-pre-wrap">{ans.answer || "(No answer provided)"}</p>
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                    >
+                      {ans.answer || "(No answer provided)"}
+                    </ReactMarkdown>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

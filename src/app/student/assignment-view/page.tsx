@@ -15,6 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play } from "lucide-react";
 import Link from "next/link";
+import { MathInputField } from "@/components/math-input";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface Question {
   id: string;
@@ -361,7 +366,14 @@ function AssignmentDetailContent() {
                 <Label className="text-base">Question {index + 1}</Label>
                 <Badge variant="outline">{question.points || 10} pts</Badge>
               </div>
-              <p className="text-sm mt-1">{question.text}</p>
+              <div className="prose prose-sm dark:prose-invert max-w-none mt-1">
+                <ReactMarkdown
+                  remarkPlugins={[remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                >
+                  {question.text}
+                </ReactMarkdown>
+              </div>
             </CardHeader>
             <CardContent>
               {question.type === "multiple-choice" && question.options ? (
@@ -393,19 +405,20 @@ function AssignmentDetailContent() {
                   </div>
                 </RadioGroup>
               ) : question.type === "short-answer" ? (
-                <Input
+                <MathInputField
                   value={answers[question.id] || ""}
-                  onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                  onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
                   placeholder="Type your answer here..."
                   disabled={submitted}
+                  rows={2}
                 />
               ) : (
-                <Textarea
+                <MathInputField
                   value={answers[question.id] || ""}
-                  onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                  onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
                   placeholder="Type your answer here..."
-                  rows={4}
                   disabled={submitted}
+                  rows={4}
                 />
               )}
             </CardContent>

@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PlusCircle, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { MathInputField } from "@/components/math-input";
 
 interface Question {
   id: string;
@@ -313,11 +314,11 @@ export default function CreateAssignmentPage() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Textarea
+                  <MathInputField
                     value={question.text}
-                    onChange={(e) => updateQuestion(question.id, { text: e.target.value })}
+                    onChange={(value) => updateQuestion(question.id, { text: value })}
                     placeholder="Enter your question..."
-                    rows={2}
+                    rows={3}
                   />
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -357,17 +358,22 @@ export default function CreateAssignmentPage() {
                   {question.type === "multiple-choice" && (
                     <div className="space-y-2 pl-4">
                       {question.options?.map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center gap-2">
-                          <Input
-                            value={option}
-                            onChange={(e) => updateOption(question.id, optionIndex, e.target.value)}
-                            placeholder={`Option ${optionIndex + 1}`}
-                          />
+                        <div key={optionIndex} className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <MathInputField
+                              value={option}
+                              onChange={(value) => updateOption(question.id, optionIndex, value)}
+                              placeholder={`Option ${optionIndex + 1}`}
+                              rows={2}
+                              compact={true}
+                            />
+                          </div>
                           <input
                             type="radio"
                             name={`correct-${question.id}`}
                             checked={question.correctAnswer === option}
                             onChange={() => updateQuestion(question.id, { correctAnswer: option })}
+                            className="mt-3"
                           />
                         </div>
                       ))}

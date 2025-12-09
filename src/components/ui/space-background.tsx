@@ -4,7 +4,7 @@ export function SpaceBackground() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
       {/* Wrapper that reduces opacity in light mode */}
-      <div className="absolute inset-0 opacity-40 dark:opacity-70 transition-opacity duration-300">
+      <div className="absolute inset-0 opacity-50 dark:opacity-70 transition-opacity duration-300">
         {/* Layer 1 - slow drift */}
         <div 
           className="absolute inset-0 animate-[drift_60s_linear_infinite]"
