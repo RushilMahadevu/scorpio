@@ -47,6 +47,7 @@ function AssignmentDetailContent() {
   const router = useRouter();
   const { user } = useAuth();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [googleFormLink, setGoogleFormLink] = useState<string>("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -79,8 +80,13 @@ function AssignmentDetailContent() {
             gradingType: data.gradingType || "ai",
             timeLimit: data.timeLimit,
             requireWorkSubmission: data.requireWorkSubmission || false,
+            type: data.type || "standard",
+            googleFormLink: data.googleFormLink || "",
           };
           setAssignment(assignmentData);
+          if (data.type === "google-form" && data.googleFormLink) {
+            setGoogleFormLink(data.googleFormLink);
+          }
 
           // Check for existing submission
           const submissionsQuery = query(
@@ -334,6 +340,42 @@ function AssignmentDetailContent() {
 
   if (!assignment) {
     return <p className="text-destructive">Assignment not found</p>;
+  }
+
+  // Google Form assignment rendering
+  if (assignment.type === "google-form" && assignment.googleFormLink) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-6 pb-20">
+        <Card>
+          <CardHeader>
+            <CardTitle>{assignment.title}</CardTitle>
+            <CardDescription>{assignment.description}</CardDescription>
+            <p className="text-sm text-muted-foreground">
+              Due: {new Date(assignment.dueDate).toLocaleDateString()}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="my-6">
+              <iframe
+                src={assignment.googleFormLink}
+                width="100%"
+                height="700"
+                frameBorder="0"
+                marginHeight={0}
+                marginWidth={0}
+                title="Google Form Assignment"
+                allowFullScreen
+              >
+                Loading…
+              </iframe>
+            </div>
+            <div className="mt-4 text-sm text-muted-foreground">
+              Please complete the form above. Your teacher will enter your grade after you submit.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (!hasStarted && !submitted) {
