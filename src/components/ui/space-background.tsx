@@ -3,7 +3,7 @@
 import { useSpaceEffects } from "@/contexts/space-effects-context";
 
 export function SpaceBackground() {
-  const { spaceEffectsEnabled } = useSpaceEffects();
+  const { spaceEffectsEnabled, spacyLevel, nebulaBrightness } = useSpaceEffects();
 
   if (!spaceEffectsEnabled) {
     return <div className="fixed inset-0 -z-10 overflow-hidden bg-background" />;
@@ -39,7 +39,8 @@ export function SpaceBackground() {
               radial-gradient(1px 1px at 660px 45px, currentColor, transparent),
               radial-gradient(1px 1px at 700px 130px, currentColor, transparent)
             `,
-            backgroundSize: '720px 200px',
+            backgroundSize: `${720 + spacyLevel * 4}px 200px`,
+            opacity: 0.5 + spacyLevel / 100,
           }}
         />
         
@@ -137,14 +138,24 @@ export function SpaceBackground() {
           }}
         />
 
-        {/* EFFECT: Nebula Clouds - subtle morphing background blobs */}
-        <div 
-          className="absolute inset-0 opacity-[0.15] animate-[nebula_30s_ease-in-out_infinite]"
+        {/* EFFECT: Nebula Clouds - circular opposing motion, brighter */}
+        {/* Nebula Clouds - both move same way, less bright */}
+        <div
+          className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
           style={{
             backgroundImage: `
-              radial-gradient(circle 200px at 20% 30%, currentColor, transparent),
-              radial-gradient(circle 300px at 80% 70%, currentColor, transparent)
+              radial-gradient(circle 220px at 18% 32%, currentColor, transparent)
             `,
+            filter: `blur(2px) brightness(${nebulaBrightness / 100 + 0.25})`,
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle 320px at 82% 68%, currentColor, transparent)
+            `,
+            filter: `blur(2px) brightness(${nebulaBrightness / 100 + 0.25})`,
           }}
         />
 
@@ -209,14 +220,48 @@ export function SpaceBackground() {
             opacity: 1;
           }
         }
-        @keyframes nebula {
-          0%, 100% {
-            transform: scale(1) translate(0, 0);
-            opacity: 0.02;
+        @keyframes nebula-cw {
+          0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+            opacity: 0.35;
+          }
+          25% {
+            transform: translate(40px, -20px) rotate(90deg) scale(1.1);
+            opacity: 0.45;
           }
           50% {
-            transform: scale(1.2) translate(10px, 10px);
-            opacity: 0.04;
+            transform: translate(0px, -40px) rotate(180deg) scale(1.2);
+            opacity: 0.55;
+          }
+          75% {
+            transform: translate(-40px, 20px) rotate(270deg) scale(1.1);
+            opacity: 0.45;
+          }
+          100% {
+            transform: translate(0, 0) rotate(360deg) scale(1);
+            opacity: 0.35;
+          }
+        }
+        @keyframes nebula-ccw {
+          0% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+            opacity: 0.35;
+          }
+          25% {
+            transform: translate(-40px, 20px) rotate(-90deg) scale(1.1);
+            opacity: 0.45;
+          }
+          50% {
+            transform: translate(0px, 40px) rotate(-180deg) scale(1.2);
+            opacity: 0.55;
+          }
+          75% {
+            transform: translate(40px, -20px) rotate(-270deg) scale(1.1);
+            opacity: 0.45;
+          }
+          100% {
+            transform: translate(0, 0) rotate(-360deg) scale(1);
+            opacity: 0.35;
           }
         }
         @keyframes rotate {
