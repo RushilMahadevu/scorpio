@@ -6,6 +6,7 @@ import { StudentSidebar } from "@/components/student-sidebar";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
+import { NavigationChatbot } from "@/components/navigation-chatbot";
 
 export default function StudentLayout({
   children,
@@ -25,6 +26,7 @@ export default function StudentLayout({
         <main className="flex-1 overflow-auto">
           <div className="p-8">{children}</div>
         </main>
+        <NavigationChatbot userRole="student" />
       </div>
     </ProtectedRoute>
   );

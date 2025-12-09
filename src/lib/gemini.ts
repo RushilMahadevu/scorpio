@@ -8,6 +8,7 @@ export async function explainPhysicsConcept(concept: string): Promise<string> {
     const prompt = `Explain the physics concept: "${concept}" in simple terms suitable for a high school student. Keep it concise.`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
+    console.log("Explain concept response:", response);
     return response.text();
   } catch (error) {
     console.error("Error explaining concept:", error);

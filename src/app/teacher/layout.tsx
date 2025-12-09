@@ -6,6 +6,7 @@ import { TeacherSidebar } from "@/components/teacher-sidebar";
 import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
 import { SpaceBackground } from "@/components/ui/space-background";
+import { NavigationChatbot } from "@/components/navigation-chatbot";
 
 export default function TeacherLayout({
   children,
@@ -25,6 +26,7 @@ export default function TeacherLayout({
         <main className="flex-1 overflow-auto">
           <div className="p-8">{children}</div>
         </main>
+        <NavigationChatbot userRole="teacher" />
       </div>
     </ProtectedRoute>
   );
