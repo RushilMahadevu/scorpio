@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -24,11 +25,13 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>{children}</AuthProvider>
+          <SpaceEffectsProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </SpaceEffectsProvider>
         </ThemeProvider>
       </body>
     </html>

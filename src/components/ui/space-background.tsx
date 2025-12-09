@@ -1,11 +1,19 @@
 "use client";
 
+import { useSpaceEffects } from "@/contexts/space-effects-context";
+
 export function SpaceBackground() {
+  const { spaceEffectsEnabled } = useSpaceEffects();
+
+  if (!spaceEffectsEnabled) {
+    return <div className="fixed inset-0 -z-10 overflow-hidden bg-background" />;
+  }
+
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
       {/* Wrapper that reduces opacity in light mode */}
       <div className="absolute inset-0 opacity-50 dark:opacity-70 transition-opacity duration-300">
-        {/* Layer 1 - slow drift */}
+        {/* EFFECT: Drifting Stars Layer 1 - slow horizontal drift */}
         <div 
           className="absolute inset-0 animate-[drift_60s_linear_infinite]"
           style={{
@@ -34,7 +42,8 @@ export function SpaceBackground() {
             backgroundSize: '720px 200px',
           }}
         />
-        {/* Layer 2 - medium drift, opposite direction */}
+        
+        {/* EFFECT: Drifting Stars Layer 2 - medium drift, opposite direction */}
         <div 
           className="absolute inset-0 opacity-60 animate-[drift-reverse_45s_linear_infinite]"
           style={{
@@ -58,7 +67,8 @@ export function SpaceBackground() {
             backgroundSize: '660px 200px',
           }}
         />
-        {/* Layer 3 - fast subtle twinkle */}
+        
+        {/* EFFECT: Twinkling Stars - subtle pulsing */}
         <div 
           className="absolute inset-0 opacity-30 animate-[twinkle_4s_ease-in-out_infinite]"
           style={{
@@ -75,6 +85,80 @@ export function SpaceBackground() {
               radial-gradient(0.5px 0.5px at 475px 155px, currentColor, transparent)
             `,
             backgroundSize: '500px 200px',
+          }}
+        />
+        
+        {/* EFFECT: Shooting Stars - occasional streaks */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute w-[2px] h-[2px] bg-current rounded-full blur-[1px] animate-[shootingStar_3s_ease-out_infinite]" 
+               style={{ top: '20%', left: '-5%', animationDelay: '0s' }} />
+          <div className="absolute w-[2px] h-[2px] bg-current rounded-full blur-[1px] animate-[shootingStar_4s_ease-out_infinite]" 
+               style={{ top: '60%', left: '-5%', animationDelay: '8s' }} />
+          <div className="absolute w-[2px] h-[2px] bg-current rounded-full blur-[1px] animate-[shootingStar_3.5s_ease-out_infinite]" 
+               style={{ top: '35%', left: '-5%', animationDelay: '16s' }} />
+        </div>
+
+        {/* EFFECT: Variable Star Sizes - adds depth with larger stars */}
+        <div 
+          className="absolute inset-0 opacity-40 animate-[drift_80s_linear_infinite]"
+          style={{
+            backgroundImage: `
+              radial-gradient(3px 3px at 150px 50px, currentColor, transparent),
+              radial-gradient(2.5px 2.5px at 400px 120px, currentColor, transparent),
+              radial-gradient(3.5px 3.5px at 250px 160px, currentColor, transparent),
+              radial-gradient(2px 2px at 550px 80px, currentColor, transparent),
+              radial-gradient(3px 3px at 350px 30px, currentColor, transparent)
+            `,
+            backgroundSize: '720px 200px',
+          }}
+        />
+
+        {/* EFFECT: Pulsing Stars - individual stars with staggered pulse */}
+        <div 
+          className="absolute inset-0 animate-[pulse_3s_ease-in-out_infinite]"
+          style={{
+            backgroundImage: `
+              radial-gradient(2px 2px at 100px 90px, currentColor, transparent),
+              radial-gradient(1.5px 1.5px at 300px 120px, currentColor, transparent)
+            `,
+            backgroundSize: '720px 200px',
+            animationDelay: '0s'
+          }}
+        />
+        <div 
+          className="absolute inset-0 animate-[pulse_4s_ease-in-out_infinite]"
+          style={{
+            backgroundImage: `
+              radial-gradient(2.5px 2.5px at 200px 60px, currentColor, transparent),
+              radial-gradient(1.5px 1.5px at 500px 140px, currentColor, transparent)
+            `,
+            backgroundSize: '720px 200px',
+            animationDelay: '1.5s'
+          }}
+        />
+
+        {/* EFFECT: Nebula Clouds - subtle morphing background blobs */}
+        <div 
+          className="absolute inset-0 opacity-[0.15] animate-[nebula_30s_ease-in-out_infinite]"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle 200px at 20% 30%, currentColor, transparent),
+              radial-gradient(circle 300px at 80% 70%, currentColor, transparent)
+            `,
+          }}
+        />
+
+        {/* EFFECT: Slow Rotation - very subtle rotation of entire starfield */}
+        <div 
+          className="absolute inset-0 opacity-20 animate-[rotate_240s_linear_infinite]"
+          style={{
+            backgroundImage: `
+              radial-gradient(1px 1px at 50% 20%, currentColor, transparent),
+              radial-gradient(1px 1px at 30% 50%, currentColor, transparent),
+              radial-gradient(1px 1px at 70% 80%, currentColor, transparent),
+              radial-gradient(1.5px 1.5px at 60% 60%, currentColor, transparent)
+            `,
+            backgroundSize: '100% 100%',
           }}
         />
       </div>
@@ -102,6 +186,45 @@ export function SpaceBackground() {
           }
           50% {
             opacity: 0.6;
+          }
+        }
+        @keyframes shootingStar {
+          0% {
+            transform: translate(0, 0) rotate(-45deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          100% {
+            transform: translate(120vw, 60vh) rotate(-45deg);
+            opacity: 0;
+          }
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.4;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        @keyframes nebula {
+          0%, 100% {
+            transform: scale(1) translate(0, 0);
+            opacity: 0.02;
+          }
+          50% {
+            transform: scale(1.2) translate(10px, 10px);
+            opacity: 0.04;
+          }
+        }
+        @keyframes rotate {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
           }
         }
       `}</style>
