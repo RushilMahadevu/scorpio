@@ -18,8 +18,6 @@ export default function Home() {
       } else if (role === "student") {
         router.push("/student");
       } else {
-        // If role is null, maybe stay here or go to login?
-        // For now, let's go to login to be safe
         router.push("/login");
       }
     }

@@ -124,6 +124,7 @@ export default function StudentGradesPage() {
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Dialog>
                         <DialogTrigger asChild>
@@ -160,7 +161,6 @@ export default function StudentGradesPage() {
                           </div>
                         </DialogContent>
                       </Dialog>
-                    </TableCell>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -1,79 +1,83 @@
 # Physics Platform (Scorpio)
 
-A comprehensive educational platform built with Next.js 16 for physics teachers and students, featuring AI-powered tutoring, assignment management, and real-time collaboration.
+A modern, scalable educational platform built with Next.js 15 and React 19, featuring AI-powered tutoring, intelligent document processing, and immersive space-themed UI. Designed for physics teachers and students with a focus on clean architecture, type safety, and exceptional user experience.
 
-## Features
+## 🚀 Key Features
+
+| Feature | Technology | Description |
+|---------|-----------|-------------|
+| **AI-Powered Tutoring** | Google Gemini 2.0 Flash | Context-aware explanations with step-by-step problem solving and adaptive learning responses |
+| **Mathematical Rendering** | KaTeX + React | Real-time LaTeX rendering with custom math builder interface for complex physics equations |
+| **Document Intelligence** | PDF.js + Gemini Vision | Extract and analyze content from PDFs and images with OCR and AI-powered content understanding |
+| **Immersive UI** | Canvas API + Framer Motion | Multi-layered parallax space background with smooth animations and transitions |
+| **Real-time Sync** | Cloud Firestore | Optimistic updates, offline support, and real-time collaboration with efficient query patterns |
+| **Type-Safe Forms** | React Hook Form + Zod | Runtime validation with TypeScript inference for bulletproof form handling |
+| **Role-Based Access** | Firebase Auth + Middleware | Server-side authentication with granular permission controls and route protection |
+
+## 💡 Core Capabilities
 
 ### For Teachers
-- **Assignment Management**: Create, distribute, and track physics assignments
-- **Student Management**: Monitor student progress and performance
-- **Grading System**: Review and grade student submissions with detailed feedback
-- **Resource Uploads**: Share educational materials and resources
-- **Analytics Dashboard**: View statistics on assignments, submissions, and student engagement
+- **Assignment Creation**: Rich text editor with math builder, PDF uploads, and flexible grading rubrics
+- **Intelligent Grading**: AI-assisted feedback generation and batch grading workflows
+- **Student Analytics**: Real-time progress tracking with visual dashboards and performance insights
+- **Resource Management**: Upload and organize educational materials with tagging and search
 
-### For Students
-- **Assignment Viewer**: Access and complete assigned physics problems
-- **AI Tutor**: Get step-by-step explanations of physics concepts powered by Google Gemini 2.5
-- **Submission Tracking**: Submit work and track submission history
-- **Grades Portal**: View grades and feedback from teachers
-- **Resources Library**: Access educational materials shared by teachers
+### For Students  
+- **Interactive Assignments**: Submit work with LaTeX support, file attachments, and revision tracking
+- **AI Tutor Chat**: Conversational interface with physics domain expertise and personalized hints
+- **Progress Dashboard**: Visual grade tracking, assignment calendar, and submission history
+- **Resource Library**: Searchable collection of teacher-shared materials and study guides
 
-### Core Capabilities
-- **Math Support**: LaTeX/KaTeX rendering for complex physics equations
-- **AI-Powered Assistance**: Google Gemini integration for concept explanations and problem-solving
-- **Role-Based Access**: Separate portals for teachers and students
-- **Real-time Updates**: Firebase-powered backend for instant synchronization
-- **Responsive Design**: Modern UI with dark mode support
-- **Markdown Support**: Rich text formatting for assignments and submissions
+## 🛠️ Tech Stack
 
-## Tech Stack
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | Next.js 15 + React 19 | Server Components, App Router, and concurrent rendering for optimal performance |
+| **Language** | TypeScript 5.7 | End-to-end type safety with strict mode and path aliases |
+| **Authentication** | Firebase Auth | JWT-based authentication with role claims and session management |
+| **Database** | Cloud Firestore | NoSQL document store with real-time listeners and composite indexes |
+| **AI/ML** | Google Gemini 2.0 Flash | Multi-modal AI for text generation, vision tasks, and document analysis |
+| **Document Processing** | PDF.js + Canvas API | Client-side PDF rendering, image extraction, and OCR preparation |
+| **Styling** | Tailwind CSS + OKLCH | Utility-first CSS with perceptually uniform color space |
+| **Components** | shadcn/ui + Radix UI | Headless, accessible components with custom theming |
+| **Math Rendering** | KaTeX + remark-math | Fast LaTeX rendering with SSR support and custom macros |
+| **Animations** | Framer Motion | Declarative animations with spring physics and gesture support |
+| **Forms** | React Hook Form + Zod | Uncontrolled inputs with schema validation and TypeScript inference |
+| **State Management** | React Context + Hooks | Collocated state with custom hooks for auth and theme |
+| **Icons** | Lucide React | Tree-shakeable icon library with consistent styling |
 
-- **Framework**: Next.js 16 with App Router and React 19
-- **Authentication**: Firebase Authentication
-- **Database**: Cloud Firestore
-- **AI Integration**: Google Gemini AI (via Firebase AI)
-- **Styling**: Tailwind CSS with shadcn/ui components
-- **Math Rendering**: KaTeX with remark-math and rehype-katex
-- **Forms**: React Hook Form with Zod validation
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
+## 🎨 Design System & Architecture
 
-## Design & Theme
+### Immersive Space Theme
+The platform features a **procedurally-generated space background** that creates an engaging, distraction-free learning environment:
 
-### Visual Identity
-The platform features a **space-themed design** that reflects the astronomical nature of the project name "Scorpio" and creates an engaging educational environment:
+| Component | Implementation | Technical Details |
+|-----------|---------------|-------------------|
+| **Space Background** | Canvas API + RequestAnimationFrame | Multi-layered parallax starfield with 200+ animated stars, optimized rendering with culling |
+| **Parallax Layers** | Transform3D + CSS Variables | Three depth layers (0.2x, 0.5x, 1.0x speed) creating immersive depth perception |
+| **Performance** | React Context + useMemo | Centralized animation loop, memoized calculations, 60fps rendering |
+| **Adaptive Opacity** | CSS Custom Properties | Dynamic opacity based on theme (50% light, 70% dark) for optimal contrast |
 
-- **Animated Space Background**: A subtle, multi-layered starfield with animated drift effects that creates depth and movement
-- **Custom Logos**: 
-  - **Orbit Logo**: Atomic/orbital visualization representing physics concepts
-  - **Compass Logo**: Navigation and guidance symbolism for the learning journey
+### Color Science
+Built on **OKLCH color space** for perceptually uniform colors and consistent lightness across hues:
 
-### Color System
-Built on **OKLCH color space** for perceptually uniform colors across the interface:
+| Theme | Technique | Benefits |
+|-------|-----------|----------|
+| **OKLCH Color Space** | Perceptual uniformity | Colors appear equally bright regardless of hue, better than HSL/RGB |
+| **Light Mode** | High contrast (0.99/0.09) | Maximum readability with subtle grays for hierarchy |
+| **Dark Mode** | Deep space aesthetic (0.09/0.99) | Reduced eye strain with AMOLED-friendly true blacks |
+| **Theme Switching** | View Transitions API | Smooth morphing between themes without layout shift |
+| **System Detection** | prefers-color-scheme | Auto-detect OS preference with localStorage persistence |
 
-- **Light Mode**: Clean, bright interface with high contrast for readability
-  - Background: Near-white (oklch 0.99)
-  - Foreground: Near-black (oklch 0.09)
-  - Subtle grays for secondary elements
+### Component Architecture
 
-- **Dark Mode**: Deep space aesthetic with comfortable contrast
-  - Background: Deep black (oklch 0.09)
-  - Foreground: Near-white (oklch 0.99)
-  - Muted colors for reduced eye strain
-
-- **Adaptive Opacity**: Space background reduces opacity in light mode (50%) and increases in dark mode (70%) for optimal visibility
-
-### Theme Features
-- **Seamless Theme Switching**: View transitions API for smooth light/dark mode changes
-- **System Preference Detection**: Automatically matches user's OS theme preference
-- **Persistent Preferences**: Theme choice saved across sessions
-- **Accessible Contrast**: WCAG-compliant color ratios for all text elements
-
-### Component Design Philosophy
-- **shadcn/ui**: High-quality, accessible components with consistent styling
-- **Responsive Layout**: Mobile-first design adapting to all screen sizes
-- **Modern Aesthetics**: Clean, minimal interface that doesn't distract from learning
-- **Physics-Appropriate**: Professional appearance suitable for educational use
+| Principle | Implementation | Impact |
+|-----------|---------------|--------|
+| **Composition over Inheritance** | Radix UI primitives + custom logic | Flexible, reusable components without prop drilling |
+| **Headless UI Pattern** | Separate logic from presentation | Accessible by default, easy to style and customize |
+| **Responsive Design** | Mobile-first + Tailwind breakpoints | Single codebase scales from 320px to 4K displays |
+| **Type Safety** | TypeScript strict mode + discriminated unions | Catch errors at compile time, better IDE support |
+| **Accessibility** | ARIA labels + keyboard navigation | WCAG 2.1 Level AA compliant, screen reader tested |
 
 ## Project Structure
 
@@ -183,25 +187,47 @@ The application uses the following Firestore collections:
 - `submissions`: Student assignment submissions
 - `resources`: Educational materials and uploads
 
-## Key Features Implementation
+## 🧠 Advanced Features & Implementation
 
-### AI Tutoring
-The platform integrates Google Gemini AI for:
-- Explaining physics concepts in simple terms
-- Providing step-by-step problem-solving guidance
-- Answering student questions about physics topics
+### AI-Powered Document Intelligence
 
-### Math Rendering
-Mathematical equations are rendered using KaTeX, supporting:
-- Inline math expressions
-- Block-level equations
-- Complex physics formulas
+| Feature | Technology Stack | Implementation Details |
+|---------|-----------------|----------------------|
+| **PDF Processing** | PDF.js + Canvas Rendering | Client-side PDF parsing, page-by-page rendering with image extraction |
+| **Image Analysis** | Gemini Vision API | Multi-modal AI analyzes images and PDFs to extract physics problems, diagrams, and equations |
+| **OCR & Text Extraction** | Canvas→Base64→Gemini | Convert PDF pages to images, process with vision model for accurate text extraction |
+| **Smart Content Understanding** | Prompt Engineering | Context-aware prompts guide AI to identify problem statements, variables, and solution steps |
+| **Assignment Generation** | Structured Output | AI extracts problems from documents and formats them into assignment templates |
 
-### Authentication Flow
-1. Users sign up as either teacher or student
-2. Role-based routing to appropriate dashboard
-3. Protected routes ensure secure access
-4. Firebase Authentication handles session management
+### Mathematical Rendering Engine
+
+| Component | Technology | Technical Approach |
+|-----------|-----------|-------------------|
+| **Real-time LaTeX** | KaTeX + React | Fast, server-side compatible math rendering without MathJax bloat |
+| **Math Builder UI** | Custom Modal Component | Visual interface for constructing equations with LaTeX preview |
+| **Equation Parsing** | remark-math + rehype-katex | Unified pipeline for Markdown→Math AST→Rendered HTML |
+| **Custom Macros** | KaTeX Macros | Physics-specific shortcuts (e.g., `\vec`, `\unit`, `\deriv`) |
+| **Copy-Paste Support** | Clipboard API | Preserve LaTeX source when copying rendered equations |
+
+### Intelligent AI Tutoring System
+
+| Feature | Implementation | Benefit |
+|---------|---------------|---------|
+| **Context Awareness** | Conversation History + Assignment Context | AI references previous questions and assignment details for coherent tutoring |
+| **Adaptive Responses** | Temperature Tuning (0.7) | Balanced creativity and accuracy for educational explanations |
+| **Step-by-Step Guidance** | Structured Prompts | AI breaks down problems into manageable steps without giving direct answers |
+| **Physics Domain Expertise** | Domain-Specific System Prompts | Constrained to physics topics with proper terminology and notation |
+| **Multi-Turn Conversations** | Firestore Message History | Persistent chat sessions with efficient pagination and caching |
+
+### Authentication & Security Architecture
+
+| Layer | Implementation | Security Features |
+|-------|---------------|-------------------|
+| **JWT Tokens** | Firebase Auth | Signed tokens with role claims, auto-refresh, and secure transmission |
+| **Role-Based Access Control** | Custom Claims + Middleware | Server-side route protection with granular permissions (teacher/student) |
+| **Protected Routes** | HOC Pattern + useAuth Hook | Client-side route guards with loading states and redirect logic |
+| **Session Management** | Firebase onAuthStateChanged | Real-time auth state synchronization across tabs and devices |
+| **Secure API Calls** | Server Actions + Auth Context | Validate user identity on every mutation, prevent CSRF attacks |
 
 ## Development
 
