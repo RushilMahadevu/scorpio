@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, type WorkFile } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, FileText, Image as ImageIcon, Download } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -43,6 +43,7 @@ interface Submission {
   answers: Answer[];
   score: number | null;
   graded: boolean;
+  workFiles?: WorkFile[];
 }
 
 interface Assignment {
@@ -228,6 +229,80 @@ export default function GradeSubmissionPage() {
               <span className="text-4xl font-bold">{currentScore.earned}</span>
               <span className="text-2xl text-muted-foreground">/ {currentScore.total}</span>
               <span className="text-2xl font-semibold ml-4">({currentScore.percentage}%)</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {submission.workFiles && submission.workFiles.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Submitted Work Files
+            </CardTitle>
+            <CardDescription>
+              Student uploaded {submission.workFiles.length} {submission.workFiles.length === 1 ? "file" : "files"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {submission.workFiles.map((file, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between p-3 bg-secondary rounded-md">
+                  <div className="flex items-center gap-3">
+                    {file.type === "application/pdf" ? (
+                      <FileText className="h-5 w-5 text-red-500" />
+                    ) : (
+                      <ImageIcon className="h-5 w-5 text-blue-500" />
+                    )}
+                    <div>
+                      <p className="font-medium">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(file.size / 1024).toFixed(1)} KB • Uploaded {new Date(file.uploadedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = file.data;
+                      link.download = file.name;
+                      link.click();
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+                {file.type.startsWith('image/') && (
+                  <div className="border rounded-md p-2 bg-background">
+                    <img 
+                      src={file.data} 
+                      alt={file.name}
+                      className="max-w-full h-auto max-h-96 mx-auto rounded"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  submission.workFiles?.forEach(file => {
+                    const link = document.createElement('a');
+                    link.href = file.data;
+                    link.download = file.name;
+                    link.click();
+                  });
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download All Files
+              </Button>
             </div>
           </CardContent>
         </Card>

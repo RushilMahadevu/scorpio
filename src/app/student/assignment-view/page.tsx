@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, collection, addDoc, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, convertFilesToBase64, type WorkFile } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { gradeResponse } from "@/lib/gemini";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play } from "lucide-react";
+import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { MathInputField } from "@/components/math-input";
 import ReactMarkdown from "react-markdown";
@@ -38,6 +38,7 @@ interface Assignment {
   questions: Question[];
   gradingType?: "ai" | "manual";
   timeLimit?: number;
+  requireWorkSubmission?: boolean;
 }
 
 function AssignmentDetailContent() {
@@ -56,6 +57,10 @@ function AssignmentDetailContent() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
+  const [inGracePeriod, setInGracePeriod] = useState(false);
+  
+  // File Upload State
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -73,6 +78,7 @@ function AssignmentDetailContent() {
             questions: data.questions || [],
             gradingType: data.gradingType || "ai",
             timeLimit: data.timeLimit,
+            requireWorkSubmission: data.requireWorkSubmission || false,
           };
           setAssignment(assignmentData);
 
@@ -136,7 +142,21 @@ function AssignmentDetailContent() {
 
     if (timeLeft <= 0) {
       setTimerActive(false);
-      handleSubmit(); // Auto-submit
+      // If work submission is required and there are timed limits, enter grace period
+      if (assignment?.requireWorkSubmission && assignment?.timeLimit) {
+        setInGracePeriod(true);
+        setTimeLeft(300); // 5 minutes = 300 seconds
+        setTimerActive(true);
+      } else {
+        handleSubmit(); // Auto-submit
+      }
+      return;
+    }
+
+    // In grace period, auto-submit when time runs out
+    if (inGracePeriod && timeLeft <= 0) {
+      setTimerActive(false);
+      handleSubmit();
       return;
     }
 
@@ -148,7 +168,7 @@ function AssignmentDetailContent() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timerActive, timeLeft]);
+  }, [timerActive, timeLeft, inGracePeriod, assignment]);
 
   const handleStartAssignment = () => {
     if (!assignment || !user) return;
@@ -161,6 +181,35 @@ function AssignmentDetailContent() {
       setTimerActive(true);
     }
     setHasStarted(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+    
+    files.forEach(file => {
+      const isValidType = file.type === "application/pdf" || file.type.startsWith("image/");
+      const isValidSize = file.size <= 800 * 1024; // 800KB limit per file (Firestore has 1MB doc limit)
+      
+      if (!isValidType) {
+        invalidFiles.push(`${file.name}: Invalid type (PDF or images only)`);
+      } else if (!isValidSize) {
+        invalidFiles.push(`${file.name}: Too large (max 800KB)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+    
+    if (invalidFiles.length > 0) {
+      alert("Some files were not added:\n" + invalidFiles.join("\n"));
+    }
+    
+    setUploadedFiles([...uploadedFiles, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
   };
 
   const formatTime = (seconds: number) => {
@@ -177,9 +226,22 @@ function AssignmentDetailContent() {
 
   const handleSubmit = async () => {
     if (!assignment || !user) return;
+    
+    // Validate work submission
+    if (assignment.requireWorkSubmission && uploadedFiles.length === 0) {
+      alert("Please upload your work (PDF or images) before submitting.");
+      return;
+    }
+    
     setSubmitting(true);
 
     try {
+      // Convert files to base64 (no Firebase Storage needed - free Spark plan compatible)
+      let workFilesData: WorkFile[] = [];
+      if (uploadedFiles.length > 0) {
+        workFilesData = await convertFilesToBase64(uploadedFiles);
+      }
+
       const answersArray = assignment.questions.map((q) => ({
         questionId: q.id,
         questionText: q.text,
@@ -253,7 +315,8 @@ function AssignmentDetailContent() {
         graded: isGraded,
         score: isGraded ? finalScore : null,
         totalPoints: maxScore,
-        earnedPoints: totalScore
+        earnedPoints: totalScore,
+        workFiles: workFilesData,
       });
 
       setSubmitted(true);
@@ -300,6 +363,16 @@ function AssignmentDetailContent() {
               <span className="text-2xl font-bold">{assignment.questions.length}</span>
             </div>
 
+            {assignment.requireWorkSubmission && (
+              <div className="flex flex-col items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-700">
+                  <Upload className="h-5 w-5" />
+                  <span className="font-semibold">Work Submission Required</span>
+                </div>
+                <span className="text-sm text-blue-600">Upload PDF or images</span>
+              </div>
+            )}
+
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm text-left">
               <div className="flex items-center gap-2 font-semibold mb-1">
                 <AlertTriangle className="h-4 w-4" />
@@ -307,6 +380,12 @@ function AssignmentDetailContent() {
               </div>
               <ul className="list-disc list-inside space-y-1">
                 {assignment.timeLimit && <li>Once you start, the timer cannot be paused.</li>}
+                {assignment.requireWorkSubmission && (
+                  <li className="font-semibold">You must upload your work (PDF/images) to submit.</li>
+                )}
+                {assignment.requireWorkSubmission && assignment.timeLimit && (
+                  <li>You'll have 5 extra minutes to upload work after time expires.</li>
+                )}
                 <li>Do not refresh the page or close the browser window.</li>
                 <li>Ensure you have a stable internet connection.</li>
               </ul>
@@ -342,9 +421,14 @@ function AssignmentDetailContent() {
           </div>
           
           {timeLeft !== null && !submitted && (
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-md font-mono font-bold ${timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
-              <Clock className="h-4 w-4" />
-              {formatTime(timeLeft)}
+            <div className="flex flex-col items-end gap-1">
+              {inGracePeriod && (
+                <span className="text-xs text-orange-600 font-semibold">GRACE PERIOD</span>
+              )}
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-md font-mono font-bold ${inGracePeriod ? 'bg-orange-100 text-orange-600' : timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
+                <Clock className="h-4 w-4" />
+                {formatTime(timeLeft)}
+              </div>
             </div>
           )}
         </div>
@@ -438,8 +522,86 @@ function AssignmentDetailContent() {
         ))}
       </div>
 
+      {!submitted && assignment.requireWorkSubmission && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Upload Your Work {assignment.requireWorkSubmission && <span className="text-red-500">*</span>}
+            </CardTitle>
+            <CardDescription>
+              {inGracePeriod 
+                ? "Time's up! You have 5 minutes to upload your work before automatic submission."
+                : "Upload PDFs or images of your work. Required to submit this assignment."
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                id="workFiles"
+                accept="application/pdf,image/*"
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={submitted}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('workFiles')?.click()}
+                disabled={submitted}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Choose Files
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                PDF or Images (Max 800KB each)
+              </span>
+            </div>
+
+            {uploadedFiles.length > 0 && (
+              <div className="space-y-2">
+                <Label>Uploaded Files ({uploadedFiles.length})</Label>
+                <div className="space-y-2">
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-secondary rounded-md">
+                      <div className="flex items-center gap-2">
+                        {file.type === "application/pdf" ? (
+                          <FileText className="h-4 w-4" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
+                        <span className="text-sm truncate max-w-xs">{file.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({(file.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(index)}
+                        disabled={submitted}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {!submitted && (
-        <Button onClick={handleSubmit} disabled={submitting} className="w-full">
+        <Button 
+          onClick={handleSubmit} 
+          disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
+          className="w-full"
+        >
           {submitting ? "Submitting..." : (
             <>
               <Send className="h-4 w-4 mr-2" />

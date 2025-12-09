@@ -31,6 +31,7 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState("");
   const [timeLimit, setTimeLimit] = useState<number | "">("");
   const [gradingType, setGradingType] = useState<"ai" | "manual">("ai");
+  const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -117,6 +118,7 @@ export default function CreateAssignmentPage() {
         dueDate: new Date(dueDate),
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
+        requireWorkSubmission,
         questions,
         createdAt: new Date(),
       });
@@ -274,9 +276,6 @@ export default function CreateAssignmentPage() {
             </div>
             <div className="space-y-2">
               <Label>Grading Type</Label>
-            </div>
-            <div className="space-y-2">
-              <Label>Grading Type</Label>
               <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex gap-4">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="ai" id="grading-ai" />
@@ -291,6 +290,21 @@ export default function CreateAssignmentPage() {
                 AI Graded assignments are graded immediately upon submission. Teacher Graded assignments require manual review.
               </p>
             </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="requireWork"
+                checked={requireWorkSubmission}
+                onChange={(e) => setRequireWorkSubmission(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="requireWork" className="cursor-pointer">
+                Require students to submit work (PDF/Images)
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              When enabled, students must upload their work (PDFs or images) to submit the assignment. For timed tests, students will have 5 additional minutes after time expires to upload their work.
+            </p>
           </CardContent>
         </Card>
 
