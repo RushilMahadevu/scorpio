@@ -8,7 +8,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Clock, CheckCircle } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { FileText, Clock, CheckCircle, ChevronDown } from "lucide-react";
 
 interface Assignment {
   id: string;
@@ -23,6 +24,8 @@ export default function StudentAssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>("all");
+  const [sort, setSort] = useState<string>("dueDateAsc");
 
   useEffect(() => {
     async function fetchData() {
@@ -52,27 +55,98 @@ export default function StudentAssignmentsPage() {
 
   const isPastDue = (date: Date) => new Date(date) < new Date();
 
+  // Filtering
+  let filteredAssignments = assignments.filter((assignment) => {
+    const isSubmitted = submissions.has(assignment.id);
+    const pastDue = isPastDue(assignment.dueDate);
+    if (filter === "submitted") return isSubmitted;
+    if (filter === "pending") return !isSubmitted && !pastDue;
+    if (filter === "pastDue") return !isSubmitted && pastDue;
+    return true;
+  });
+
+  // Sorting
+  filteredAssignments = filteredAssignments.sort((a, b) => {
+    if (sort === "dueDateAsc") {
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    } else if (sort === "dueDateDesc") {
+      return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+    } else if (sort === "titleAsc") {
+      return a.title.localeCompare(b.title);
+    } else if (sort === "titleDesc") {
+      return b.title.localeCompare(a.title);
+    }
+    return 0;
+  });
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Assignments</h1>
         <p className="text-muted-foreground">View and complete your assignments</p>
       </div>
+      <div className="flex flex-wrap gap-4 items-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2 min-w-[140px]">
+              Status: {(() => {
+                if (filter === "all") return "All";
+                if (filter === "submitted") return "Submitted";
+                if (filter === "pending") return "Pending";
+                if (filter === "pastDue") return "Past Due";
+                return "All";
+              })()} <ChevronDown className="w-4 h-4 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onSelect={() => setFilter("all")}>
+              All
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setFilter("submitted")}>
+              Submitted
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setFilter("pending")}>
+              Pending
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setFilter("pastDue")}>
+              Past Due
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2 min-w-[180px]">
+              Sort by: {(() => {
+                if (sort === "dueDateAsc") return "Due Date (Earliest)";
+                if (sort === "dueDateDesc") return "Due Date (Latest)";
+                if (sort === "titleAsc") return "Title (A-Z)";
+                if (sort === "titleDesc") return "Title (Z-A)";
+                return "Due Date (Earliest)";
+              })()} <ChevronDown className="w-4 h-4 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onSelect={() => setSort("dueDateAsc")}>Due Date (Earliest)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("dueDateDesc")}>Due Date (Latest)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("titleAsc")}>Title (A-Z)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("titleDesc")}>Title (Z-A)</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {loading ? (
         <p className="text-muted-foreground">Loading...</p>
-      ) : assignments.length === 0 ? (
+      ) : filteredAssignments.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">No assignments yet.</p>
+            <p className="text-muted-foreground">No assignments found.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {assignments.map((assignment) => {
+          {filteredAssignments.map((assignment) => {
             const isSubmitted = submissions.has(assignment.id);
             const pastDue = isPastDue(assignment.dueDate);
-            
             return (
               <Card key={assignment.id}>
                 <CardHeader>
