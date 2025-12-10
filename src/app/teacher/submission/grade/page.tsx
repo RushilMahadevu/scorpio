@@ -200,6 +200,16 @@ export default function GradeSubmissionPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {submission.unfocusCount !== undefined && (
+        <Card className="bg-red-50 border-red-200 dark:bg-red-900 dark:border-red-700">
+          <CardHeader>
+            <CardTitle className="dark:text-white">Tab Switches Detected</CardTitle>
+            <CardDescription>
+              Student switched away from the assignment tab <span className="font-bold text-red-600 dark:text-red-300">{submission.unfocusCount}</span> time{submission.unfocusCount === 1 ? '' : 's'} during this attempt.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>

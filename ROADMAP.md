@@ -6,11 +6,11 @@ A realistic, solo-developer feature plan for gradual improvement.
 
 ## Feature Sequence
 
-- [ ] Fix any existing bugs in assignment creation/submission flow
+- [x] Fix any existing bugs in assignment creation/submission flow
 - [ ] Add assignment deadline warnings (show "due soon" badges)
 - [ ] Improve AI tutor response formatting with better markdown rendering
 - [x] File Attachments: Let students attach PDFs/images to submissions
-- [ ] Draft Assignments: Save assignments as drafts before publishing
+- [x] Draft Assignments: Save assignments as drafts before publishing
 - [ ] Better Math Input: Improve the KaTeX equation editor UX
 - [ ] Delete Functionality: Allow deleting assignments and submissions
 - [ ] Edit Assignments: Teachers can edit published assignments

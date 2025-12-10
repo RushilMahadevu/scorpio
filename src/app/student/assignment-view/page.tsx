@@ -39,6 +39,8 @@ interface Assignment {
   gradingType?: "ai" | "manual";
   timeLimit?: number;
   requireWorkSubmission?: boolean;
+  type?: string;
+  googleFormLink?: string;
 }
 
 function AssignmentDetailContent() {
@@ -53,15 +55,29 @@ function AssignmentDetailContent() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [existingSubmission, setExistingSubmission] = useState<any>(null);
-  
+
   // Timer State
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [inGracePeriod, setInGracePeriod] = useState(false);
-  
+
   // File Upload State
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+  // Tab unfocus tracking
+  const [unfocusCount, setUnfocusCount] = useState(0);
+  const [showUnfocusPopup, setShowUnfocusPopup] = useState(false);
+
+  useEffect(() => {
+    const handleBlur = () => {
+      setUnfocusCount((count) => count + 1);
+      setShowUnfocusPopup(true);
+      setTimeout(() => setShowUnfocusPopup(false), 2000);
+    };
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, []);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -278,10 +294,8 @@ function AssignmentDetailContent() {
               feedback = await gradeResponse(ans.questionText, ans.answer);
               const scoreMatch = feedback.match(/(\d+)\/10|\b(\d+)%/);
               let rawScore = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 70;
-              
               // Normalize rawScore (which might be out of 10 or 100) to the question points
               if (rawScore <= 10) rawScore = (rawScore / 10) * 100; // Convert to percentage
-              
               score = (rawScore / 100) * points;
             } else if (question.correctAnswer) {
               const isCorrect = ans.answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
@@ -294,7 +308,6 @@ function AssignmentDetailContent() {
             return { ...ans, feedback, score, maxPoints: points };
           })
         );
-
         // Calculate final percentage score
         finalScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
         isGraded = true;
@@ -323,6 +336,7 @@ function AssignmentDetailContent() {
         totalPoints: maxScore,
         earnedPoints: totalScore,
         workFiles: workFilesData,
+        unfocusCount,
       });
 
       setSubmitted(true);
@@ -445,6 +459,26 @@ function AssignmentDetailContent() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
+      {showUnfocusPopup && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            background: 'red',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            zIndex: 1000,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            border: '2px solid #fff',
+          }}
+          className="dark:bg-red-900 dark:text-white dark:border-red-700"
+        >
+          <div style={{fontWeight: 'bold'}}>You left the assignment tab!</div>
+          <div style={{fontSize: '0.95em'}}>Please stay in this tab until you submit.</div>
+        </div>
+      )}
       <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
         <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4 mr-2" />
