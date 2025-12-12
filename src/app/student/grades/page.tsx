@@ -27,6 +27,7 @@ interface Submission {
   score: number | null;
   graded: boolean;
   feedback?: string;
+  answers?: any;
 }
 
 export default function StudentGradesPage() {
@@ -62,10 +63,11 @@ export default function StudentGradesPage() {
             score: data.score,
             graded: data.graded,
             feedback: data.feedback,
+            answers: data.answers,
           };
         }));
 
-        setSubmissions(submissionsData);
+        setSubmissions(submissionsData.filter(s => s.assignmentTitle !== 'Unknown Assignment'));
       } catch (error) {
         console.error("Error fetching grades:", error);
       } finally {
@@ -147,17 +149,51 @@ export default function StudentGradesPage() {
                                 {submission.graded ? `${submission.score}%` : "Pending"}
                               </Badge>
                             </div>
-                            
-                            <div>
-                              <h4 className="font-medium mb-2">Feedback</h4>
-                              <div className="p-4 border rounded-lg min-h-[100px] bg-card">
-                                {submission.feedback ? (
-                                  <p className="text-sm text-muted-foreground">{submission.feedback}</p>
-                                ) : (
-                                  <p className="text-sm text-muted-foreground italic">No feedback provided yet.</p>
-                                )}
+                            {/* Graded Copy Section */}
+                            {submission.graded && Array.isArray(submission.answers) && submission.answers.length > 0 && (
+                              <div>
+                                <h4 className="font-medium mb-3">Graded Copy</h4>
+
+                                <div
+                                  className="space-y-6 max-h-[600px] overflow-y-auto pr-6 pl-6 py-4 bg-muted/40 rounded-2xl w-full max-w-4xl mx-auto"
+                                  style={{ minWidth: 400 }}
+                                >
+                                  {submission.answers.map((q: any, idx: number) => (
+                                    <div
+                                      key={q.questionId || idx}
+                                      className="border rounded-xl p-6 bg-card space-y-4 shadow-sm"
+                                    >
+                                      <div className="flex items-start justify-between">
+                                        <p className="font-semibold text-base">
+                                          Q{idx + 1}
+                                        </p>
+                                        <Badge variant={typeof q.score === "number" ? "default" : "secondary"}>
+                                          {typeof q.score === "number" ? q.score : "-"}
+                                        </Badge>
+                                      </div>
+
+                                      <p className="text-base text-muted-foreground">
+                                        {q.questionText}
+                                      </p>
+
+                                      <div className="pt-3 border-t">
+                                        <p className="font-medium text-base mb-1">Your Answer</p>
+                                        <p className="text-base text-muted-foreground">
+                                          {q.answer?.trim() ? q.answer : <span className="italic">No answer</span>}
+                                        </p>
+                                      </div>
+
+                                      {q.feedback?.trim() && (
+                                        <div className="pt-3 border-t">
+                                          <p className="font-medium text-base mb-1">Feedback</p>
+                                          <p className="text-base text-muted-foreground">{q.feedback}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         </DialogContent>
                       </Dialog>

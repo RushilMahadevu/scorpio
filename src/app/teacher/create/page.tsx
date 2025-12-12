@@ -12,7 +12,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+// Collapsible section for advanced options
+function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border rounded mb-4">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between px-4 py-2 bg-muted hover:bg-muted/70 font-medium text-left"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        <span>{title}</span>
+        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </button>
+      {open && <div className="p-4">{children}</div>}
+    </div>
+  );
+}
 import { MathInputField } from "@/components/math-input";
 
 interface Question {
@@ -30,7 +48,7 @@ export default function CreateAssignmentPage() {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [timeLimit, setTimeLimit] = useState<number | "">("");
-  const [gradingType, setGradingType] = useState<"ai" | "manual">("ai");
+  const [gradingType, setGradingType] = useState<"ai" | "manual">("manual");
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
@@ -118,7 +136,7 @@ export default function CreateAssignmentPage() {
         title,
         description,
         dueDate: new Date(dueDate),
-        timeLimit: timeLimit === "" ? null : Number(timeLimit),
+        timeLimit: timeLimit === "" ? null : Number (timeLimit),
         gradingType,
         requireWorkSubmission,
         questions: isGoogleForm ? [] : questions,
@@ -136,95 +154,96 @@ export default function CreateAssignmentPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Create Assignment</h1>
-          <p className="text-muted-foreground">Create a new physics assignment for your students.</p>
+      {/* Header: Title and AI button */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-1">Create Assignment</h1>
+        <p className="text-muted-foreground mb-2">Create a new physics assignment for your students.</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-2">
+          <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+            <DialogTrigger asChild>
+              <Button variant="secondary">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate with AI
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Generate Questions with AI</DialogTitle>
+                <DialogDescription>
+                  Enter a topic and let AI create questions for you.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Topic</Label>
+                    <Input 
+                      placeholder="e.g. Kinematics, Thermodynamics" 
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Number of Questions</Label>
+                    <Input 
+                      type="number" 
+                      min={1} 
+                      max={10} 
+                      value={aiCount}
+                      onChange={(e) => setAiCount(parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Difficulty</Label>
+                    <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Easy" id="easy" />
+                        <Label htmlFor="easy">Easy</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Medium" id="medium" />
+                        <Label htmlFor="medium">Medium</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Hard" id="hard" />
+                        <Label htmlFor="hard">Hard</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Question Type</Label>
+                    <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="mixed" id="mixed" />
+                        <Label htmlFor="mixed">Mixed</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="multiple-choice" id="mcq" />
+                        <Label htmlFor="mcq">Multiple Choice</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true-false" id="tf" />
+                        <Label htmlFor="tf">True/False</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="short-answer" id="sa" />
+                        <Label htmlFor="sa">Short Answer</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="text" id="text" />
+                        <Label htmlFor="text">Free Response</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+              </div>
+              <DialogFooter>
+                  <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTopic}>
+                    {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Generate
+                  </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog open={aiOpen} onOpenChange={setAiOpen}>
-          <DialogTrigger asChild>
-            <Button variant="secondary">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate with AI
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Generate Questions with AI</DialogTitle>
-              <DialogDescription>
-                Enter a topic and let AI create questions for you.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Topic</Label>
-                  <Input 
-                    placeholder="e.g. Kinematics, Thermodynamics" 
-                    value={aiTopic}
-                    onChange={(e) => setAiTopic(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Number of Questions</Label>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    max={10} 
-                    value={aiCount}
-                    onChange={(e) => setAiCount(parseInt(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Difficulty</Label>
-                  <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Easy" id="easy" />
-                      <Label htmlFor="easy">Easy</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Medium" id="medium" />
-                      <Label htmlFor="medium">Medium</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Hard" id="hard" />
-                      <Label htmlFor="hard">Hard</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                  <Label>Question Type</Label>
-                  <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="mixed" id="mixed" />
-                      <Label htmlFor="mixed">Mixed</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="multiple-choice" id="mcq" />
-                      <Label htmlFor="mcq">Multiple Choice</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="true-false" id="tf" />
-                      <Label htmlFor="tf">True/False</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="short-answer" id="sa" />
-                      <Label htmlFor="sa">Short Answer</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="text" id="text" />
-                      <Label htmlFor="text">Free Response</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-            </div>
-            <DialogFooter>
-                <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTopic}>
-                  {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Generate
-                </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -234,33 +253,6 @@ export default function CreateAssignmentPage() {
             <CardDescription>Basic information about the assignment</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="googleFormAssignment"
-                            checked={isGoogleForm}
-                            onChange={(e) => setIsGoogleForm(e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300"
-                          />
-                          <Label htmlFor="googleFormAssignment" className="cursor-pointer">
-                            Google Form Assignment
-                          </Label>
-                        </div>
-                        {isGoogleForm && (
-                          <div className="space-y-2">
-                            <Label htmlFor="googleFormLink">Google Form Link</Label>
-                            <Input
-                              id="googleFormLink"
-                              value={googleFormLink}
-                              onChange={(e) => setGoogleFormLink(e.target.value)}
-                              placeholder="Paste the Google Form link here"
-                              required={isGoogleForm}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Students will complete this assignment via the provided Google Form.
-                            </p>
-                          </div>
-                        )}
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input
@@ -305,6 +297,12 @@ export default function CreateAssignmentPage() {
                 Set a time limit in minutes. Leave empty for no time limit.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Collapsible advanced options */}
+        <CollapsibleSection title="Advanced Options" defaultOpen={false}>
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label>Grading Type</Label>
               <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex gap-4">
@@ -336,8 +334,35 @@ export default function CreateAssignmentPage() {
             <p className="text-xs text-muted-foreground pl-6">
               When enabled, students must upload their work (PDFs or images) to submit the assignment. For timed tests, students will have 5 additional minutes after time expires to upload their work.
             </p>
-          </CardContent>
-        </Card>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="googleFormAssignment"
+                checked={isGoogleForm}
+                onChange={(e) => setIsGoogleForm(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="googleFormAssignment" className="cursor-pointer">
+                Google Form Assignment
+              </Label>
+            </div>
+            {isGoogleForm && (
+              <div className="space-y-2">
+                <Label htmlFor="googleFormLink">Google Form Link</Label>
+                <Input
+                  id="googleFormLink"
+                  value={googleFormLink}
+                  onChange={(e) => setGoogleFormLink(e.target.value)}
+                  placeholder="Paste the Google Form link here"
+                  required={isGoogleForm}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Students will complete this assignment via the provided Google Form.
+                </p>
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
 
         {!isGoogleForm && (
           <Card>
@@ -367,38 +392,26 @@ export default function CreateAssignmentPage() {
                       rows={3}
                     />
                     <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant={question.type === "text" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => updateQuestion(question.id, { type: "text" })}
-                      >
-                        Free Response
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={question.type === "short-answer" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => updateQuestion(question.id, { type: "short-answer" })}
-                      >
-                        Short Answer
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={question.type === "multiple-choice" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => updateQuestion(question.id, { type: "multiple-choice" })}
-                      >
-                        Multiple Choice
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={question.type === "true-false" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => updateQuestion(question.id, { type: "true-false", options: ["True", "False"] })}
-                      >
-                        True/False
-                      </Button>
+                      {[
+                        { type: "text", label: "Free Response" },
+                        { type: "short-answer", label: "Short Answer" },
+                        { type: "multiple-choice", label: "Multiple Choice" },
+                        { type: "true-false", label: "True/False" },
+                      ].map((btn) => (
+                        <Button
+                          key={btn.type}
+                          type="button"
+                          variant={question.type === btn.type ? "default" : "outline"}
+                          size="sm"
+                          onClick={() =>
+                            updateQuestion(question.id, btn.type === "true-false"
+                              ? { type: btn.type, options: ["True", "False"] }
+                              : { type: btn.type })
+                          }
+                        >
+                          {btn.label}
+                        </Button>
+                      ))}
                     </div>
                     {question.type === "multiple-choice" && (
                       <div className="space-y-2 pl-4">

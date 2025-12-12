@@ -36,31 +36,29 @@ export default function SubmissionsPage() {
         const submissionsData = await Promise.all(
           submissionsSnap.docs.map(async (submissionDoc) => {
             const data = submissionDoc.data();
-            let assignmentTitle = "Unknown Assignment";
-            
             try {
               const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
-              if (assignmentDoc.exists()) {
-                assignmentTitle = assignmentDoc.data().title;
+              if (!assignmentDoc.exists()) {
+                return null; // Filter out if assignment is deleted
               }
+              return {
+                id: submissionDoc.id,
+                assignmentId: data.assignmentId,
+                assignmentTitle: assignmentDoc.data().title,
+                answers: data.answers || [],
+                submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
+                graded: data.graded || false,
+                score: data.score,
+                feedback: data.feedback,
+              };
             } catch (e) {
               console.error("Error fetching assignment:", e);
+              return null;
             }
-
-            return {
-              id: submissionDoc.id,
-              assignmentId: data.assignmentId,
-              assignmentTitle,
-              answers: data.answers || [],
-              submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
-              graded: data.graded || false,
-              score: data.score,
-              feedback: data.feedback,
-            };
           })
         );
 
-        setSubmissions(submissionsData);
+        setSubmissions(submissionsData.filter(Boolean));
       } catch (error) {
         console.error("Error fetching submissions:", error);
       } finally {

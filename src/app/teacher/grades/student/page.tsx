@@ -20,12 +20,19 @@ interface Submission {
   graded: boolean;
 }
 
+interface AssignmentOption {
+  id: string;
+  title: string;
+}
+
 export default function StudentDetailsPage() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get('studentId');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [studentName, setStudentName] = useState("Student");
   const [loading, setLoading] = useState(true);
+  const [assignments, setAssignments] = useState<AssignmentOption[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<string>("");
 
   useEffect(() => {
     if (!studentId) {
@@ -35,13 +42,20 @@ export default function StudentDetailsPage() {
 
     async function fetchStudentData() {
       try {
+        // Fetch all assignments for filter dropdown
+        const assignmentsSnapshot = await getDocs(collection(db, "assignments"));
+        const assignmentOptions: AssignmentOption[] = assignmentsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          title: doc.data().title || "Untitled Assignment",
+        }));
+        setAssignments(assignmentOptions);
+
         // Fetch submissions
         const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
         const snapshot = await getDocs(q);
 
         const submissionsData = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
           const data = docSnapshot.data();
-          
           // Try to get student name from first submission if not available elsewhere
           if (data.studentName) setStudentName(data.studentName);
 
@@ -97,6 +111,11 @@ export default function StudentDetailsPage() {
     );
   }
 
+  // Filter submissions by selected assignment
+  const filteredSubmissions = selectedAssignment
+    ? submissions.filter((s) => s.assignmentId === selectedAssignment)
+    : submissions;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -111,13 +130,29 @@ export default function StudentDetailsPage() {
         </div>
       </div>
 
+      {/* Assignment Filter Dropdown */}
+      <div className="flex items-center gap-2">
+        <label htmlFor="assignment-filter" className="text-sm font-medium">Filter by Assignment:</label>
+        <select
+          id="assignment-filter"
+          className="border rounded px-2 py-1"
+          value={selectedAssignment}
+          onChange={(e) => setSelectedAssignment(e.target.value)}
+        >
+          <option value="">All Assignments</option>
+          {assignments.map((a) => (
+            <option key={a.id} value={a.id}>{a.title}</option>
+          ))}
+        </select>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Submissions</CardTitle>
           <CardDescription>All assignments submitted by this student.</CardDescription>
         </CardHeader>
         <CardContent>
-          {submissions.length === 0 ? (
+          {filteredSubmissions.length === 0 ? (
             <p className="text-muted-foreground">No submissions found.</p>
           ) : (
             <Table>
@@ -131,7 +166,7 @@ export default function StudentDetailsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {submissions.map((submission) => (
+                {filteredSubmissions.map((submission) => (
                   <TableRow key={submission.id}>
                     <TableCell className="font-medium">{submission.assignmentTitle}</TableCell>
                     <TableCell>{submission.submittedAt.toLocaleDateString()}</TableCell>

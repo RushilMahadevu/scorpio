@@ -44,6 +44,7 @@ interface Submission {
   score: number | null;
   graded: boolean;
   workFiles?: WorkFile[];
+  unfocusCount?: number;
 }
 
 interface Assignment {
