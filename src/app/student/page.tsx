@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc, updateDoc, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,27 @@ export default function StudentDashboard() {
   const [classCode, setClassCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([]);
+  const [currentQuote, setCurrentQuote] = useState(0);
+
+  const motivationalQuotes = [
+    "Success is the sum of small efforts, repeated day in and day out. – Robert Collier",
+    "The only way to learn mathematics is to do mathematics. – Paul Halmos",
+    "In physics, you don't have to go around making trouble for yourself—nature does it for you. – Frank Wilczek",
+    "Study hard what interests you the most in the most undisciplined, irreverent and original manner possible. – Richard Feynman",
+    "Physics is really figuring out how to discover new things that are counterintuitive, like quantum mechanics. – Elon Musk",
+    "The important thing is not to stop questioning. Curiosity has its own reason for existing. – Albert Einstein",
+    "An expert is a person who has made all the mistakes that can be made in a very narrow field. – Niels Bohr",
+    "The scientist does not study nature because it is useful; he studies it because he delights in it. – Henri Poincaré"
+  ];
+
+  useEffect(() => {
+    // Change quote every 10 seconds
+    const interval = setInterval(() => {
+      setCurrentQuote((prev) => (prev + 1) % motivationalQuotes.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -39,7 +60,6 @@ export default function StudentDashboard() {
         if (studentDoc.exists()) {
           const data = studentDoc.data();
           setTeacherId(data.teacherId || null);
-          
           if (data.teacherId) {
             const teacherDoc = await getDoc(doc(db, "teachers", data.teacherId));
             if (teacherDoc.exists()) {
@@ -48,6 +68,7 @@ export default function StudentDashboard() {
           }
         }
 
+        // Assignments and submissions
         const assignmentsSnap = await getDocs(collection(db, "assignments"));
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
@@ -61,11 +82,19 @@ export default function StudentDashboard() {
           completedAssignments,
           pendingAssignments: totalAssignments - completedAssignments,
         });
+
+        // Upcoming assignments (next 3 by dueDate)
+        const upcomingQuery = query(
+          collection(db, "assignments"),
+          orderBy("dueDate", "asc"),
+          limit(3)
+        );
+        const upcomingSnap = await getDocs(upcomingQuery);
+        setUpcomingAssignments(upcomingSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     }
-
     fetchData();
   }, [user]);
 
@@ -78,7 +107,6 @@ export default function StudentDashboard() {
       });
       setTeacherId(classCode.trim());
       
-      // Fetch teacher name for the new class
       try {
         const teacherDoc = await getDoc(doc(db, "teachers", classCode.trim()));
         if (teacherDoc.exists()) {
@@ -86,7 +114,6 @@ export default function StudentDashboard() {
         }
       } catch (err) {
         console.error("Error fetching teacher details:", err);
-        // Don't fail the whole join process if just the name fetch fails
       }
       
       alert("Joined class successfully!");
@@ -138,13 +165,63 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Welcome to Scorpio - Powering Physics at Sage Ridge</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Class Enrollment Status */}
+      {!teacherId ? (
+        <Card className="border-destructive/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-destructive text-base">
+              <School className="h-4 w-4" />
+              Join a Class
+            </CardTitle>
+            <CardDescription className="text-xs">Enter your teacher's code to get started.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-3">
+            <Input 
+              placeholder="Class Code" 
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value)}
+              className="max-w-[200px] h-9"
+            />
+            <Button onClick={handleJoinClass} disabled={joining} size="sm">
+              {joining ? "Joining..." : "Join"}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-4">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-primary text-base">
+                <School className="h-4 w-4" />
+                {teacherName ? `${teacherName}'s Class` : "Enrolled"}
+              </CardTitle>
+              <CardDescription className="text-xs mt-1">
+                Code: <code className="bg-background px-1.5 py-0.5 rounded text-xs">{teacherId}</code>
+              </CardDescription>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleLeaveClass} 
+              disabled={leaving} 
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8"
+            >
+              <LogOut className="h-3 w-3 mr-1" />
+              {leaving ? "Leaving..." : "Leave"}
+            </Button>
+          </CardHeader>
+        </Card>
+      )}
+
+      {/* Stats Overview */}
+      <div className="grid gap-3 md:grid-cols-3">
         {statCards.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -159,56 +236,58 @@ export default function StudentDashboard() {
         ))}
       </div>
 
+      {/* Main Content Grid */}
       <div className="grid gap-4 md:grid-cols-2">
-        {!teacherId ? (
-          <Card className="md:col-span-2 border-destructive/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <School className="h-5 w-5" />
-                Join a Class
-              </CardTitle>
-              <CardDescription>You are not enrolled in a class yet. Enter your teacher's code below.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex gap-4">
-              <Input 
-                placeholder="Enter Class Code" 
-                value={classCode}
-                onChange={(e) => setClassCode(e.target.value)}
-                className="max-w-xs"
-              />
-              <Button onClick={handleJoinClass} disabled={joining}>
-                {joining ? "Joining..." : "Join Class"}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="md:col-span-2 border-primary/20 bg-primary/5">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <School className="h-5 w-5" />
-                  My Class
-                </CardTitle>
-                <CardDescription>You are enrolled in {teacherName ? `${teacherName}'s` : "a"} class.</CardDescription>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLeaveClass} disabled={leaving} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                <LogOut className="h-4 w-4 mr-2" />
-                {leaving ? "Leaving..." : "Leave Class"}
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium">Class Code:</span>
-                <code className="bg-muted px-2 py-1 rounded">{teacherId}</code>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+        {/* Upcoming Assignments */}
         <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Get started with your learning</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Upcoming Assignments</CardTitle>
+            <CardDescription className="text-xs">Next assignments due</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {upcomingAssignments.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No upcoming assignments.</p>
+            ) : (
+              <ul className="space-y-2">
+                {upcomingAssignments.map((a) => (
+                  <li key={a.id} className="flex justify-between items-start p-2 rounded-md border text-sm">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{a.title || "Untitled"}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Due: {a.dueDate ? new Date(a.dueDate.seconds ? a.dueDate.seconds * 1000 : a.dueDate).toLocaleDateString() : "N/A"}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* AI Tutor Widget - Simple */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Bot className="h-4 w-4" />
+              AI Physics Tutor
+            </CardTitle>
+            <CardDescription className="text-xs">Get help with physics concepts 24/7</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">
+              Stuck on a problem? Need help understanding a concept? Get instant, personalized explanations from our AI tutor.
+            </p>
+            <Link href="/student/tutor">
+              <Button size="sm" className="w-full">Start Learning →</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Quick Actions</CardTitle>
+            <CardDescription className="text-xs">Navigate to key sections</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-2 flex-wrap">
             <Badge variant="outline" className="cursor-pointer hover:bg-accent">
@@ -223,21 +302,15 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
 
+        {/* Motivational Tip */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bot className="h-5 w-5" />
-              AI Physics Tutor
-            </CardTitle>
-            <CardDescription>Get help with physics concepts</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Daily Motivation</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Need help understanding a concept or solving a problem? Our AI tutor is here to help!
-            </p>
-            <Link href="/student/tutor">
-              <Badge className="cursor-pointer">Start Learning →</Badge>
-            </Link>
+            <blockquote className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground">
+              {motivationalQuotes[currentQuote]}
+            </blockquote>
           </CardContent>
         </Card>
       </div>

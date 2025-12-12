@@ -12,7 +12,7 @@ import { CheckCircle, Clock, FileCheck } from "lucide-react";
 interface Submission {
   id: string;
   assignmentId: string;
-  assignmentTitle?: string;
+  assignmentTitle: string;
   answers: any[];
   submittedAt: Date;
   graded: boolean;
@@ -48,8 +48,8 @@ export default function SubmissionsPage() {
                 answers: data.answers || [],
                 submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
                 graded: data.graded || false,
-                score: data.score,
-                feedback: data.feedback,
+                score: data.score ?? null,
+                feedback: data.feedback ?? "",
               };
             } catch (e) {
               console.error("Error fetching assignment:", e);
@@ -58,7 +58,7 @@ export default function SubmissionsPage() {
           })
         );
 
-        setSubmissions(submissionsData.filter(Boolean));
+        setSubmissions(submissionsData.filter(Boolean) as Submission[]);
       } catch (error) {
         console.error("Error fetching submissions:", error);
       } finally {

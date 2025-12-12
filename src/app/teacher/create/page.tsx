@@ -405,8 +405,8 @@ export default function CreateAssignmentPage() {
                           size="sm"
                           onClick={() =>
                             updateQuestion(question.id, btn.type === "true-false"
-                              ? { type: btn.type, options: ["True", "False"] }
-                              : { type: btn.type })
+                              ? { type: btn.type as "true-false", options: ["True", "False"] }
+                              : { type: btn.type as "text" | "multiple-choice" | "short-answer" })
                           }
                         >
                           {btn.label}
