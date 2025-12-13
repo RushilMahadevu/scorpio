@@ -6,7 +6,15 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
 import { FileText, Users, CheckCircle, Clock } from "lucide-react";
+
+interface Submission {
+  id: string;
+  graded?: boolean;
+  assignmentId?: string;
+  // add other fields as needed
+}
 
 interface Stats {
   totalAssignments: number;
@@ -24,7 +32,7 @@ export default function TeacherDashboard() {
     pendingSubmissions: 0,
   });
   const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
-  const [pendingGrading, setPendingGrading] = useState<any[]>([]);
+  const [pendingGrading, setPendingGrading] = useState<Submission[]>([]);
   const [currentTip, setCurrentTip] = useState(0);
 
   const teachingTips = [
@@ -53,7 +61,7 @@ export default function TeacherDashboard() {
         );
         const submissionsSnap = await getDocs(collection(db, "submissions"));
 
-        const submissions = submissionsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const submissions: Submission[] = submissionsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         const completed = submissions.filter((s) => s.graded).length;
         const pending = submissions.filter((s) => !s.graded).length;
 
@@ -84,7 +92,7 @@ export default function TeacherDashboard() {
 
         const pendingWithDetails = pendingSubs.map((sub) => ({
           ...sub,
-          assignmentTitle: assignmentsMap[sub.assignmentId]?.title || "Assignment"
+          assignmentTitle: sub.assignmentId ? assignmentsMap[sub.assignmentId]?.title || "Assignment" : "Assignment"
         }));
         
         setPendingGrading(pendingWithDetails);
