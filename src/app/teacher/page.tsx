@@ -13,7 +13,7 @@ interface Submission {
   id: string;
   graded?: boolean;
   assignmentId?: string;
-  // add other fields as needed
+  assignmentTitle?: string;
 }
 
 interface Stats {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "next-themes";
 import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
 
 const inter = Inter({
@@ -13,6 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Scorpio",
   description: "Powering Physics at Sage Ridge",
+  icons: [
+    { rel: "icon", url: "/favicon-light.ico", media: "(prefers-color-scheme: light)" },
+    { rel: "icon", url: "/favicon-dark.ico", media: "(prefers-color-scheme: dark)" },
+  ],
 };
 
 export default function RootLayout({
@@ -22,15 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <SpaceEffectsProvider>
             <AuthProvider>{children}</AuthProvider>
@@ -40,4 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-  
