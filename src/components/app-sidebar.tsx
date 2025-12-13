@@ -88,7 +88,19 @@ function SidebarContent({
         </nav>
       </ScrollArea>
 
-      <div className="p-4 mt-auto border-t bg-background/95 space-y-2">
+      <div className="p-4 mt-auto">
+        <div
+          className={cn(
+            "flex items-center justify-center mb-2 cursor-pointer hover:bg-muted/50 rounded-md transition",
+            isCollapsed ? "p-2" : "px-2 py-1.5"
+          )}
+        >
+          <Link href="/about" className="flex items-center gap-2 w-full justify-center" prefetch={false}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+            {!isCollapsed && <span className="text-xs font-medium text-muted-foreground">Learn More</span>}
+          </Link>
+        </div>
+        <div className="border-t bg-background/95 space-y-2 pt-4">
         <div
           className={cn(
             "flex items-center justify-between px-2",
@@ -140,6 +152,7 @@ function SidebarContent({
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
           </Button>
+        </div>
         </div>
       </div>
     </div>
