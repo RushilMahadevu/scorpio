@@ -1,6 +1,6 @@
 # <img src="./public/favicon.svg" alt="Scorpio Logo" width="24" /> Scorpio
 
-A physics education platform built for Sage Ridge School, designed to streamline the teaching workflow and enhance student learning through intelligent tooling and modern web technologies.
+Scorpio is a modern, space-inspired physics learning platform designed to help students and teachers collaborate, assign, and grade assignments with ease. Explore the cosmos of knowledge with interactive tools, real-time feedback, and a stellar user experience.
 
 ## Overview
 
