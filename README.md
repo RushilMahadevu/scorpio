@@ -1,4 +1,4 @@
-# <img src="./public/logo.svg" alt="Scorpio Logo" width="40" /> Scorpio
+# <img src="./public/favicon.svg" alt="Scorpio Logo" width="24" /> Scorpio
 
 A physics education platform built for Sage Ridge School, designed to streamline the teaching workflow and enhance student learning through intelligent tooling and modern web technologies.
 
