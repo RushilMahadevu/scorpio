@@ -138,24 +138,23 @@ export function SpaceBackground() {
           }}
         />
 
-        {/* EFFECT: Nebula Clouds - circular opposing motion, brighter */}
-        {/* Nebula Clouds - both move same way, less bright */}
+        {/* EFFECT: Nebula Clouds - responsive, follow viewport size */}
         <div
           className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
           style={{
             backgroundImage: `
-              radial-gradient(circle 220px at 18% 32%, currentColor, transparent)
+              radial-gradient(circle 22vw at 18vw 32vh, currentColor, transparent)
             `,
-            filter: `blur(2px) brightness(${nebulaBrightness / 100 + 0.25})`,
+            filter: `blur(2vw) brightness(${nebulaBrightness / 100 + 0.25})`,
           }}
         />
         <div
           className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
           style={{
             backgroundImage: `
-              radial-gradient(circle 320px at 82% 68%, currentColor, transparent)
+              radial-gradient(circle 32vw at 82vw 68vh, currentColor, transparent)
             `,
-            filter: `blur(2px) brightness(${nebulaBrightness / 100 + 0.25})`,
+            filter: `blur(2vw) brightness(${nebulaBrightness / 100 + 0.25})`,
           }}
         />
 

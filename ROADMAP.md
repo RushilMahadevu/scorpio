@@ -8,7 +8,7 @@ A realistic, solo-developer plan for gradual improvement.
 
 - [x] Fix assignment bugs
 - [ ] Assignment deadline warnings
-- [ ] Better AI tutor markdown
+- [x] Better AI tutor markdown
 - [x] File attachments for submissions
 - [x] Draft assignments
 - [x] Improved math input (KaTeX)
@@ -28,7 +28,7 @@ A realistic, solo-developer plan for gradual improvement.
 - [ ] Rubric builder, grade multiple, resubmit, late penalties
 - [ ] AI: suggest problems/quizzes, detect misconceptions, difficulty rating
 - [ ] Study mode, track time, notes, favorites
-- [ ] Optimize queries, caching, image compression, lazy loading
+- [ ] Image compression
 - [ ] Timed quizzes, question bank, randomize order, formula sheet
 - [ ] Discussion forum, peer help, pin responses
 - [ ] Multi-step problems, unit/module org, prerequisites, badges

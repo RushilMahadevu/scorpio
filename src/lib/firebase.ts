@@ -54,38 +54,5 @@ export const onAuthChange = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
 };
 
-// File conversion functions (no storage needed - works with free Spark plan)
-export const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-};
-
-export interface WorkFile {
-  name: string;
-  type: string;
-  size: number;
-  data: string; // base64 encoded
-  uploadedAt: Date;
-}
-
-export const convertFilesToBase64 = async (files: File[]): Promise<WorkFile[]> => {
-  const convertedFiles: WorkFile[] = [];
-  for (const file of files) {
-    const base64Data = await fileToBase64(file);
-    convertedFiles.push({
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      data: base64Data,
-      uploadedAt: new Date(),
-    });
-  }
-  return convertedFiles;
-};
-
 export { auth, db, genAI };
 export default app;
