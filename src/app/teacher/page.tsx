@@ -163,17 +163,26 @@ export default function TeacherDashboard() {
             {recentAssignments.length === 0 ? (
               <p className="text-muted-foreground text-sm">No assignments yet.</p>
             ) : (
-              <div className="border rounded-lg p-3 bg-muted/40">
-                <ul className="space-y-2">
-                  {recentAssignments.map((a) => (
-                    <li key={a.id} className="flex flex-col">
-                      <span className="font-normal">○ {a.title || "Untitled"}</span>
-                      <span className="text-xs text-muted-foreground ml-4 italic">
-                        Due - {a.dueDate ? new Date(a.dueDate.seconds ? a.dueDate.seconds * 1000 : a.dueDate).toLocaleDateString() : "N/A"}
+              <div className="divide-y rounded-lg overflow-hidden border bg-muted/40">
+                {recentAssignments.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-accent transition-colors group"
+                  >
+                    <div className="flex flex-col">
+                      <a
+                        href={a.id ? `/teacher/assignment-view?id=${a.id}` : '#'}
+                        className="font-medium text-primary group-hover:underline"
+                      >
+                        {a.title || "Untitled"}
+                      </a>
+                      <span className="text-xs text-muted-foreground italic">
+                        Due: {a.dueDate ? new Date(a.dueDate.seconds ? a.dueDate.seconds * 1000 : a.dueDate).toLocaleDateString() : "N/A"}
                       </span>
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-4">Recent</span>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
@@ -188,15 +197,26 @@ export default function TeacherDashboard() {
             {pendingGrading.length === 0 ? (
               <p className="text-muted-foreground text-sm">All caught up!</p>
             ) : (
-              <div className="border rounded-lg p-3 bg-muted/40">
-                <ul className="space-y-2">
-                  {pendingGrading.map((sub) => (
-                    <li key={sub.id} className="flex flex-col">
-                      <span className="font-normal">○ {sub.assignmentTitle}</span>
-                      <span className="text-xs text-muted-foreground ml-4 italic">Needs grading</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="divide-y rounded-lg overflow-hidden border bg-muted/40">
+                {pendingGrading.map((sub) => (
+                  <div
+                    key={sub.id}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-accent transition-colors group"
+                  >
+                    <div className="flex flex-col">
+                      <a
+                        href={sub.assignmentId ? `/teacher/assignment-view?id=${sub.assignmentId}` : '#'}
+                        className="font-medium text-primary group-hover:underline"
+                      >
+                        {sub.assignmentTitle || "Untitled"}
+                      </a>
+                      <span className="text-xs text-muted-foreground italic">
+                        Needs grading
+                      </span>
+                    </div>
+                    <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100 px-2 py-1 rounded-full ml-4">Pending</span>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

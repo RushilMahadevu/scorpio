@@ -12,11 +12,46 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+
 // Initialize Firebase (prevent multiple instances)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
 const genAI = getAI(app, { backend: new GoogleAIBackend() });
+
+// --- File Upload Helpers ---
+export type WorkFile = {
+  name: string;
+  type: string;
+  size: number;
+  base64: string;
+  uploadedAt?: string | number | Date;
+};
+
+/**
+ * Converts an array of File objects to an array of WorkFile objects with base64 data.
+ * @param files File[]
+ * @returns Promise<WorkFile[]>
+ */
+export async function convertFilesToBase64(files: File[]): Promise<WorkFile[]> {
+  // Helper to convert a single file
+  function fileToBase64(file: File): Promise<WorkFile> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          base64: reader.result as string,
+        });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  return Promise.all(files.map(fileToBase64));
+}
 
 // Auth functions
 export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string) => {

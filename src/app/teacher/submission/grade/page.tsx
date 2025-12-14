@@ -269,7 +269,7 @@ export default function GradeSubmissionPage() {
                     <div>
                       <p className="font-medium">{file.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {(file.size / 1024).toFixed(1)} KB • Uploaded {new Date(file.uploadedAt).toLocaleString()}
+                        {(file.size / 1024).toFixed(1)} KB • Uploaded {file.uploadedAt ? new Date(file.uploadedAt).toLocaleString() : "Unknown"}
                       </p>
                     </div>
                   </div>
@@ -278,7 +278,7 @@ export default function GradeSubmissionPage() {
                     size="sm"
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = file.data;
+                      link.href = file.base64;
                       link.download = file.name;
                       link.click();
                     }}
@@ -290,7 +290,7 @@ export default function GradeSubmissionPage() {
                 {file.type.startsWith('image/') && (
                   <div className="border rounded-md p-2 bg-background">
                     <img 
-                      src={file.data} 
+                      src={file.base64} 
                       alt={file.name}
                       className="max-w-full h-auto max-h-96 mx-auto rounded"
                     />
@@ -305,7 +305,7 @@ export default function GradeSubmissionPage() {
                 onClick={() => {
                   submission.workFiles?.forEach(file => {
                     const link = document.createElement('a');
-                    link.href = file.data;
+                    link.href = file.base64;
                     link.download = file.name;
                     link.click();
                   });
