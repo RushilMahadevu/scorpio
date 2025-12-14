@@ -163,16 +163,18 @@ export default function TeacherDashboard() {
             {recentAssignments.length === 0 ? (
               <p className="text-muted-foreground text-sm">No assignments yet.</p>
             ) : (
-              <ul className="space-y-2">
-                {recentAssignments.map((a) => (
-                  <li key={a.id} className="flex flex-col">
-                    <span className="font-medium">{a.title || "Untitled"}</span>
-                    <span className="text-xs text-muted-foreground">
-                      Due: {a.dueDate ? new Date(a.dueDate.seconds ? a.dueDate.seconds * 1000 : a.dueDate).toLocaleDateString() : "N/A"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className="border rounded-lg p-3 bg-muted/40">
+                <ul className="space-y-2">
+                  {recentAssignments.map((a) => (
+                    <li key={a.id} className="flex flex-col">
+                      <span className="font-normal">○ {a.title || "Untitled"}</span>
+                      <span className="text-xs text-muted-foreground ml-4 italic">
+                        Due - {a.dueDate ? new Date(a.dueDate.seconds ? a.dueDate.seconds * 1000 : a.dueDate).toLocaleDateString() : "N/A"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -186,14 +188,16 @@ export default function TeacherDashboard() {
             {pendingGrading.length === 0 ? (
               <p className="text-muted-foreground text-sm">All caught up!</p>
             ) : (
-              <ul className="space-y-2">
-                {pendingGrading.map((sub) => (
-                  <li key={sub.id} className="flex flex-col">
-                    <span className="font-medium">{sub.assignmentTitle}</span>
-                    <span className="text-xs text-muted-foreground">Needs grading</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="border rounded-lg p-3 bg-muted/40">
+                <ul className="space-y-2">
+                  {pendingGrading.map((sub) => (
+                    <li key={sub.id} className="flex flex-col">
+                      <span className="font-normal">○ {sub.assignmentTitle}</span>
+                      <span className="text-xs text-muted-foreground ml-4 italic">Needs grading</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </CardContent>
         </Card>

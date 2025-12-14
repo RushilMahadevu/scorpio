@@ -1,34 +1,58 @@
-# Physics Platform (Scorpio)
+# <img src="./public/logo.svg" alt="Scorpio Logo" width="40" /> Scorpio
 
-A modern, scalable educational platform built with Next.js 15 and React 19, featuring AI-powered tutoring, intelligent document processing, and immersive space-themed UI. Designed for physics teachers and students with a focus on clean architecture, type safety, and exceptional user experience.
+A physics education platform built for Sage Ridge School, designed to streamline the teaching workflow and enhance student learning through intelligent tooling and modern web technologies.
 
-## 🚀 Key Features
+## Overview
+
+Scorpio addresses a fundamental challenge in physics education: the disconnect between how teachers need to deliver content and how students naturally learn. Traditional learning management systems force both groups into rigid workflows that don't reflect the dynamic nature of physics problem-solving.
+
+This platform reimagines that experience by:
+
+- **Reducing friction in the assignment lifecycle** - Teachers create, distribute, and grade assignments in one cohesive environment without switching between multiple tools
+- **Meeting students where they are** - Real-time feedback, conversational AI tutoring, and visual math input lower the barrier to getting help
+- **Making progress transparent** - Both teachers and students have clear visibility into understanding and performance without manual tracking
+
+The result is more time for actual teaching and learning, less time managing logistics.
+
+---
+
+## Core Features
 
 | Feature | Technology | Description |
 |---------|-----------|-------------|
-| **AI-Powered Tutoring** | Google Gemini 2.0 Flash | Context-aware explanations with step-by-step problem solving and adaptive learning responses |
-| **Mathematical Rendering** | KaTeX + React | Real-time LaTeX rendering with custom math builder interface for complex physics equations |
-| **Document Intelligence** | PDF.js + Gemini Vision | Extract and analyze content from PDFs and images with OCR and AI-powered content understanding |
-| **Immersive UI** | Canvas API + Framer Motion | Multi-layered parallax space background with smooth animations and transitions |
+| **AI-Powered Tutoring** | Google Gemini 2.0 Flash | Context-aware explanations with conversation memory, step-by-step problem solving, and adaptive learning responses |
+| **Mathematical Rendering** | KaTeX + React | Real-time LaTeX rendering with custom math builder modals for complex physics equations |
+| **Immersive UI** | Canvas API + Framer Motion | Multi-layered parallax space background with customizable effects and smooth animations |
 | **Real-time Sync** | Cloud Firestore | Optimistic updates, offline support, and real-time collaboration with efficient query patterns |
 | **Type-Safe Forms** | React Hook Form + Zod | Runtime validation with TypeScript inference for bulletproof form handling |
 | **Role-Based Access** | Firebase Auth + Middleware | Server-side authentication with granular permission controls and route protection |
+| **AI Navigation Assistant** | Gemini + Custom UI | Redesigned chatbot for intuitive platform guidance and help |
+| **File Submissions** | Base64 Storage | Student work uploads compatible with Firebase Spark plan |
 
-## 💡 Core Capabilities
+## Teacher Workflow
 
-### For Teachers
-- **Assignment Creation**: Rich text editor with math builder, PDF uploads, and flexible grading rubrics
-- **Intelligent Grading**: AI-assisted feedback generation and batch grading workflows
-- **Student Analytics**: Real-time progress tracking with visual dashboards and performance insights
-- **Resource Management**: Upload and organize educational materials with tagging and search
+The platform is built around how teachers actually work:
 
-### For Students  
-- **Interactive Assignments**: Submit work with LaTeX support, file attachments, and revision tracking
-- **AI Tutor Chat**: Conversational interface with physics domain expertise and personalized hints
-- **Progress Dashboard**: Visual grade tracking, assignment calendar, and submission history
-- **Resource Library**: Searchable collection of teacher-shared materials and study guides
+- **Assignment Creation** - Rich text editor with integrated math builder, PDF uploads, and customizable grading rubrics
+- **Filtering & Organization** - Sort and filter assignments with intuitive dropdown controls
+- **Flexible Grading** - AI-assisted feedback with manual override capabilities and batch processing for efficiency
+- **Student Analytics** - Real-time dashboards showing submission status, grade distributions, and individual progress
+- **Resource Management** - Centralized library for course materials with tagging, search, and Google Form embedding
 
-## 🛠️ Tech Stack
+## Student Experience
+
+Students get tools that support independent learning:
+
+- **Interactive Assignments** - Submit work with LaTeX support, file attachments, and ability to track revisions
+- **AI Tutor** - Conversational interface that remembers context, provides hints without giving answers, and adapts to individual learning patterns
+- **Progress Tracking** - Clear view of grades, upcoming assignments, and submission history
+- **Resource Access** - Searchable library of teacher-provided materials and study guides
+
+---
+
+## Technical Architecture
+
+### Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -36,7 +60,7 @@ A modern, scalable educational platform built with Next.js 15 and React 19, feat
 | **Language** | TypeScript 5.7 | End-to-end type safety with strict mode and path aliases |
 | **Authentication** | Firebase Auth | JWT-based authentication with role claims and session management |
 | **Database** | Cloud Firestore | NoSQL document store with real-time listeners and composite indexes |
-| **AI/ML** | Google Gemini 2.0 Flash | Multi-modal AI for text generation, vision tasks, and document analysis |
+| **AI/ML** | Google Gemini 2.0 Flash | Multi-modal AI for text generation, tutoring, and document analysis |
 | **Document Processing** | PDF.js + Canvas API | Client-side PDF rendering, image extraction, and OCR preparation |
 | **Styling** | Tailwind CSS + OKLCH | Utility-first CSS with perceptually uniform color space |
 | **Components** | shadcn/ui + Radix UI | Headless, accessible components with custom theming |
@@ -46,10 +70,10 @@ A modern, scalable educational platform built with Next.js 15 and React 19, feat
 | **State Management** | React Context + Hooks | Collocated state with custom hooks for auth and theme |
 | **Icons** | Lucide React | Tree-shakeable icon library with consistent styling |
 
-## 🎨 Design System & Architecture
+### Design System
 
-### Immersive Space Theme
-The platform features a **procedurally-generated space background** that creates an engaging, distraction-free learning environment:
+**Space Theme**  
+The interface uses a procedurally-generated space background that provides visual interest without competing for attention:
 
 | Component | Implementation | Technical Details |
 |-----------|---------------|-------------------|
@@ -57,19 +81,21 @@ The platform features a **procedurally-generated space background** that creates
 | **Parallax Layers** | Transform3D + CSS Variables | Three depth layers (0.2x, 0.5x, 1.0x speed) creating immersive depth perception |
 | **Performance** | React Context + useMemo | Centralized animation loop, memoized calculations, 60fps rendering |
 | **Adaptive Opacity** | CSS Custom Properties | Dynamic opacity based on theme (50% light, 70% dark) for optimal contrast |
+| **Customization** | Dynamic Controls | Adjustable "spacy level" and nebula brightness (default: 12) for personalized experience |
 
-### Color Science
-Built on **OKLCH color space** for perceptually uniform colors and consistent lightness across hues:
+**Color System**  
+Built on OKLCH color space for perceptually uniform colors:
 
 | Theme | Technique | Benefits |
 |-------|-----------|----------|
 | **OKLCH Color Space** | Perceptual uniformity | Colors appear equally bright regardless of hue, better than HSL/RGB |
 | **Light Mode** | High contrast (0.99/0.09) | Maximum readability with subtle grays for hierarchy |
-| **Dark Mode** | Deep space aesthetic (0.09/0.99) | Reduced eye strain with AMOLED-friendly true blacks |
+| **Dark Mode** | Deep space aesthetic (0.09/0.99) | Reduced eye strain with AMOLED-friendly true blacks, set as default |
 | **Theme Switching** | View Transitions API | Smooth morphing between themes without layout shift |
 | **System Detection** | prefers-color-scheme | Auto-detect OS preference with localStorage persistence |
+| **Favicon Integration** | Dynamic Icons | Light and dark mode favicon toggles for system consistency |
 
-### Component Architecture
+**Component Design**
 
 | Principle | Implementation | Impact |
 |-----------|---------------|--------|
@@ -79,22 +105,24 @@ Built on **OKLCH color space** for perceptually uniform colors and consistent li
 | **Type Safety** | TypeScript strict mode + discriminated unions | Catch errors at compile time, better IDE support |
 | **Accessibility** | ARIA labels + keyboard navigation | WCAG 2.1 Level AA compliant, screen reader tested |
 
+---
+
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── login/          # Login page
-│   ├── signup/         # Registration page
+│   ├── login/          # Authentication pages with space theme
+│   ├── signup/
 │   ├── student/        # Student portal
 │   │   ├── assignments/
 │   │   ├── assignment-view/
-│   │   ├── grades/
+│   │   ├── grades/     # Enhanced graded copy display
 │   │   ├── resources/
 │   │   ├── submissions/
-│   │   └── tutor/      # AI tutor interface
+│   │   └── tutor/      # AI tutor with conversation context
 │   └── teacher/        # Teacher portal
-│       ├── assignments/
+│       ├── assignments/ # With filtering/sorting dropdowns
 │       ├── assignment-view/
 │       ├── create/     # Assignment creation
 │       ├── grades/
@@ -103,10 +131,11 @@ src/
 │       └── uploads/
 ├── components/
 │   ├── ui/            # shadcn/ui components
-│   ├── math-builder-modal.tsx
+│   ├── math-builder-modal.tsx  # Modal-based equation builder
 │   ├── math-input.tsx
-│   ├── navigation-chatbot.tsx
-│   └── protected-route.tsx
+│   ├── navigation-chatbot.tsx  # AI-powered redesign
+│   ├── protected-route.tsx
+│   └── space-background.tsx    # Dynamic starfield with effects
 ├── contexts/
 │   └── auth-context.tsx
 ├── hooks/
@@ -117,87 +146,9 @@ src/
     └── utils.ts
 ```
 
-## Getting Started
+---
 
-### Prerequisites
-
-- Node.js 20+
-- npm, yarn, pnpm, or bun
-- Firebase project with:
-  - Authentication enabled
-  - Firestore database
-  - Firebase AI (Gemini API)
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```bash
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd physics-platform
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Run the development server:
-```bash
-npm run dev
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-### Build for Production
-
-```bash
-npm run build
-npm start
-```
-
-## Firebase Deployment
-
-The project is configured for Firebase Hosting:
-
-```bash
-npm run build
-firebase deploy
-```
-
-## Firestore Collections
-
-The application uses the following Firestore collections:
-
-- `teachers`: Teacher profiles and metadata
-- `students`: Student profiles and class associations
-- `assignments`: Physics assignments created by teachers
-- `submissions`: Student assignment submissions
-- `resources`: Educational materials and uploads
-
-## 🧠 Advanced Features & Implementation
-
-### AI-Powered Document Intelligence
-
-| Feature | Technology Stack | Implementation Details |
-|---------|-----------------|----------------------|
-| **PDF Processing** | PDF.js + Canvas Rendering | Client-side PDF parsing, page-by-page rendering with image extraction |
-| **Image Analysis** | Gemini Vision API | Multi-modal AI analyzes images and PDFs to extract physics problems, diagrams, and equations |
-| **OCR & Text Extraction** | Canvas→Base64→Gemini | Convert PDF pages to images, process with vision model for accurate text extraction |
-| **Smart Content Understanding** | Prompt Engineering | Context-aware prompts guide AI to identify problem statements, variables, and solution steps |
-| **Assignment Generation** | Structured Output | AI extracts problems from documents and formats them into assignment templates |
+## Implementation Details
 
 ### Mathematical Rendering Engine
 
@@ -209,17 +160,20 @@ The application uses the following Firestore collections:
 | **Custom Macros** | KaTeX Macros | Physics-specific shortcuts (e.g., `\vec`, `\unit`, `\deriv`) |
 | **Copy-Paste Support** | Clipboard API | Preserve LaTeX source when copying rendered equations |
 
-### Intelligent AI Tutoring System
+### AI Tutoring System
+
+The tutoring system is designed to guide students without providing direct answers:
 
 | Feature | Implementation | Benefit |
 |---------|---------------|---------|
 | **Context Awareness** | Conversation History + Assignment Context | AI references previous questions and assignment details for coherent tutoring |
+| **Conversation Memory** | Firestore Message History | Persistent chat sessions with efficient pagination and caching |
 | **Adaptive Responses** | Temperature Tuning (0.7) | Balanced creativity and accuracy for educational explanations |
 | **Step-by-Step Guidance** | Structured Prompts | AI breaks down problems into manageable steps without giving direct answers |
 | **Physics Domain Expertise** | Domain-Specific System Prompts | Constrained to physics topics with proper terminology and notation |
-| **Multi-Turn Conversations** | Firestore Message History | Persistent chat sessions with efficient pagination and caching |
+| **Multi-Turn Conversations** | Context Injection | Maintains coherent dialogue across sessions |
 
-### Authentication & Security Architecture
+### Security Architecture
 
 | Layer | Implementation | Security Features |
 |-------|---------------|-------------------|
@@ -229,21 +183,31 @@ The application uses the following Firestore collections:
 | **Session Management** | Firebase onAuthStateChanged | Real-time auth state synchronization across tabs and devices |
 | **Secure API Calls** | Server Actions + Auth Context | Validate user identity on every mutation, prevent CSRF attacks |
 
-## Development
+---
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+## Data Model
 
-## Contributing
+Firestore collections:
 
-This is an educational platform project. Contributions should focus on:
-- Improving physics education features
-- Enhancing AI tutoring capabilities
-- Better user experience for teachers and students
-- Performance optimizations
+- `teachers` - Teacher profiles and metadata
+- `students` - Student profiles and class associations
+- `assignments` - Physics assignments created by teachers
+- `submissions` - Student assignment submissions with base64 file storage
+- `resources` - Educational materials and uploads
+- `conversations` - AI tutor chat history with conversation context
 
-## License
+---
 
-Private project for educational purposes.
+## Security
+
+This platform is built for Sage Ridge School's internal use. Security measures include:
+
+- Role-based access control with JWT authentication
+- Server-side validation on all database operations
+- Protected routes with middleware enforcement
+- Real-time auth state synchronization
+- CSRF protection through Firebase Security Rules
+
+---
+
+Built by Rushil Mahadevu for Sage Ridge School
