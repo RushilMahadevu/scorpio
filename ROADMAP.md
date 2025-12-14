@@ -15,17 +15,16 @@ A realistic, solo-developer plan for gradual improvement.
 - [ ] Delete/edit assignments
 - [ ] Loading states & error messages
 - [ ] Toast notifications & confirm dialogs
-- [ ] Clone/duplicate assignments
 - [ ] Categories/tags, bulk actions
-- [ ] Grading: comments, partial credit, history, CSV export
+- [x] Grading: comments, partial credit, history, CSV export
 - [ ] Assignment calendar, filters, progress bar, email notifications
 - [ ] Save chat per assignment, "Ask about this problem"
 - [ ] Step-by-step solutions, hint limits
 - [x] Resource library
-- [ ] Organize/bookmark/search resources
+- [x] Organize/search resources
 - [ ] Announcements & comments
 - [ ] Dashboards, charts, identify struggling students
-- [ ] Keyboard shortcuts, mobile/responsive, print view, dark mode
+- [ ] Keyboard shortcuts, mobile/responsive, print view
 - [ ] Rubric builder, grade multiple, resubmit, late penalties
 - [ ] AI: suggest problems/quizzes, detect misconceptions, difficulty rating
 - [ ] Study mode, track time, notes, favorites
