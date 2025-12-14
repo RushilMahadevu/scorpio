@@ -27,16 +27,11 @@ export default function SignupPage() {
     }
 
     // Validate teacher access code
-    if (role === "teacher" && accessCode !== "PHYSICS2024") {
+    if (role === "teacher" && accessCode !== process.env.NEXT_PUBLIC_TEACHER_ACCESS_CODE) {
       setError("Invalid Teacher Access Code");
       return;
     }
-
-    // Validate student class code
-    if (role === "student" && !accessCode) {
-      setError("Class Code is required");
-      return;
-    }
+    // No class code required for student signup; will be needed to join a class later
 
     setLoading(true);
     setError("");
@@ -103,13 +98,14 @@ export default function SignupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="student-code">Class Code (Required)</Label>
+                <Label htmlFor="student-code">Class Code (Optional)</Label>
                 <Input
                   id="student-code"
-                  placeholder="Enter teacher's code to join class"
+                  placeholder="Ask your teacher for a class code to join a class (can be entered later)"
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value)}
                 />
+                <p className="text-xs text-muted-foreground">You can sign up without a class code. Ask your teacher for a code to join a class later.</p>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button 
