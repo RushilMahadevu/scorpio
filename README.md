@@ -1,6 +1,6 @@
 # <img src="./public/favicon.svg" alt="Scorpio Logo" width="24" /> Scorpio
 
-Scorpio is a modern, space-inspired physics learning platform designed to help students and teachers collaborate, assign, and grade assignments with ease. Explore the cosmos of knowledge with interactive tools, real-time feedback, and a stellar user experience.
+Scorpio is a modern, space-inspired physics learning platform designed to help students and teachers collaborate, assign, and grade assignments with ease. Built with research-grade AI tutoring capabilities, it enables systematic testing of educational AI design patterns. Explore the cosmos of knowledge with interactive tools, real-time feedback, and a stellar user experience.
 
 ## Overview
 
@@ -20,7 +20,7 @@ The result is more time for actual teaching and learning, less time managing log
 
 | Feature | Technology | Description |
 |---------|-----------|-------------|
-| **AI-Powered Tutoring** | Google Gemini 2.0 Flash | Context-aware explanations with conversation memory, step-by-step problem solving, and adaptive learning responses |
+| **AI-Powered Tutoring** | Google Gemini 2.0 Flash + Constraint System | Research-grade tutoring with 4-layer constraint architecture: domain restriction, pedagogical differentiation (declarative vs. problem-solving), notation standards, and Socratic method. Includes ablation study capabilities and response validation. |
 | **Mathematical Rendering** | KaTeX + React | Real-time LaTeX rendering with custom math builder modals for complex physics equations |
 | **Immersive UI** | Canvas API + Framer Motion | Multi-layered parallax space background with customizable effects and smooth animations |
 | **Real-time Sync** | Cloud Firestore | Optimistic updates, offline support, and real-time collaboration with efficient query patterns |
@@ -44,7 +44,7 @@ The platform is built around how teachers actually work:
 Students get tools that support independent learning:
 
 - **Interactive Assignments** - Submit work with LaTeX support, file attachments, and ability to track revisions
-- **AI Tutor** - Conversational interface that remembers context, provides hints without giving answers, and adapts to individual learning patterns
+- **AI Tutor** - Research-grade conversational interface with 4-layer constraint system: provides direct answers for formulas/definitions while guiding problem-solving with Socratic questions. Remembers context and adapts pedagogical approach based on question type.
 - **Progress Tracking** - Clear view of grades, upcoming assignments, and submission history
 - **Resource Access** - Searchable library of teacher-provided materials and study guides
 
@@ -60,7 +60,7 @@ Students get tools that support independent learning:
 | **Language** | TypeScript 5.7 | End-to-end type safety with strict mode and path aliases |
 | **Authentication** | Firebase Auth | JWT-based authentication with role claims and session management |
 | **Database** | Cloud Firestore | NoSQL document store with real-time listeners and composite indexes |
-| **AI/ML** | Google Gemini 2.0 Flash | Multi-modal AI for text generation, tutoring, and document analysis |
+| **AI/ML** | Google Gemini 2.0 Flash + Constraint Architecture | Multi-modal AI with 4-layer educational constraint system for research-grade tutoring: domain restriction, pedagogical differentiation, notation enforcement, and Socratic method |
 | **Document Processing** | PDF.js + Canvas API | Client-side PDF rendering, image extraction, and OCR preparation |
 | **Styling** | Tailwind CSS + OKLCH | Utility-first CSS with perceptually uniform color space |
 | **Components** | shadcn/ui + Radix UI | Headless, accessible components with custom theming |
@@ -142,7 +142,7 @@ src/
 │   └── use-mobile.ts
 └── lib/
     ├── firebase.ts    # Firebase configuration
-    ├── gemini.ts      # AI helper functions
+    ├── gemini.ts      # AI tutoring system with constraint layers, question classification, and ablation study functions
     └── utils.ts
 ```
 
@@ -162,16 +162,64 @@ src/
 
 ### AI Tutoring System
 
-The tutoring system is designed to guide students without providing direct answers:
+The AI tutoring system implements a rigorous constraint-based architecture designed for educational AI research, enabling systematic testing of different pedagogical approaches:
 
-| Feature | Implementation | Benefit |
-|---------|---------------|---------|
-| **Context Awareness** | Conversation History + Assignment Context | AI references previous questions and assignment details for coherent tutoring |
-| **Conversation Memory** | Firestore Message History | Persistent chat sessions with efficient pagination and caching |
-| **Adaptive Responses** | Temperature Tuning (0.7) | Balanced creativity and accuracy for educational explanations |
-| **Step-by-Step Guidance** | Structured Prompts | AI breaks down problems into manageable steps without giving direct answers |
-| **Physics Domain Expertise** | Domain-Specific System Prompts | Constrained to physics topics with proper terminology and notation |
-| **Multi-Turn Conversations** | Context Injection | Maintains coherent dialogue across sessions |
+#### Constraint Layers
+
+The system uses four hierarchical constraint layers that can be combined to create different tutoring strategies:
+
+| Constraint Layer | Purpose | Implementation |
+|------------------|---------|---------------|
+| **DOMAIN_CONSTRAINT** | Physics Domain Restriction | Restricts responses to physics topics only, politely refusing non-physics questions |
+| **PEDAGOGICAL_CONSTRAINT** | Declarative vs. Problem-Solving | Differentiates between declarative knowledge (formulas, definitions) and problem-solving (calculations). Provides direct answers for concepts, guided questions for problems |
+| **NOTATION_CONSTRAINT** | Physics Notation Standards | Enforces proper physics notation: vectors as `\vec{v}`, units on numerical values, LaTeX equation formatting |
+| **SOCRATIC_CONSTRAINT** | Socratic Method | Uses guiding questions and builds on student responses to foster discovery learning |
+
+#### Constraint Levels
+
+Five predefined constraint levels combine the layers for different research conditions:
+
+| Level | Layers Applied | Use Case |
+|-------|---------------|----------|
+| **NONE** | No constraints | Baseline for comparison studies |
+| **DOMAIN_ONLY** | Domain restriction | Testing domain boundaries |
+| **DOMAIN_PEDAGOGY** | Domain + Pedagogical differentiation | Core tutoring functionality |
+| **DOMAIN_PEDAGOGY_NOTATION** | Domain + Pedagogical + Notation | Full educational constraints |
+| **FULL** | All four constraints | Complete research implementation |
+
+#### Core Functions
+
+| Function | Signature | Purpose |
+|----------|-----------|---------|
+| **explainPhysicsConcept** | `(concept, chatHistory?, constraintLevel?)` | Explains physics concepts with configurable constraints |
+| **helpSolveProblem** | `(problem, chatHistory?, constraintLevel?, assignmentContext?)` | Guides problem-solving with assignment context |
+| **classifyQuestion** | `(question) → 'declarative' \| 'problem-solving'` | Classifies questions to determine appropriate response strategy |
+| **validateResponse** | `(response, question?) → ValidationResult` | Validates AI responses against constraint violations |
+| **runAblationStudy** | `() → AblationResult[]` | Runs systematic testing across all constraint levels and question types |
+
+#### Research Features
+
+| Feature | Implementation | Research Value |
+|---------|---------------|----------------|
+| **Question Classification** | Keyword + Regex Pattern Matching | Automatically detects declarative vs. problem-solving intent |
+| **Response Validation** | Rule-based Constraint Checking | Identifies violations of pedagogical constraints |
+| **Ablation Studies** | Systematic Level Testing | Enables comparison of constraint effectiveness |
+| **Context Injection** | Assignment + Conversation History | Maintains coherence across tutoring sessions |
+| **Temperature Control** | 0.7 with 1000 token limit | Balances creativity and educational accuracy |
+
+#### Example Constraint Behavior
+
+**Declarative Request** ("What is Ohm's Law?"):
+- **DOMAIN**: Accepts physics topic ✓
+- **PEDAGOGICAL**: Provides direct formula with explanation ✓
+- **NOTATION**: Uses LaTeX: $V = IR$ ✓
+- **SOCRATIC**: Offers help applying to problems ✓
+
+**Problem-Solving Request** ("A 12V circuit has 4Ω resistance. What's the current?"):
+- **DOMAIN**: Accepts physics topic ✓
+- **PEDAGOGICAL**: Guides with questions, no direct answer ✓
+- **NOTATION**: Ensures proper units in guidance ✓
+- **SOCRATIC**: Asks about known formulas, builds understanding ✓
 
 ### Security Architecture
 

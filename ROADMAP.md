@@ -14,8 +14,6 @@ A realistic, solo-developer plan for gradual improvement.
 - [x] Improved math input (KaTeX)
 - [ ] Delete/edit assignments
 - [ ] Loading states & error messages
-- [ ] Toast notifications & confirm dialogs
-- [ ] Categories/tags, bulk actions
 - [x] Grading: comments, partial credit, history, CSV export
 - [ ] Assignment calendar, filters, progress bar, email notifications
 - [ ] Save chat per assignment, "Ask about this problem"

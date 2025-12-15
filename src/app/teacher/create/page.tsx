@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { generateAssignmentQuestions } from "@/lib/gemini";
 import { Button } from "@/components/ui/button";
@@ -132,11 +132,12 @@ export default function CreateAssignmentPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await addDoc(collection(db, "assignments"), {
+      // 1. Create assignment
+      const assignmentRef = await addDoc(collection(db, "assignments"), {
         title,
         description,
         dueDate: new Date(dueDate),
-        timeLimit: timeLimit === "" ? null : Number (timeLimit),
+        timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
         requireWorkSubmission,
         questions: isGoogleForm ? [] : questions,
@@ -144,6 +145,37 @@ export default function CreateAssignmentPage() {
         type: isGoogleForm ? "google-form" : "standard",
         googleFormLink: isGoogleForm ? googleFormLink : null,
       });
+
+      // 2. Fetch all students for this teacher
+      let teacherId = null;
+      if (typeof window !== "undefined") {
+        teacherId = localStorage.getItem("uid");
+      }
+      if (!teacherId && typeof window !== "undefined" && window.firebaseAuth) {
+        teacherId = window.firebaseAuth.currentUser?.uid;
+      }
+      if (teacherId) {
+        const studentsSnap = await getDocs(query(collection(db, "students"), where("teacherId", "==", teacherId)));
+        for (const studentDoc of studentsSnap.docs) {
+          const student = studentDoc.data();
+          if (student.email) {
+            // 3. Send email via API route
+            await fetch('/api/send-assignment-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: student.email,
+                assignmentTitle: title,
+                dueDate,
+                assignmentLink: `/student/assignments/${assignmentRef.id}`,
+              }),
+            });
+          }
+        }
+      } else {
+        console.warn("Could not determine teacherId for sending assignment emails.");
+      }
+
       router.push("/teacher/assignments");
     } catch (error) {
       console.error("Error creating assignment:", error);
