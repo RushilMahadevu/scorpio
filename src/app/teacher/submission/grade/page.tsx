@@ -55,7 +55,7 @@ interface Assignment {
 
 export default function GradeSubmissionPage() {
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const id = searchParams ? searchParams.get('id') ?? "" : "";
   const router = useRouter();
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [assignment, setAssignment] = useState<Assignment | null>(null);

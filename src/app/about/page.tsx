@@ -27,7 +27,16 @@ export default function AboutPage() {
             <strong>Scorpio</strong> is a modern, space-inspired physics learning platform designed to help students and teachers <em>collaborate, assign, and grade assignments with ease.</em>
           </p>
           <p>
-            Built with <strong>research-grade AI tutoring capabilities</strong>, it enables systematic testing of educational AI design patterns.
+            Built with <strong>
+              <a
+                href="https://github.com/RushilMahadevu/scorpio?tab=readme-ov-file#ai-tutoring-system"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-primary"
+              >
+                research-grade AI tutoring capabilities
+              </a>
+            </strong>, it enables systematic testing of educational AI design patterns.
           </p>
           <p>
             Explore the <em>cosmos of knowledge</em> with interactive tools, real-time feedback, and a stellar user experience.

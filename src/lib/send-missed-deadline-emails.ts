@@ -1,6 +1,6 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { sendMissedDeadlineEmail } from "@/lib/brevo";
+
 
 // This script finds students who missed assignment deadlines and sends them an email.
 // Intended to be run as a scheduled job (e.g., Vercel Cron, serverless function, or manually)
@@ -24,7 +24,7 @@ export default async function sendMissedAssignmentEmails() {
     for (const studentDoc of studentsSnap.docs) {
       const student = studentDoc.data();
       if (!submittedStudentIds.has(studentDoc.id)) {
-        // await sendMissedDeadlineEmail(
+
         //   student.email,
         //   assignment.title,
         //   `/student/assignments/${assignmentId}`

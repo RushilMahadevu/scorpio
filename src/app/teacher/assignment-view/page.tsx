@@ -31,7 +31,7 @@ interface Submission {
 
 function AssignmentDetailsContent() {
   const searchParams = useSearchParams();
-  const assignmentId = searchParams.get("id");
+  const assignmentId = searchParams ? searchParams.get("id") ?? "" : "";
   
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);

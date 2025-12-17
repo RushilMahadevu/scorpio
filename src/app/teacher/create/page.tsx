@@ -1,4 +1,11 @@
+
 "use client";
+// Fix for custom window property
+declare global {
+  interface Window {
+    firebaseAuth?: any;
+  }
+}
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";

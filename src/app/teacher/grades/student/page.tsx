@@ -27,7 +27,7 @@ interface AssignmentOption {
 
 export default function StudentDetailsPage() {
   const searchParams = useSearchParams();
-  const studentId = searchParams.get('studentId');
+  const studentId = searchParams ? searchParams.get('studentId') ?? "" : "";
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [studentName, setStudentName] = useState("Student");
   const [loading, setLoading] = useState(true);
