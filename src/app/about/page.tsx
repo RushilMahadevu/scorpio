@@ -10,7 +10,7 @@ export default function AboutPage() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <SpaceBackground />
-      <div className="relative z-10 max-w-2xl w-full bg-background/80 backdrop-blur-md rounded-2xl shadow-xl p-8 mt-16 mb-16 border border-border">
+      <div className="relative z-10 max-w-2xl w-full bg-gradient-to-br from-background/90 to-background/70 backdrop-blur-md rounded-2xl shadow-2xl p-8 mt-16 mb-16 border border-primary/30 ring-1 ring-primary/10">
         <button
           onClick={() => router.back()}
           className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition"
@@ -20,13 +20,22 @@ export default function AboutPage() {
           </svg>
           Back
         </button>
-        <h1 className="text-4xl font-extrabold text-center mb-4 text-foreground">About Scorpio</h1>
-        <p className="text-lg text-center mb-6 text-muted-foreground">
-          Scorpio is a modern, space-inspired physics learning platform designed to help students and teachers collaborate, assign, and grade assignments with ease. Explore the cosmos of knowledge with interactive tools, real-time feedback, and a stellar user experience.
-        </p>
+        <img src="/favicon.svg" alt="Scorpio Logo" className="w-12 h-12 mx-auto mb-6 drop-shadow-lg" />
+        <h1 className="text-4xl font-extrabold text-center mb-6 text-foreground">About Scorpio</h1>
+        <div className="text-lg text-center mb-6 text-muted-foreground space-y-4 leading-relaxed">
+          <p>
+            <strong>Scorpio</strong> is a modern, space-inspired physics learning platform designed to help students and teachers <em>collaborate, assign, and grade assignments with ease.</em>
+          </p>
+          <p>
+            Built with <strong>research-grade AI tutoring capabilities</strong>, it enables systematic testing of educational AI design patterns.
+          </p>
+          <p>
+            Explore the <em>cosmos of knowledge</em> with interactive tools, real-time feedback, and a stellar user experience.
+          </p>
+        </div>
         <div className="flex flex-col items-center gap-4">
           <a
-            href="https://github.com/RushilMahadevu/scorpio-2.0"
+            href="https://github.com/RushilMahadevu/scorpio"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition"
@@ -35,7 +44,7 @@ export default function AboutPage() {
             View on GitHub
           </a>
           <Link
-            href="https://github.com/RushilMahadevu/scorpio-2.0#readme"
+            href="https://github.com/RushilMahadevu/scorpio#readme"
             target="_blank"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition"
           >
