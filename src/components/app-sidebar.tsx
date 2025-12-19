@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
+import { SettingsDialog } from "@/components/settings-dialog";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -128,10 +129,10 @@ function SidebarContent({
         >
           {!isCollapsed && (
             <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-              Appearance
+              Settings
             </span>
           )}
-          <ModeToggle />
+          <SettingsDialog />
         </div>
         <div
           className={cn(
