@@ -232,7 +232,15 @@ export function SettingsDialog() {
                             <div key={level} className="flex flex-col items-center gap-1">
                               <RadioGroupItem value={String(level)} id={`spacy-${level}`} />
                               <Label htmlFor={`spacy-${level}`} className="text-xs text-center">
-                                {level === 0 ? "Off" : level < 25 ? "Low" : level < 40 ? "Med" : "High"}
+                                {level === 0
+                                  ? "Off"
+                                  : level === 10
+                                  ? "Low"
+                                  : level === 25
+                                  ? "Med"
+                                  : level === 40
+                                  ? "High"
+                                  : "Max"}
                               </Label>
                             </div>
                           ))}

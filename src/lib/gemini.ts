@@ -397,15 +397,15 @@ export async function runComprehensiveStudy(
         // 1-MINUTE delay between API calls (safe for free tier: 10 RPM limit)
         // Also respects daily limit better
         if (currentCall < totalCalls) {
-          console.log(`Waiting 60 seconds before next call...`);
-          await new Promise(resolve => setTimeout(resolve, 60000));
+          console.log(`Waiting 5 seconds before next call...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
         }
       } catch (error) {
         console.error(`Error for question ${question.id} at level ${level}:`, error);
         // If rate limited, log but continue
         if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota'))) {
-          console.log('⚠️ Rate limit hit! Waiting 2 minutes before retry...');
-          await new Promise(resolve => setTimeout(resolve, 120000));
+          console.log('⚠️ Rate limit hit! Waiting 30 seconds before retry...');
+          await new Promise(resolve => setTimeout(resolve, 30000));
           // Retry once
           try {
             const response = question.type === 'declarative' 
@@ -420,7 +420,7 @@ export async function runComprehensiveStudy(
               timestamp: new Date().toISOString()
             });
             console.log(`✓ Retry successful for ${question.id} [${level}]`);
-            await new Promise(resolve => setTimeout(resolve, 60000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
             continue;
           } catch (retryError) {
             console.error('Retry failed:', retryError);
