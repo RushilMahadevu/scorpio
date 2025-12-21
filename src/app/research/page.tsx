@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,6 +14,31 @@ import {
 } from "@/lib/gemini";
 
 export default function ResearchPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Check if already authenticated in this session
+    if (typeof window !== "undefined") {
+      const authed = localStorage.getItem("scorpio_research_authed");
+      if (authed === "true") setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const correctPassword = process.env.NEXT_PUBLIC_RESEARCH_PASSWORD;
+    if (passwordInput === correctPassword) {
+      setIsAuthenticated(true);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("scorpio_research_authed", "true");
+      }
+    } else {
+      setError("Incorrect password. Please try again.");
+    }
+  };
+
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState("");
   const [currentCall, setCurrentCall] = useState(0);
@@ -77,6 +102,27 @@ export default function ResearchPage() {
   };
 
   const estimate = estimateStudyCost();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <form onSubmit={handlePasswordSubmit} className="space-y-4 p-8 border rounded shadow bg-background">
+          <h2 className="text-2xl font-bold mb-2">Research Access</h2>
+          <p className="text-muted-foreground mb-4">Enter the research password to continue.</p>
+          <input
+            type="password"
+            className="input input-bordered w-full"
+            placeholder="Password"
+            value={passwordInput}
+            onChange={e => setPasswordInput(e.target.value)}
+            required
+          />
+          {error && <div className="text-red-600 text-sm">{error}</div>}
+          <button type="submit" className="btn btn-primary w-full">Unlock</button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-8 max-w-6xl">
