@@ -42,6 +42,7 @@ export function SettingsDialog() {
   const [newEmail, setNewEmail] = React.useState("")
   const [emailChangeOpen, setEmailChangeOpen] = React.useState(false)
   const [alertMessage, setAlertMessage] = React.useState("")
+  
   const [alertType, setAlertType] = React.useState<"success" | "error">("success")
 
   const handleThemeChange = (newTheme: string) => {
