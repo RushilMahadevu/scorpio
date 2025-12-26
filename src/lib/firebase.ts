@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User, sendPasswordResetEmail, updateEmail, updatePassword } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { getAI, GoogleAIBackend } from "firebase/ai";
 
@@ -87,6 +87,22 @@ export const logout = async () => {
 
 export const onAuthChange = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
+};
+
+export const resetPassword = async (email: string) => {
+  return sendPasswordResetEmail(auth, email);
+};
+
+export const changeEmail = async (newEmail: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+  return updateEmail(user, newEmail);
+};
+
+export const changePassword = async (newPassword: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+  return updatePassword(user, newPassword);
 };
 
 export { auth, db, genAI };

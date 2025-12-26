@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles, User, LogOut, Settings as SettingsIcon, Palette, Info } from "lucide-react"
+import { Moon, Sun, Sparkles, User, LogOut, Settings as SettingsIcon, Palette, Info, KeyRound, Mail } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 
@@ -21,7 +21,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
 import { useAuth } from "@/contexts/auth-context"
-import { logout } from "@/lib/firebase"
+import { logout, resetPassword, changeEmail } from "@/lib/firebase"
+import { Input } from "@/components/ui/input"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SettingsDialog() {
   const { setTheme, theme } = useTheme()
@@ -37,6 +39,10 @@ export function SettingsDialog() {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [showNote, setShowNote] = React.useState(false)
+  const [newEmail, setNewEmail] = React.useState("")
+  const [emailChangeOpen, setEmailChangeOpen] = React.useState(false)
+  const [alertMessage, setAlertMessage] = React.useState("")
+  const [alertType, setAlertType] = React.useState<"success" | "error">("success")
 
   const handleThemeChange = (newTheme: string) => {
     if (newTheme === "light") {
@@ -80,6 +86,36 @@ export function SettingsDialog() {
     setOpen(false)
   }
 
+  const handlePasswordReset = async () => {
+    if (!user?.email) return
+    try {
+      await resetPassword(user.email)
+      setAlertMessage("Password reset email sent! Check your inbox.")
+      setAlertType("success")
+      setTimeout(() => setAlertMessage(""), 5000)
+    } catch (error) {
+      setAlertMessage("Failed to send password reset email.")
+      setAlertType("error")
+      setTimeout(() => setAlertMessage(""), 5000)
+    }
+  }
+
+  const handleEmailChange = async () => {
+    if (!newEmail.trim()) return
+    try {
+      await changeEmail(newEmail)
+      setAlertMessage("Email updated successfully!")
+      setAlertType("success")
+      setEmailChangeOpen(false)
+      setNewEmail("")
+      setTimeout(() => setAlertMessage(""), 5000)
+    } catch (error) {
+      setAlertMessage("Failed to update email. Please try again.")
+      setAlertType("error")
+      setTimeout(() => setAlertMessage(""), 5000)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -117,8 +153,8 @@ export function SettingsDialog() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="account" className="space-y-4 mt-4">
-            <div className="space-y-4">
+          <TabsContent value="account" className="space-y-6 mt-4">
+            <div className="space-y-6">
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || "User"} />
@@ -133,16 +169,41 @@ export function SettingsDialog() {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              {alertMessage && (
+                <Alert className={`border-l-4 ${alertType === "error" ? "border-l-destructive bg-destructive/5" : "border-l-green-500 bg-green-50 dark:bg-green-950/20"}`}>
+                  <AlertDescription className="text-sm">{alertMessage}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-4 p-1">
                 <h4 className="text-sm font-medium">Account Actions</h4>
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePasswordReset}
+                    className="w-full justify-start h-10"
+                  >
+                    <KeyRound className="mr-3 h-4 w-4" />
+                    Reset Password
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEmailChangeOpen(true)}
+                    className="w-full justify-start h-10"
+                  >
+                    <Mail className="mr-3 h-4 w-4" />
+                    Change Email
+                  </Button>
+                  <Separator className="my-2" />
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleLogout}
-                    className="w-full justify-start text-destructive hover:text-destructive"
+                    className="w-full justify-start h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <LogOut className="mr-3 h-4 w-4" />
                     Sign Out
                   </Button>
                 </div>
@@ -304,6 +365,38 @@ export function SettingsDialog() {
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      {/* Email Change Dialog */}
+      <Dialog open={emailChangeOpen} onOpenChange={setEmailChangeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Email Address</DialogTitle>
+            <DialogDescription>
+              Enter your new email address below. You'll need to verify this change.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-email">New Email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                placeholder="Enter new email address"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEmailChangeOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleEmailChange} disabled={!newEmail.trim()}>
+                Update Email
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
