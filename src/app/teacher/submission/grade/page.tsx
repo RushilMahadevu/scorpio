@@ -278,7 +278,7 @@ export default function GradeSubmissionPage() {
                     size="sm"
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = file.base64;
+                      link.href = file.url;
                       link.download = file.name;
                       link.click();
                     }}
@@ -290,7 +290,7 @@ export default function GradeSubmissionPage() {
                 {file.type.startsWith('image/') && (
                   <div className="border rounded-md p-2 bg-background">
                     <img 
-                      src={file.base64} 
+                      src={file.url} 
                       alt={file.name}
                       className="max-w-full h-auto max-h-96 mx-auto rounded"
                     />
@@ -305,7 +305,7 @@ export default function GradeSubmissionPage() {
                 onClick={() => {
                   submission.workFiles?.forEach(file => {
                     const link = document.createElement('a');
-                    link.href = file.base64;
+                    link.href = file.url;
                     link.download = file.name;
                     link.click();
                   });

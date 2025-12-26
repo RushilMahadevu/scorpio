@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, collection, addDoc, query, where, getDocs } from "firebase/firestore";
-import { db, convertFilesToBase64, type WorkFile } from "@/lib/firebase";
+import { db, uploadFilesToStorage, type WorkFile } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { gradeResponse } from "@/lib/gemini";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +64,7 @@ function AssignmentDetailContent() {
 
   // File Upload State
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
 
   // Tab unfocus tracking
   const [unfocusCount, setUnfocusCount] = useState(0);
@@ -212,12 +213,12 @@ function AssignmentDetailContent() {
     
     files.forEach(file => {
       const isValidType = file.type === "application/pdf" || file.type.startsWith("image/");
-      const isValidSize = file.size <= 800 * 1024; // 800KB limit per file (Firestore has 1MB doc limit)
+      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit (images will be compressed)
       
       if (!isValidType) {
         invalidFiles.push(`${file.name}: Invalid type (PDF or images only)`);
       } else if (!isValidSize) {
-        invalidFiles.push(`${file.name}: Too large (max 800KB)`);
+        invalidFiles.push(`${file.name}: Too large (max 10MB)`);
       } else {
         validFiles.push(file);
       }
@@ -228,6 +229,8 @@ function AssignmentDetailContent() {
     }
     
     setUploadedFiles([...uploadedFiles, ...validFiles]);
+    // Reset upload progress for new files
+    setUploadProgress({});
   };
 
   const removeFile = (index: number) => {
@@ -256,12 +259,19 @@ function AssignmentDetailContent() {
     }
     
     setSubmitting(true);
+    setUploadProgress({}); // Reset progress
 
     try {
-      // Convert files to base64 (no Firebase Storage needed - free Spark plan compatible)
+      // Upload files to Firebase Storage (Blaze plan compatible)
       let workFilesData: WorkFile[] = [];
       if (uploadedFiles.length > 0) {
-        workFilesData = await convertFilesToBase64(uploadedFiles);
+        workFilesData = await uploadFilesToStorage(
+          uploadedFiles,
+          user.uid,
+          (fileIndex, progress) => {
+            setUploadProgress(prev => ({ ...prev, [fileIndex]: progress }));
+          }
+        );
       }
 
       const answersArray = assignment.questions.map((q) => ({
@@ -633,7 +643,7 @@ function AssignmentDetailContent() {
                 Choose Files
               </Button>
               <span className="text-sm text-muted-foreground">
-                PDF or Images (Max 800KB each)
+                PDF or Images (Max 10MB each, images will be compressed)
               </span>
             </div>
 
@@ -643,23 +653,38 @@ function AssignmentDetailContent() {
                 <div className="space-y-2">
                   {uploadedFiles.map((file, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-secondary rounded-md">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-1">
                         {file.type === "application/pdf" ? (
                           <FileText className="h-4 w-4" />
                         ) : (
                           <ImageIcon className="h-4 w-4" />
                         )}
-                        <span className="text-sm truncate max-w-xs">{file.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({(file.size / 1024).toFixed(1)} KB)
-                        </span>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm truncate block">{file.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({(file.size / 1024).toFixed(1)} KB)
+                          </span>
+                          {submitting && uploadProgress[index] !== undefined && (
+                            <div className="mt-1">
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div
+                                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                  style={{ width: `${uploadProgress[index]}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-xs text-muted-foreground mt-1">
+                                {uploadProgress[index] < 100 ? 'Uploading...' : 'Complete'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => removeFile(index)}
-                        disabled={submitted}
+                        disabled={submitted || submitting}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -678,7 +703,11 @@ function AssignmentDetailContent() {
           disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
           className="w-full"
         >
-          {submitting ? "Submitting..." : (
+          {submitting ? (
+            Object.keys(uploadProgress).length > 0 ? 
+              `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
+              "Submitting..."
+          ) : (
             <>
               <Send className="h-4 w-4 mr-2" />
               Submit Assignment
