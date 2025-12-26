@@ -53,11 +53,11 @@ export async function convertFilesToBase64(files: File[]): Promise<WorkFile[]> {
   return Promise.all(files.map(fileToBase64));
 }
 
+
 // Auth functions
 export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
-  
   // Create user document in Firestore
   const collectionName = role === "teacher" ? "teachers" : "students";
   const userData: any = {
@@ -67,13 +67,10 @@ export const register = async (email: string, password: string, role: "teacher" 
     role: role,
     createdAt: new Date(),
   };
-
   if (role === "student" && classCode) {
     userData.teacherId = classCode;
   }
-
   await setDoc(doc(db, collectionName, user.uid), userData);
-
   return user;
 };
 
@@ -103,6 +100,27 @@ export const changePassword = async (newPassword: string) => {
   const user = auth.currentUser;
   if (!user) throw new Error("No user logged in");
   return updatePassword(user, newPassword);
+};
+
+// Utility for Google sign-in (OAuth for teachers)
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+export const signInWithGoogleForTeacher = async () => {
+  const provider = new GoogleAuthProvider();
+  provider.addScope("https://www.googleapis.com/auth/forms.body.readonly");
+  const result = await signInWithPopup(auth, provider);
+  // Optionally, create teacher doc if not exists
+  const teacherDocRef = doc(db, "teachers", result.user.uid);
+  const teacherDocSnap = await getDoc(teacherDocRef);
+  if (!teacherDocSnap.exists()) {
+    await setDoc(teacherDocRef, {
+      uid: result.user.uid,
+      email: result.user.email,
+      name: result.user.displayName || result.user.email,
+      role: "teacher",
+      createdAt: new Date(),
+    });
+  }
+  return result.user;
 };
 
 export { auth, db, genAI };

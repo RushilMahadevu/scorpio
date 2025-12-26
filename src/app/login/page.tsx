@@ -143,6 +143,32 @@ export default function LoginPage() {
               >
                 {loading ? "Signing in..." : "Sign in as Teacher"}
               </Button>
+              <div className="flex flex-col gap-2 mt-2">
+                <Button
+                  className="w-full bg-white text-black border border-gray-300 hover:bg-gray-100"
+                  variant="outline"
+                  onClick={async () => {
+                    setLoading(true);
+                    setError("");
+                    try {
+                      // Google sign-in for teacher
+                      const user = await import("@/lib/firebase").then(mod => mod.signInWithGoogleForTeacher());
+                      // Redirect to teacher dashboard
+                      router.push("/teacher");
+                    } catch (err: any) {
+                      setError(err.message || "Google sign-in failed");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#4285F4" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.22l6.85-6.85C36.45 2.7 30.6 0 24 0 14.64 0 6.4 5.48 2.44 13.44l8.01 6.23C12.7 13.36 17.89 9.5 24 9.5z"/><path fill="#34A853" d="M46.09 24.5c0-1.64-.15-3.22-.43-4.75H24v9h12.44c-.54 2.9-2.16 5.36-4.6 7.04l7.19 5.59C43.98 37.36 46.09 31.36 46.09 24.5z"/><path fill="#FBBC05" d="M12.45 28.67c-1.13-3.36-1.13-6.98 0-10.34l-8.01-6.23C1.09 16.36 0 20.05 0 24c0 3.95 1.09 7.64 3.01 10.9l8.01-6.23z"/><path fill="#EA4335" d="M24 48c6.6 0 12.15-2.18 16.19-5.95l-7.19-5.59c-2.01 1.35-4.59 2.14-7.5 2.14-6.11 0-11.3-3.86-13.55-9.17l-8.01 6.23C6.4 42.52 14.64 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Sign in with Google (Teacher)
+                  </span>
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
 
