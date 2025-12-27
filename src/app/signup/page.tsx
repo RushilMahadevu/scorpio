@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceBackground } from "@/components/ui/space-background";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -56,6 +57,10 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       <SpaceBackground />
+      <Link href="/" className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors bg-background/80 rounded-full px-3 py-1 shadow-sm border border-border/50">
+        <ArrowLeft className="h-4 w-4" />
+        <span className="text-sm font-medium">Back to Home</span>
+      </Link>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Join Scorpio</CardTitle>

@@ -1,4 +1,3 @@
-
 "use client";
 // Fix for custom window property
 declare global {
@@ -61,72 +60,6 @@ export default function CreateAssignmentPage() {
   const [loading, setLoading] = useState(false);
   const [isGoogleForm, setIsGoogleForm] = useState(false);
   const [googleFormLink, setGoogleFormLink] = useState("");
-  const [googleFormId, setGoogleFormId] = useState("");
-  const [importedQuestions, setImportedQuestions] = useState<Question[]>([]);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importError, setImportError] = useState("");
-  // Google Forms API integration
-  async function signInWithGoogleFormsScope() {
-    const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
-    const { auth } = await import("@/lib/firebase");
-    const provider = new GoogleAuthProvider();
-    provider.addScope("https://www.googleapis.com/auth/forms.body.readonly");
-    return signInWithPopup(auth, provider);
-  }
-
-  async function fetchGoogleFormQuestions(formId: string, accessToken: string) {
-    const res = await fetch(`https://forms.googleapis.com/v1/forms/${formId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!res.ok) throw new Error("Failed to fetch form");
-    return await res.json();
-  }
-
-  const handleImportGoogleForm = async () => {
-    setImportLoading(true);
-    setImportError("");
-    try {
-      const result = await signInWithGoogleFormsScope();
-      // @ts-ignore
-      const credential = result.credential || (result._tokenResponse ? { accessToken: result._tokenResponse.oauthAccessToken } : null);
-      const accessToken = credential?.accessToken || result.user?.accessToken;
-      if (!accessToken) throw new Error("No access token from Google sign-in");
-      const formId = googleFormId || extractFormIdFromLink(googleFormLink);
-      if (!formId) throw new Error("No Google Form ID provided");
-      const formData = await fetchGoogleFormQuestions(formId, accessToken);
-      // Parse questions
-      const items = formData.items || [];
-      const parsedQuestions: Question[] = items
-        .filter((item: any) => item.questionItem)
-        .map((item: any) => {
-          const q = item.questionItem.question;
-          let type: Question["type"] = "text";
-          if (q.choiceQuestion) {
-            type = q.choiceQuestion.type === "RADIO" ? "multiple-choice" : "text";
-          } else if (q.textQuestion) {
-            type = "short-answer";
-          }
-          return {
-            id: crypto.randomUUID(),
-            text: item.title || "Untitled",
-            type,
-            options: q.choiceQuestion?.options?.map((opt: any) => opt.value) || [],
-            points: 10,
-          };
-        });
-      setImportedQuestions(parsedQuestions);
-    } catch (err: any) {
-      setImportError(err.message || "Error importing Google Form");
-    } finally {
-      setImportLoading(false);
-    }
-  };
-
-  function extractFormIdFromLink(link: string) {
-    // Typical Google Form link: https://docs.google.com/forms/d/FORM_ID/viewform
-    const match = link.match(/\/d\/([\w-]+)/);
-    return match ? match[1] : "";
-  }
 
   // AI Generation State
   const [aiOpen, setAiOpen] = useState(false);
@@ -453,45 +386,16 @@ export default function CreateAssignmentPage() {
             </div>
             {isGoogleForm && (
               <div className="space-y-2">
-                <Label htmlFor="googleFormLink">Google Form Link or ID</Label>
+                <Label htmlFor="googleFormLink">Google Form Link</Label>
                 <Input
                   id="googleFormLink"
                   value={googleFormLink}
-                  onChange={(e) => {
-                    setGoogleFormLink(e.target.value);
-                    setGoogleFormId(extractFormIdFromLink(e.target.value));
-                  }}
-                  placeholder="Paste the Google Form link or ID here"
+                  onChange={(e) => setGoogleFormLink(e.target.value)}
+                  placeholder="Paste the Google Form link here"
                   required={isGoogleForm}
                 />
-                <Button type="button" variant="outline" onClick={handleImportGoogleForm} disabled={importLoading || !googleFormLink} className="mt-2">
-                  {importLoading ? "Importing..." : "Import Questions from Google Form"}
-                </Button>
-                {importError && <p className="text-xs text-destructive mt-2">{importError}</p>}
-                {importedQuestions.length > 0 && (
-                  <div className="mt-4">
-                    <Label>Imported Questions</Label>
-                    <ul className="list-disc pl-6">
-                      {importedQuestions.map((q, i) => (
-                        <li key={q.id} className="mb-2">
-                          <strong>{q.text}</strong> ({q.type})
-                          {q.options && q.options.length > 0 && (
-                            <ul className="list-circle pl-4 text-xs">
-                              {q.options.map((opt, idx) => (
-                                <li key={idx}>{opt}</li>
-                              ))}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button type="button" variant="secondary" className="mt-2" onClick={() => setQuestions(importedQuestions)}>
-                      Use Imported Questions
-                    </Button>
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground mt-2">
-                  Students will complete this assignment using the imported questions from the Google Form.
+                <p className="text-xs text-muted-foreground">
+                  Students will complete this assignment via the provided Google Form.
                 </p>
               </div>
             )}
