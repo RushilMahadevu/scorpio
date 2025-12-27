@@ -1,6 +1,7 @@
 "use client";
 
 import { SpaceBackground } from "@/components/ui/space-background";
+import { motion } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,12 @@ export default function Home() {
       <SpaceBackground />
 
       {/* Sticky Blurred Header */}
-<header className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 bg-background/70 backdrop-blur-md border-b border-border/50 shadow-sm">
+<motion.header
+  className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 bg-background/70 backdrop-blur-md border-b border-border/50 shadow-sm"
+  initial={{ opacity: 0, y: -40 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.7, ease: "easeOut" }}
+>
   {/* Logo */}
   <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
     <Image src="/favicon.svg" alt="Scorpio" width={20} height={20} />
@@ -76,43 +82,98 @@ export default function Home() {
       </Link>
     </div>
   </div>
-</header>
+</motion.header>
 
       <main className="relative z-10">
         {/* Hero Section */}
         <section id="home" className="container mx-auto px-6 py-32 text-center">
-          <div className="max-w-5xl mx-auto space-y-8">
-            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border bg-card/50 backdrop-blur-sm mb-6">
+          <motion.div
+            className="max-w-5xl mx-auto space-y-8"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <motion.div
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border bg-card/50 backdrop-blur-sm mb-6"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
               <Sparkles className="h-4 w-4" />
               <span className="text-sm text-muted-foreground font-bold">Research-Grade AI Tutoring Platform</span>
-            </div>
+            </motion.div>
 
-            <div className="flex justify-center mb-6">
+            <motion.div
+              className="flex justify-center mb-6"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.6 }}
+            >
               <Image src="/favicon.svg" alt="Scorpio" width={64} height={64} />
-            </div>
+            </motion.div>
 
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-6">Scorpio</h1>
+            <motion.h1
+              className="text-4xl md:text-6xl font-extrabold mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              Scorpio
+            </motion.h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto font-bold">
+            <motion.p
+              className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto font-bold"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65, duration: 0.6 }}
+            >
               Powering Physics at Sage Ridge
-            </p>
+            </motion.p>
 
-            <p className="text-base text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
-            <strong>Scorpio</strong> is a modern, space-inspired physics learning platform designed to help students and teachers <em>collaborate, assign, and grade assignments with ease.</em>
-            </p>
+            <motion.p
+              className="text-base text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed font-medium"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+            >
+              <strong>Scorpio</strong> is a modern, space-inspired physics learning platform designed to help students and teachers <em>collaborate, assign, and grade assignments with ease.</em>
+            </motion.p>
 
             {/* Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto pt-12">
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto pt-12"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: 0.15
+                  }
+                }
+              }}
+            >
               {stats.map((stat, i) => (
-                <div key={i} className="space-y-2 p-6 rounded-xl border bg-card/30 hover:bg-card/50 transition-all">
+                <motion.div
+                  key={i}
+                  className="space-y-2 p-6 rounded-xl border bg-card/30 hover:bg-card/50 transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 1 + i * 0.15 }}
+                >
                   <div className="text-2xl font-medium text-primary">{stat.value}</div>
                   <div className="text-sm font-normal leading-tight italic">{stat.label}</div>
                   <div className="text-xs font-semilight text-muted-foreground uppercase tracking-wide">{stat.sublabel}</div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center pt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.7, duration: 0.6 }}
+            >
               <></>
               <Link href="#cta">
                 <Button size="lg" className="w-full sm:w-auto font-extrabold cursor-pointer">
@@ -122,48 +183,97 @@ export default function Home() {
               </Link>
               <Link href="/about">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto font-extrabold cursor-pointer">
-                Learn More
-              </Button>
+                  Learn More
+                </Button>
               </Link>
-            </div>
+            </motion.div>
 
-            <div className="pt-16 animate-bounce">
+            <motion.div
+              className="pt-16 animate-bounce"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.2, duration: 0.6 }}
+            >
               <ChevronDown className="h-6 w-6 text-muted-foreground mx-auto" />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Challenge Section */}
         <section id="challenge" className="container mx-auto px-6 py-32">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-sm text-muted-foreground uppercase tracking-widest mb-4 font-extrabold">The Challenge</div>
-            <h2 className="text-4xl md:text-5xl font-normal mb-8 leading-tight">
+          <motion.div
+            className="max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7 }}
+          >
+            <motion.div
+              className="text-sm text-muted-foreground uppercase tracking-widest mb-4 font-extrabold"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              The Challenge
+            </motion.div>
+            <motion.h2
+              className="text-4xl md:text-5xl font-normal mb-8 leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               Traditional learning management systems force both groups into rigid workflows that don't reflect the dynamic nature of physics problem-solving
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8 pt-8">
-              <div className="space-y-3 p-6 rounded-2xl border bg-card/30 hover:bg-card/50 transition-all">
-              <div className="flex space-x-2">
-                <Presentation className="size-5 mt-1"></Presentation>
-                <span className="text-lg font-bold">Teachers</span>
-              </div>
-                <p className="text-sm text-muted-foreground font-medium">Spend hours on logistics instead of actual teaching</p>
-              </div>
-              <div className="space-y-3 p-6 rounded-2xl border bg-card/30 hover:bg-card/50 transition-all">
-              <div className="flex space-x-2">
-                <GraduationCap className="size-5 mt-0.5"></GraduationCap>
-                <span className="text-lg font-bold">Students</span>
-              </div>
-                <p className="text-sm text-muted-foreground font-medium">Lack real-time feedback during problem-solving</p>
-              </div>
-              <div className="space-y-3 p-6 rounded-2xl border bg-card/30 hover:bg-card/50 transition-all">
-              <div className="flex space-x-2">
-                <ChartColumnIncreasing className="size-5 mt-1"></ChartColumnIncreasing>
-                <span className="text-lg font-bold">Progress</span>
-              </div>
-                <p className="text-sm text-muted-foreground font-medium">Requires manual tracking across disconnected tools</p>
-              </div>
-            </div>
-          </div>
+            </motion.h2>
+            <motion.div
+              className="grid md:grid-cols-3 gap-8 pt-8"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: 0.18
+                  }
+                }
+              }}
+            >
+              {[
+                {
+                  icon: <Presentation className="size-5 mt-1" />,
+                  label: "Teachers",
+                  desc: "Spend hours on logistics instead of actual teaching"
+                },
+                {
+                  icon: <GraduationCap className="size-5 mt-0.5" />,
+                  label: "Students",
+                  desc: "Lack real-time feedback during problem-solving"
+                },
+                {
+                  icon: <ChartColumnIncreasing className="size-5 mt-1" />,
+                  label: "Progress",
+                  desc: "Requires manual tracking across disconnected tools"
+                }
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  className="space-y-3 p-6 rounded-2xl border bg-card/30 hover:bg-card/50 transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                >
+                  <div className="flex space-x-2">
+                    {item.icon}
+                    <span className="text-lg font-bold">{item.label}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Features Grid */}
@@ -173,28 +283,73 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-bold">Built for Modern Education</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.15
+                }
+              }
+            }}
+          >
             {features.map((feature, i) => (
-              <div key={i} className="group p-8 rounded-2xl border bg-card/20 hover:bg-card/50 transition-all duration-300 cursor-pointer hover:scale-105">
+              <motion.div
+                key={i}
+                className="group p-8 rounded-2xl border bg-card/20 hover:bg-card/50 transition-all duration-300 cursor-pointer hover:scale-105"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+                viewport={{ once: true, amount: 0.2 }}
+              >
                 <feature.icon className="h-10 w-10 mb-6 group-hover:scale-110 transition-transform" />
                 <div className="space-y-3">
                   <div className="text-xs text-muted-foreground uppercase tracking-wider font-extrabold italic">{feature.tag}</div>
                   <h3 className="text-lg font-bold">{feature.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed font-medium">{feature.description}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </section>
 
         {/* Workflow Section (Combined) */}
         <section id="workflow" className="container mx-auto px-6 py-32">
-          <div className="text-center mb-20">
+          <motion.div
+            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7 }}
+          >
             <div className="text-sm text-muted-foreground uppercase tracking-widest mb-4 font-extrabold">Workflow</div>
             <h2 className="text-4xl md:text-5xl font-bold">How It Works</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            <div className="space-y-8">
+          </motion.div>
+          <motion.div
+            className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.18
+                }
+              }
+            }}
+          >
+            <motion.div
+              className="space-y-8"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              viewport={{ once: true, amount: 0.2 }}
+            >
               <div className="flex items-center space-x-4 mb-4">
                 <Presentation className="h-10 w-10" />
                 <div>
@@ -210,7 +365,14 @@ export default function Home() {
                   { title: "Real-Time Analytics", desc: "Live dashboards showing submission status and progress" },
                   { title: "Resource Management", desc: "Centralized library for course materials and tagging" }
                 ].map((item, i) => (
-                  <div key={i} className="flex space-x-4 group">
+                  <motion.div
+                    key={i}
+                    className="flex space-x-4 group"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 + i * 0.12 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                  >
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-extrabold group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                       {i + 1}
                     </div>
@@ -218,11 +380,17 @@ export default function Home() {
                       <div className="font-bold mb-1">{item.title}</div>
                       <div className="text-sm text-muted-foreground font-medium">{item.desc}</div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
-            <div className="space-y-8">
+            </motion.div>
+            <motion.div
+              className="space-y-8"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              viewport={{ once: true, amount: 0.2 }}
+            >
               <div className="flex items-center space-x-4 mb-4">
                 <GraduationCap className="h-10 w-10" />
                 <div>
@@ -237,7 +405,14 @@ export default function Home() {
                   { title: "Progress Tracking", desc: "Clear view of grades and submission history" },
                   { title: "Resource Library", desc: "Searchable access to all course materials" }
                 ].map((item, i) => (
-                  <div key={i} className="flex space-x-4 group">
+                  <motion.div
+                    key={i}
+                    className="flex space-x-4 group"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 + i * 0.12 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                  >
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-extrabold group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                       {i + 1}
                     </div>
@@ -245,16 +420,22 @@ export default function Home() {
                       <div className="font-bold mb-1">{item.title}</div>
                       <div className="text-sm text-muted-foreground font-medium">{item.desc}</div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* CTA */}
         <section id="cta" className="container mx-auto px-6 py-32 text-center">
-          <div className="max-w-3xl mx-auto space-y-8 p-16 rounded-3xl border bg-card/0 backdrop-blur-sm">
+          <motion.div
+            className="max-w-3xl mx-auto space-y-8 p-16 rounded-3xl border bg-card/0 backdrop-blur-sm"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7 }}
+          >
             <h2 className="text-4xl md:text-5xl font-semibold">Ready to Transform Your Classroom?</h2>
             <p className="text-muted-foreground text-lg font-medium">Join schools revolutionizing physics education with research-grade AI tutoring</p>
             <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
@@ -271,7 +452,7 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
 
