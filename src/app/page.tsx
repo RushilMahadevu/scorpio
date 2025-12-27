@@ -48,21 +48,27 @@ export default function Home() {
 
   {/* Navigation - Centered */}
     <nav className="absolute left-1/2 -translate-x-1/2 flex space-x-8">
-      <Link href="#home" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-        Home
-      </Link>
-      <Link href="#challenge" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-        Challenge
-      </Link>
-      <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-        Features
-      </Link>
-      <Link href="#workflow" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-        Workflow
-      </Link>
-      <Link href="#cta" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-        Get Started
-      </Link>
+      {[
+        { id: "home", label: "Home" },
+        { id: "challenge", label: "Challenge" },
+        { id: "features", label: "Features" },
+        { id: "workflow", label: "Workflow" },
+        { id: "cta", label: "Get Started" }
+      ].map(({ id, label }) => (
+        <button
+          key={id}
+          type="button"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-none outline-none px-0"
+          onClick={() => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+        >
+          {label}
+        </button>
+      ))}
     </nav>
 
   {/* Actions */}
@@ -194,7 +200,19 @@ export default function Home() {
               animate={{ opacity: 1 }}
               transition={{ delay: 2.2, duration: 0.6 }}
             >
-              <ChevronDown className="h-6 w-6 text-muted-foreground mx-auto" />
+              <button
+                aria-label="Scroll to Challenge"
+                onClick={() => {
+                  const el = document.getElementById("challenge");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="focus:outline-none"
+                type="button"
+              >
+                <ChevronDown className="h-6 w-6 text-muted-foreground mx-auto" />
+              </button>
             </motion.div>
           </motion.div>
         </section>
