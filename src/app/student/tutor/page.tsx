@@ -10,6 +10,41 @@ import { Badge } from "@/components/ui/badge";
 import { Bot, Send, User, Lightbulb, Calculator } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 
+
+// Typewriter effect for assistant messages
+function Typewriter({ text, onDone }: { text: string; onDone?: () => void }) {
+  const [displayed, setDisplayed] = useState("");
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    setDisplayed("");
+    indexRef.current = 0;
+    if (!text) return;
+    let cancelled = false;
+    function type() {
+      if (cancelled) return;
+      setDisplayed((prev) => {
+        const next = text.slice(0, indexRef.current + 1);
+        return next;
+      });
+      indexRef.current++;
+      if (indexRef.current < text.length) {
+        setTimeout(type, 5); // Faster typing speed
+      } else if (onDone) {
+        onDone();
+      }
+    }
+    type();
+    return () => {
+      cancelled = true;
+    };
+    // Only restart when text changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+
+  return <MarkdownRenderer>{displayed}</MarkdownRenderer>;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -18,10 +53,12 @@ interface Message {
 }
 
 export default function AITutorPage() {
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"concept" | "problem">("concept");
+  const [typingId, setTypingId] = useState<string | null>(null); // Track which message is typing
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,6 +101,7 @@ export default function AITutorPage() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      setTypingId(assistantMessage.id); // Start typewriter effect for this message
     } catch (error) {
       console.error("Error getting response:", error);
       const errorMessage: Message = {
@@ -72,6 +110,7 @@ export default function AITutorPage() {
         content: "Sorry, I encountered an error. Please try again.",
       };
       setMessages((prev) => [...prev, errorMessage]);
+      setTypingId(null);
     } finally {
       setLoading(false);
     }
@@ -138,41 +177,52 @@ export default function AITutorPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${
-                      message.role === "assistant" ? "flex-row" : "flex-row-reverse"
-                    }`}
-                  >
+                {messages.map((message, idx) => {
+                  const isLastAssistant =
+                    message.role === "assistant" && idx === messages.length - 1 && message.id === typingId;
+                  return (
                     <div
-                      className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full ${
-                        message.role === "assistant"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                      key={message.id}
+                      className={`flex gap-3 ${
+                        message.role === "assistant" ? "flex-row" : "flex-row-reverse"
                       }`}
                     >
-                      {message.role === "assistant" ? (
-                        <Bot className="h-4 w-4" />
-                      ) : (
-                        <User className="h-4 w-4" />
-                      )}
+                      <div
+                        className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full ${
+                          message.role === "assistant"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                      >
+                        {message.role === "assistant" ? (
+                          <Bot className="h-4 w-4" />
+                        ) : (
+                          <User className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div
+                        className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                          message.role === "assistant"
+                            ? "bg-muted"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                      >
+                        {message.role === "assistant" ? (
+                          isLastAssistant ? (
+                            <Typewriter
+                              text={message.content}
+                              onDone={() => setTypingId(null)}
+                            />
+                          ) : (
+                            <MarkdownRenderer>{message.content}</MarkdownRenderer>
+                          )
+                        ) : (
+                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        )}
+                      </div>
                     </div>
-                    <div
-                      className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                        message.role === "assistant"
-                          ? "bg-muted"
-                          : "bg-primary text-primary-foreground"
-                      }`}
-                    >
-                      {message.role === "assistant" ? (
-                        <MarkdownRenderer>{message.content}</MarkdownRenderer>
-                      ) : (
-                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {loading && (
                   <div className="flex gap-3">
                     <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary text-primary-foreground">
