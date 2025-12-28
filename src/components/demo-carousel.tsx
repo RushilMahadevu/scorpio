@@ -1,3 +1,4 @@
+import { Pause } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -14,7 +15,7 @@ const slideDurations = [12, 41, 25, 36];
 export function DemoCarousel() {
   const [index, setIndex] = useState(0);
   const total = demoSlides.length;
-  // Remove isHovered state, progress should not pause or reset on hover
+  const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,33 +64,83 @@ export function DemoCarousel() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Auto-play and progress bar animation with per-slide timing (no pause/reset on hover)
+  // Auto-play and progress bar animation with per-slide timing, pause on hover
+  // Progress bar timer logic: start on slide change and when hover ends
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     progressRef.current = 0;
     setProgress(0);
+    let currentStep = 0;
     const duration = slideDurations[index] * 1000; // ms
     const intervalMs = 50;
     const steps = duration / intervalMs;
-    let currentStep = 0;
-    timerRef.current = setInterval(() => {
-      currentStep++;
-      const percent = Math.min((currentStep / steps) * 100, 100);
-      setProgress(percent);
-      progressRef.current = percent;
-      if (percent >= 100) {
-        clearInterval(timerRef.current!);
-        next();
-      }
-    }, intervalMs);
+
+    function startTimer(fromStep: number) {
+      currentStep = fromStep;
+      timerRef.current = setInterval(() => {
+        currentStep++;
+        const percent = Math.min((currentStep / steps) * 100, 100);
+        setProgress(percent);
+        progressRef.current = percent;
+        if (percent >= 100) {
+          clearInterval(timerRef.current!);
+          next();
+        }
+      }, intervalMs);
+    }
+
+    if (!isHovered) {
+      startTimer(0);
+    }
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [index]);
 
+  // Pause/resume timer on hover without resetting progress
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (!isHovered) {
+      // Resume timer from current progress
+      const duration = slideDurations[index] * 1000; // ms
+      const intervalMs = 50;
+      const steps = duration / intervalMs;
+      let currentStep = Math.floor((progressRef.current / 100) * steps);
+      timerRef.current = setInterval(() => {
+        currentStep++;
+        const percent = Math.min((currentStep / steps) * 100, 100);
+        setProgress(percent);
+        progressRef.current = percent;
+        if (percent >= 100) {
+          clearInterval(timerRef.current!);
+          next();
+        }
+      }, intervalMs);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isHovered]);
+
+  // Pause/resume video on hover
+  useEffect(() => {
+    const video = currentVideoRef.current;
+    if (!video) return;
+    if (isHovered) {
+      video.pause();
+    } else {
+      video.play();
+    }
+  }, [isHovered, index]);
+
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col items-center">
-      <div className="relative w-full h-[540px] flex items-center justify-center overflow-visible">
+      <div
+        className="relative w-full h-[540px] flex items-center justify-center overflow-visible"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
 
         {/* Left arrow */}
         <button
@@ -127,14 +178,19 @@ export function DemoCarousel() {
               className="rounded-2xl border shadow-2xl w-[900px] h-[540px] object-cover"
             />
             {/* Progress bar */}
-            <div className="w-full bg-black/20 dark:bg-white/20 rounded-full h-1.5 mt-2 overflow-hidden">
+            <div className="w-full bg-black/20 dark:bg-white/20 rounded-full h-1.5 mt-2 overflow-hidden relative">
               <div
-                className="h-1.5 bg-black dark:bg-white rounded-full transition-all"
+                className={`h-1.5 bg-black dark:bg-white rounded-full transition-all ${isHovered ? 'opacity-60 blur-[2px]' : ''}`}
                 style={{
                   width: `${progress}%`,
                   transition: `width ${slideDurations[index]}s linear`
                 }}
               />
+              {isHovered && (
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                  <Pause className="h-3 w-3 text-black dark:text-white opacity-70" />
+                </span>
+              )}
             </div>
           </div>
 
@@ -180,6 +236,11 @@ export function DemoCarousel() {
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}
+      </div>
+
+      {/* Subtle guidance */}
+      <div className="mt-3 text-[11px] text-black/40 dark:text-white/40 select-none italic text-center tracking-wide">
+        Hover to pause &middot; Use arrows or keyboard to navigate
       </div>
     </div>
   );

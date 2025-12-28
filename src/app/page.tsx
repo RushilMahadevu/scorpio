@@ -339,7 +339,7 @@ export default function Home() {
 
         {/* Demo Carousel Section (moved below Features) */}
         <section className="container mx-auto px-6 py-20 text-center">
-          <div className="text-2xl md:text-3xl font-bold mb-8">See Scorpio in Action</div>
+          <div className="text-2xl md:text-3xl font-bold mb-8">Platform Demonstrations</div>
           <div className="flex justify-center">
             <DemoCarousel />
           </div>
