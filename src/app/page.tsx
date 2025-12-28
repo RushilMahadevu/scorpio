@@ -5,6 +5,12 @@ import { motion } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
+import {
   Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing
 } from "lucide-react";
 import Link from "next/link";
@@ -47,30 +53,34 @@ export default function Home() {
     <span className="text-sm font-semibold">Scorpio</span>
   </Link>
 
-  {/* Navigation - Centered */}
-    <nav className="absolute left-1/2 -translate-x-1/2 flex space-x-8">
-      {[
-        { id: "home", label: "Home" },
-        { id: "challenge", label: "Challenge" },
-        { id: "features", label: "Features" },
-        { id: "workflow", label: "Workflow" },
-        { id: "cta", label: "Get Started" }
-      ].map(({ id, label }) => (
-        <button
-          key={id}
-          type="button"
-          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-none outline-none px-0"
-          onClick={() => {
-            const el = document.getElementById(id);
-            if (el) {
-              el.scrollIntoView({ behavior: "smooth" });
-            }
-          }}
-        >
-          {label}
-        </button>
-      ))}
-    </nav>
+
+  {/* Navigation - Centered (shadcn-styled buttons, ready for dropdown) */}
+  <nav className="absolute left-1/2 -translate-x-1/2 flex space-x-2">
+    {[
+      { id: "home", label: "Home" },
+      { id: "challenge", label: "Challenge" },
+      { id: "features", label: "Features" },
+      { id: "workflow", label: "Workflow" },
+      { id: "cta", label: "Get Started" }
+    ].map(({ id, label }) => (
+      <DropdownMenu key={id}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer"
+            type="button"
+            onClick={() => {
+              const el = document.getElementById(id);
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            {label}
+          </Button>
+        </DropdownMenuTrigger>
+        {/* DropdownMenuContent can be added here for future dropdowns */}
+      </DropdownMenu>
+    ))}
+  </nav>
 
   {/* Actions */}
   <div className="flex items-center space-x-3">

@@ -13,9 +13,13 @@ const demoSlides = [
 const slideDurations = [12, 41, 25, 36];
 
 export function DemoCarousel() {
+    // Track if the main video is visible in the viewport
+    const [isVideoVisible, setIsVideoVisible] = useState(true);
+    const mainVideoContainerRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const total = demoSlides.length;
-  const [isHovered, setIsHovered] = useState(false);
+  // Only paus ""e when hovering over the main video
+  const [isVideoHovered, setIsVideoHovered] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -89,7 +93,7 @@ export function DemoCarousel() {
       }, intervalMs);
     }
 
-    if (!isHovered) {
+    if (!isVideoHovered) {
       startTimer(0);
     }
 
@@ -101,7 +105,8 @@ export function DemoCarousel() {
   // Pause/resume timer on hover without resetting progress
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (!isHovered) {
+    // Only run timer if video is visible and not hovered
+    if (isVideoVisible && !isVideoHovered) {
       // Resume timer from current progress
       const duration = slideDurations[index] * 1000; // ms
       const intervalMs = 50;
@@ -121,25 +126,37 @@ export function DemoCarousel() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isHovered]);
+  }, [isVideoHovered, isVideoVisible]);
 
   // Pause/resume video on hover
   useEffect(() => {
     const video = currentVideoRef.current;
     if (!video) return;
-    if (isHovered) {
+    if (isVideoHovered || !isVideoVisible) {
       video.pause();
     } else {
       video.play();
     }
-  }, [isHovered, index]);
+  }, [isVideoHovered, isVideoVisible, index]);
+
+  // Intersection Observer to detect if main video is visible
+  useEffect(() => {
+    const node = mainVideoContainerRef.current;
+    if (!node) return;
+    const observer = new window.IntersectionObserver(
+      ([entry]) => {
+        setIsVideoVisible(entry.isIntersecting);
+      },
+      { threshold: 0.25 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col items-center">
       <div
         className="relative w-full h-[540px] flex items-center justify-center overflow-visible"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
 
         {/* Left arrow */}
@@ -167,30 +184,38 @@ export function DemoCarousel() {
           </div>
 
           {/* Active */}
-          <div className="z-20">
-            <video
-              ref={currentVideoRef}
-              src={getSlide(0).src}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="rounded-2xl border shadow-2xl w-[900px] h-[540px] object-cover"
-            />
+          <div className="z-20 relative">
+            <div
+              ref={mainVideoContainerRef}
+              onMouseEnter={() => setIsVideoHovered(true)}
+              onMouseLeave={() => setIsVideoHovered(false)}
+              className="relative"
+            >
+              <video
+                ref={currentVideoRef}
+                src={getSlide(0).src}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="rounded-2xl border shadow-2xl w-[900px] h-[540px] object-cover"
+              />
+              {/* Paused overlay effect */}
+              {isVideoHovered && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-2xl transition-all">
+                  <Pause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
+                </div>
+              )}
+            </div>
             {/* Progress bar */}
             <div className="w-full bg-black/20 dark:bg-white/20 rounded-full h-1.5 mt-2 overflow-hidden relative">
               <div
-                className={`h-1.5 bg-black dark:bg-white rounded-full transition-all ${isHovered ? 'opacity-60 blur-[2px]' : ''}`}
+                className="h-1.5 bg-black dark:bg-white rounded-full transition-all"
                 style={{
                   width: `${progress}%`,
                   transition: `width ${slideDurations[index]}s linear`
                 }}
               />
-              {isHovered && (
-                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                  <Pause className="h-3 w-3 text-black dark:text-white opacity-70" />
-                </span>
-              )}
             </div>
           </div>
 
@@ -228,11 +253,11 @@ export function DemoCarousel() {
           <button
             key={i}
             onClick={() => setIndex(i)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              i === index
-                ? "bg-white shadow-lg scale-125"
-                : "bg-white/50 hover:bg-white/70"
-            }`}
+            className={`w-3 h-3 rounded-full transition-all duration-300
+              ${i === index
+                ? "bg-black dark:bg-white shadow-lg scale-125"
+                : "bg-black/30 dark:bg-white/50 hover:bg-black/50 dark:hover:bg-white/70"}
+            `}
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}
