@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { DemoCarousel } from "@/components/demo-carousel";
 
 export default function Home() {
   const features = [
@@ -215,6 +216,7 @@ export default function Home() {
               </button>
             </motion.div>
           </motion.div>
+
         </section>
 
         {/* Challenge Section */}
@@ -333,6 +335,14 @@ export default function Home() {
               </motion.div>
             ))}
           </motion.div>
+        </section>
+
+        {/* Demo Carousel Section (moved below Features) */}
+        <section className="container mx-auto px-6 py-20 text-center">
+          <div className="text-2xl md:text-3xl font-bold mb-8">See Scorpio in Action</div>
+          <div className="flex justify-center">
+            <DemoCarousel />
+          </div>
         </section>
 
         {/* Workflow Section (Combined) */}
