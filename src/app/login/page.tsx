@@ -11,13 +11,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceBackground } from "@/components/ui/space-background";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, GraduationCap, Presentation, Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
   const { user, role, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -78,16 +81,36 @@ export default function LoginPage() {
         <ArrowLeft className="h-4 w-4" />
         <span className="text-sm font-medium">Back to Home</span>
       </Link>
-      <Card className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
+      >
+        <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Scorpio</CardTitle>
-          <CardDescription>Powering Physics at Sage Ridge</CardDescription>
+          <motion.div
+            className="flex justify-center mb-4"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <Image src="/favicon.svg" alt="Scorpio" width={48} height={48} />
+          </motion.div>
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription>Sign in to Scorpio</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="student" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="student">Student</TabsTrigger>
-              <TabsTrigger value="teacher">Teacher</TabsTrigger>
+              <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
+                <GraduationCap className="h-4 w-4" />
+                Student
+              </TabsTrigger>
+              <TabsTrigger value="teacher" className="flex items-center gap-2 cursor-pointer">
+                <Presentation className="h-4 w-4" />
+                Teacher
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="student" className="space-y-4 mt-4">
@@ -103,12 +126,22 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="student-password">Password</Label>
-                <Input
-                  id="student-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="student-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button 
@@ -133,12 +166,22 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="teacher-password">Password</Label>
-                <Input
-                  id="teacher-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="teacher-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button 
@@ -185,6 +228,7 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
     </div>
   );
 }
