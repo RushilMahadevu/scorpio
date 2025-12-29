@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SpaceBackground } from "@/components/ui/space-background";
+import { Logo } from "@/components/ui/logo";
 
 
 export default function AboutPage() {
@@ -20,7 +21,7 @@ export default function AboutPage() {
           </svg>
           Back
         </button>
-        <img src="/favicon.svg" alt="Scorpio Logo" className="w-12 h-12 mx-auto mb-6 drop-shadow-lg" />
+        <Logo size={48} className="mx-auto mb-6 drop-shadow-lg text-primary" />
         <h1 className="text-4xl font-extrabold text-center mb-6 text-foreground">About Scorpio</h1>
         <div className="text-lg text-center mb-6 text-muted-foreground space-y-4 leading-relaxed">
           <p>

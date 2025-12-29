@@ -12,7 +12,7 @@ import { SpaceBackground } from "@/components/ui/space-background";
 import Link from "next/link";
 import { ArrowLeft, GraduationCap, Presentation, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { Logo } from "@/components/ui/logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -79,7 +79,7 @@ export default function SignupPage() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <Image src="/favicon.svg" alt="Scorpio" width={48} height={48} />
+            <Logo size={48} className="text-primary" />
           </motion.div>
           <CardTitle className="text-2xl font-bold">Join Scorpio</CardTitle>
           <CardDescription>Create your account to get started</CardDescription>

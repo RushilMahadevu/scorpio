@@ -14,9 +14,9 @@ import {
   Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { DemoCarousel } from "@/components/demo-carousel";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Logo } from "@/components/ui/logo";
 import { useState } from "react";
 
 export default function Home() {
@@ -52,7 +52,7 @@ export default function Home() {
 >
   {/* Logo */}
   <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-    <Image src="/favicon.svg" alt="Scorpio" width={20} height={20} />
+    <Logo size={20} className="text-foreground" />
     <span className="text-sm font-extrabold">Scorpio</span>
   </Link>
 
@@ -161,7 +161,7 @@ export default function Home() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.6 }}
             >
-              <Image src="/favicon.svg" alt="Scorpio" width={64} height={64} />
+              <Logo size={64} className="text-primary" />
             </motion.div>
 
             <motion.h1
@@ -533,7 +533,7 @@ export default function Home() {
         <div className="container mx-auto px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-3">
-              <Image src="/favicon.svg" alt="Scorpio" width={24} height={24} />
+              <Logo size={24} className="text-foreground" />
               <span className="text-md font-extrabold">Scorpio</span>
             </div>
             <div className="text-sm text-muted-foreground font-medium">
