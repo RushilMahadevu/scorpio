@@ -140,17 +140,17 @@ export function SettingsDialog() {
 
         <Tabs defaultValue="account" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="account" className="flex items-center gap-1">
+            <TabsTrigger value="account" className="flex items-center gap-1 cursor-pointer">
               <User className="h-3 w-3" />
               <span className="hidden sm:inline">Account</span>
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="flex items-center gap-1">
+            <TabsTrigger value="appearance" className="flex items-center gap-1 cursor-pointer">
               <Palette className="h-3 w-3" />
               <span className="hidden sm:inline">Appearance</span>
             </TabsTrigger>
-            <TabsTrigger value="learn-more" className="flex items-center gap-1">
+            <TabsTrigger value="learn-more" className="flex items-center gap-1 cursor-pointer">
               <Info className="h-3 w-3" />
-              <span className="hidden sm:inline">Learn More</span>
+              <span className="hidden sm:inline">Resources</span>
             </TabsTrigger>
           </TabsList>
 
@@ -183,7 +183,7 @@ export function SettingsDialog() {
                     variant="outline"
                     size="sm"
                     onClick={handlePasswordReset}
-                    className="w-full justify-start h-10"
+                    className="w-full justify-start h-10 cursor-pointer"
                   >
                     <KeyRound className="mr-3 h-4 w-4" />
                     Reset Password
@@ -192,7 +192,7 @@ export function SettingsDialog() {
                     variant="outline"
                     size="sm"
                     onClick={() => setEmailChangeOpen(true)}
-                    className="w-full justify-start h-10"
+                    className="w-full justify-start h-10 cursor-pointer"
                   >
                     <Mail className="mr-3 h-4 w-4" />
                     Change Email
@@ -202,7 +202,7 @@ export function SettingsDialog() {
                     variant="outline"
                     size="sm"
                     onClick={handleLogout}
-                    className="w-full justify-start h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="w-full justify-start h-10 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                   >
                     <LogOut className="mr-3 h-4 w-4" />
                     Sign Out
@@ -222,7 +222,10 @@ export function SettingsDialog() {
                 </div>
                 <div className="space-y-3">
                   <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-1 gap-2">
-                    <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => handleThemeChange("dark")}
+                    >
                       <RadioGroupItem value="dark" id="dark-theme" />
                       <div className="flex items-center gap-2">
                         <Moon className="h-4 w-4" />
@@ -233,7 +236,10 @@ export function SettingsDialog() {
                       </div>
                       <span className="text-xs text-muted-foreground ml-auto">(Recommended)</span>
                     </div>
-                    <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => handleThemeChange("light")}
+                    >
                       <RadioGroupItem value="light" id="light-theme" />
                       <div className="flex items-center gap-2">
                         <Sun className="h-4 w-4" />
@@ -243,7 +249,10 @@ export function SettingsDialog() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50">
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => handleThemeChange("system")}
+                    >
                       <RadioGroupItem value="system" id="system-theme" />
                       <div className="flex items-center gap-2">
                         <SettingsIcon className="h-4 w-4" />
@@ -275,6 +284,7 @@ export function SettingsDialog() {
                       variant={spaceEffectsEnabled ? "default" : "outline"}
                       size="sm"
                       onClick={toggleSpaceEffects}
+                      className="cursor-pointer"
                     >
                       {spaceEffectsEnabled ? "On" : "Off"}
                     </Button>
@@ -291,7 +301,7 @@ export function SettingsDialog() {
                           className="grid grid-cols-5 gap-2"
                         >
                           {[0, 10, 25, 40, 50].map((level) => (
-                            <div key={level} className="flex flex-col items-center gap-1">
+                            <div key={level} className="flex flex-col items-center gap-1 cursor-pointer">
                               <RadioGroupItem value={String(level)} id={`spacy-${level}`} />
                               <Label htmlFor={`spacy-${level}`} className="text-xs text-center">
                                 {level === 0
@@ -319,7 +329,7 @@ export function SettingsDialog() {
                             max={25}
                             value={nebulaBrightness}
                             onChange={e => setNebulaBrightness(Number(e.target.value))}
-                            className="w-full"
+                            className="w-full cursor-pointer"
                           />
                           <div className="flex justify-between text-xs text-muted-foreground">
                             <span>Subtle</span>
@@ -349,9 +359,20 @@ export function SettingsDialog() {
               <Separator />
 
               <div className="space-y-3">
-                <Button onClick={handleLearnMore} className="w-full">
+                <Button onClick={handleLearnMore} className="w-full cursor-pointer">
                   <Info className="mr-2 h-4 w-4" />
                   Learn More About Scorpio
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    router.push("/contact")
+                    setOpen(false)
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Contact & Support
                 </Button>
               </div>
 
@@ -388,10 +409,10 @@ export function SettingsDialog() {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEmailChangeOpen(false)}>
+              <Button variant="outline" onClick={() => setEmailChangeOpen(false)} className="cursor-pointer">
                 Cancel
               </Button>
-              <Button onClick={handleEmailChange} disabled={!newEmail.trim()}>
+              <Button onClick={handleEmailChange} disabled={!newEmail.trim()} className="cursor-pointer">
                 Update Email
               </Button>
             </div>

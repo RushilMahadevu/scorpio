@@ -11,7 +11,7 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
 import {
-  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu
+  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github
 } from "lucide-react";
 import Link from "next/link";
 import { DemoCarousel } from "@/components/demo-carousel";
@@ -529,15 +529,54 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="relative z-10 bg-background/50 backdrop-blur-sm">
+      <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
         <div className="container mx-auto px-6 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            {/* Logo Section */}
             <div className="flex items-center space-x-3">
               <Logo size={24} className="text-foreground" />
               <span className="text-md font-extrabold">Scorpio</span>
             </div>
-            <div className="text-sm text-muted-foreground font-medium">
-              Built by <span className="text-foreground font-semibold">Rushil Mahadevu</span> for Sage Ridge School
+
+            {/* Links Section */}
+            <div className="flex justify-center space-x-6">
+              <Link
+                href="https://github.com/RushilMahadevu/scorpio"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Github className="h-5 w-5" />
+                <span className="text-sm font-medium">GitHub</span>
+              </Link>
+              <Link
+                href="/about"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              >
+                About
+              </Link>
+              <Link
+                href="/research"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              >
+                Research
+              </Link>
+              <Link
+                href="/contact"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              >
+                Contact
+              </Link>
+            </div>
+
+            {/* Credits Section */}
+            <div className="text-right space-y-2">
+              <div className="text-sm text-muted-foreground font-medium">
+                Built by <span className="text-foreground font-semibold">Rushil Mahadevu</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                © 2025 Scorpio. All rights reserved.
+              </div>
             </div>
           </div>
         </div>
