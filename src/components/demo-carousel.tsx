@@ -156,7 +156,7 @@ export function DemoCarousel() {
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col items-center">
       <div
-        className="relative w-full h-[540px] flex items-center justify-center overflow-visible"
+        className="relative w-full h-[300px] md:h-[540px] flex items-center justify-center overflow-visible"
       >
 
         {/* Left arrow */}
@@ -171,7 +171,7 @@ export function DemoCarousel() {
         <div className="relative w-full flex items-center justify-center">
 
           {/* Previous preview */}
-          <div className="absolute left-0 -translate-x-1/4 z-10 scale-[0.9] opacity-70 blur-[2px] hover:blur-0 transition-all">
+          <div className="absolute left-0 -translate-x-1/4 z-10 scale-[0.9] opacity-70 blur-[2px] hover:blur-0 transition-all hidden md:block">
             <video
               ref={prevVideoRef}
               src={getSlide(-1).src}
@@ -198,7 +198,7 @@ export function DemoCarousel() {
                 loop
                 muted
                 playsInline
-                className="rounded-2xl border shadow-2xl w-[900px] h-[540px] object-cover"
+                className="rounded-2xl border shadow-2xl w-full h-full object-cover"
               />
               {/* Paused overlay effect */}
               {isVideoHovered && (
@@ -220,7 +220,7 @@ export function DemoCarousel() {
           </div>
 
           {/* Next preview */}
-          <div className="absolute right-0 translate-x-1/4 z-10 scale-[0.9] opacity-70 blur-[2px] hover:blur-0 transition-all">
+          <div className="absolute right-0 translate-x-1/4 z-10 scale-[0.9] opacity-70 blur-[2px] hover:blur-0 transition-all hidden md:block">
             <video
               ref={nextVideoRef}
               src={getSlide(1).src}

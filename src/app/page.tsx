@@ -11,15 +11,18 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
 import {
-  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing
+  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { DemoCarousel } from "@/components/demo-carousel";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useState } from "react";
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const features = [
-    { icon: Brain, title: "AI-Powered Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture", tag: "Gemini 2.5 Flash" },
     { icon: SquareFunction, title: "Mathematical Rendering", description: "Real-time LaTeX rendering with custom math builder", tag: "KaTeX" },
     { icon: Orbit, title: "Immersive UI", description: "Multi-layered parallax space background paired with modular beautiful UI", tag: "Tailwind + Shadcn" },
     { icon: CloudSync, title: "Real-time Sync", description: "Optimistic updates and offline support", tag: "Firestore" },
@@ -55,7 +58,7 @@ export default function Home() {
 
 
   {/* Navigation - Centered (shadcn-styled buttons, ready for dropdown) */}
-  <nav className="absolute left-1/2 -translate-x-1/2 flex space-x-2">
+  <nav className="absolute left-1/2 -translate-x-1/2 hidden md:flex space-x-2">
     {[
       { id: "home", label: "Home" },
       { id: "challenge", label: "Challenge" },
@@ -72,6 +75,7 @@ export default function Home() {
             onClick={() => {
               const el = document.getElementById(id);
               if (el) el.scrollIntoView({ behavior: "smooth" });
+              setMenuOpen(false); // close menu if open
             }}
           >
             {label}
@@ -84,6 +88,37 @@ export default function Home() {
 
   {/* Actions */}
   <div className="flex items-center space-x-3">
+    <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="sm" className="md:hidden">
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+        <nav className="flex flex-col space-y-4 mt-8">
+          {[
+            { id: "home", label: "Home" },
+            { id: "challenge", label: "Challenge" },
+            { id: "features", label: "Features" },
+            { id: "workflow", label: "Workflow" },
+            { id: "cta", label: "Get Started" }
+          ].map(({ id, label }) => (
+            <Button
+              key={id}
+              variant="ghost"
+              className="justify-start font-medium text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                const el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+                setMenuOpen(false);
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </nav>
+      </SheetContent>
+    </Sheet>
     <ModeToggle />
     <div className="h-5 w-px bg-border/70"></div>
     <div className="flex items-center space-x-2 pl-0.5">
@@ -139,7 +174,7 @@ export default function Home() {
             </motion.h1>
 
             <motion.p
-              className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-primary drop-shadow-sm"
+              className="text-xl md:text-2xl lg:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-primary drop-shadow-sm"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.6 }}
