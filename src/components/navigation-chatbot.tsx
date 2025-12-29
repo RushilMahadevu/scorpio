@@ -1,6 +1,25 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+// --- Rate Limiting Config ---
+const RATE_LIMIT = {
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 30, // max 30 requests per window per user
+};
+
+// Helper: get and set usage from localStorage (for demo; replace with backend for production)
+function getUserUsage(userRole: string) {
+  const raw = localStorage.getItem(`nav-ai-usage-${userRole}`);
+  if (!raw) return { count: 0, windowStart: Date.now() };
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { count: 0, windowStart: Date.now() };
+  }
+}
+function setUserUsage(userRole: string, usage: { count: number; windowStart: number }) {
+  localStorage.setItem(`nav-ai-usage-${userRole}` , JSON.stringify(usage));
+}
 import { Button } from '@/components/ui/button';
 import { MessageCircle, X, Send, Home, FileText, GraduationCap, BarChart, Upload, Users, BookOpen, Video, Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -65,6 +84,8 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
+  const [rateLimitWarning, setRateLimitWarning] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -119,6 +140,29 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
+    setRateLimitError(null);
+    setRateLimitWarning(null);
+
+    // --- Rate Limiting Logic ---
+    const usage = getUserUsage(userRole);
+    const now = Date.now();
+    if (now - usage.windowStart > RATE_LIMIT.windowMs) {
+      // Reset window
+      usage.count = 0;
+      usage.windowStart = now;
+    }
+    if (usage.count >= RATE_LIMIT.max) {
+      setRateLimitError(`You have reached the maximum of ${RATE_LIMIT.max} navigation AI requests per hour. Please try again later.`);
+      return;
+    }
+    // Show warning if close to limit (within 3 requests)
+    if (RATE_LIMIT.max - usage.count <= 3 && RATE_LIMIT.max - usage.count > 0) {
+      setRateLimitWarning(`Warning: Only ${RATE_LIMIT.max - usage.count} navigation AI requests left in this hour.`);
+    }
+
+    // Increment usage and save
+    usage.count++;
+    setUserUsage(userRole, usage);
 
     const userMessage = input.trim();
     setInput('');
@@ -252,6 +296,16 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
           {/* Input */}
           <div className="p-3 border-t opacity-90 transition-opacity">
             <div className="flex gap-2">
+              {rateLimitError && (
+                <div className="p-2 text-red-600 text-xs font-semibold border-b bg-red-50 rounded mb-2">
+                  {rateLimitError}
+                </div>
+              )}
+              {rateLimitWarning && !rateLimitError && (
+                <div className="p-2 text-yellow-700 text-xs font-semibold border-b bg-yellow-50 rounded mb-2">
+                  {rateLimitWarning}
+                </div>
+              )}
               <input
                 type="text"
                 value={input}
@@ -259,12 +313,12 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 onKeyPress={handleKeyPress}
                 placeholder="Where do you want to go?"
                 className="flex-1 px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                disabled={isLoading}
+                disabled={isLoading || !!rateLimitError}
               />
               <Button
                 onClick={handleSendMessage}
                 size="icon"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !!rateLimitError}
                 className="h-10 w-10"
               >
                 <Send className="h-4 w-4" />

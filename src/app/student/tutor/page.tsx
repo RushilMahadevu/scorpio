@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/auth-context";
 import { explainPhysicsConcept, helpSolveProblem } from "@/lib/gemini";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,26 @@ interface Message {
   type?: "concept" | "problem";
 }
 
-export default function AITutorPage() {
+
+// --- Rate Limiting Config ---
+const RATE_LIMIT = {
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 30, // max 30 requests per window per student
+};
+
+// Helper: get and set usage from localStorage (for demo; replace with backend for production)
+function getStudentUsage(studentId: string) {
+  const raw = localStorage.getItem(`ai-usage-${studentId}`);
+  if (!raw) return { count: 0, windowStart: Date.now() };
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { count: 0, windowStart: Date.now() };
+  }
+}
+function setStudentUsage(studentId: string, usage: { count: number; windowStart: number }) {
+  localStorage.setItem(`ai-usage-${studentId}` , JSON.stringify(usage));
+}
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -60,6 +80,8 @@ export default function AITutorPage() {
   const [mode, setMode] = useState<"concept" | "problem">("concept");
   const [typingId, setTypingId] = useState<string | null>(null); // Track which message is typing
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -69,7 +91,28 @@ export default function AITutorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setRateLimitError(null);
     if (!input.trim() || loading) return;
+
+    // --- Rate Limiting Logic ---
+    if (!user?.uid) {
+      setRateLimitError("You must be logged in as a student to use the AI tutor.");
+      return;
+    }
+    const usage = getStudentUsage(user.uid);
+    const now = Date.now();
+    if (now - usage.windowStart > RATE_LIMIT.windowMs) {
+      // Reset window
+      usage.count = 0;
+      usage.windowStart = now;
+    }
+    if (usage.count >= RATE_LIMIT.max) {
+      setRateLimitError(`You have reached the maximum of ${RATE_LIMIT.max} AI requests per hour. Please try again later.`);
+      return;
+    }
+    // Increment usage and save
+    usage.count++;
+    setStudentUsage(user.uid, usage);
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -237,6 +280,11 @@ export default function AITutorPage() {
             )}
           </ScrollArea>
 
+          {rateLimitError && (
+            <div className="p-4 text-red-600 text-sm font-semibold border-b bg-red-50 rounded">
+              {rateLimitError}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="p-4 border-t">
             <div className="flex gap-2">
               <Textarea
@@ -254,8 +302,9 @@ export default function AITutorPage() {
                     handleSubmit(e);
                   }
                 }}
+                disabled={!!rateLimitError}
               />
-              <Button type="submit" disabled={loading || !input.trim()}>
+              <Button type="submit" disabled={loading || !input.trim() || !!rateLimitError}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>
