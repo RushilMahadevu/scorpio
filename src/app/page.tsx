@@ -58,7 +58,7 @@ export default function Home() {
 
 
   {/* Navigation - Centered (shadcn-styled buttons, ready for dropdown) */}
-  <nav className="absolute left-1/2 -translate-x-1/2 hidden md:flex space-x-2">
+  <nav className="absolute left-1/2 -translate-x-1/2 hidden lg:flex space-x-2">
     {[
       { id: "home", label: "Home" },
       { id: "challenge", label: "Challenge" },
@@ -90,7 +90,7 @@ export default function Home() {
   <div className="flex items-center space-x-3">
     <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="md:hidden">
+        <Button variant="ghost" size="sm" className="lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
