@@ -74,6 +74,7 @@ function setStudentUsage(studentId: string, usage: { count: number; windowStart:
   localStorage.setItem(`ai-usage-${studentId}` , JSON.stringify(usage));
 }
 
+export default function TutorPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
