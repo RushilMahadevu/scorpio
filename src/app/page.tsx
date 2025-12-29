@@ -50,7 +50,7 @@ export default function Home() {
   {/* Logo */}
   <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
     <Image src="/favicon.svg" alt="Scorpio" width={20} height={20} />
-    <span className="text-sm font-semibold">Scorpio</span>
+    <span className="text-sm font-extrabold">Scorpio</span>
   </Link>
 
 
@@ -139,12 +139,12 @@ export default function Home() {
             </motion.h1>
 
             <motion.p
-              className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto font-bold"
+              className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-primary drop-shadow-sm"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.6 }}
             >
-              Powering Physics at Sage Ridge
+              Turn Physics Struggles Into Breakthroughs
             </motion.p>
 
             <motion.p
