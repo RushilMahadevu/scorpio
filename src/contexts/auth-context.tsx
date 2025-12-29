@@ -5,7 +5,7 @@ import { User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthChange, db } from "@/lib/firebase";
 
-type UserRole = "teacher" | "student" | null;
+type UserRole = "teacher" | "student" | "checking" | null;
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(firebaseUser);
         
         if (firebaseUser) {
+          setRole("checking");
           // Check if teacher
           const teacherDoc = await getDoc(doc(db, "teachers", firebaseUser.uid));
           if (teacherDoc.exists()) {

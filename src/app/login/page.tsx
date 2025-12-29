@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user && role) {
+    if (!authLoading && user && role && role !== "checking") {
       router.push(role === "teacher" ? "/teacher" : "/student");
     }
   }, [user, role, authLoading, router]);
@@ -51,7 +51,7 @@ export default function LoginPage() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  if (user && !role) {
+  if (user && role === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
