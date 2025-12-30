@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles, User, LogOut, Settings as SettingsIcon, Palette, Info, KeyRound, Mail } from "lucide-react"
+import { Moon, Sun, Sparkles, User, LogOut, Settings as SettingsIcon, Palette, Info, KeyRound, Mail, Shield, FileText } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 
@@ -373,6 +373,28 @@ export function SettingsDialog() {
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Contact & Support
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    router.push("/privacy")
+                    setOpen(false)
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Privacy Policy
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    router.push("/terms")
+                    setOpen(false)
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Terms of Service
                 </Button>
               </div>
 

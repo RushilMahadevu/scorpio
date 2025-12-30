@@ -567,6 +567,18 @@ export default function Home() {
               >
                 Contact
               </Link>
+              <Link
+                href="/privacy"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              >
+                Terms
+              </Link>
             </div>
 
             {/* Credits Section */}
