@@ -11,7 +11,7 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
 import {
-  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github
+  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText
 } from "lucide-react";
 import Link from "next/link";
 import { DemoCarousel } from "@/components/demo-carousel";
@@ -64,7 +64,8 @@ export default function Home() {
       { id: "challenge", label: "Challenge" },
       { id: "features", label: "Features" },
       { id: "workflow", label: "Workflow" },
-      { id: "cta", label: "Get Started" }
+      { id: "cta", label: "Get Started" },
+      { id: "docs", label: "Docs" }
     ].map(({ id, label }) => (
       <DropdownMenu key={id}>
         <DropdownMenuTrigger asChild>
@@ -72,16 +73,55 @@ export default function Home() {
             variant="ghost"
             className="font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer"
             type="button"
-            onClick={() => {
+            onClick={id !== "docs" ? () => {
               const el = document.getElementById(id);
               if (el) el.scrollIntoView({ behavior: "smooth" });
               setMenuOpen(false); // close menu if open
-            }}
+            } : undefined}
           >
             {label}
           </Button>
         </DropdownMenuTrigger>
-        {/* DropdownMenuContent can be added here for future dropdowns */}
+        {id === "docs" && (
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
+                <Github className="mr-2 h-4 w-4" />
+                GitHub
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/about" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
+                <Info className="mr-2 h-4 w-4" />
+                About
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/research" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Research
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/contact" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
+                <Mail className="mr-2 h-4 w-4" />
+                Contact
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/privacy" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
+                <Shield className="mr-2 h-4 w-4" />
+                Privacy
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/terms" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
+                <FileText className="mr-2 h-4 w-4" />
+                Terms
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
     ))}
   </nav>
@@ -101,21 +141,73 @@ export default function Home() {
             { id: "challenge", label: "Challenge" },
             { id: "features", label: "Features" },
             { id: "workflow", label: "Workflow" },
-            { id: "cta", label: "Get Started" }
-          ].map(({ id, label }) => (
-            <Button
-              key={id}
-              variant="ghost"
-              className="justify-start font-medium text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                const el = document.getElementById(id);
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-                setMenuOpen(false);
-              }}
-            >
-              {label}
-            </Button>
-          ))}
+            { id: "cta", label: "Get Started" },
+            { id: "docs", label: "Docs" }
+          ].map(({ id, label }) =>
+            id !== "docs" ? (
+              <Button
+                key={id}
+                variant="ghost"
+                className="justify-start font-medium text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  const el = document.getElementById(id);
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  setMenuOpen(false);
+                }}
+              >
+                {label}
+              </Button>
+            ) : (
+              <DropdownMenu key={id}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="justify-start font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    {label}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
+                      <Github className="mr-2 h-4 w-4" />
+                      GitHub
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/about" onClick={() => setMenuOpen(false)}>
+                      <Info className="mr-2 h-4 w-4" />
+                      About
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/research" onClick={() => setMenuOpen(false)}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Research
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/contact" onClick={() => setMenuOpen(false)}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Contact
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/privacy" onClick={() => setMenuOpen(false)}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Privacy
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/terms" onClick={() => setMenuOpen(false)}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Terms
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )
+          )}
         </nav>
       </SheetContent>
     </Sheet>
@@ -531,58 +623,63 @@ export default function Home() {
 
       <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
         <div className="container mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+          <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8">
             {/* Logo Section */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0">
               <Logo size={24} className="text-foreground" />
               <span className="text-md font-extrabold">Scorpio</span>
             </div>
 
             {/* Links Section */}
-            <div className="flex justify-center space-x-6">
+            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-0">
               <Link
                 href="https://github.com/RushilMahadevu/scorpio"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 <Github className="h-5 w-5" />
                 <span className="text-sm font-medium">GitHub</span>
               </Link>
               <Link
                 href="/about"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                About
+                <Info className="h-5 w-5" />
+                <span className="text-sm font-medium">About</span>
               </Link>
               <Link
                 href="/research"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                Research
+                <BookOpen className="h-5 w-5" />
+                <span className="text-sm font-medium">Research</span>
               </Link>
               <Link
                 href="/contact"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                Contact
+                <Mail className="h-5 w-5" />
+                <span className="text-sm font-medium">Contact</span>
               </Link>
               <Link
                 href="/privacy"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                Privacy
+                <Shield className="h-5 w-5" />
+                <span className="text-sm font-medium">Privacy</span>
               </Link>
               <Link
                 href="/terms"
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                Terms
+                <FileText className="h-5 w-5" />
+                <span className="text-sm font-medium">Terms</span>
               </Link>
             </div>
 
             {/* Credits Section */}
-            <div className="text-right space-y-2">
+            <div className="text-center md:text-right space-y-2">
               <div className="text-sm text-muted-foreground font-medium">
                 Built by <span className="text-foreground font-semibold">Rushil Mahadevu</span>
               </div>

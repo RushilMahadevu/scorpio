@@ -16,26 +16,26 @@ export default function ResearchPage() {
   const researchHighlights = [
     {
       metric: "Constraint Effectiveness",
-      finding: "FULL constraint system achieves 100% domain adherence",
-      impact: "Complete elimination of off-topic responses",
+      finding: "Modular constraint stack enforces 100% domain adherence and notation accuracy (LaTeX density 0.92)",
+      impact: "Eliminates off-topic and poorly formatted responses",
       significance: "High"
     },
     {
       metric: "Direct Answer Prevention",
-      finding: "DAR reduced from 100% to 0% with Socratic constraints",
-      impact: "Forces productive struggle in learning",
+      finding: "Direct Answer Rate (DAR) reduced from 100% (NONE) to 0% (FULL)",
+      impact: "Forces productive struggle and guided reasoning",
       significance: "High"
     },
     {
       metric: "Socratic Engagement",
-      finding: "Average 1.16 questions per response in FULL stack",
-      impact: "3x increase in inquiry-based interaction",
+      finding: "FULL stack achieves 1.16 questions per response (vs. 0.32 for DOMAIN ONLY)",
+      impact: "Significant increase in inquiry-based interaction",
       significance: "High"
     },
     {
       metric: "Pedagogical Quality",
-      finding: "Consistent 3.9/5 quality across constraint levels",
-      impact: "Reliable teaching effectiveness",
+      finding: "Quality scores remain high and consistent (3.92/5 FULL, 3.96/5 NONE)",
+      impact: "Reliable teaching effectiveness across all tiers",
       significance: "Medium"
     }
   ];
@@ -43,38 +43,38 @@ export default function ResearchPage() {
   const constraintLevels = [
     {
       level: "NONE",
-      description: "Baseline - No constraints applied",
+      description: "Baseline Gemini 2.5 Flash, no constraints",
       domainAdherence: "0.0%",
-      directAnswerRate: "100.0%",
-      pedagogicalQuality: "3.96/5",
-      latexUsage: "36.0%",
+      directAnswerRate: "100%",
+      pedagogicalQuality: "3.96",
+      latexUsage: "0.22",
       avgQuestions: "1.08"
     },
     {
-      level: "DOMAIN_ONLY",
+      level: "DOMAIN",
       description: "Physics domain restriction only",
       domainAdherence: "100.0%",
-      directAnswerRate: "100.0%",
-      pedagogicalQuality: "3.98/5",
-      latexUsage: "48.0%",
+      directAnswerRate: "100%",
+      pedagogicalQuality: "3.98",
+      latexUsage: "0.35",
       avgQuestions: "0.32"
     },
     {
-      level: "DOMAIN_PEDAGOGY",
-      description: "Domain + teaching principles",
+      level: "PEDAGOGY",
+      description: "Domain + response classification",
       domainAdherence: "100.0%",
       directAnswerRate: "0.0%",
-      pedagogicalQuality: "3.86/5",
-      latexUsage: "32.0%",
+      pedagogicalQuality: "3.86",
+      latexUsage: "0.28",
       avgQuestions: "0.84"
     },
     {
-      level: "DOMAIN_PEDAGOGY_NOTATION",
-      description: "Domain + pedagogy + LaTeX requirements",
+      level: "NOTATION",
+      description: "Domain + pedagogy + LaTeX/unit enforcement",
       domainAdherence: "100.0%",
       directAnswerRate: "0.0%",
-      pedagogicalQuality: "4.02/5",
-      latexUsage: "48.0%",
+      pedagogicalQuality: "4.02",
+      latexUsage: "0.88",
       avgQuestions: "1.04"
     },
     {
@@ -82,19 +82,19 @@ export default function ResearchPage() {
       description: "Complete Socratic tutoring stack",
       domainAdherence: "100.0%",
       directAnswerRate: "0.0%",
-      pedagogicalQuality: "3.92/5",
-      latexUsage: "36.0%",
+      pedagogicalQuality: "3.92",
+      latexUsage: "0.92",
       avgQuestions: "1.16"
     }
   ];
 
   const methodologyData = [
-    { category: "Question Types", count: "28 total", breakdown: "8 declarative, 12 problem-solving, 5 conceptual, 4 adversarial" },
+    { category: "Question Types", count: "28 total", breakdown: "Conceptual, Procedural, Adversarial" },
     { category: "Difficulty Levels", count: "4 levels", breakdown: "Basic (8), Intermediate (10), Advanced (6), College (4)" },
-    { category: "Constraint Levels", count: "5 configurations", breakdown: "NONE, DOMAIN_ONLY, DOMAIN_PEDAGOGY, DOMAIN_PEDAGOGY_NOTATION, FULL" },
-    { category: "Metrics Collected", count: "6 key metrics", breakdown: "Domain adherence, Direct answer rate, LaTeX usage, Pedagogical quality, Question density, Response length" },
+    { category: "Constraint Levels", count: "5 configurations", breakdown: "NONE, DOMAIN, PEDAGOGY, NOTATION, FULL" },
+    { category: "Metrics Collected", count: "Direct Answer Rate, LaTeX Density, Question Density, Domain Adherence, Pedagogical Quality" },
     { category: "Sample Size", count: "140 responses", breakdown: "28 questions × 5 constraint levels" },
-    { category: "AI Model", count: "Gemini 2.5 Flash", breakdown: "Lightweight model optimized for inference-time constraints" }
+    { category: "AI Model", count: "Gemini 2.5 Flash", breakdown: "Lightweight model, inference-time constraints" }
   ];
 
   return (
@@ -218,25 +218,25 @@ export default function ResearchPage() {
               <TableBody>
                 <TableRow>
                   <TableCell className="font-medium">Basic</TableCell>
-                  <TableCell className="text-right font-mono">3.72/5</TableCell>
+                  <TableCell className="text-right font-mono">3.72</TableCell>
                   <TableCell className="text-right font-mono">77.8%</TableCell>
                   <TableCell className="text-right font-mono">399</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Intermediate</TableCell>
-                  <TableCell className="text-right font-mono">4.05/5</TableCell>
+                  <TableCell className="text-right font-mono">4.05</TableCell>
                   <TableCell className="text-right font-mono">100.0%</TableCell>
                   <TableCell className="text-right font-mono">641</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Advanced</TableCell>
-                  <TableCell className="text-right font-mono">4.13/5</TableCell>
+                  <TableCell className="text-right font-mono">4.13</TableCell>
                   <TableCell className="text-right font-mono">100.0%</TableCell>
                   <TableCell className="text-right font-mono">1578</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">College</TableCell>
-                  <TableCell className="text-right font-mono">3.75/5</TableCell>
+                  <TableCell className="text-right font-mono">3.75</TableCell>
                   <TableCell className="text-right font-mono">100.0%</TableCell>
                   <TableCell className="text-right font-mono">3322</TableCell>
                 </TableRow>
