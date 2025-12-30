@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { generateAssignmentQuestions } from "@/lib/gemini";
+import { generateAssignmentQuestions, parseQuestionsFromText, parseQuestionsManually } from "@/lib/gemini";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText } from "lucide-react";
 // Collapsible section for advanced options
 function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -68,6 +68,52 @@ export default function CreateAssignmentPage() {
   const [aiDifficulty, setAiDifficulty] = useState("Medium");
   const [aiQuestionType, setAiQuestionType] = useState("mixed");
   const [aiLoading, setAiLoading] = useState(false);
+
+  // Import from Text State
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+
+  const handleImportQuestions = async () => {
+    if (!importText.trim()) {
+      alert("Please paste some text to import questions.");
+      return;
+    }
+    setImportLoading(true);
+    try {
+      let parsedQuestions: any[] = [];
+      // Try manual parser first
+      try {
+        parsedQuestions = parseQuestionsManually(importText);
+        if (parsedQuestions.length > 0) {
+          console.log("Successfully parsed with manual parser");
+        } else {
+          throw new Error("Manual parser found no questions");
+        }
+      } catch (manualError) {
+        console.log("Manual parsing failed, trying AI parser...", manualError);
+        // Fall back to AI parsing
+        parsedQuestions = await parseQuestionsFromText(importText);
+      }
+      const newQuestions = parsedQuestions.map((q: any) => ({
+        id: crypto.randomUUID(),
+        text: q.text,
+        type: q.type,
+        options: q.options || [],
+        correctAnswer: q.correctAnswer,
+        points: 10,
+      }));
+      setQuestions([...questions, ...newQuestions]);
+      setImportOpen(false);
+      setImportText("");
+      alert(`Successfully imported ${newQuestions.length} questions!`);
+    } catch (error) {
+      console.error("Failed to import questions", error);
+      alert(error instanceof Error ? error.message : "Failed to import questions. Please try again or paste fewer questions at once.");
+    } finally {
+      setImportLoading(false);
+    }
+  };
 
   const addQuestion = () => {
     setQuestions([
@@ -197,90 +243,142 @@ export default function CreateAssignmentPage() {
         <h1 className="text-3xl font-bold mb-1">Create Assignment</h1>
         <p className="text-muted-foreground mb-2">Create a new physics assignment for your students.</p>
         <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-2">
-          <Dialog open={aiOpen} onOpenChange={setAiOpen}>
-            <DialogTrigger asChild>
-              <Button variant="secondary">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate with AI
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Generate Questions with AI</DialogTitle>
-                <DialogDescription>
-                  Enter a topic and let AI create questions for you.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Topic</Label>
-                    <Input 
-                      placeholder="e.g. Kinematics, Thermodynamics" 
-                      value={aiTopic}
-                      onChange={(e) => setAiTopic(e.target.value)}
-                    />
+            {/* Generate with AI Dialog */}
+            <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate with AI
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle>Generate Questions with AI</DialogTitle>
+                  <DialogDescription>
+                    Enter a topic and let AI create questions for you.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Topic</Label>
+                      <Input 
+                        placeholder="e.g. Kinematics, Thermodynamics" 
+                        value={aiTopic}
+                        onChange={(e) => setAiTopic(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Number of Questions</Label>
+                      <Input 
+                        type="number" 
+                        min={1} 
+                        max={10} 
+                        value={aiCount}
+                        onChange={(e) => setAiCount(parseInt(e.target.value))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Difficulty</Label>
+                      <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="Easy" id="easy" />
+                          <Label htmlFor="easy">Easy</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="Medium" id="medium" />
+                          <Label htmlFor="medium">Medium</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="Hard" id="hard" />
+                          <Label htmlFor="hard">Hard</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Question Type</Label>
+                      <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="mixed" id="mixed" />
+                          <Label htmlFor="mixed">Mixed</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="multiple-choice" id="mcq" />
+                          <Label htmlFor="mcq">Multiple Choice</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="true-false" id="tf" />
+                          <Label htmlFor="tf">True/False</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="short-answer" id="sa" />
+                          <Label htmlFor="sa">Short Answer</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="text" id="text" />
+                          <Label htmlFor="text">Free Response</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTopic}>
+                      {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Generate
+                    </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Import from Text Dialog */}
+            <Dialog open={importOpen} onOpenChange={setImportOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Import from Text
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl w-full">
+                <DialogHeader>
+                  <DialogTitle>Import Questions from Text</DialogTitle>
+                  <DialogDescription>
+                    Paste questions copied from Google Forms, Word, or other sources. The AI will extract and format them.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-yellow-800">
+                        Import with Text is still in production and might be buggy
+                      </h3>
+                      <div className="mt-2 text-sm text-yellow-700">
+                        <p>This feature is experimental. If you encounter issues, please try again or use the manual question creation.</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Number of Questions</Label>
-                    <Input 
-                      type="number" 
-                      min={1} 
-                      max={10} 
-                      value={aiCount}
-                      onChange={(e) => setAiCount(parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Difficulty</Label>
-                    <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Easy" id="easy" />
-                        <Label htmlFor="easy">Easy</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Medium" id="medium" />
-                        <Label htmlFor="medium">Medium</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Hard" id="hard" />
-                        <Label htmlFor="hard">Hard</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Question Type</Label>
-                    <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="mixed" id="mixed" />
-                        <Label htmlFor="mixed">Mixed</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="multiple-choice" id="mcq" />
-                        <Label htmlFor="mcq">Multiple Choice</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="true-false" id="tf" />
-                        <Label htmlFor="tf">True/False</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="short-answer" id="sa" />
-                        <Label htmlFor="sa">Short Answer</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="text" id="text" />
-                        <Label htmlFor="text">Free Response</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-              </div>
-              <DialogFooter>
-                  <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTopic}>
-                    {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Generate
+                </div>
+                <div className="w-full">
+                  <Textarea
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    placeholder="Paste your questions here..."
+                    rows={15}
+                    className="w-full h-64 max-h-[600px] resize-y overflow-auto whitespace-pre-wrap"
+                    style={{ fontFamily: 'monospace', fontSize: '1rem' }}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleImportQuestions} disabled={importLoading || !importText}>
+                    {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Import
                   </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </div>
       </div>
 

@@ -1,3 +1,280 @@
+// Helper: Split text into question chunks (robust, skips section headers, requires min text length)
+function splitIntoQuestions(text: string): string[] {
+  const lines = text.split('\n');
+  const chunks: string[] = [];
+  let currentChunk = '';
+  let inQuestion = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    // Skip empty lines
+    if (!line) {
+      if (currentChunk) {
+        currentChunk += '\n';
+      }
+      continue;
+    }
+    // Check if this is a new question (number at start followed by period or paren, then text)
+    // Must have at least 10 characters after the number to be a real question
+    const isNewQuestion = /^\s*\d+[\.)]\s+.{10,}/.test(line);
+    if (isNewQuestion) {
+      // Save previous chunk
+      if (currentChunk.trim()) {
+        chunks.push(currentChunk.trim());
+      }
+      currentChunk = line;
+      inQuestion = true;
+    } else {
+      // Add to current chunk
+      if (currentChunk) {
+        currentChunk += '\n' + line;
+      } else {
+        currentChunk = line;
+      }
+    }
+  }
+  // Save last chunk
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk.trim());
+  }
+  return chunks.filter(c => c.length > 10);
+}
+
+// Helper: Repair incomplete JSON
+function repairIncompleteJson(json: string): string {
+  const lastCompleteObject = json.lastIndexOf('}');
+  if (lastCompleteObject !== -1) {
+    json = json.substring(0, lastCompleteObject + 1);
+  }
+  if (!json.endsWith(']')) {
+    json += ']';
+  }
+  json = json.replace(/,\s*\]/, ']');
+  return json;
+}
+
+// Helper: Parse a single batch of questions using Gemini
+async function parseSingleBatch(batchText: string, startNumber: number, model: any): Promise<any[]> {
+  const prompt = `Parse these quiz questions into a JSON array. Return ONLY the JSON array, no markdown, no other text.
+
+QUESTIONS:
+${batchText}
+
+Return a JSON array where each object has:
+- "text": question text (string)
+- "type": "multiple-choice", "true-false", "short-answer", or "text" (string)
+- "options": array of option strings (empty array if not multiple choice)
+- "correctAnswer": the correct answer (string)
+
+IMPORTANT: 
+- Return ONLY the JSON array starting with [ and ending with ]
+- Do NOT include markdown code blocks
+- Do NOT include any explanatory text
+- Ensure the JSON is complete and valid
+
+Example: [{"text":"What is 2+2?","type":"multiple-choice","options":["2","3","4","5"],"correctAnswer":"4"}]
+
+JSON array:`;
+
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      maxOutputTokens: 2048,
+      temperature: 0.1,
+    }
+  });
+  const response = await result.response;
+  let responseText = response.text().trim();
+  responseText = responseText
+    .replace(/^```\s*json\s*/gi, '')
+    .replace(/^```\s*/gi, '')
+    .replace(/```\s*$/gi, '')
+    .replace(/```/g, '')
+    .trim();
+  const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) {
+    throw new Error(`Failed to parse batch starting at question ${startNumber}`);
+  }
+  let cleanJson = jsonMatch[0];
+  if (!cleanJson.endsWith(']')) {
+    cleanJson = repairIncompleteJson(cleanJson);
+  }
+  try {
+    const parsed = JSON.parse(cleanJson);
+    if (!Array.isArray(parsed)) {
+      throw new Error('Parsed result is not an array');
+    }
+    return parsed;
+  } catch (e) {
+    throw new Error(`Failed to parse questions in batch starting at ${startNumber}. Please try with fewer questions.`);
+  }
+}
+/**
+ * Simple rule-based parser that doesn't use AI - faster and more reliable for standard formats
+ */
+export function parseQuestionsManually(text: string): any[] {
+  const questions: any[] = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  let currentQuestion: any = null;
+  let currentOptions: string[] = [];
+  let lastWasOptions = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Skip section headers
+    if (/^(Multiple Choice|Short Answer|True\/?False|THERMODYNAMICS|Waves and Sound|Physics Quiz)/i.test(line)) {
+      continue;
+    }
+    
+    // Check for "Question N:" format
+    const questionPrefixMatch = line.match(/^Question\s+(\d+):\s*(.+)$/i);
+    // Check for "N." or "N)" format (must have substantial text)
+    const questionNumberMatch = line.match(/^(\d+)[\.)]\s*(.{10,})$/);
+    
+    if (questionPrefixMatch || questionNumberMatch) {
+      // Save previous question
+      if (currentQuestion) {
+        currentQuestion.options = currentOptions;
+        questions.push(currentQuestion);
+      }
+      
+      // Extract question text
+      let questionText = questionPrefixMatch ? questionPrefixMatch[2] : questionNumberMatch![2];
+      
+      // Check if options are inline in the question text
+      const inlineOptionsMatch = questionText.match(/^(.+?)\s+([A-D]\).*(?:[A-D]\).*)+)$/);
+      
+      if (inlineOptionsMatch) {
+        // Question has inline options
+        questionText = inlineOptionsMatch[1].trim();
+        const optionsText = inlineOptionsMatch[2];
+        
+        // Parse inline options
+        const optionParts = optionsText.split(/(?=[A-D]\))/);
+        currentOptions = [];
+        
+        for (const part of optionParts) {
+          const trimmed = part.trim();
+          if (trimmed) {
+            // Remove letter and extract option text (stop at next letter or "Answer:")
+            const option = trimmed
+              .replace(/^[A-D]\)\s*/, '')
+              .replace(/\s+Answer:.*$/, '')
+              .trim();
+            if (option) {
+              currentOptions.push(option);
+            }
+          }
+        }
+        
+        currentQuestion = {
+          text: questionText,
+          type: 'multiple-choice',
+          options: [],
+          correctAnswer: '',
+        };
+        lastWasOptions = true;
+      } else {
+        // No inline options
+        currentQuestion = {
+          text: questionText,
+          type: 'text',
+          options: [],
+          correctAnswer: '',
+        };
+        currentOptions = [];
+        lastWasOptions = false;
+      }
+    }
+    // Check for options with various formats: A), a), (A), (1), 1), - Option
+    else if (currentQuestion && /^[\(\[]?[A-Da-d1-4][\)\.\]]\s+.+|^[-•]\s+.+/.test(line)) {
+      // Extract the option text (remove the prefix)
+      const option = line
+        .replace(/^[\(\[]?[A-Da-d1-4][\)\.\]]\s*/, '')
+        .replace(/^[-•]\s*/, '')
+        .trim();
+      
+      if (option && !option.toLowerCase().startsWith('answer')) {
+        currentOptions.push(option);
+        currentQuestion.type = 'multiple-choice';
+        lastWasOptions = true;
+      }
+    }
+    // Check for "Options:" label
+    else if (/^Options:\s*$/i.test(line)) {
+      lastWasOptions = false; // Next lines will be options
+      continue;
+    }
+    // Check for various answer formats
+    else if (/^(Answer|Correct Answer):\s*/i.test(line)) {
+      const answer = line.replace(/^(Answer|Correct Answer):\s*/i, '').trim();
+      
+      if (currentQuestion && answer) {
+        // For multiple choice with letter answers
+        if (currentQuestion.type === 'multiple-choice') {
+          // Check if answer is a letter (A, B, C, D) or number (1, 2, 3, 4)
+          const letterMatch = answer.match(/^([A-Da-d])$/i);
+          const numberMatch = answer.match(/^([1-4])$/);
+          
+          if (letterMatch) {
+            const letterIndex = letterMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
+            if (letterIndex >= 0 && letterIndex < currentOptions.length) {
+              currentQuestion.correctAnswer = currentOptions[letterIndex];
+            }
+          } else if (numberMatch) {
+            const numberIndex = parseInt(numberMatch[1]) - 1;
+            if (numberIndex >= 0 && numberIndex < currentOptions.length) {
+              currentQuestion.correctAnswer = currentOptions[numberIndex];
+            }
+          } else {
+            // Answer is the full text
+            currentQuestion.correctAnswer = answer;
+          }
+        } else {
+          // For short answer questions
+          currentQuestion.correctAnswer = answer;
+          if (currentOptions.length === 0) {
+            currentQuestion.type = 'short-answer';
+          }
+        }
+      }
+      lastWasOptions = false;
+    }
+    // Check for True/False answers
+    else if (currentQuestion && /^(True|False)$/i.test(line) && !lastWasOptions) {
+      if (currentOptions.length === 0) {
+        currentOptions.push('True', 'False');
+        currentQuestion.type = 'true-false';
+        lastWasOptions = true;
+      }
+    }
+    // Check if line contains "Use" (formula hint)
+    else if (currentQuestion && /^Use\s+/i.test(line)) {
+      currentQuestion.text += ' ' + line;
+    }
+    // Continuation of question text
+    else if (currentQuestion && !lastWasOptions && currentOptions.length === 0 && line.length > 3) {
+      if (/[a-zA-Z?]/.test(line) && !line.match(/^[A-D]\)/)) {
+        currentQuestion.text += ' ' + line;
+      }
+    }
+  }
+  
+  // Save last question
+  if (currentQuestion) {
+    currentQuestion.options = currentOptions;
+    questions.push(currentQuestion);
+  }
+  
+  // Clean up and validate
+  return questions
+    .map(q => ({
+      ...q,
+      text: q.text.trim().replace(/\s+/g, ' '),
+      correctAnswer: q.correctAnswer.trim(),
+    }))
+    .filter(q => q.text.length > 5);
+}
 import { getGenerativeModel } from "firebase/ai";
 import { genAI } from "@/lib/firebase";
 
@@ -808,4 +1085,64 @@ export async function generateAssignmentQuestions(topic: string, count: number, 
     console.error("Error generating questions:", error);
     return [];
   }
+}
+
+/**
+ * Parses pasted text (from Google Forms, Word, etc.) and extracts questions
+ * using AI to intelligently identify question text, types, and options
+ */
+export async function parseQuestionsFromText(text: string): Promise<any[]> {
+  try {
+    // Split text into individual questions first
+    const questionChunks = splitIntoQuestions(text);
+    if (questionChunks.length === 0) {
+      throw new Error("No questions found in the text. Please check the format.");
+    }
+    // Process in batches of 5 questions to avoid token limits
+    const BATCH_SIZE = 5;
+    const allQuestions: any[] = [];
+    for (let i = 0; i < questionChunks.length; i += BATCH_SIZE) {
+      const batch = questionChunks.slice(i, i + BATCH_SIZE);
+      const batchText = batch.join('\n\n');
+      const batchQuestions = await parseSingleBatch(batchText, i + 1, model);
+      allQuestions.push(...batchQuestions);
+      // Small delay between batches to avoid rate limits
+      if (i + BATCH_SIZE < questionChunks.length) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    return validateAndNormalizeQuestions(allQuestions);
+  } catch (error) {
+    console.error("Error parsing questions from text:", error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("An unexpected error occurred while parsing questions.");
+  }
+}
+
+function validateAndNormalizeQuestions(questions: any[]): any[] {
+  if (!Array.isArray(questions) || questions.length === 0) {
+    throw new Error("No questions found in the provided text. Please check the format.");
+  }
+  
+  // Validate and normalize questions
+  const validatedQuestions = questions.map((q: any, index: number) => {
+    if (!q.text || typeof q.text !== 'string') {
+      throw new Error(`Question ${index + 1} is missing question text`);
+    }
+    
+    const validTypes = ["multiple-choice", "true-false", "short-answer", "text"];
+    const type = validTypes.includes(q.type) ? q.type : "text";
+    
+    return {
+      text: q.text.trim(),
+      type,
+      options: Array.isArray(q.options) ? q.options.filter(Boolean) : [],
+      correctAnswer: q.correctAnswer || "",
+    };
+  });
+  
+  console.log(`Successfully parsed ${validatedQuestions.length} questions`);
+  return validatedQuestions;
 }
