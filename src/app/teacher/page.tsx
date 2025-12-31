@@ -6,8 +6,6 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import GoogleFormsIntegration from "@/components/google-forms-integration";
-
 import { FileText, Users, CheckCircle, Clock } from "lucide-react";
 
 interface Submission {
