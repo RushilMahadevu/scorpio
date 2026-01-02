@@ -8,14 +8,15 @@ import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorpio",
+    default: "Scorpio | AI-Powered Physics LMS",
     template: "%s | Scorpio",
   },
-  description: "Turn Physics Struggles Into Breakthroughs",
+  description: "Scorpio transforms physics education with AI-powered tutoring, real-time LaTeX rendering, and immersive UI to help students turn struggles into breakthroughs.",
   icons: [
     { rel: "icon", url: "/favicon-light.ico", media: "(prefers-color-scheme: light)" },
     { rel: "icon", url: "/favicon-dark.ico", media: "(prefers-color-scheme: dark)" },
@@ -23,8 +24,8 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
-    title: "Scorpio",
-    description: "Turn Physics Struggles Into Breakthroughs",
+    title: "Scorpio | AI-Powered Physics Tutoring",
+    description: "Turn Physics Struggles Into Breakthroughs with Scorpio's research-grade AI tutoring and immersive learning platform.",
     url: "https://scorpioedu.org",
     siteName: "Scorpio",
     images: [

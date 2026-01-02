@@ -163,6 +163,7 @@ export function DemoCarousel() {
         <button
           onClick={prev}
           className="absolute left-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full"
+          aria-label="Previous slide"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -179,7 +180,9 @@ export function DemoCarousel() {
               loop
               muted
               playsInline
+              preload="metadata"
               className="rounded-lg border w-[720px] h-[540px] object-cover"
+              title={`Previous: ${getSlide(-1).title}`}
             />
           </div>
 
@@ -189,6 +192,14 @@ export function DemoCarousel() {
               ref={mainVideoContainerRef}
               onClick={() => setIsVideoPaused((p) => !p)}
               className="relative cursor-pointer group"
+              role="button"
+              aria-label={isVideoPaused ? "Play video" : "Pause video"}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setIsVideoPaused((p) => !p);
+                }
+              }}
             >
               <video
                 ref={currentVideoRef}
@@ -197,7 +208,9 @@ export function DemoCarousel() {
                 loop
                 muted
                 playsInline
+                preload="auto"
                 className="rounded-lg border shadow-2xl w-full h-full object-cover"
+                title={`Current: ${getSlide(0).title}`}
               />
               {/* Paused overlay effect */}
               {isVideoPaused && (
@@ -245,7 +258,9 @@ export function DemoCarousel() {
               loop
               muted
               playsInline
+              preload="metadata"
               className="rounded-lg border w-[720px] h-[540px] object-cover"
+              title={`Next: ${getSlide(1).title}`}
             />
           </div>
         </div>
@@ -254,6 +269,7 @@ export function DemoCarousel() {
         <button
           onClick={next}
           className="absolute right-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full"
+          aria-label="Next slide"
         >
           <ChevronRight className="h-6 w-6" />
         </button>
@@ -270,7 +286,7 @@ export function DemoCarousel() {
           <button
             key={i}
             onClick={() => setIndex(i)}
-            className={`w-3 h-3 rounded-full transition-all duration-300
+            className={`w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 cursor-pointer
               ${i === index
                 ? "bg-black dark:bg-white shadow-lg scale-125"
                 : "bg-black/30 dark:bg-white/50 hover:bg-black/50 dark:hover:bg-white/70"}
