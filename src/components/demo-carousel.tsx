@@ -1,6 +1,6 @@
 import { Pause } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize } from "lucide-react";
 
 const demoSlides = [
   { src: "/demos/processed/ai-tutor-chat.mp4", title: "AI Tutor", desc: "Conversational tutor with reasoning." },
@@ -179,7 +179,7 @@ export function DemoCarousel() {
               loop
               muted
               playsInline
-              className="rounded-2xl border w-[720px] h-[540px] object-cover"
+              className="rounded-lg border w-[720px] h-[540px] object-cover"
             />
           </div>
 
@@ -188,7 +188,7 @@ export function DemoCarousel() {
             <div
               ref={mainVideoContainerRef}
               onClick={() => setIsVideoPaused((p) => !p)}
-              className="relative cursor-pointer"
+              className="relative cursor-pointer group"
             >
               <video
                 ref={currentVideoRef}
@@ -197,14 +197,32 @@ export function DemoCarousel() {
                 loop
                 muted
                 playsInline
-                className="rounded-2xl border shadow-2xl w-full h-full object-cover"
+                className="rounded-lg border shadow-2xl w-full h-full object-cover"
               />
               {/* Paused overlay effect */}
               {isVideoPaused && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-2xl transition-all">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-lg transition-all">
                   <Pause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
                 </div>
               )}
+              {/* Fullscreen button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const video = currentVideoRef.current;
+                  if (video) {
+                    if (video.requestFullscreen) {
+                      video.requestFullscreen();
+                    } else if ((video as any).webkitEnterFullscreen) {
+                      (video as any).webkitEnterFullscreen();
+                    }
+                  }
+                }}
+                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                aria-label="Fullscreen"
+              >
+                <Maximize className="h-4 w-4 cursor-pointer" />
+              </button>
             </div>
             {/* Progress bar */}
             <div className="w-full bg-black/20 dark:bg-white/20 rounded-full h-1.5 mt-2 overflow-hidden relative">
@@ -227,7 +245,7 @@ export function DemoCarousel() {
               loop
               muted
               playsInline
-              className="rounded-2xl border w-[720px] h-[540px] object-cover"
+              className="rounded-lg border w-[720px] h-[540px] object-cover"
             />
           </div>
         </div>
