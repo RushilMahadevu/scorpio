@@ -279,7 +279,7 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section id="home" className="container mx-auto px-6 py-24 text-center relative">
+        <section id="home" className="container mx-auto px-6 py-16 text-center relative">
           <motion.div
             className="max-w-4xl mx-auto space-y-10"
             initial={{ opacity: 0, y: 30 }}
@@ -362,7 +362,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center pt-12"
+              className="flex flex-col sm:flex-row gap-4 justify-center pt-1 py-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.8 }}
