@@ -241,7 +241,7 @@ export function DemoCarousel() {
         </button>
       </div>
 
-      <div className="text-center mt-6 max-w-2xl">
+      <div className="text-center mt-6 md:mt-24 max-w-2xl">
         <h3 className="text-xl font-bold">{getSlide(0).title}</h3>
         <p className="text-muted-foreground">{getSlide(0).desc}</p>
       </div>
