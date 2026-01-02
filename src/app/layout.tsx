@@ -33,14 +33,6 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Scorpio Open Graph Image (Light)",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/og-image-dark.png",
-        width: 1200,
-        height: 630,
-        alt: "Scorpio Open Graph Image (Dark)",
-        media: "(prefers-color-scheme: dark)",
       },
     ],
     locale: "en_US",
@@ -49,15 +41,16 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  themeColor: "#0f172a",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
   other: {
     "language": "en",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({

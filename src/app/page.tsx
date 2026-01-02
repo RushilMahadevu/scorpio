@@ -23,6 +23,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const features = [
+    { icon: Brain, title: "AI-Powered Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture", tag: "Gemini 2.5 Flash" },
     { icon: SquareFunction, title: "Mathematical Rendering", description: "Real-time LaTeX rendering with custom math builder", tag: "KaTeX" },
     { icon: Orbit, title: "Immersive UI", description: "Multi-layered parallax space background paired with modular beautiful UI", tag: "Tailwind + Shadcn" },
     { icon: CloudSync, title: "Real-time Sync", description: "Optimistic updates and offline support", tag: "Firestore" },
@@ -130,12 +131,40 @@ export default function Home() {
   <div className="flex items-center space-x-3">
     <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="lg:hidden">
+        <Button variant="ghost" size="sm" className="lg:hidden" aria-label="Open menu">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-        <nav className="flex flex-col space-y-4 mt-8">
+      {/* Backdrop for mobile menu */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity lg:hidden"
+          aria-hidden="true"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+      <SheetContent
+        side="right"
+        className="w-full max-w-xs sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden"
+        style={{ top: 0, bottom: 0, right: 0, left: 'auto' }}
+        hideClose
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <span className="font-extrabold text-lg">Menu</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+            className="rounded-full hover:bg-accent"
+          >
+            <span className="sr-only">Close menu</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </Button>
+        </div>
+        <nav className="flex flex-col space-y-2 px-6 py-6 flex-1 overflow-y-auto">
           {[
             { id: "home", label: "Home" },
             { id: "challenge", label: "Challenge" },
@@ -148,7 +177,7 @@ export default function Home() {
               <Button
                 key={id}
                 variant="ghost"
-                className="justify-start font-medium text-muted-foreground hover:text-foreground"
+                className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
                 onClick={() => {
                   const el = document.getElementById(id);
                   if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -162,44 +191,45 @@ export default function Home() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="justify-start font-medium text-muted-foreground hover:text-foreground"
+                    className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
                   >
                     {label}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
+                  {/* Docs links */}
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
                       <Github className="mr-2 h-4 w-4" />
                       GitHub
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/about" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/about" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
                       <Info className="mr-2 h-4 w-4" />
                       About
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/research" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/research" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
                       <BookOpen className="mr-2 h-4 w-4" />
                       Research
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/contact" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/contact" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
                       <Mail className="mr-2 h-4 w-4" />
                       Contact
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/privacy" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/privacy" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
                       <Shield className="mr-2 h-4 w-4" />
                       Privacy
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/terms" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/terms" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
                       <FileText className="mr-2 h-4 w-4" />
                       Terms
                     </Link>
@@ -209,6 +239,20 @@ export default function Home() {
             )
           )}
         </nav>
+        <div className="px-6 pb-6">
+          <div className="flex flex-col gap-2">
+            <Link href="/login">
+              <Button variant="outline" size="lg" className="w-full font-medium cursor-pointer">
+                Login 
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button size="lg" className="w-full font-medium cursor-pointer">
+                Sign up
+              </Button>
+            </Link>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
     <ModeToggle />
@@ -441,7 +485,7 @@ export default function Home() {
           </div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
@@ -457,7 +501,7 @@ export default function Home() {
             {features.map((feature, i) => (
               <motion.div
                 key={i}
-                className="group p-8 rounded-2xl border bg-card/20 hover:bg-card/50 transition-all duration-300 cursor-pointer hover:scale-105"
+                className="group p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border bg-card/20 hover:bg-card/50 transition-all duration-300 cursor-pointer hover:scale-105 text-xs sm:text-sm"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: i * 0.15 }}

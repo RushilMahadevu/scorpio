@@ -18,8 +18,8 @@ export function DemoCarousel() {
     const mainVideoContainerRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const total = demoSlides.length;
-  // Only paus ""e when hovering over the main video
-  const [isVideoHovered, setIsVideoHovered] = useState(false);
+  // Pause/resume when main video is clicked
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,8 +68,8 @@ export function DemoCarousel() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Auto-play and progress bar animation with per-slide timing, pause on hover
-  // Progress bar timer logic: start on slide change and when hover ends
+
+  // Auto-play and progress bar animation with per-slide timing, pause on click
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     progressRef.current = 0;
@@ -93,7 +93,7 @@ export function DemoCarousel() {
       }, intervalMs);
     }
 
-    if (!isVideoHovered) {
+    if (!isVideoPaused) {
       startTimer(0);
     }
 
@@ -102,11 +102,11 @@ export function DemoCarousel() {
     };
   }, [index]);
 
-  // Pause/resume timer on hover without resetting progress
+  // Pause/resume timer on pause state without resetting progress
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    // Only run timer if video is visible and not hovered
-    if (isVideoVisible && !isVideoHovered) {
+    // Only run timer if video is visible and not paused
+    if (isVideoVisible && !isVideoPaused) {
       // Resume timer from current progress
       const duration = slideDurations[index] * 1000; // ms
       const intervalMs = 50;
@@ -126,18 +126,18 @@ export function DemoCarousel() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isVideoHovered, isVideoVisible]);
+  }, [isVideoPaused, isVideoVisible]);
 
-  // Pause/resume video on hover
+  // Pause/resume video on pause state
   useEffect(() => {
     const video = currentVideoRef.current;
     if (!video) return;
-    if (isVideoHovered || !isVideoVisible) {
+    if (isVideoPaused || !isVideoVisible) {
       video.pause();
     } else {
       video.play();
     }
-  }, [isVideoHovered, isVideoVisible, index]);
+  }, [isVideoPaused, isVideoVisible, index]);
 
   // Intersection Observer to detect if main video is visible
   useEffect(() => {
@@ -187,9 +187,8 @@ export function DemoCarousel() {
           <div className="z-20 relative">
             <div
               ref={mainVideoContainerRef}
-              onMouseEnter={() => setIsVideoHovered(true)}
-              onMouseLeave={() => setIsVideoHovered(false)}
-              className="relative"
+              onClick={() => setIsVideoPaused((p) => !p)}
+              className="relative cursor-pointer"
             >
               <video
                 ref={currentVideoRef}
@@ -201,7 +200,7 @@ export function DemoCarousel() {
                 className="rounded-2xl border shadow-2xl w-full h-full object-cover"
               />
               {/* Paused overlay effect */}
-              {isVideoHovered && (
+              {isVideoPaused && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-2xl transition-all">
                   <Pause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
                 </div>
@@ -265,7 +264,7 @@ export function DemoCarousel() {
 
       {/* Subtle guidance */}
       <div className="mt-3 text-[11px] text-black/40 dark:text-white/40 select-none italic text-center tracking-wide">
-        Hover to pause &middot; Use arrows or keyboard to navigate
+        Click to pause &middot; Use arrows or keyboard to navigate
       </div>
     </div>
   );
