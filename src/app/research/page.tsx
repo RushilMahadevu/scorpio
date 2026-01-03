@@ -194,6 +194,35 @@ export default function ResearchPage() {
           </CardContent>
         </Card>
 
+        {/* Constraint System Documentation */}
+        <Card className="bg-background/90 backdrop-blur-md border-primary/30 shadow-2xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <BookOpen className="h-6 w-6" />
+              Constraint System Architecture
+            </CardTitle>
+            <CardDescription>
+              Detailed documentation of constraint levels and implementation details
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-[80vh] rounded-lg overflow-hidden relative bg-transparent">
+              <iframe
+                src="/architecture.pdf#navpanes=0"
+                className="w-full h-full"
+                title="Constraint System Architecture"
+                style={{ height: "100%", background: "transparent" }}
+              />
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ display: 'none' }}>
+                <span className="text-lg text-muted-foreground">PDF failed to load. <a href="/architecture.pdf" className="underline">Download PDF</a></span>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              This document outlines the complete constraint system architecture, including all constraint levels (NONE, DOMAIN, PEDAGOGY, NOTATION, FULL) and their specific implementations.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Difficulty Performance Table */}
         <Card className="bg-background/90 backdrop-blur-md border-primary/30 shadow-2xl">
           <CardHeader>
