@@ -2,10 +2,9 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { doc, getDoc, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, query, where, getDocs, setDoc } from "firebase/firestore";
 import { db, uploadFilesToStorage, type WorkFile } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { gradeResponse } from "@/lib/gemini";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,7 +39,6 @@ interface Assignment {
   timeLimit?: number;
   requireWorkSubmission?: boolean;
   type?: string;
-  googleFormLink?: string;
 }
 
 function AssignmentDetailContent() {
@@ -49,7 +47,6 @@ function AssignmentDetailContent() {
   const router = useRouter();
   const { user } = useAuth();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
-  const [googleFormLink, setGoogleFormLink] = useState<string>("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -98,12 +95,8 @@ function AssignmentDetailContent() {
             timeLimit: data.timeLimit,
             requireWorkSubmission: data.requireWorkSubmission || false,
             type: data.type || "standard",
-            googleFormLink: data.googleFormLink || "",
           };
           setAssignment(assignmentData);
-          if (data.type === "google-form" && data.googleFormLink) {
-            setGoogleFormLink(data.googleFormLink);
-          }
 
           // Check for existing submission
           const submissionsQuery = query(
@@ -114,9 +107,15 @@ function AssignmentDetailContent() {
           const submissionsSnap = await getDocs(submissionsQuery);
           if (!submissionsSnap.empty) {
             const existingData = submissionsSnap.docs[0].data();
-            setExistingSubmission(existingData);
-            setSubmitted(true);
-            setHasStarted(true); // Already submitted means started
+            setExistingSubmission({ ...existingData, id: submissionsSnap.docs[0].id });
+            
+            if (existingData.status === 'draft') {
+                setSubmitted(false);
+                setHasStarted(true);
+            } else {
+                setSubmitted(true);
+                setHasStarted(true); // Already submitted means started
+            }
             
             // Populate answers from existing submission
             const existingAnswers: Record<string, string> = {};
@@ -249,6 +248,55 @@ function AssignmentDetailContent() {
     return Math.round((answeredCount / assignment.questions.length) * 100);
   };
 
+  const handleSaveDraft = async () => {
+    if (!assignment || !user) return;
+    
+    setSubmitting(true);
+    try {
+        // Fetch student name from students collection
+        let studentName = user.displayName || "";
+        try {
+          const studentDoc = await getDoc(doc(db, "students", user.uid));
+          if (studentDoc.exists()) {
+            studentName = studentDoc.data().name || studentName;
+          }
+        } catch (error) {
+          console.error("Error fetching student name:", error);
+        }
+
+        const answersArray = assignment.questions.map((q) => ({
+            questionId: q.id,
+            questionText: q.text,
+            answer: answers[q.id] || "",
+        }));
+
+        const submissionData = {
+            assignmentId: assignment.id,
+            studentId: user.uid,
+            studentName: studentName,
+            studentEmail: user.email,
+            answers: answersArray,
+            status: 'draft',
+            updatedAt: new Date(),
+        };
+
+        if (existingSubmission?.id) {
+            // Update existing draft
+            await setDoc(doc(db, "submissions", existingSubmission.id), submissionData, { merge: true });
+        } else {
+            // Create new draft
+            const docRef = await addDoc(collection(db, "submissions"), submissionData);
+            setExistingSubmission({ ...submissionData, id: docRef.id });
+        }
+        alert("Draft saved!");
+    } catch (error) {
+        console.error("Error saving draft:", error);
+        alert("Failed to save draft.");
+    } finally {
+        setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!assignment || !user) return;
     
@@ -280,49 +328,6 @@ function AssignmentDetailContent() {
         answer: answers[q.id] || "",
       }));
 
-      // Grade answers
-      let totalScore = 0;
-      let maxScore = 0;
-      let gradedCount = 0;
-      let gradedAnswers = answersArray;
-      let isGraded = false;
-      let finalScore = 0;
-
-      if (assignment.gradingType === "ai") {
-        gradedAnswers = await Promise.all(
-          answersArray.map(async (ans) => {
-            const question = assignment.questions.find((q) => q.id === ans.questionId);
-            if (!question) return ans;
-
-            const points = question.points || 10; // Default to 10 if not set
-            maxScore += points;
-
-            let score = 0;
-            let feedback = "";
-
-            if (question.type === "text" && ans.answer) {
-              feedback = await gradeResponse(ans.questionText, ans.answer);
-              const scoreMatch = feedback.match(/(\d+)\/10|\b(\d+)%/);
-              let rawScore = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 70;
-              // Normalize rawScore (which might be out of 10 or 100) to the question points
-              if (rawScore <= 10) rawScore = (rawScore / 10) * 100; // Convert to percentage
-              score = (rawScore / 100) * points;
-            } else if (question.correctAnswer) {
-              const isCorrect = ans.answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
-              score = isCorrect ? points : 0;
-              feedback = isCorrect ? "Correct!" : `Incorrect. The correct answer was: ${question.correctAnswer}`;
-            }
-
-            totalScore += score;
-            gradedCount++;
-            return { ...ans, feedback, score, maxPoints: points };
-          })
-        );
-        // Calculate final percentage score
-        finalScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
-        isGraded = true;
-      }
-
       // Fetch student name from students collection
       let studentName = user.displayName || "";
       try {
@@ -334,20 +339,42 @@ function AssignmentDetailContent() {
         console.error("Error fetching student name:", error);
       }
 
-      await addDoc(collection(db, "submissions"), {
+      const submissionData = {
         assignmentId: assignment.id,
         studentId: user.uid,
         studentName: studentName,
         studentEmail: user.email,
-        answers: gradedAnswers,
+        answers: answersArray,
         submittedAt: new Date(),
-        graded: isGraded,
-        score: isGraded ? finalScore : null,
-        totalPoints: maxScore,
-        earnedPoints: totalScore,
+        graded: false,
+        score: null,
+        totalPoints: assignment.questions.reduce((acc, q) => acc + (q.points || 10), 0),
+        earnedPoints: null,
         workFiles: workFilesData,
         unfocusCount,
-      });
+        status: 'submitted',
+      };
+
+      let docRef;
+      if (existingSubmission?.id) {
+        docRef = doc(db, "submissions", existingSubmission.id);
+        await setDoc(docRef, submissionData);
+      } else {
+        docRef = await addDoc(collection(db, "submissions"), submissionData);
+      }
+
+      // Trigger server-side grading
+      if (assignment.gradingType === "ai") {
+        try {
+            await fetch('/api/grade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ submissionId: docRef.id })
+            });
+        } catch (gradeError) {
+            console.error("Error triggering grading:", gradeError);
+        }
+      }
 
       setSubmitted(true);
       router.push("/student/submissions");
@@ -364,42 +391,6 @@ function AssignmentDetailContent() {
 
   if (!assignment) {
     return <p className="text-destructive">Assignment not found</p>;
-  }
-
-  // Google Form assignment rendering
-  if (assignment.type === "google-form" && assignment.googleFormLink) {
-    return (
-      <div className="max-w-3xl mx-auto space-y-6 pb-20">
-        <Card>
-          <CardHeader>
-            <CardTitle>{assignment.title}</CardTitle>
-            <CardDescription>{assignment.description}</CardDescription>
-            <p className="text-sm text-muted-foreground">
-              Due: {new Date(assignment.dueDate).toLocaleDateString()}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="my-6">
-              <iframe
-                src={assignment.googleFormLink}
-                width="100%"
-                height="700"
-                frameBorder="0"
-                marginHeight={0}
-                marginWidth={0}
-                title="Google Form Assignment"
-                allowFullScreen
-              >
-                Loading…
-              </iframe>
-            </div>
-            <div className="mt-4 text-sm text-muted-foreground">
-              Please complete the form above. Your teacher will enter your grade after you submit.
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
   }
 
   if (!hasStarted && !submitted) {
@@ -698,22 +689,32 @@ function AssignmentDetailContent() {
       )}
 
       {!submitted && (
-        <Button 
-          onClick={handleSubmit} 
-          disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
-          className="w-full"
-        >
-          {submitting ? (
-            Object.keys(uploadProgress).length > 0 ? 
-              `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
-              "Submitting..."
-          ) : (
-            <>
-              <Send className="h-4 w-4 mr-2" />
-              Submit Assignment
-            </>
-          )}
-        </Button>
+        <div className="flex flex-col gap-4">
+            <Button 
+              onClick={handleSaveDraft} 
+              disabled={submitting} 
+              variant="outline"
+              className="w-full"
+            >
+              Save Draft
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
+              className="w-full"
+            >
+              {submitting ? (
+                Object.keys(uploadProgress).length > 0 ? 
+                  `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
+                  "Submitting..."
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Submit Assignment
+                </>
+              )}
+            </Button>
+        </div>
       )}
     </div>
   );

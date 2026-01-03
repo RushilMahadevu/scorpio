@@ -2,6 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    function isTeacher() {
+      return request.auth != null && exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+    }
+
+    function isStudent(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     // Teachers collection
     match /teachers/{userId} {
       allow read: if request.auth != null;
@@ -11,29 +19,35 @@ service cloud.firestore {
     // Students collection
     match /students/{userId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && (request.auth.uid == userId || request.auth.uid == resource.data.teacherId);
-      allow delete: if request.auth != null && (request.auth.uid == userId || request.auth.uid == resource.data.teacherId);
+      allow create: if isStudent(userId);
+      allow update: if isStudent(userId) || isTeacher();
+      allow delete: if isStudent(userId) || isTeacher();
     }
 
     // Assignments collection
     match /assignments/{assignmentId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null; 
+      allow create: if isTeacher();
+      allow update: if isTeacher();
+      allow delete: if isTeacher();
     }
 
     // Submissions collection
     match /submissions/{submissionId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isTeacher());
+      allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
+      // Prevent students from updating the grade fields
+      allow update: if isTeacher() || (
+        request.auth.uid == resource.data.studentId && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['score', 'feedback', 'gradedAnswers'])
+      );
+      allow delete: if isTeacher();
     }
 
     // Resources collection
     match /resources/{resourceId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow write: if isTeacher();
     }
   }
 }

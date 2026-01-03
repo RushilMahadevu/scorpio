@@ -54,7 +54,7 @@ export default function StudentDashboard() {
         );
 
         const totalAssignments = assignmentsSnap.size;
-        const completedAssignments = submissionsSnap.size;
+        const completedAssignments = submissionsSnap.docs.filter(doc => doc.data().status !== 'draft').length;
 
         setStats({
           totalAssignments,

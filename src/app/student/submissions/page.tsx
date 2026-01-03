@@ -14,10 +14,11 @@ interface Submission {
   assignmentId: string;
   assignmentTitle: string;
   answers: any[];
-  submittedAt: Date;
+  submittedAt: Date | null;
   graded: boolean;
   score?: number;
   feedback?: string;
+  status?: string;
 }
 
 export default function SubmissionsPage() {
@@ -46,10 +47,11 @@ export default function SubmissionsPage() {
                 assignmentId: data.assignmentId,
                 assignmentTitle: assignmentDoc.data().title,
                 answers: data.answers || [],
-                submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
+                submittedAt: data.submittedAt?.toDate?.() || (data.submittedAt ? new Date(data.submittedAt) : null),
                 graded: data.graded || false,
                 score: data.score ?? null,
                 feedback: data.feedback ?? "",
+                status: data.status || (data.graded ? 'graded' : 'submitted'),
               };
             } catch (e) {
               console.error("Error fetching assignment:", e);
@@ -58,7 +60,7 @@ export default function SubmissionsPage() {
           })
         );
 
-        setSubmissions(submissionsData.filter(Boolean) as Submission[]);
+        setSubmissions(submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft'));
       } catch (error) {
         console.error("Error fetching submissions:", error);
       } finally {
@@ -102,9 +104,13 @@ export default function SubmissionsPage() {
                 {submissions.map((submission) => (
                   <TableRow key={submission.id}>
                     <TableCell className="font-medium">{submission.assignmentTitle}</TableCell>
-                    <TableCell>{new Date(submission.submittedAt).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      {submission.graded ? (
+                        {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : "Draft"}
+                    </TableCell>
+                    <TableCell>
+                      {submission.status === 'draft' ? (
+                        <Badge variant="outline">Draft</Badge>
+                      ) : submission.graded ? (
                         <Badge className="bg-green-500">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Graded

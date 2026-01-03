@@ -939,17 +939,41 @@ export async function helpSolveProblem(
   }
 }
 
-export async function gradeResponse(question: string, answer: string): Promise<string> {
+export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ score: number, feedback: string }> {
   try {
-    const prompt = `Grade the following student answer for the physics question: "${question}".
+    const prompt = `You are an expert teacher. Grade the following student answer.
+    Question: "${question}"
+    ${rubric ? `Rubric/Correct Answer: "${rubric}"` : ''}
     Student Answer: "${answer}"
-    Provide a score out of 10 and brief feedback. Format: "Score: X/10. Feedback: ..."`;
+    
+    Provide a score out of 10 and brief feedback.
+    Return ONLY a JSON object with the following format:
+    {
+      "score": number, // A number between 0 and 10
+      "feedback": string // Brief feedback explaining the score
+    }`;
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const text = response.text();
+    
+    // Clean up markdown code blocks if present
+    const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
+    
+    try {
+        const data = JSON.parse(jsonStr);
+        return {
+            score: typeof data.score === 'number' ? data.score : 0,
+            feedback: data.feedback || "No feedback provided."
+        };
+    } catch (parseError) {
+        console.error("Error parsing AI response:", text);
+        return { score: 0, feedback: "Error parsing grading response." };
+    }
+
   } catch (error) {
     console.error("Error grading response:", error);
-    return "Error grading response.";
+    return { score: 0, feedback: "Error grading response." };
   }
 }
 

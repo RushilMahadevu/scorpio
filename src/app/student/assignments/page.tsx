@@ -42,7 +42,11 @@ export default function StudentAssignmentsPage() {
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
         );
-        const submittedIds = new Set(submissionsSnap.docs.map((doc) => doc.data().assignmentId));
+        const submittedIds = new Set(
+          submissionsSnap.docs
+            .filter(doc => doc.data().status !== 'draft')
+            .map((doc) => doc.data().assignmentId)
+        );
         setSubmissions(submittedIds);
       } catch (error) {
         console.error("Error fetching assignments:", error);

@@ -21,24 +21,44 @@ interface Student {
 export default function TeacherGradesPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assignments, setAssignments] = useState<{id: string, title: string}[]>([]);
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("all");
+
+  useEffect(() => {
+    async function fetchAssignments() {
+        try {
+            const snap = await getDocs(collection(db, "assignments"));
+            setAssignments(snap.docs.map(d => ({ id: d.id, title: d.data().title })));
+        } catch (e) {
+            console.error("Error fetching assignments", e);
+        }
+    }
+    fetchAssignments();
+  }, []);
 
   useEffect(() => {
     async function fetchStudentsAndGrades() {
+      setLoading(true);
       try {
-        // 1. Fetch all students (assuming a 'students' or 'users' collection with role='student')
-        // For this demo, we'll fetch from 'users' where role is student, or just infer from submissions if user management is simple.
-        // Let's assume we query submissions to find unique students for now, as we might not have a full user list sync.
+        let q;
+        if (selectedAssignmentId === "all") {
+            q = collection(db, "submissions");
+        } else {
+            q = query(collection(db, "submissions"), where("assignmentId", "==", selectedAssignmentId));
+        }
         
-        const submissionsSnap = await getDocs(collection(db, "submissions"));
+        const submissionsSnap = await getDocs(q);
         const studentMap = new Map<string, { name: string; email: string; scores: number[]; count: number }>();
 
         submissionsSnap.forEach((doc) => {
           const data = doc.data();
+          if (data.status === 'draft') return; // Skip drafts in gradebook
+
           const studentId = data.studentId;
           
           if (!studentMap.has(studentId)) {
             studentMap.set(studentId, { 
-              name: data.studentName || "Unknown Student", // Fallback if name not in submission
+              name: data.studentName || "Unknown Student", 
               email: data.studentEmail || "",
               scores: [],
               count: 0
@@ -97,7 +117,7 @@ export default function TeacherGradesPage() {
     }
 
     fetchStudentsAndGrades();
-  }, []);
+  }, [selectedAssignmentId]);
 
   const deleteStudent = async (studentId: string) => {
     if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions.")) return;
@@ -117,15 +137,30 @@ export default function TeacherGradesPage() {
     }
   };
 
-  if (loading) {
+  if (loading && assignments.length === 0) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gradebook</h1>
-        <p className="text-muted-foreground">View student performance and submissions.</p>
+      <div className="flex justify-between items-center">
+        <div>
+            <h1 className="text-3xl font-bold">Gradebook</h1>
+            <p className="text-muted-foreground">View student performance and submissions.</p>
+        </div>
+        <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">Filter by Assignment:</label>
+            <select 
+                className="border rounded p-2 bg-background"
+                value={selectedAssignmentId}
+                onChange={(e) => setSelectedAssignmentId(e.target.value)}
+            >
+                <option value="all">All Assignments</option>
+                {assignments.map(a => (
+                    <option key={a.id} value={a.id}>{a.title}</option>
+                ))}
+            </select>
+        </div>
       </div>
 
       <Card>

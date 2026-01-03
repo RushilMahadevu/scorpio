@@ -58,8 +58,7 @@ export default function CreateAssignmentPage() {
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isGoogleForm, setIsGoogleForm] = useState(false);
-  const [googleFormLink, setGoogleFormLink] = useState("");
+  const [rubric, setRubric] = useState("");
 
   // AI Generation State
   const [aiOpen, setAiOpen] = useState(false);
@@ -192,10 +191,11 @@ export default function CreateAssignmentPage() {
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
         requireWorkSubmission,
-        questions: isGoogleForm ? [] : questions,
+        questions,
         createdAt: new Date(),
-        type: isGoogleForm ? "google-form" : "standard",
-        googleFormLink: isGoogleForm ? googleFormLink : null,
+        type: "standard",
+        googleFormLink: null,
+        rubric: rubric || null,
       });
 
       // 2. Fetch all students for this teacher
@@ -470,132 +470,113 @@ export default function CreateAssignmentPage() {
             <p className="text-xs text-muted-foreground pl-6">
               When enabled, students must upload their work (PDFs or images) to submit the assignment. For timed tests, students will have 5 additional minutes after time expires to upload their work.
             </p>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="googleFormAssignment"
-                checked={isGoogleForm}
-                onChange={(e) => setIsGoogleForm(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
+            <div className="space-y-2">
+              <Label htmlFor="rubric">Rubric / Grading Criteria</Label>
+              <Textarea
+                id="rubric"
+                value={rubric}
+                onChange={(e) => setRubric(e.target.value)}
+                placeholder="Enter grading criteria or rubric details..."
+                rows={4}
               />
-              <Label htmlFor="googleFormAssignment" className="cursor-pointer">
-                Google Form Assignment
-              </Label>
             </div>
-            {isGoogleForm && (
-              <div className="space-y-2">
-                <Label htmlFor="googleFormLink">Google Form Link</Label>
-                <Input
-                  id="googleFormLink"
-                  value={googleFormLink}
-                  onChange={(e) => setGoogleFormLink(e.target.value)}
-                  placeholder="Paste the Google Form link here"
-                  required={isGoogleForm}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Students will complete this assignment via the provided Google Form.
-                </p>
-              </div>
-            )}
           </div>
         </CollapsibleSection>
 
-        {!isGoogleForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Questions</CardTitle>
-              <CardDescription>Add questions to your assignment</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {questions.map((question, index) => (
-                <Card key={question.id} className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Question {index + 1}</Label>
+        <Card>
+          <CardHeader>
+            <CardTitle>Questions</CardTitle>
+            <CardDescription>Add questions to your assignment</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {questions.map((question, index) => (
+              <Card key={question.id} className="p-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Question {index + 1}</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeQuestion(question.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <MathInputField
+                    value={question.text}
+                    onChange={(value) => updateQuestion(question.id, { text: value })}
+                    placeholder="Enter your question..."
+                    rows={3}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { type: "text", label: "Free Response" },
+                      { type: "short-answer", label: "Short Answer" },
+                      { type: "multiple-choice", label: "Multiple Choice" },
+                      { type: "true-false", label: "True/False" },
+                    ].map((btn) => (
                       <Button
+                        key={btn.type}
                         type="button"
-                        variant="ghost"
+                        variant={question.type === btn.type ? "default" : "outline"}
                         size="sm"
-                        onClick={() => removeQuestion(question.id)}
+                        onClick={() =>
+                          updateQuestion(question.id, btn.type === "true-false"
+                            ? { type: btn.type as "true-false", options: ["True", "False"] }
+                            : { type: btn.type as "text" | "multiple-choice" | "short-answer" })
+                        }
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {btn.label}
                       </Button>
-                    </div>
-                    <MathInputField
-                      value={question.text}
-                      onChange={(value) => updateQuestion(question.id, { text: value })}
-                      placeholder="Enter your question..."
-                      rows={3}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { type: "text", label: "Free Response" },
-                        { type: "short-answer", label: "Short Answer" },
-                        { type: "multiple-choice", label: "Multiple Choice" },
-                        { type: "true-false", label: "True/False" },
-                      ].map((btn) => (
-                        <Button
-                          key={btn.type}
-                          type="button"
-                          variant={question.type === btn.type ? "default" : "outline"}
-                          size="sm"
-                          onClick={() =>
-                            updateQuestion(question.id, btn.type === "true-false"
-                              ? { type: btn.type as "true-false", options: ["True", "False"] }
-                              : { type: btn.type as "text" | "multiple-choice" | "short-answer" })
-                          }
-                        >
-                          {btn.label}
-                        </Button>
-                      ))}
-                    </div>
-                    {question.type === "multiple-choice" && (
-                      <div className="space-y-2 pl-4">
-                        {question.options?.map((option, optionIndex) => (
-                          <div key={optionIndex} className="flex items-start gap-2">
-                            <div className="flex-1">
-                              <MathInputField
-                                value={option}
-                                onChange={(value) => updateOption(question.id, optionIndex, value)}
-                                placeholder={`Option ${optionIndex + 1}`}
-                                rows={2}
-                                compact={true}
-                              />
-                            </div>
-                            <input
-                              type="radio"
-                              name={`correct-${question.id}`}
-                              checked={question.correctAnswer === option}
-                              onChange={() => updateQuestion(question.id, { correctAnswer: option })}
-                              className="mt-3"
+                    ))}
+                  </div>
+                  {question.type === "multiple-choice" && (
+                    <div className="space-y-2 pl-4">
+                      {question.options?.map((option, optionIndex) => (
+                        <div key={optionIndex} className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <MathInputField
+                              value={option}
+                              onChange={(value) => updateOption(question.id, optionIndex, value)}
+                              placeholder={`Option ${optionIndex + 1}`}
+                              rows={2}
+                              compact={true}
                             />
                           </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addOption(question.id)}
-                        >
-                          Add Option
-                        </Button>
-                      </div>
-                    )}
-                    {question.type === "true-false" && (
-                      <div className="pl-4 text-sm text-muted-foreground">
-                        Options set to: True / False
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
-              <Button type="button" variant="outline" onClick={addQuestion} className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Question
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+                          <input
+                            type="radio"
+                            name={`correct-${question.id}`}
+                            checked={question.correctAnswer === option}
+                            onChange={() => updateQuestion(question.id, { correctAnswer: option })}
+                            className="mt-3"
+                          />
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addOption(question.id)}
+                      >
+                        Add Option
+                      </Button>
+                    </div>
+                  )}
+                  {question.type === "true-false" && (
+                    <div className="pl-4 text-sm text-muted-foreground">
+                      Options set to: True / False
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+            <Button type="button" variant="outline" onClick={addQuestion} className="w-full">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Question
+            </Button>
+          </CardContent>
+        </Card>
 
         <div className="flex gap-4">
           <Button type="submit" disabled={loading}>

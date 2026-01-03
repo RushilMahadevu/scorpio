@@ -89,11 +89,14 @@ export default function TeacherDashboard() {
           assignmentsMap[doc.id] = doc.data();
         });
 
-        const pendingWithDetails = pendingSubs.map((sub) => ({
-          ...sub,
-          assignmentTitle: sub.assignmentId ? assignmentsMap[sub.assignmentId]?.title || "Assignment" : "Assignment"
-        }));
-        
+        // Only include pending submissions whose assignmentId exists in assignmentsMap
+        const pendingWithDetails = pendingSubs
+          .filter((sub) => sub.assignmentId && assignmentsMap[sub.assignmentId])
+          .map((sub) => ({
+            ...sub,
+            assignmentTitle: assignmentsMap[sub.assignmentId].title || "Untitled"
+          }));
+
         setPendingGrading(pendingWithDetails);
       } catch (error) {
         console.error("Error fetching stats:", error);

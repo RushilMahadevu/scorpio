@@ -61,24 +61,29 @@ export default function StudentDetailsPage() {
 
           // Fetch assignment title
           let assignmentTitle = "Unknown Assignment";
+          let assignmentExists = false;
           if (data.assignmentId) {
             const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
             if (assignmentDoc.exists()) {
               assignmentTitle = assignmentDoc.data().title;
+              assignmentExists = true;
             }
           }
+
+          if (!assignmentExists) return null;
+          if (data.status === 'draft') return null;
 
           return {
             id: docSnapshot.id,
             assignmentId: data.assignmentId,
             assignmentTitle,
-            submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
+            submittedAt: data.submittedAt?.toDate?.() || (data.submittedAt ? new Date(data.submittedAt) : null),
             score: data.score,
             graded: data.graded,
           };
         }));
 
-        setSubmissions(submissionsData);
+        setSubmissions(submissionsData.filter((s): s is Submission => s !== null));
       } catch (error) {
         console.error("Error fetching student data:", error);
       } finally {

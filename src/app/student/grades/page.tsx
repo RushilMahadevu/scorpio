@@ -23,11 +23,12 @@ interface Submission {
   id: string;
   assignmentId: string;
   assignmentTitle: string;
-  submittedAt: Date;
+  submittedAt: Date | null;
   score: number | null;
   graded: boolean;
   feedback?: string;
   answers?: any;
+  status?: string;
 }
 
 export default function StudentGradesPage() {
@@ -48,26 +49,31 @@ export default function StudentGradesPage() {
           
           // Fetch assignment title
           let assignmentTitle = "Unknown Assignment";
+          let assignmentExists = false;
           if (data.assignmentId) {
             const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
             if (assignmentDoc.exists()) {
               assignmentTitle = assignmentDoc.data().title;
+              assignmentExists = true;
             }
           }
+
+          if (!assignmentExists) return null;
 
           return {
             id: docSnapshot.id,
             assignmentId: data.assignmentId,
             assignmentTitle,
-            submittedAt: data.submittedAt?.toDate?.() || new Date(data.submittedAt),
+            submittedAt: data.submittedAt?.toDate?.() || (data.submittedAt ? new Date(data.submittedAt) : null),
             score: data.score,
             graded: data.graded,
             feedback: data.feedback,
             answers: data.answers,
+            status: data.status || (data.graded ? 'graded' : 'submitted'),
           };
         }));
 
-        setSubmissions(submissionsData.filter(s => s.assignmentTitle !== 'Unknown Assignment'));
+        setSubmissions(submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft'));
       } catch (error) {
         console.error("Error fetching grades:", error);
       } finally {
@@ -112,7 +118,9 @@ export default function StudentGradesPage() {
                 {submissions.map((submission) => (
                   <TableRow key={submission.id}>
                     <TableCell className="font-medium">{submission.assignmentTitle}</TableCell>
-                    <TableCell>{submission.submittedAt.toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : "N/A"}
+                    </TableCell>
                     <TableCell>
                       {submission.graded ? (
                         <Badge className="bg-green-500">Graded</Badge>
