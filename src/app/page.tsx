@@ -11,7 +11,7 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
 import {
-  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, CloudSync, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText
+  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, Cloud, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -31,7 +31,7 @@ export default function Home() {
     { icon: Brain, title: "AI-Powered Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture", tag: "Gemini 2.5 Flash" },
     { icon: SquareFunction, title: "Mathematical Rendering", description: "Real-time LaTeX rendering with custom math builder", tag: "KaTeX" },
     { icon: Orbit, title: "Immersive UI", description: "Multi-layered parallax space background paired with modular beautiful UI", tag: "Tailwind + Shadcn" },
-    { icon: CloudSync, title: "Real-time Sync", description: "Optimistic updates and offline support", tag: "Firestore" },
+    { icon: Cloud, title: "Real-time Sync", description: "Optimistic updates and offline support", tag: "Firestore" },
     { icon: ShieldUser, title: "Role-Based Access", description: "Server-side authentication with granular controls", tag: "Firebase" },
     { icon: MessageCircle, title: "Navigation Assistant", description: "Intuitive platform guidance and help powered with a LLM model", tag: "LLM model" },
     { icon: FileUp, title: "File Submissions", description: "Student PDF & Image uploads with base64 storage", tag: "Cloud Storage" },

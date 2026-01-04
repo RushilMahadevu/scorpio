@@ -15,6 +15,8 @@ interface Submission {
   assignmentTitle?: string;
 }
 
+type PendingSubmission = Submission & { assignmentTitle: string };
+
 interface Stats {
   totalAssignments: number;
   totalStudents: number;
@@ -31,7 +33,7 @@ export default function TeacherDashboard() {
     pendingSubmissions: 0,
   });
   const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
-  const [pendingGrading, setPendingGrading] = useState<Submission[]>([]);
+  const [pendingGrading, setPendingGrading] = useState<PendingSubmission[]>([]);
   const [currentTip, setCurrentTip] = useState(0);
 
   const teachingTips = [
@@ -91,11 +93,19 @@ export default function TeacherDashboard() {
 
         // Only include pending submissions whose assignmentId exists in assignmentsMap
         const pendingWithDetails = pendingSubs
-          .filter((sub) => sub.assignmentId && assignmentsMap[sub.assignmentId])
-          .map((sub) => ({
-            ...sub,
-            assignmentTitle: assignmentsMap[sub.assignmentId].title || "Untitled"
-          }));
+          .map((sub) => {
+            const assignmentId = sub.assignmentId;
+            if (!assignmentId) return null;
+
+            const assignment = assignmentsMap[assignmentId];
+            if (!assignment) return null;
+
+            return {
+              ...sub,
+              assignmentTitle: assignment.title || "Untitled",
+            } satisfies PendingSubmission;
+          })
+          .filter((sub): sub is PendingSubmission => sub !== null);
 
         setPendingGrading(pendingWithDetails);
       } catch (error) {

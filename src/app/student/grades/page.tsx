@@ -44,9 +44,9 @@ export default function StudentGradesPage() {
         const q = query(collection(db, "submissions"), where("studentId", "==", user.uid));
         const snapshot = await getDocs(q);
 
-        const submissionsData = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
+        const submissionsData: (Submission | null)[] = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
           const data = docSnapshot.data();
-          
+
           // Fetch assignment title
           let assignmentTitle = "Unknown Assignment";
           let assignmentExists = false;
@@ -70,10 +70,11 @@ export default function StudentGradesPage() {
             feedback: data.feedback,
             answers: data.answers,
             status: data.status || (data.graded ? 'graded' : 'submitted'),
-          };
+          } satisfies Submission;
         }));
 
-        setSubmissions(submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft'));
+        const filteredSubmissions = submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft');
+        setSubmissions(filteredSubmissions);
       } catch (error) {
         console.error("Error fetching grades:", error);
       } finally {
@@ -147,7 +148,7 @@ export default function StudentGradesPage() {
                           <DialogHeader>
                             <DialogTitle>{submission.assignmentTitle}</DialogTitle>
                             <DialogDescription>
-                              Submitted on {submission.submittedAt.toLocaleDateString()}
+                              Submitted on {submission.submittedAt ? submission.submittedAt.toLocaleDateString() : "N/A"}
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">

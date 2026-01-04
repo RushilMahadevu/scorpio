@@ -34,7 +34,7 @@ export default function SubmissionsPage() {
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
         );
 
-        const submissionsData = await Promise.all(
+        const submissionsData: (Submission | null)[] = await Promise.all(
           submissionsSnap.docs.map(async (submissionDoc) => {
             const data = submissionDoc.data();
             try {
@@ -52,7 +52,7 @@ export default function SubmissionsPage() {
                 score: data.score ?? null,
                 feedback: data.feedback ?? "",
                 status: data.status || (data.graded ? 'graded' : 'submitted'),
-              };
+              } satisfies Submission;
             } catch (e) {
               console.error("Error fetching assignment:", e);
               return null;
@@ -60,7 +60,8 @@ export default function SubmissionsPage() {
           })
         );
 
-        setSubmissions(submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft'));
+        const filteredSubmissions = submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft');
+        setSubmissions(filteredSubmissions);
       } catch (error) {
         console.error("Error fetching submissions:", error);
       } finally {

@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -23,6 +23,10 @@
 # misc
 .DS_Store
 *.pem
+service-account*.json
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
 
 # debug
 npm-debug.log*
@@ -38,7 +42,23 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 # firebase
 .firebase/
+
+# production secrets
+.env.production.local
+.env.test.local
+.env.development.local
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# misc
+.eslintcache
+.stylelintcache
+.cache/

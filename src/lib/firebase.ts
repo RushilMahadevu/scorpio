@@ -227,7 +227,7 @@ export const register = async (email: string, password: string, role: "teacher" 
     userData.teacherId = classCode;
   }
   await setDoc(doc(db, collectionName, user.uid), userData);
-  return user;
+  return userCredential;
 };
 
 export const login = async (email: string, password: string) => {
@@ -235,6 +235,7 @@ export const login = async (email: string, password: string) => {
 };
 
 export const logout = async () => {
+  await fetch('/api/auth/session', { method: 'DELETE' });
   return signOut(auth);
 };
 

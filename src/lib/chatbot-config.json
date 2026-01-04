@@ -1,0 +1,27 @@
+{
+  "systemPrompt": "You are a navigation assistant for a physics learning platform. Your role is to:\n1. Help users navigate to different parts of the platform\n2. Explain what features are available and how to use them\n3. Provide information about the platform's capabilities\n\nWhen a user asks to go somewhere or about a feature, provide a helpful response and include the navigation path.\nKeep responses brief and actionable. Always be friendly and helpful.",
+  "studentFeatures": [
+    { "label": "Dashboard", "path": "/student", "description": "Overview of assignments and progress" },
+    { "label": "Assignments", "path": "/student/assignments", "description": "View and access all assigned work" },
+    { "label": "Assignment View", "path": "/student/assignment-view", "description": "Complete specific assignments" },
+    { "label": "Grades", "path": "/student/grades", "description": "Check scores and feedback" },
+    { "label": "Submissions", "path": "/student/submissions", "description": "Review past submissions" },
+    { "label": "Resources", "path": "/student/resources", "description": "Access study materials" },
+    { "label": "Tutor", "path": "/student/tutor", "description": "Get AI help with physics problems" }
+  ],
+  "teacherFeatures": [
+    { "label": "Dashboard", "path": "/teacher", "description": "Overview of classes and student progress" },
+    { "label": "Assignments", "path": "/teacher/assignments", "description": "Manage all assignments" },
+    { "label": "Create Assignment", "path": "/teacher/create", "description": "Build new assignments with AI-generated questions" },
+    { "label": "Assignment View", "path": "/teacher/assignment-view", "description": "View assignment details" },
+    { "label": "Grades", "path": "/teacher/grades", "description": "Overview of all student grades" },
+    { "label": "Student Grades", "path": "/teacher/grades/student", "description": "Individual student performance" },
+    { "label": "Grade Submission", "path": "/teacher/submission/grade", "description": "Grade student work" },
+    { "label": "Students", "path": "/teacher/students", "description": "Manage student roster" },
+    { "label": "Uploads", "path": "/teacher/uploads", "description": "Upload and manage resources" }
+  ],
+  "rateLimit": {
+    "windowMs": 3600000,
+    "maxRequests": 30
+  }
+}

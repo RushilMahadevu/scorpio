@@ -35,8 +35,19 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await login(email, password);
-      // The useEffect will handle the redirect once the auth state updates
+      const userCredential = await login(email, password);
+      const idToken = await userCredential.user.getIdToken();
+      
+      // Set session cookie
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, role }),
+      });
+
+      // Force redirect immediately instead of waiting for useEffect
+      router.refresh(); // Update server components
+      router.push(role === "teacher" ? "/teacher" : "/student");
     } catch (err) {
       setError("Invalid email or password");
       setLoading(false);

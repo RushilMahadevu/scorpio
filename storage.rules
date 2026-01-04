@@ -1,20 +1,14 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow authenticated users to read/write their own submission files
+    // Submissions folder rules
     match /submissions/{userId}/{allPaths=**} {
+      // Users can read/write their own files
       allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Allow teachers to read all submission files (for grading)
-    match /submissions/{userId}/{allPaths=**} {
+      
+      // Teachers can read all submissions for grading
       allow read: if request.auth != null && 
-        exists(/databases/(default)/documents/teachers/$(request.auth.uid));
-    }
-
-    // Allow students to read their own submission files
-    match /submissions/{userId}/{allPaths=**} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+        firestore.exists(/databases/(default)/documents/teachers/$(request.auth.uid));
     }
   }
 }

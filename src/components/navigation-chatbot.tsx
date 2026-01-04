@@ -1,30 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-// --- Rate Limiting Config ---
-const RATE_LIMIT = {
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 30, // max 30 requests per window per user
-};
-
-// Helper: get and set usage from localStorage (for demo; replace with backend for production)
-function getUserUsage(userRole: string) {
-  const raw = localStorage.getItem(`nav-ai-usage-${userRole}`);
-  if (!raw) return { count: 0, windowStart: Date.now() };
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return { count: 0, windowStart: Date.now() };
-  }
-}
-function setUserUsage(userRole: string, usage: { count: number; windowStart: number }) {
-  localStorage.setItem(`nav-ai-usage-${userRole}` , JSON.stringify(usage));
-}
 import { Button } from '@/components/ui/button';
 import { MessageCircle, X, Send, Home, FileText, GraduationCap, BarChart, Upload, Users, BookOpen, Video, Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { getGenerativeModel } from "firebase/ai";
-import { genAI } from "@/lib/firebase";
+import { useAuth } from '@/contexts/auth-context';
 
 type UserRole = 'student' | 'teacher';
 
@@ -44,37 +24,8 @@ interface QuickAction {
   path: string;
 }
 
-const PLATFORM_CONTEXT = `
-You are a navigation assistant for a physics learning platform. Your role is to:
-1. Help users navigate to different parts of the platform
-2. Explain what features are available and how to use them
-3. Provide information about the platform's capabilities
-
-STUDENT FEATURES:
-- Dashboard (/student) - Overview of assignments and progress
-- Assignments (/student/assignments) - View and access all assigned work
-- Assignment View (/student/assignment-view) - Complete specific assignments
-- Grades (/student/grades) - Check scores and feedback
-- Submissions (/student/submissions) - Review past submissions
-- Resources (/student/resources) - Access study materials
-- Tutor (/student/tutor) - Get AI help with physics problems
-
-TEACHER FEATURES:
-- Dashboard (/teacher) - Overview of classes and student progress
-- Assignments (/teacher/assignments) - Manage all assignments
-- Create Assignment (/teacher/create) - Build new assignments with AI-generated questions
-- Assignment View (/teacher/assignment-view) - View assignment details
-- Grades (/teacher/grades) - Overview of all student grades
-- Student Grades (/teacher/grades/student) - Individual student performance
-- Grade Submission (/teacher/submission/grade) - Grade student work
-- Students (/teacher/students) - Manage student roster
-- Uploads (/teacher/uploads) - Upload and manage resources
-
-When a user asks to go somewhere or about a feature, provide a helpful response and include the navigation path.
-Keep responses brief and actionable. Always be friendly and helpful.
-`;
-
 export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { 
@@ -139,30 +90,9 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !user) return;
     setRateLimitError(null);
     setRateLimitWarning(null);
-
-    // --- Rate Limiting Logic ---
-    const usage = getUserUsage(userRole);
-    const now = Date.now();
-    if (now - usage.windowStart > RATE_LIMIT.windowMs) {
-      // Reset window
-      usage.count = 0;
-      usage.windowStart = now;
-    }
-    if (usage.count >= RATE_LIMIT.max) {
-      setRateLimitError(`You have reached the maximum of ${RATE_LIMIT.max} navigation AI requests per hour. Please try again later.`);
-      return;
-    }
-    // Show warning if close to limit (within 3 requests)
-    if (RATE_LIMIT.max - usage.count <= 3 && RATE_LIMIT.max - usage.count > 0) {
-      setRateLimitWarning(`Warning: Only ${RATE_LIMIT.max - usage.count} navigation AI requests left in this hour.`);
-    }
-
-    // Increment usage and save
-    usage.count++;
-    setUserUsage(userRole, usage);
 
     const userMessage = input.trim();
     setInput('');
@@ -170,14 +100,29 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
     setIsLoading(true);
 
     try {
-      const model = getGenerativeModel(genAI, { model: "gemini-2.5-flash" });
-      
-      const fullPrompt = `${PLATFORM_CONTEXT}\n\nUser role: ${userRole}\nUser question: ${userMessage}\n\nIf suggesting navigation, wrap the path in parentheses like this: (/student/grades)`;
-      
-      const result = await model.generateContent(fullPrompt);
-      const response = await result.response;
-      const aiResponse = response.text();
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          userRole,
+          userId: user.uid
+        }),
+      });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          setRateLimitError(data.error);
+          return;
+        }
+        throw new Error(data.error || 'Failed to get AI response');
+      }
+
+      const aiResponse = data.text;
       const navPath = extractNavigationPath(aiResponse);
       
       setMessages(prev => [...prev, { 
@@ -185,6 +130,10 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
         content: aiResponse,
         navigation: navPath || undefined
       }]);
+
+      if (data.remainingRequests <= 3 && data.remainingRequests > 0) {
+        setRateLimitWarning(`Warning: Only ${data.remainingRequests} navigation AI requests left in this hour.`);
+      }
     } catch (error) {
       console.error("Error getting AI response:", error);
       setMessages(prev => [...prev, { 

@@ -58,7 +58,17 @@ export default function SignupPage() {
     setError("");
 
     try {
-      await register(email, password, role, name, role === "student" ? accessCode.trim() : undefined);
+      const userCredential = await register(email, password, role, name, role === "student" ? accessCode.trim() : undefined);
+      const idToken = await userCredential.user.getIdToken();
+
+      // Set session cookie
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, role }),
+      });
+
+      router.refresh();
       router.push(role === "teacher" ? "/teacher" : "/student");
     } catch (err: any) {
       console.error(err);
