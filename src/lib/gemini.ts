@@ -1,3 +1,14 @@
+import { getGenerativeModel } from "firebase/ai";
+import { genAI } from "@/lib/firebase";
+
+const model = getGenerativeModel(genAI, { 
+  model: "gemini-2.5-flash",
+  generationConfig: {
+    temperature: 0.7,
+    maxOutputTokens: 2048,
+  },
+});
+
 // Helper: Split text into question chunks (robust, skips section headers, requires min text length)
 function splitIntoQuestions(text: string): string[] {
   const lines = text.split('\n');
@@ -275,16 +286,6 @@ export function parseQuestionsManually(text: string): any[] {
     }))
     .filter(q => q.text.length > 5);
 }
-import { getGenerativeModel } from "firebase/ai";
-import { genAI } from "@/lib/firebase";
-
-const model = getGenerativeModel(genAI, { 
-  model: "gemini-2.5-flash",
-  generationConfig: {
-    temperature: 0.7,
-    maxOutputTokens: 2048,
-  },
-});
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -1169,4 +1170,30 @@ function validateAndNormalizeQuestions(questions: any[]): any[] {
   
   console.log(`Successfully parsed ${validatedQuestions.length} questions`);
   return validatedQuestions;
+}
+
+export async function getNavigationResponse(
+  message: string,
+  userRole: 'student' | 'teacher',
+  featuresContext: string,
+  systemPrompt: string
+): Promise<string> {
+  try {
+    const fullPrompt = `${systemPrompt}
+
+${userRole.toUpperCase()} FEATURES:
+${featuresContext}
+
+User role: ${userRole}
+User question: ${message}
+
+If suggesting navigation, wrap the path in parentheses like this: (/student/grades)`;
+
+    const result = await model.generateContent(fullPrompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Error getting navigation response:", error);
+    return "I'm sorry, I'm having trouble processing your request right now.";
+  }
 }

@@ -30,7 +30,7 @@ export default function AboutPage() {
           <p>
             Built with <strong>
               <a
-                href="https://github.com/RushilMahadevu/scorpio?tab=readme-ov-file#ai-tutoring-system"
+                href="https://github.com/RushilMahadevu/scorpio?tab=readme-ov-file"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline hover:text-primary"

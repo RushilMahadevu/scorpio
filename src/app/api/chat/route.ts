@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGenerativeModel } from "firebase/ai";
-import { genAI } from "@/lib/firebase";
 import { adminDb } from '@/lib/firebase-admin';
 import chatbotConfig from '@/lib/chatbot-config.json';
+import { getNavigationResponse } from '@/lib/gemini';
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,23 +44,16 @@ export async function POST(req: NextRequest) {
     usage.count++;
     await userRef.set(usage);
 
-    // --- AI Response using same logic as gemini.ts ---
-    const model = getGenerativeModel(genAI, { 
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      },
-    });
-    
+    // --- AI Response using centralized logic in gemini.ts ---
     const features = userRole === 'teacher' ? chatbotConfig.teacherFeatures : chatbotConfig.studentFeatures;
     const featuresContext = features.map(f => `- ${f.label} (${f.path}) - ${f.description}`).join('\n');
     
-    const fullPrompt = `${chatbotConfig.systemPrompt}\n\n${userRole.toUpperCase()} FEATURES:\n${featuresContext}\n\nUser role: ${userRole}\nUser question: ${message}\n\nIf suggesting navigation, wrap the path in parentheses like this: (/student/grades)`;
-
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const text = response.text();
+    const text = await getNavigationResponse(
+      message,
+      userRole,
+      featuresContext,
+      chatbotConfig.systemPrompt
+    );
 
     return NextResponse.json({ 
       text,

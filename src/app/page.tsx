@@ -26,6 +26,8 @@ const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [docsOpen, setDocsOpen] = useState(false);
+  const [mobileDocsOpen, setMobileDocsOpen] = useState(false);
 
   const features = [
     { icon: Brain, title: "AI-Powered Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture", tag: "Gemini 2.5 Flash" },
@@ -73,11 +75,11 @@ export default function Home() {
       { id: "cta", label: "Get Started" },
       { id: "docs", label: "Docs" }
     ].map(({ id, label }) => (
-      <DropdownMenu key={id}>
+      <DropdownMenu key={id} onOpenChange={(open) => id === "docs" && setDocsOpen(open)}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer"
+            className="group font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer flex items-center gap-1"
             type="button"
             onClick={id !== "docs" ? () => {
               const el = document.getElementById(id);
@@ -86,6 +88,15 @@ export default function Home() {
             } : undefined}
           >
             {label}
+            {id === "docs" && (
+              <motion.div
+                animate={{ rotate: docsOpen ? 180 : 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="flex items-center justify-center"
+              >
+                <ChevronDown className="size-3" aria-hidden="true" />
+              </motion.div>
+            )}
           </Button>
         </DropdownMenuTrigger>
         {id === "docs" && (
@@ -192,13 +203,20 @@ export default function Home() {
                 {label}
               </Button>
             ) : (
-              <DropdownMenu key={id}>
+              <DropdownMenu key={id} onOpenChange={(open) => id === "docs" && setMobileDocsOpen(open)}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
+                    className="group justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left flex items-center gap-1"
                   >
                     {label}
+                    <motion.div
+                      animate={{ rotate: mobileDocsOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="flex items-center justify-center"
+                    >
+                      <ChevronDown className="size-4" aria-hidden="true" />
+                    </motion.div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">

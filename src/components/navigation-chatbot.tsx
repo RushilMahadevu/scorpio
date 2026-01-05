@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MessageCircle, X, Send, Home, FileText, GraduationCap, BarChart, Upload, Users, BookOpen, Video, Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { MarkdownRenderer } from './markdown-renderer';
 
 type UserRole = 'student' | 'teacher';
 
@@ -210,9 +211,15 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">
-                      {message.content.replace(/\([^)]+\)/g, '')}
-                    </p>
+                    {message.role === 'user' ? (
+                      <p className="text-sm whitespace-pre-wrap">
+                        {message.content}
+                      </p>
+                    ) : (
+                      <MarkdownRenderer className="text-sm prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:my-2 prose-ul:my-2 prose-li:my-0 break-words max-w-none">
+                        {message.content.replace(/\([^)]+\)/g, '')}
+                      </MarkdownRenderer>
+                    )}
                   </div>
                 </div>
                 {message.navigation && (
