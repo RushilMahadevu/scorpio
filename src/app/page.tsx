@@ -683,13 +683,13 @@ export default function Home() {
             <p className="text-muted-foreground text-lg font-medium">Join schools revolutionizing physics education with research-grade AI tutoring</p>
             <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
               <Link href="/student">
-                <Button size="lg" className="group font-extrabold cursor-pointer   w-full sm:w-auto">
+                <Button size="lg" className="group font-extrabold cursor-pointer w-full sm:w-auto rounded-full shadow-[0_0_25px_rgba(var(--primary),0.3)] hover:shadow-[0_0_35px_rgba(var(--primary),0.5)] transition-all">
                   Start as a Student
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/teacher">
-                <Button size="lg" variant="outline" className="group font-extrabold cursor-pointer w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="group font-extrabold cursor-pointer w-full sm:w-auto rounded-full bg-background/50 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all">
                   Start as a Teacher
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>

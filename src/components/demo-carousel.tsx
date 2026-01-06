@@ -1,6 +1,7 @@
-import { Pause } from "lucide-react";
+import { CirclePause } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Maximize } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const demoSlides = [
   { src: "/demos/processed/ai-tutor-chat.mp4", title: "AI Tutor", desc: "Conversational tutor with reasoning." },
@@ -162,7 +163,7 @@ export function DemoCarousel() {
         {/* Left arrow */}
         <button
           onClick={prev}
-          className="absolute left-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full"
+          className="absolute left-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full cursor-pointer hover:scale-105 transition-transform"
           aria-label="Previous slide"
         >
           <ChevronLeft className="h-6 w-6" />
@@ -213,11 +214,19 @@ export function DemoCarousel() {
                 title={`Current: ${getSlide(0).title}`}
               />
               {/* Paused overlay effect */}
-              {isVideoPaused && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-lg transition-all">
-                  <Pause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
-                </div>
-              )}
+              <AnimatePresence>
+                {isVideoPaused && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-lg"
+                  >
+                    <CirclePause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {/* Fullscreen button */}
               <button
                 onClick={(e) => {
@@ -268,7 +277,7 @@ export function DemoCarousel() {
         {/* Right arrow */}
         <button
           onClick={next}
-          className="absolute right-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full"
+          className="absolute right-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full cursor-pointer hover:scale-105 transition-transform"
           aria-label="Next slide"
         >
           <ChevronRight className="h-6 w-6" />
