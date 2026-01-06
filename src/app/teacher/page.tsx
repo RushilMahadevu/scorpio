@@ -73,7 +73,7 @@ export default function TeacherDashboard() {
         const submissionsSnap = await getDocs(collection(db, "submissions"));
 
         const submissions: Submission[] = submissionsSnap.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .map((doc) => ({ id: doc.id, ...doc.data() } as Submission))
             .filter(s => s.assignmentId && myAssignmentIds.has(s.assignmentId));
 
         const completed = submissions.filter((s) => s.graded).length;
