@@ -6,7 +6,9 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Users, CheckCircle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap } from "lucide-react";
+import Link from "next/link";
 
 interface Submission {
   id: string;
@@ -56,13 +58,24 @@ export default function TeacherDashboard() {
     async function fetchStats() {
       if (!user) return;
       try {
-        const assignmentsSnap = await getDocs(collection(db, "assignments"));
+        const assignmentsSnap = await getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid)));
         const studentsSnap = await getDocs(
           query(collection(db, "students"), where("teacherId", "==", user.uid))
         );
+        
+        // We can't query submissions by teacherId directly unless we add it to the submission.
+        // Instead, filter submissions by checking if assignmentId belongs to one of our assignments.
+        const myAssignmentIds = new Set(assignmentsSnap.docs.map(d => d.id));
+        
+        // Warning: Fetching all submissions might be slow if DB is large. 
+        // Ideal: Submissions should have 'teacherId' or we query per assignment.
+        // For now: Fetch all and filter client-side.
         const submissionsSnap = await getDocs(collection(db, "submissions"));
 
-        const submissions: Submission[] = submissionsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const submissions: Submission[] = submissionsSnap.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .filter(s => s.assignmentId && myAssignmentIds.has(s.assignmentId));
+
         const completed = submissions.filter((s) => s.graded).length;
         const pending = submissions.filter((s) => !s.graded).length;
 
@@ -73,16 +86,17 @@ export default function TeacherDashboard() {
           pendingSubmissions: pending,
         });
 
-        // Recent assignments
+        // Recent assignments (filtered)
         const recentQuery = query(
           collection(db, "assignments"),
+          where("teacherId", "==", user.uid),
           orderBy("createdAt", "desc"),
           limit(3)
         );
         const recentSnap = await getDocs(recentQuery);
         setRecentAssignments(recentSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
-        // Pending grading (ungraded submissions)
+        // Pending grading (ungraded submissions from MY assignments)
         const pendingSubs = submissions.filter((s) => !s.graded).slice(0, 3);
         
         // Get assignment titles
@@ -235,21 +249,52 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Common tasks you might want to do</CardDescription>
           </CardHeader>
-          <CardContent className="flex gap-2 flex-wrap">
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              <a href="/teacher/create">Create New Assignment</a>
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              <a href="/teacher/assignments">View All Assignments</a>
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              <a href="/teacher/uploads">Upload PDF</a>
-            </Badge>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed" asChild>
+              <Link href="/teacher/create">
+                <PlusCircle className="h-4 w-4 text-primary" />
+                <span className="text-xs">Create Assignment</span>
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed" asChild>
+              <Link href="/teacher/assignments">
+                <List className="h-4 w-4 text-primary" />
+                <span className="text-xs">All Assignments</span>
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed" asChild>
+              <Link href="/teacher/uploads">
+                <Upload className="h-4 w-4 text-primary" />
+                <span className="text-xs">Upload PDF</span>
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <GraduationCap className="h-5 w-5 text-muted-foreground" />
+              Class Code
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-4">
+            <div 
+              className="text-xl font-mono font-bold tracking-tight text-foreground bg-muted/50 px-4 py-2 rounded-lg border border-border shadow-sm select-all cursor-pointer hover:bg-muted transition-all w-full text-center truncate"
+              onClick={() => {
+                navigator.clipboard.writeText(user?.uid || "");
+                alert("Code copied!");
+              }}
+              title="Click to copy"
+            >
+              {user?.uid}
+            </div>
+            <p className="mt-2 text-[10px] text-muted-foreground uppercase tracking-wider">Share with your students</p>
           </CardContent>
         </Card>
 
@@ -257,7 +302,7 @@ export default function TeacherDashboard() {
           <CardHeader>
             <CardTitle>Teaching Tip</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex items-center justify-center h-[80px]">
             <blockquote className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground">
               {teachingTips[currentTip]}
             </blockquote>

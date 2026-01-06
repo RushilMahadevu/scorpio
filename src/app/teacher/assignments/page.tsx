@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ interface Assignment {
 }
 
 export default function AssignmentsPage() {
+  const { user } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
@@ -29,12 +31,16 @@ export default function AssignmentsPage() {
   const [sortOpen, setSortOpen] = useState(false);
 
   useEffect(() => {
-    fetchAssignments();
-  }, []);
+    if (user) {
+      fetchAssignments();
+    }
+  }, [user]);
 
   async function fetchAssignments() {
+    if (!user) return;
     try {
-      const snapshot = await getDocs(collection(db, "assignments"));
+      const q = query(collection(db, "assignments"), where("teacherId", "==", user.uid));
+      const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ interface AssignmentOption {
 }
 
 export default function StudentDetailsPage() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const studentId = searchParams ? searchParams.get('studentId') ?? "" : "";
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -35,20 +37,24 @@ export default function StudentDetailsPage() {
   const [selectedAssignment, setSelectedAssignment] = useState<string>("");
 
   useEffect(() => {
-    if (!studentId) {
+    if (!studentId || !user) {
       setLoading(false);
       return;
     }
 
     async function fetchStudentData() {
       try {
-        // Fetch all assignments for filter dropdown
-        const assignmentsSnapshot = await getDocs(collection(db, "assignments"));
+        // Fetch all assignments for filter dropdown (filtered by teacher)
+        const assignmentsQuery = query(collection(db, "assignments"), where("teacherId", "==", user!.uid));
+        const assignmentsSnapshot = await getDocs(assignmentsQuery);
         const assignmentOptions: AssignmentOption[] = assignmentsSnapshot.docs.map((doc) => ({
           id: doc.id,
           title: doc.data().title || "Untitled Assignment",
         }));
         setAssignments(assignmentOptions);
+        
+        // Allowed assignments set for validation
+        const allowedAssignmentIds = new Set(assignmentsSnapshot.docs.map(d => d.id));
 
         // Fetch submissions
         const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
@@ -56,6 +62,10 @@ export default function StudentDetailsPage() {
 
         const submissionsData = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
           const data = docSnapshot.data();
+          
+          // Verify assignment ownership
+          if (!allowedAssignmentIds.has(data.assignmentId)) return null;
+
           // Try to get student name from first submission if not available elsewhere
           if (data.studentName) setStudentName(data.studentName);
 
@@ -92,7 +102,7 @@ export default function StudentDetailsPage() {
     }
 
     fetchStudentData();
-  }, [studentId]);
+  }, [studentId, user]);
 
   if (loading) {
     return <div>Loading...</div>;

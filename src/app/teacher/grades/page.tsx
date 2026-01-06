@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, writeBatch, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface Student {
 }
 
 export default function TeacherGradesPage() {
+  const { user } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState<{id: string, title: string}[]>([]);
@@ -26,33 +28,67 @@ export default function TeacherGradesPage() {
 
   useEffect(() => {
     async function fetchAssignments() {
+        if (!user) return;
         try {
-            const snap = await getDocs(collection(db, "assignments"));
+            const snap = await getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid)));
             setAssignments(snap.docs.map(d => ({ id: d.id, title: d.data().title })));
         } catch (e) {
             console.error("Error fetching assignments", e);
         }
     }
     fetchAssignments();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     async function fetchStudentsAndGrades() {
+      if (!user) return;
       setLoading(true);
       try {
         let q;
+        // Logic:
+        // If "all" assignments selected:
+        // We can't easily query submissions by teacherId because submissions don't have teacherId.
+        // Option 1: Fetch all assignments for this teacher, get their IDs, and query submissions IN those IDs.
+        // Option 2: Fetch all students for this teacher, and filter submissions by those student IDs.
+        
+        // Let's go with Option 1 since we already fetched assignments.
+        // Although Firestore "in" query limits to 10. 
+        // Better: Fetch all submissions, and client-side filter for assignments that belong to this teacher.
+        // OR: Add teacherId to submissions (best long term, but requires migration).
+        
+        // Quick Fix for now: Fetch all submissions (or limit if possible) and filter in memory by checking if assignmentId is in the teacher's assignments list.
+        // Note: 'assignments' state is populated with ONLY this teacher's assignments.
+        
         if (selectedAssignmentId === "all") {
-            q = collection(db, "submissions");
+             // Querying ALL submissions is bad if db is huge. 
+             // Ideally we query Submissions where assignmentId IN [list of teacher's assignment IDs].
+             // But if list > 10, we can't.
+             // Fallback: Query all, but filter. Or query by students.
+             // Given the context, let's query all submissions and filter by the assignments we know belong to this teacher.
+             q = collection(db, "submissions");
         } else {
+            // Check if selectedAssignmentId belongs to this teacher
+            const assignment = assignments.find(a => a.id === selectedAssignmentId);
+            if (!assignment) {
+                // Not authorized or invalid
+                setLoading(false);
+                return;
+            }
             q = query(collection(db, "submissions"), where("assignmentId", "==", selectedAssignmentId));
         }
         
         const submissionsSnap = await getDocs(q);
         const studentMap = new Map<string, { name: string; email: string; scores: number[]; count: number }>();
+        
+        // Set of valid assignment IDs for this teacher
+        const validAssignmentIds = new Set(assignments.map(a => a.id));
 
         submissionsSnap.forEach((doc) => {
           const data = doc.data();
-          if (data.status === 'draft') return; // Skip drafts in gradebook
+          if (data.status === 'draft') return; 
+          
+          // Verify assignment belongs to teacher
+          if (!validAssignmentIds.has(data.assignmentId)) return;
 
           const studentId = data.studentId;
           
@@ -117,7 +153,7 @@ export default function TeacherGradesPage() {
     }
 
     fetchStudentsAndGrades();
-  }, [selectedAssignmentId]);
+  }, [selectedAssignmentId, user, assignments]);
 
   const deleteStudent = async (studentId: string) => {
     if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions.")) return;

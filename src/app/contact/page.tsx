@@ -1,16 +1,18 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Metadata } from "next";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, MessageCircle } from "lucide-react";
+import { BackButton } from "@/components/ui/back-button";
+
+export const metadata: Metadata = {
+  title: "Contact Us | Scorpio AI Learning Platform",
+  description: "Get in touch with the Scorpio team. We're here to help schools and educators transform physics education with AI.",
+};
 
 export default function ContactPage() {
-  const router = useRouter();
-
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <SpaceBackground />
@@ -18,15 +20,14 @@ export default function ContactPage() {
       <div className="relative z-10 max-w-2xl w-full p-6">
         <Card className="bg-background/90 backdrop-blur-md border-primary/30 shadow-2xl">
           <CardHeader className="text-center pb-6 relative pt-16">
-            <button
-              onClick={() => router.back()}
+            <BackButton
               className="absolute top-4 left-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition cursor-pointer"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>
               Back
-            </button>
+            </BackButton>
             <Logo size={48} className="mx-auto mb-4 drop-shadow-lg text-primary" />
             <CardTitle className="text-3xl md:text-4xl font-extrabold">Contact & Support</CardTitle>
             <CardDescription className="text-base mt-2">

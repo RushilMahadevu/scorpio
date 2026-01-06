@@ -16,7 +16,18 @@ export const metadata: Metadata = {
     default: "Scorpio | AI-Powered Physics LMS",
     template: "%s | Scorpio",
   },
-  description: "Scorpio transforms physics education with AI-powered tutoring, real-time LaTeX rendering, and immersive UI to help students turn struggles into breakthroughs.",
+  description: "Scorpio is an AI-powered Learning Management System (LMS) utilizing advanced Large Language Models (LLMs) to transform physics education. Features research-grade AI tutoring, real-time LaTeX rendering, and immersive learning tools.",
+  keywords: [
+    "AI Powered LLM",
+    "Physics LMS",
+    "AI Tutor",
+    "Large Language Model",
+    "Education Technology",
+    "Physics Education",
+    "Scorpio Education",
+    "LMS",
+    "AI Learning Platform"
+  ],
   icons: [
     { rel: "icon", url: "/favicon-light.ico", media: "(prefers-color-scheme: light)" },
     { rel: "icon", url: "/favicon-dark.ico", media: "(prefers-color-scheme: dark)" },
@@ -24,7 +35,7 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
-    title: "Scorpio | AI-Powered Physics Tutoring",
+    title: "Scorpio | AI-Powered Physics LMS",
     description: "Turn Physics Struggles Into Breakthroughs with Scorpio's research-grade AI tutoring and immersive learning platform.",
     url: "https://scorpioedu.org",
     siteName: "Scorpio",
@@ -38,9 +49,6 @@ export const metadata: Metadata = {
     ],
     locale: "en_US",
     type: "website",
-  },
-  alternates: {
-    canonical: "/",
   },
   other: {
     "language": "en",
@@ -73,6 +81,23 @@ export default function RootLayout({
               "url": "https://scorpioedu.org",
               "logo": "https://scorpioedu.org/og-image-light.png",
               "sameAs": []
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Scorpio",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Any",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              }
             })
           }}
         />

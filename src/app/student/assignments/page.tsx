@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,12 +31,21 @@ export default function StudentAssignmentsPage() {
     async function fetchData() {
       if (!user) return;
       try {
-        const assignmentsSnap = await getDocs(collection(db, "assignments"));
-        const data = assignmentsSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
-        })) as Assignment[];
+        // Fetch student details to get teacherId
+        const studentDoc = await getDoc(doc(db, "students", user.uid));
+        const teacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+
+        let data: Assignment[] = [];
+        if (teacherId) {
+          const assignmentsSnap = await getDocs(
+            query(collection(db, "assignments"), where("teacherId", "==", teacherId))
+          );
+          data = assignmentsSnap.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
+          })) as Assignment[];
+        }
         setAssignments(data);
 
         const submissionsSnap = await getDocs(

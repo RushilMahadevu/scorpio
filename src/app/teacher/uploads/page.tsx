@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ interface Resource {
 }
 
 export default function ResourcesPage() {
+  const { user } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
@@ -25,12 +27,19 @@ export default function ResourcesPage() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    fetchResources();
-  }, []);
+    if (user) {
+      fetchResources();
+    }
+  }, [user]);
 
   async function fetchResources() {
+    if (!user) return;
     try {
-      const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
+      const q = query(
+        collection(db, "resources"), 
+        where("teacherId", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
       const querySnapshot = await getDocs(q);
       const resourceList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -53,6 +62,7 @@ export default function ResourcesPage() {
       await addDoc(collection(db, "resources"), {
         title,
         url,
+        teacherId: user?.uid,
         createdAt: new Date(),
       });
       setTitle("");

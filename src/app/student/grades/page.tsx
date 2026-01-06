@@ -41,24 +41,38 @@ export default function StudentGradesPage() {
       if (!user) return;
 
       try {
+        // Get Student's Teacher ID
+        const studentDoc = await getDoc(doc(db, "students", user.uid));
+        const studentTeacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+
         const q = query(collection(db, "submissions"), where("studentId", "==", user.uid));
         const snapshot = await getDocs(q);
 
         const submissionsData: (Submission | null)[] = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
           const data = docSnapshot.data();
 
-          // Fetch assignment title
+          // Fetch assignment
           let assignmentTitle = "Unknown Assignment";
           let assignmentExists = false;
+          let assignmentTeacherId = null;
+
           if (data.assignmentId) {
             const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
             if (assignmentDoc.exists()) {
-              assignmentTitle = assignmentDoc.data().title;
+              const assignData = assignmentDoc.data();
+              assignmentTitle = assignData.title;
+              assignmentTeacherId = assignData.teacherId; // May be undefined for old data
               assignmentExists = true;
             }
           }
 
           if (!assignmentExists) return null;
+          
+          // Strict Filtering: Only show grades for assignments from current teacher
+          // OR if the assignment has no teacherId (legacy)
+          if (studentTeacherId && assignmentTeacherId && studentTeacherId !== assignmentTeacherId) {
+             return null;
+          }
 
           return {
             id: docSnapshot.id,

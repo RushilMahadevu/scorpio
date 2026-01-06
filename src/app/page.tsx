@@ -30,12 +30,12 @@ export default function Home() {
   const [mobileDocsOpen, setMobileDocsOpen] = useState(false);
 
   const features = [
-    { icon: Brain, title: "AI-Powered Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture", tag: "Gemini 2.5 Flash" },
+    { icon: Brain, title: "AI-Powered LLM Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture using advanced LLMs", tag: "Gemini 2.5 Flash" },
     { icon: SquareFunction, title: "Mathematical Rendering", description: "Real-time LaTeX rendering with custom math builder", tag: "KaTeX" },
     { icon: Orbit, title: "Immersive UI", description: "Multi-layered parallax space background paired with modular beautiful UI", tag: "Tailwind + Shadcn" },
     { icon: Cloud, title: "Real-time Sync", description: "Optimistic updates and offline support", tag: "Firestore" },
     { icon: ShieldUser, title: "Role-Based Access", description: "Server-side authentication with granular controls", tag: "Firebase" },
-    { icon: MessageCircle, title: "Navigation Assistant", description: "Intuitive platform guidance and help powered with a LLM model", tag: "LLM model" },
+    { icon: MessageCircle, title: "Navigational AI Agent", description: "Intuitive platform guidance and help powered by a custom LLM", tag: "LLM Agent" },
     { icon: FileUp, title: "File Submissions", description: "Student PDF & Image uploads with base64 storage", tag: "Cloud Storage" },
     { icon: Users, title: "Type-Safe Forms", description: "Runtime validation with TypeScript inference", tag: "Zod" }
   ];
@@ -687,7 +687,7 @@ export default function Home() {
                   Start as a Student
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-              </Link>
+              </Link> 
               <Link href="/teacher">
                 <Button size="lg" variant="outline" className="group font-extrabold cursor-pointer w-full sm:w-auto rounded-full bg-background/50 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all">
                   Start as a Teacher

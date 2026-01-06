@@ -31,43 +31,67 @@ export default function StudentDashboard() {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
+    async function syncTeacherId() {
       if (!user) return;
       try {
-        // Fetch student profile
         const studentDoc = await getDoc(doc(db, "students", user.uid));
         if (studentDoc.exists()) {
           const data = studentDoc.data();
           setTeacherId(data.teacherId || null);
-          
-          if (data.teacherId) {
-            const teacherDoc = await getDoc(doc(db, "teachers", data.teacherId));
-            if (teacherDoc.exists()) {
-              setTeacherName(teacherDoc.data().name);
-            }
+        }
+      } catch (error) {
+        console.error("Error syncing profile:", error);
+      }
+    }
+    syncTeacherId();
+  }, [user]);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      if (!user) return;
+      try {
+        if (teacherId) {
+          const teacherDoc = await getDoc(doc(db, "teachers", teacherId));
+          if (teacherDoc.exists()) {
+            setTeacherName(teacherDoc.data().name);
           }
+        } else {
+          setTeacherName(null);
         }
 
-        const assignmentsSnap = await getDocs(collection(db, "assignments"));
+        let totalAssignments = 0;
+        let currentAssignmentIds = new Set<string>();
+
+        if (teacherId) {
+          const assignmentsSnap = await getDocs(
+            query(collection(db, "assignments"), where("teacherId", "==", teacherId))
+          );
+          totalAssignments = assignmentsSnap.size;
+          assignmentsSnap.docs.forEach(doc => currentAssignmentIds.add(doc.id));
+        }
+
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
         );
 
-        const totalAssignments = assignmentsSnap.size;
-        const completedAssignments = submissionsSnap.docs.filter(doc => doc.data().status !== 'draft').length;
+        // Only count submissions for assignments that belong to the current class
+        const completedAssignments = submissionsSnap.docs.filter(doc => {
+            const data = doc.data();
+            return data.status !== 'draft' && currentAssignmentIds.has(data.assignmentId);
+        }).length;
 
         setStats({
           totalAssignments,
           completedAssignments,
-          pendingAssignments: totalAssignments - completedAssignments,
+          pendingAssignments: Math.max(0, totalAssignments - completedAssignments),
         });
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     }
 
-    fetchData();
-  }, [user]);
+    fetchDashboardData();
+  }, [user, teacherId]);
 
   const handleJoinClass = async () => {
     if (!user || !classCode) return;
@@ -77,17 +101,6 @@ export default function StudentDashboard() {
         teacherId: classCode.trim()
       });
       setTeacherId(classCode.trim());
-      
-      // Fetch teacher name for the new class
-      try {
-        const teacherDoc = await getDoc(doc(db, "teachers", classCode.trim()));
-        if (teacherDoc.exists()) {
-          setTeacherName(teacherDoc.data().name);
-        }
-      } catch (err) {
-        console.error("Error fetching teacher details:", err);
-        // Don't fail the whole join process if just the name fetch fails
-      }
       
       alert("Joined class successfully!");
     } catch (error: any) {

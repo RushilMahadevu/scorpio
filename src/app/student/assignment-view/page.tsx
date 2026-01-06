@@ -85,6 +85,17 @@ function AssignmentDetailContent() {
         const docSnap = await getDoc(doc(db, "assignments", id));
         if (docSnap.exists()) {
           const data = docSnap.data();
+
+          // Check if student belongs to this teacher
+          const studentDoc = await getDoc(doc(db, "students", user.uid));
+          const studentData = studentDoc.exists() ? studentDoc.data() : null;
+          
+          if (data.teacherId && (!studentData || studentData.teacherId !== data.teacherId)) {
+            // Not authorized
+            setLoading(false);
+            return;
+          }
+
           const assignmentData = {
             id: docSnap.id,
             title: data.title,

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ interface Submission {
 }
 
 function AssignmentDetailsContent() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const assignmentId = searchParams ? searchParams.get("id") ?? "" : "";
   
@@ -39,13 +41,23 @@ function AssignmentDetailsContent() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!assignmentId) return;
+      if (!assignmentId || !user) return;
 
       try {
         // Fetch Assignment Details
         const assignmentDoc = await getDoc(doc(db, "assignments", assignmentId));
         if (assignmentDoc.exists()) {
-          setAssignment({ id: assignmentDoc.id, ...assignmentDoc.data() } as Assignment);
+            const data = assignmentDoc.data();
+            // Verify ownership
+            if (data.teacherId && data.teacherId !== user.uid) {
+                // Not authorized
+                setLoading(false);
+                return;
+            }
+          setAssignment({ id: assignmentDoc.id, ...data } as Assignment);
+        } else {
+            setLoading(false);
+            return;
         }
 
         // Fetch Submissions
@@ -86,7 +98,7 @@ function AssignmentDetailsContent() {
     }
 
     fetchData();
-  }, [assignmentId]);
+  }, [assignmentId, user]);
 
   if (loading) {
     return <div>Loading...</div>;

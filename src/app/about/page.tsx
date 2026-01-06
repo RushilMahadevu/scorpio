@@ -1,26 +1,27 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Metadata } from "next";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { Logo } from "@/components/ui/logo";
+import { BackButton } from "@/components/ui/back-button";
 
+export const metadata: Metadata = {
+  title: "About Scorpio | AI-Powered Physics Tutoring Vision",
+  description: "Learn about the mission behind Scorpio: replacing traditional LMS frustration with AI-powered Socratic tutoring that helps physics students truly understand.",
+};
 
 export default function AboutPage() {
-  const router = useRouter();
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <SpaceBackground />
       <div className="relative z-10 max-w-2xl w-full bg-gradient-to-br from-background/90 to-background/70 backdrop-blur-md rounded-2xl shadow-2xl p-8 mt-16 mb-16 border border-primary/30 ring-1 ring-primary/10">
-        <button
-          onClick={() => router.back()}
-          className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition"
+        <BackButton
+          className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition cursor-pointer"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
           Back
-        </button>
+        </BackButton>
         <Logo size={48} className="mx-auto mb-6 drop-shadow-lg text-primary" />
         <h1 className="text-4xl font-extrabold text-center mb-6 text-foreground">About Scorpio</h1>
         <div className="text-lg text-center mb-6 text-muted-foreground space-y-4 leading-relaxed">

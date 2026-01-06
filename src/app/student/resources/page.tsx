@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ interface Resource {
 }
 
 export default function StudentResourcesPage() {
+  const { user } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,8 +28,25 @@ export default function StudentResourcesPage() {
 
   useEffect(() => {
     async function fetchResources() {
+      if (!user) return;
       try {
-        const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
+        let q;
+        // Fetch student profile to get teacherId
+        const studentDoc = await getDoc(doc(db, "students", user.uid));
+        const teacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+        
+        if (teacherId) {
+            q = query(collection(db, "resources"), where("teacherId", "==", teacherId), orderBy("createdAt", "desc"));
+        } else {
+             // If no teacher, maybe show no resources or public ones? 
+             // For now, let's assume resources must be class-specific or they won't see any.
+             // Or if you have "global" resources, you'd handle that. 
+             // Let's assume strict class filtering as requested.
+             setResources([]);
+             setLoading(false);
+             return;
+        }
+
         const querySnapshot = await getDocs(q);
         const resourceList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -41,7 +60,7 @@ export default function StudentResourcesPage() {
       }
     }
     fetchResources();
-  }, []);
+  }, [user]);
 
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase());

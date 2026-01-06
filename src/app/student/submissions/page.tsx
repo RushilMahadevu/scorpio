@@ -30,6 +30,10 @@ export default function SubmissionsPage() {
     async function fetchSubmissions() {
       if (!user) return;
       try {
+        // Get Student's Teacher ID
+        const studentDoc = await getDoc(doc(db, "students", user.uid));
+        const studentTeacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
         );
@@ -42,10 +46,17 @@ export default function SubmissionsPage() {
               if (!assignmentDoc.exists()) {
                 return null; // Filter out if assignment is deleted
               }
+
+              const assignData = assignmentDoc.data();
+              // Filter by teacher
+              if (studentTeacherId && assignData.teacherId && studentTeacherId !== assignData.teacherId) {
+                return null;
+              }
+
               return {
                 id: submissionDoc.id,
                 assignmentId: data.assignmentId,
-                assignmentTitle: assignmentDoc.data().title,
+                assignmentTitle: assignData.title,
                 answers: data.answers || [],
                 submittedAt: data.submittedAt?.toDate?.() || (data.submittedAt ? new Date(data.submittedAt) : null),
                 graded: data.graded || false,

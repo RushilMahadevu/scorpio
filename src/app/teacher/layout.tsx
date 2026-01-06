@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
+import { useSidebarState } from "@/hooks/use-sidebar-state";
 
 export default function TeacherLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, setIsCollapsed } = useSidebarState("teacher");
 
   return (
     <ProtectedRoute allowedRole="teacher">

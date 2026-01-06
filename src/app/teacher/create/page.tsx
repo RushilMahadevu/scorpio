@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/auth-context";
 import { generateAssignmentQuestions, parseQuestionsFromText, parseQuestionsManually } from "@/lib/gemini";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ interface Question {
 
 export default function CreateAssignmentPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -187,6 +189,7 @@ export default function CreateAssignmentPage() {
       const assignmentRef = await addDoc(collection(db, "assignments"), {
         title,
         description,
+        teacherId: user?.uid,
         dueDate: new Date(dueDate),
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
@@ -199,15 +202,8 @@ export default function CreateAssignmentPage() {
       });
 
       // 2. Fetch all students for this teacher
-      let teacherId = null;
-      if (typeof window !== "undefined") {
-        teacherId = localStorage.getItem("uid");
-      }
-      if (!teacherId && typeof window !== "undefined" && window.firebaseAuth) {
-        teacherId = window.firebaseAuth.currentUser?.uid;
-      }
-      if (teacherId) {
-        const studentsSnap = await getDocs(query(collection(db, "students"), where("teacherId", "==", teacherId)));
+      if (user?.uid) {
+        const studentsSnap = await getDocs(query(collection(db, "students"), where("teacherId", "==", user.uid)));
         for (const studentDoc of studentsSnap.docs) {
           const student = studentDoc.data();
           if (student.email) {
