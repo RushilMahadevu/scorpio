@@ -19,16 +19,31 @@ interface Assignment {
   dueDate: Date;
   questions: any[];
   createdAt: Date;
+  courseId?: string;
+  courseName?: string;
 }
 
 export default function AssignmentsPage() {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState<{id: string, name: string}[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
   const [filter, setFilter] = useState<string>("all");
   const [sort, setSort] = useState<string>("dueDateAsc");
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchCourses() {
+       if (!user) return;
+       try {
+         const snap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid)));
+         setCourses(snap.docs.map(d => ({ id: d.id, name: d.data().name })));
+       } catch (e) { console.error(e); }
+    }
+    fetchCourses();
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -39,14 +54,24 @@ export default function AssignmentsPage() {
   async function fetchAssignments() {
     if (!user) return;
     try {
+      // 1. Fetch courses to map names
+      const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid)));
+      const courseMap: Record<string, string> = {};
+      coursesSnap.docs.forEach(d => courseMap[d.id] = d.data().name);
+
+      // 2. Fetch assignments
       const q = query(collection(db, "assignments"), where("teacherId", "==", user.uid));
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
-        createdAt: doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt),
-      })) as Assignment[];
+      const data = snapshot.docs.map((doc) => {
+        const d = doc.data();
+        return {
+          id: doc.id,
+          ...d,
+          dueDate: d.dueDate?.toDate?.() || new Date(d.dueDate),
+          createdAt: d.createdAt?.toDate?.() || new Date(d.createdAt),
+          courseName: d.courseId ? courseMap[d.courseId] : undefined
+        };
+      }) as Assignment[];
       setAssignments(data);
     } catch (error) {
       console.error("Error fetching assignments:", error);
@@ -69,6 +94,8 @@ export default function AssignmentsPage() {
 
   // Filtering
   let filteredAssignments = assignments.filter((assignment) => {
+    if (selectedCourseId !== "all" && assignment.courseId !== selectedCourseId) return false;
+
     const pastDue = isPastDue(assignment.dueDate);
     if (filter === "active") return !pastDue;
     if (filter === "pastDue") return pastDue;
@@ -97,6 +124,20 @@ export default function AssignmentsPage() {
       </div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div className="flex gap-2 flex-wrap items-center">
+            {/* Class Filter */}
+            <div className="relative inline-block">
+                <select 
+                    className="h-10 w-[140px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={selectedCourseId}
+                    onChange={(e) => setSelectedCourseId(e.target.value)}
+                >
+                    <option value="all">All Classes</option>
+                    {courses.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+            </div>
+
           {/* Filtering Dropdown */}
           <div className="relative inline-block">
             <Button variant="outline" className="flex items-center gap-2 min-w-[140px]" onClick={() => setFilterOpen((open) => !open)}>
@@ -172,6 +213,7 @@ export default function AssignmentsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Class</TableHead>
                   <TableHead>Questions</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Status</TableHead>
@@ -182,6 +224,13 @@ export default function AssignmentsPage() {
                 {filteredAssignments.map((assignment) => (
                   <TableRow key={assignment.id}>
                     <TableCell className="font-medium">{assignment.title}</TableCell>
+                    <TableCell>
+                        {assignment.courseName ? (
+                            <Badge variant="outline">{assignment.courseName}</Badge>
+                        ) : (
+                            <span className="text-xs text-muted-foreground italic">Legacy / All</span>
+                        )}
+                    </TableCell>
                     <TableCell>{assignment.questions?.length || 0}</TableCell>
                     <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>

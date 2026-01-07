@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy } from "lucide-react";
 import Link from "next/link";
 
 interface Submission {
@@ -18,6 +21,14 @@ interface Submission {
 }
 
 type PendingSubmission = Submission & { assignmentTitle: string };
+
+interface Course {
+  id: string;
+  name: string;
+  code: string;
+  teacherId: string;
+  createdAt: any;
+}
 
 interface Stats {
   totalAssignments: number;
@@ -36,23 +47,10 @@ export default function TeacherDashboard() {
   });
   const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
   const [pendingGrading, setPendingGrading] = useState<PendingSubmission[]>([]);
-  const [currentTip, setCurrentTip] = useState(0);
-
-  const teachingTips = [
-    "Provide timely feedback to help students learn from their mistakes. – Educational Research",
-    "Clear learning objectives help students understand what's expected of them. – Instructional Design",
-    "Regular formative assessments can identify learning gaps early. – Assessment Theory",
-    "Breaking complex problems into smaller steps improves student understanding. – Cognitive Science",
-    "Encourage students to explain their reasoning to deepen comprehension. – Physics Education Research",
-    "Real-world examples make abstract physics concepts more relatable. – Pedagogy Best Practices"
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTip((prev) => (prev + 1) % teachingTips.length);
-    }, 12000);
-    return () => clearInterval(interval);
-  }, []);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [newCourseName, setNewCourseName] = useState("");
+  const [newCourseCode, setNewCourseCode] = useState("");
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
 
   useEffect(() => {
     async function fetchStats() {
@@ -122,6 +120,15 @@ export default function TeacherDashboard() {
           .filter((sub): sub is PendingSubmission => sub !== null);
 
         setPendingGrading(pendingWithDetails);
+
+        // Fetch courses
+        try {
+          const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), orderBy("createdAt", "desc")));
+          setCourses(coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
+        } catch (e) {
+          console.log("No courses found or error fetching courses", e);
+        }
+
       } catch (error) {
         console.error("Error fetching stats:", error);
       }
@@ -129,6 +136,67 @@ export default function TeacherDashboard() {
 
     fetchStats();
   }, [user]);
+
+  const handleCreateCourse = async () => {
+    if (!user || !newCourseName || !newCourseCode) return;
+    setIsCreatingCourse(true);
+    const code = newCourseCode.trim();
+    try {
+      // Check if code exists in courses
+      const existing = await getDocs(query(collection(db, "courses"), where("code", "==", code)));
+      if (!existing.empty) {
+        alert("Class code already exists. Please choose another.");
+        setIsCreatingCourse(false);
+        return;
+      }
+      
+      // Check if code overlaps with a KEY legacy teacher ID (other than own)
+      // We do this to prevent students from joining the "Wrong" teacher if they use a legacy code
+      // Note: If you use your OWN legacy code, that is allowed (it acts as a migration)
+      if (code !== user.uid) {
+         try {
+             // We can't query teachers by ID easily without knowing it, but we can try to fetch it
+             // But wait, we are checking if *code* is a valid ID.
+             const teacherDoc = await getDocs(query(collection(db, "teachers"), where("__name__", "==", code)));
+             if (!teacherDoc.empty) {
+                 alert("This code is reserved by another teacher (Legacy ID). Please choose another.");
+                 setIsCreatingCourse(false);
+                 return;
+             }
+         } catch (e) { console.log("Error checking legacy overlap", e); }
+      }
+
+      await addDoc(collection(db, "courses"), {
+        name: newCourseName,
+        code: code,
+        teacherId: user.uid,
+        createdAt: new Date().toISOString()
+      });
+
+      setNewCourseName("");
+      setNewCourseCode("");
+      
+      // Refresh courses
+      const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), orderBy("createdAt", "desc")));
+      setCourses(coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
+    } catch (error) {
+      console.error("Error creating course:", error);
+      alert("Failed to create course");
+    } finally {
+      setIsCreatingCourse(false);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!confirm("Are you sure you want to delete this class?")) return;
+    try {
+      await deleteDoc(doc(db, "courses", courseId));
+      setCourses(courses.filter(c => c.id !== courseId));
+    } catch (error) {
+       console.error("Error deleting course:", error);
+       alert("Failed to delete course");
+    }
+  };
 
   const statCards = [
     {
@@ -179,6 +247,128 @@ export default function TeacherDashboard() {
           </Card>
         ))}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common tasks you might want to do</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
+            <Link href="/teacher/create">
+              <PlusCircle className="h-4 w-4 text-primary" />
+              <span className="text-xs">Create Assignment</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
+            <Link href="/teacher/assignments">
+              <List className="h-4 w-4 text-primary" />
+              <span className="text-xs">All Assignments</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
+            <Link href="/teacher/uploads">
+              <Upload className="h-4 w-4 text-primary" />
+              <span className="text-xs">Upload PDF</span>
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>My Classes</CardTitle>
+            <CardDescription>Manage your class names and codes</CardDescription>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2 cursor-pointer hover:bg-primary/90 transition-colors" >
+                <PlusCircle className="h-4 w-4" />
+                Create Class
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Class</DialogTitle>
+                <DialogDescription>
+                  Create a new class with a unique code for students to join.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Class Name</Label>
+                  <Input 
+                    id="name" 
+                    placeholder="e.g. AP Physics Period 1" 
+                    value={newCourseName}
+                    onChange={(e) => setNewCourseName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="code">Class Code</Label>
+                  <Input 
+                    id="code" 
+                    placeholder="e.g. PHYS101" 
+                    value={newCourseCode}
+                    onChange={(e) => setNewCourseCode(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">This is the code students will use to join.</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleCreateCourse} disabled={isCreatingCourse || !newCourseName || !newCourseCode} className="cursor-pointer">
+                  {isCreatingCourse ? "Creating..." : "Create Class"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {courses.length === 0 ? (
+               <div className="text-center py-6 text-muted-foreground">
+                 <School className="mx-auto h-12 w-12 opacity-20 mb-2" />
+                 <p>No classes created yet.</p>
+                 <p className="text-sm">Create a class to get a code for your students.</p>
+               </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {courses.map((course) => (
+                  <div key={course.id} className="flex items-center justify-between p-4 border rounded-xl bg-card/50">
+                    <div className="space-y-1">
+                      <p className="font-semibold">{course.name}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="outline" className="font-mono text-xs">{course.code}</Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 cursor-pointer hover:bg-accent/50 transition-colors" 
+                          onClick={() => {
+                            navigator.clipboard.writeText(course.code);
+                            alert("Code copied!");
+                          }}
+                          title="Copy Code"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
+                      onClick={() => handleDeleteCourse(course.id)}
+                    >
+                      <Trash2 className="h-4 w-4 cursor-pointer hover:bg-destructive/10 transition-colors" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -246,66 +436,6 @@ export default function TeacherDashboard() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks you might want to do</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed" asChild>
-              <Link href="/teacher/create">
-                <PlusCircle className="h-4 w-4 text-primary" />
-                <span className="text-xs">Create Assignment</span>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed" asChild>
-              <Link href="/teacher/assignments">
-                <List className="h-4 w-4 text-primary" />
-                <span className="text-xs">All Assignments</span>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed" asChild>
-              <Link href="/teacher/uploads">
-                <Upload className="h-4 w-4 text-primary" />
-                <span className="text-xs">Upload PDF</span>
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <GraduationCap className="h-5 w-5 text-muted-foreground" />
-              Class Code
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-4">
-            <div 
-              className="text-xl font-mono font-bold tracking-tight text-foreground bg-muted/50 px-4 py-2 rounded-lg border border-border shadow-sm select-all cursor-pointer hover:bg-muted transition-all w-full text-center truncate"
-              onClick={() => {
-                navigator.clipboard.writeText(user?.uid || "");
-                alert("Code copied!");
-              }}
-              title="Click to copy"
-            >
-              {user?.uid}
-            </div>
-            <p className="mt-2 text-[10px] text-muted-foreground uppercase tracking-wider">Share with your students</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Teaching Tip</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-[80px]">
-            <blockquote className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground">
-              {teachingTips[currentTip]}
-            </blockquote>
           </CardContent>
         </Card>
       </div>

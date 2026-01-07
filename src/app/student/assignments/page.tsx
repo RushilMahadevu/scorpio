@@ -31,12 +31,25 @@ export default function StudentAssignmentsPage() {
     async function fetchData() {
       if (!user) return;
       try {
-        // Fetch student details to get teacherId
+        // Fetch student details to get teacherId and courseId
         const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const teacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+        const studentData = studentDoc.exists() ? studentDoc.data() : null;
+        const teacherId = studentData?.teacherId;
+        const courseId = studentData?.courseId;
 
         let data: Assignment[] = [];
-        if (teacherId) {
+        if (courseId) {
+          // New system: filter by specific course
+          const assignmentsSnap = await getDocs(
+            query(collection(db, "assignments"), where("courseId", "==", courseId))
+          );
+          data = assignmentsSnap.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
+          })) as Assignment[];
+        } else if (teacherId) {
+          // Fallback for legacy connections
           const assignmentsSnap = await getDocs(
             query(collection(db, "assignments"), where("teacherId", "==", teacherId))
           );
@@ -101,7 +114,7 @@ export default function StudentAssignmentsPage() {
       <div className="flex flex-wrap gap-4 items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2 min-w-[140px]">
+            <Button variant="outline" className="flex items-center gap-2 min-w-[140px] cursor-pointer hover:bg-primary/90 transition-colors">
               Status: {(() => {
                 if (filter === "all") return "All";
                 if (filter === "submitted") return "Submitted";
@@ -112,23 +125,23 @@ export default function StudentAssignmentsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onSelect={() => setFilter("all")}>
+            <DropdownMenuItem onSelect={() => setFilter("all")} className="cursor-pointer hover:bg-primary/90 transition-colors">
               All
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setFilter("submitted")}>
+            <DropdownMenuItem onSelect={() => setFilter("submitted")} className="cursor-pointer hover:bg-primary/90 transition-colors">
               Submitted
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setFilter("pending")}>
+            <DropdownMenuItem onSelect={() => setFilter("pending")} className="cursor-pointer hover:bg-primary/90 transition-colors">
               Pending
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setFilter("pastDue")}>
+            <DropdownMenuItem onSelect={() => setFilter("pastDue")} className="cursor-pointer hover:bg-primary/90 transition-colors">
               Past Due
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2 min-w-[180px]">
+            <Button variant="outline" className="flex items-center gap-2 min-w-[180px] cursor-pointer hover:bg-primary/90 transition-colors">
               Sort by: {(() => {
                 if (sort === "dueDateAsc") return "Due Date (Earliest)";
                 if (sort === "dueDateDesc") return "Due Date (Latest)";
@@ -139,10 +152,10 @@ export default function StudentAssignmentsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onSelect={() => setSort("dueDateAsc")}>Due Date (Earliest)</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setSort("dueDateDesc")}>Due Date (Latest)</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setSort("titleAsc")}>Title (A-Z)</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setSort("titleDesc")}>Title (Z-A)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("dueDateAsc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Due Date (Earliest)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("dueDateDesc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Due Date (Latest)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("titleAsc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Title (A-Z)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("titleDesc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Title (Z-A)</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -193,7 +206,7 @@ export default function StudentAssignmentsPage() {
                       <p>Due: {new Date(assignment.dueDate).toLocaleDateString()}</p>
                     </div>
                     <Link href={`/student/assignment-view?id=${assignment.id}`}>
-                      <Button variant={isSubmitted ? "outline" : "default"}>
+                      <Button variant={isSubmitted ? "outline" : "default"} className="cursor-pointer hover:bg-primary/90 transition-colors">
                         {isSubmitted ? "View" : "Start"}
                       </Button>
                     </Link>

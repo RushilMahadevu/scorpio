@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -52,6 +53,8 @@ interface Question {
 export default function CreateAssignmentPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const [courses, setCourses] = useState<any[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -61,6 +64,18 @@ export default function CreateAssignmentPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
+
+  useEffect(() => {
+    async function fetchCourses() {
+      if (!user) return;
+      try {
+        const q = query(collection(db, "courses"), where("teacherId", "==", user.uid));
+        const snap = await getDocs(q);
+        setCourses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) { console.error("Error fetching courses", e); }
+    }
+    fetchCourses();
+  }, [user]);
 
   // AI Generation State
   const [aiOpen, setAiOpen] = useState(false);
@@ -183,6 +198,10 @@ export default function CreateAssignmentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedCourseId) {
+      alert("Please select a class for this assignment.");
+      return;
+    }
     setLoading(true);
     try {
       // 1. Create assignment
@@ -190,6 +209,7 @@ export default function CreateAssignmentPage() {
         title,
         description,
         teacherId: user?.uid,
+        courseId: selectedCourseId,
         dueDate: new Date(dueDate),
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
@@ -201,9 +221,9 @@ export default function CreateAssignmentPage() {
         rubric: rubric || null,
       });
 
-      // 2. Fetch all students for this teacher
-      if (user?.uid) {
-        const studentsSnap = await getDocs(query(collection(db, "students"), where("teacherId", "==", user.uid)));
+      // 2. Fetch students enrolled in this course
+      if (user?.uid && selectedCourseId) {
+        const studentsSnap = await getDocs(query(collection(db, "students"), where("courseId", "==", selectedCourseId)));
         for (const studentDoc of studentsSnap.docs) {
           const student = studentDoc.data();
           if (student.email) {
@@ -235,10 +255,13 @@ export default function CreateAssignmentPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header: Title and AI button */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-1">Create Assignment</h1>
-        <p className="text-muted-foreground mb-2">Create a new physics assignment for your students.</p>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-2">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Create Assignment</h1>
+          <p className="text-muted-foreground">Create a new physics assignment for your students.</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
             {/* Generate with AI Dialog */}
             <Dialog open={aiOpen} onOpenChange={setAiOpen}>
               <DialogTrigger asChild>
@@ -382,9 +405,29 @@ export default function CreateAssignmentPage() {
         <Card>
           <CardHeader>
             <CardTitle>Assignment Details</CardTitle>
-            <CardDescription>Basic information about the assignment</CardDescription>
+            <CardDescription>Basic information and class settings</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="course">Assign to Class <span className="text-destructive">*</span></Label>
+              <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+                <SelectTrigger id="course">
+                  <SelectValue placeholder="Select a class..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.length === 0 ? (
+                    <SelectItem value="none" disabled>No classes found. Create one first.</SelectItem>
+                  ) : (
+                    courses.map(course => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.name} <span className="text-muted-foreground text-xs">({course.code})</span>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input

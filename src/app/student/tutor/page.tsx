@@ -171,7 +171,7 @@ export default function TutorPage() {
         <Button
           variant={mode === "concept" ? "default" : "outline"}
           onClick={() => setMode("concept")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer hover:bg-primary/90 transition-colors"
         >
           <Lightbulb className="h-4 w-4" />
           Explain Concept
@@ -179,7 +179,7 @@ export default function TutorPage() {
         <Button
           variant={mode === "problem" ? "default" : "outline"}
           onClick={() => setMode("problem")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer hover:bg-primary/90 transition-colors"
         >
           <Calculator className="h-4 w-4" />
           Solve Problem
@@ -192,7 +192,7 @@ export default function TutorPage() {
             <Bot className="h-5 w-5" />
             Chat with AI Tutor
           </CardTitle>
-          <CardDescription>
+          <CardDescription> 
             {mode === "concept" 
               ? "Ask about any physics concept and I'll explain it simply" 
               : "Describe your problem and I'll help you solve it step by step"}
@@ -305,7 +305,7 @@ export default function TutorPage() {
                 }}
                 disabled={!!rateLimitError}
               />
-              <Button type="submit" disabled={loading || !input.trim() || !!rateLimitError}>
+              <Button type="submit" disabled={loading || !input.trim() || !!rateLimitError} className="cursor-pointer hover:bg-primary/90 transition-colors">
                 <Send className="h-4 w-4" />
               </Button>
             </div>

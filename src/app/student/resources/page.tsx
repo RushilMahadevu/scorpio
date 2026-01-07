@@ -30,18 +30,20 @@ export default function StudentResourcesPage() {
     async function fetchResources() {
       if (!user) return;
       try {
-        let q;
-        // Fetch student profile to get teacherId
+        // Fetch student profile to get teacherId and courseId
         const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const teacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+        const studentData = studentDoc.exists() ? studentDoc.data() : null;
+        const teacherId = studentData?.teacherId;
+        const courseId = studentData?.courseId;
         
-        if (teacherId) {
+        let q;
+        if (courseId) {
+            // New system: filter by course
+            q = query(collection(db, "resources"), where("courseId", "==", courseId), orderBy("createdAt", "desc"));
+        } else if (teacherId) {
+            // Fallback for legacy
             q = query(collection(db, "resources"), where("teacherId", "==", teacherId), orderBy("createdAt", "desc"));
         } else {
-             // If no teacher, maybe show no resources or public ones? 
-             // For now, let's assume resources must be class-specific or they won't see any.
-             // Or if you have "global" resources, you'd handle that. 
-             // Let's assume strict class filtering as requested.
              setResources([]);
              setLoading(false);
              return;
@@ -92,9 +94,9 @@ export default function StudentResourcesPage() {
         </div>
         <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="video">Videos</TabsTrigger>
-            <TabsTrigger value="document">Documents</TabsTrigger>
+            <TabsTrigger value="all" className="cursor-pointer">All</TabsTrigger>
+            <TabsTrigger value="video" className="cursor-pointer">Videos</TabsTrigger>
+            <TabsTrigger value="document" className="cursor-pointer">Documents</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

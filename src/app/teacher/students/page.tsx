@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +9,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface Student {
   id: string;
   email: string;
   name?: string;
   createdAt?: Date;
+  courseId?: string;
+  courseName?: string;
 }
 
 export default function StudentsPage() {
@@ -27,12 +30,23 @@ export default function StudentsPage() {
     async function fetchStudents() {
       if (!user) return;
       try {
+        // Fetch courses first to map IDs
+        const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid)));
+        const courseMap: Record<string, string> = {};
+        coursesSnap.docs.forEach(d => {
+            courseMap[d.id] = d.data().name;
+        });
+
         const q = query(collection(db, "students"), where("teacherId", "==", user.uid));
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Student[];
+        const data = snapshot.docs.map((doc) => {
+           const sData = doc.data();
+           return {
+            id: doc.id,
+            ...sData,
+            courseName: sData.courseId ? courseMap[sData.courseId] : undefined
+          };
+        }) as Student[];
         setStudents(data);
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -54,13 +68,6 @@ export default function StudentsPage() {
     }
   };
 
-  const copyClassCode = () => {
-    if (user) {
-      navigator.clipboard.writeText(user.uid);
-      alert("Class code copied to clipboard!");
-    }
-  };
-
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase();
   };
@@ -73,17 +80,11 @@ export default function StudentsPage() {
           <p className="text-muted-foreground">View and manage your students</p>
         </div>
         {user && (
-          <Card className="w-fit">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Class Code</p>
-                <p className="font-mono font-bold">{user.uid}</p>
-              </div>
-              <Button variant="outline" size="icon" onClick={copyClassCode}>
-                <Copy className="h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
+           <Button variant="outline" asChild>
+             <Link href="/teacher" className="flex items-center gap-2">
+                Manage Classes <ExternalLink className="h-4 w-4" />
+             </Link>
+           </Button>
         )}
       </div>
 
@@ -103,6 +104,7 @@ export default function StudentsPage() {
                 <TableRow>
                   <TableHead>Student</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Class</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -119,6 +121,13 @@ export default function StudentsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{student.email}</TableCell>
+                    <TableCell>
+                        {student.courseName ? (
+                            <Badge variant="outline">{student.courseName}</Badge>
+                        ) : (
+                            <span className="text-muted-foreground text-xs italic">Legacy / Direct</span>
+                        )}
+                    </TableCell>
                     <TableCell>
                       <Badge>Active</Badge>
                     </TableCell>

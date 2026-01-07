@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, Clock, Bot, School, LogOut } from "lucide-react";
+import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck } from "lucide-react";
 import Link from "next/link";
 
 interface Stats {
@@ -25,7 +25,10 @@ export default function StudentDashboard() {
     pendingAssignments: 0,
   });
   const [teacherId, setTeacherId] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(null);
   const [teacherName, setTeacherName] = useState<string | null>(null);
+  const [courseName, setCourseName] = useState<string | null>(null);
+  const [courseCode, setCourseCode] = useState<string | null>(null);
   const [classCode, setClassCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -38,6 +41,17 @@ export default function StudentDashboard() {
         if (studentDoc.exists()) {
           const data = studentDoc.data();
           setTeacherId(data.teacherId || null);
+          setCourseId(data.courseId || null);
+          
+          if (data.courseId) {
+             try {
+                const courseDoc = await getDoc(doc(db, "courses", data.courseId));
+                if (courseDoc.exists()) {
+                  setCourseName(courseDoc.data().name);
+                  setCourseCode(courseDoc.data().code);
+                }
+             } catch (e) { console.error("Error fetching course", e); }
+          }
         }
       } catch (error) {
         console.error("Error syncing profile:", error);
@@ -62,12 +76,16 @@ export default function StudentDashboard() {
         let totalAssignments = 0;
         let currentAssignmentIds = new Set<string>();
 
-        if (teacherId) {
+        // Only fetch assignments if student is enrolled in a course
+        if (courseId) {
           const assignmentsSnap = await getDocs(
-            query(collection(db, "assignments"), where("teacherId", "==", teacherId))
+            query(collection(db, "assignments"), where("courseId", "==", courseId))
           );
           totalAssignments = assignmentsSnap.size;
           assignmentsSnap.docs.forEach(doc => currentAssignmentIds.add(doc.id));
+        } else {
+           // Enforce strict mode: if no course ID, no assignments shown. 
+           // Users on legacy must rejoin a class.
         }
 
         const submissionsSnap = await getDocs(
@@ -91,16 +109,40 @@ export default function StudentDashboard() {
     }
 
     fetchDashboardData();
-  }, [user, teacherId]);
+  }, [user, teacherId, courseId]);
 
   const handleJoinClass = async () => {
     if (!user || !classCode) return;
     setJoining(true);
     try {
+      // Check if code matches a course
+      const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", classCode.trim())));
+      
+      let newTeacherId = "";
+      let newCourseId = "";
+      let newCourseName = "";
+      let newCourseCode = "";
+
+      if (!coursesSnap.empty) {
+        const courseDoc = coursesSnap.docs[0];
+        const courseData = courseDoc.data();
+        newTeacherId = courseData.teacherId;
+        newCourseId = courseDoc.id;
+        newCourseName = courseData.name;
+        newCourseCode = courseData.code;
+      } else {
+        throw new Error("Invalid class code.");
+      }
+
       await updateDoc(doc(db, "students", user.uid), {
-        teacherId: classCode.trim()
+        teacherId: newTeacherId,
+        courseId: newCourseId
       });
-      setTeacherId(classCode.trim());
+      
+      setTeacherId(newTeacherId);
+      setCourseId(newCourseId);
+      setCourseName(newCourseName);
+      setCourseCode(newCourseCode);
       
       alert("Joined class successfully!");
     } catch (error: any) {
@@ -116,10 +158,13 @@ export default function StudentDashboard() {
     setLeaving(true);
     try {
       await updateDoc(doc(db, "students", user.uid), {
-        teacherId: null
+        teacherId: null,
+        courseId: null,
       });
       setTeacherId(null);
       setTeacherName(null);
+      setCourseId(null);
+      setCourseName(null);
       setClassCode("");
     } catch (error) {
       console.error("Error leaving class:", error);
@@ -173,66 +218,89 @@ export default function StudentDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {!teacherId ? (
-          <Card className="md:col-span-2 border-destructive/50">
+        {!courseId ? (
+          <Card className="md:col-span-2 border-primary/20 bg-primary/5">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <School className="h-5 w-5" />
-                Join a Class
+              <CardTitle className="flex items-center gap-2">
+                <School className="h-5 w-5 text-primary" />
+                Enroll in a Class
               </CardTitle>
-              <CardDescription>You are not enrolled in a class yet. Enter your teacher's code below.</CardDescription>
+              <CardDescription>
+                {teacherId ? 
+                  "You have a legacy connection from a previous version. Please enter your new Class Code to access assignments and resources." : 
+                  "Welcome! To get started, please enter the Class Code provided by your teacher."}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex gap-4">
-              <Input 
-                placeholder="Enter Class Code" 
-                value={classCode}
-                onChange={(e) => setClassCode(e.target.value)}
-                className="max-w-xs"
-              />
-              <Button onClick={handleJoinClass} disabled={joining}>
-                {joining ? "Joining..." : "Join Class"}
-              </Button>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+                <Input 
+                  placeholder="Enter Class Code (e.g. PHYS101)" 
+                  value={classCode}
+                  onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+                  className="font-mono"
+                />
+                <Button onClick={handleJoinClass} disabled={joining || !classCode} className="shrink-0 cursor-pointer hover:bg-primary/90 transition-colors">
+                  {joining ? "Enrolling..." : "Enroll Now"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
           <Card className="md:col-span-2 border-primary/20 bg-primary/5">
             <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <School className="h-5 w-5" />
-                  My Class
-                </CardTitle>
-                <CardDescription>You are enrolled in {teacherName ? `${teacherName}'s` : "a"} class.</CardDescription>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <School className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-primary">
+                    {courseName || "My Class"}
+                  </CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">{courseCode}</span>
+                    <span>•</span>
+                    <span>{teacherName || "Teacher"}</span>
+                  </CardDescription>
+                </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleLeaveClass} disabled={leaving} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+              <Button variant="ghost" size="sm" onClick={handleLeaveClass} disabled={leaving} className="text-destructive cursor-pointer hover:text-destructive hover:bg-destructive/10">
                 <LogOut className="h-4 w-4 mr-2" />
                 {leaving ? "Leaving..." : "Leave Class"}
               </Button>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium">Class Code:</span>
-                <code className="bg-muted px-2 py-1 rounded">{teacherId}</code>
-              </div>
-            </CardContent>
           </Card>
         )}
 
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Get started with your learning</CardDescription>
+            <CardDescription>Everything you need for {courseName || "your class"}</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-2 flex-wrap">
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              <Link href="/student/assignments">View Assignments</Link>
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              <Link href="/student/tutor">Ask AI Tutor</Link>
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-              <Link href="/student/submissions">My Submissions</Link>
-            </Badge>
+            <Link href="/student/assignments">
+              <Badge variant="outline" className="cursor-pointer hover:bg-accent py-2 px-3">
+                <FileText className="h-3.5 w-3.5 mr-2" />
+                Assignments
+              </Badge>
+            </Link>
+            <Link href="/student/resources">
+              <Badge variant="outline" className="cursor-pointer hover:bg-accent py-2 px-3">
+                <Library className="h-3.5 w-3.5 mr-2" />
+                Course Resources
+              </Badge>
+            </Link>
+            <Link href="/student/tutor">
+              <Badge variant="outline" className="cursor-pointer hover:bg-accent py-2 px-3">
+                <Bot className="h-3.5 w-3.5 mr-2" />
+                Ask AI Tutor
+              </Badge>
+            </Link>
+            <Link href="/student/submissions">
+              <Badge variant="outline" className="cursor-pointer hover:bg-accent py-2 px-3">
+                <FileCheck className="h-3.5 w-3.5 mr-2" />
+                My Grades
+              </Badge>
+            </Link>
           </CardContent>
         </Card>
 

@@ -49,5 +49,13 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if isTeacher();
     }
+    
+    // Courses collection
+    match /courses/{courseId} {
+      allow read: if request.auth != null;
+      allow create: if isTeacher();
+      allow update: if isTeacher();
+      allow delete: if isTeacher();
+    }
   }
 }

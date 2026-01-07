@@ -30,9 +30,11 @@ export default function SubmissionsPage() {
     async function fetchSubmissions() {
       if (!user) return;
       try {
-        // Get Student's Teacher ID
+        // Get Student's Teacher ID and Course ID
         const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const studentTeacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+        const studentData = studentDoc.exists() ? studentDoc.data() : null;
+        const studentTeacherId = studentData?.teacherId;
+        const studentCourseId = studentData?.courseId;
 
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
@@ -48,9 +50,13 @@ export default function SubmissionsPage() {
               }
 
               const assignData = assignmentDoc.data();
-              // Filter by teacher
-              if (studentTeacherId && assignData.teacherId && studentTeacherId !== assignData.teacherId) {
-                return null;
+              // Filter logic
+              if (studentCourseId) {
+                  // Strict course filtering
+                  if (assignData.courseId !== studentCourseId) return null;
+              } else if (studentTeacherId && assignData.teacherId && studentTeacherId !== assignData.teacherId) {
+                 // Fallback teacher filtering
+                 return null;
               }
 
               return {

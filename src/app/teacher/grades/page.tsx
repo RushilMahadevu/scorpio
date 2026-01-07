@@ -21,17 +21,43 @@ interface Student {
 
 export default function TeacherGradesPage() {
   const { user } = useAuth();
+  const [courses, setCourses] = useState<{id: string, name: string, code: string}[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [assignments, setAssignments] = useState<{id: string, title: string}[]>([]);
+  const [assignments, setAssignments] = useState<{id: string, title: string, courseId?: string}[]>([]);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("all");
+
+  useEffect(() => {
+    async function fetchCourses() {
+        if (!user) return;
+        try {
+            const snap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid)));
+            const coursesData = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+            setCourses(coursesData);
+            
+            // If there's at least one course, select the first one by default 
+            // instead of "All Classes" to satisfy "per class" requirement better
+            if (coursesData.length > 0) {
+                setSelectedCourseId(coursesData[0].id);
+            }
+        } catch (e) {
+            console.error("Error fetching courses", e);
+        }
+    }
+    fetchCourses();
+  }, [user]);
 
   useEffect(() => {
     async function fetchAssignments() {
         if (!user) return;
         try {
             const snap = await getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid)));
-            setAssignments(snap.docs.map(d => ({ id: d.id, title: d.data().title })));
+            setAssignments(snap.docs.map(d => ({ 
+                id: d.id, 
+                title: d.data().title,
+                courseId: d.data().courseId
+            })));
         } catch (e) {
             console.error("Error fetching assignments", e);
         }
@@ -44,54 +70,58 @@ export default function TeacherGradesPage() {
       if (!user) return;
       setLoading(true);
       try {
+        // 1. Get relevant assignments based on filters
+        let filteredAssignmentIds = assignments.map(a => a.id);
+        if (selectedCourseId !== "all") {
+            filteredAssignmentIds = assignments
+                .filter(a => a.courseId === selectedCourseId)
+                .map(a => a.id);
+        }
+        
+        if (selectedAssignmentId !== "all") {
+            filteredAssignmentIds = [selectedAssignmentId];
+        }
+
+        if (filteredAssignmentIds.length === 0 && assignments.length > 0) {
+            // No assignments for this course or filter combination
+            setStudents([]);
+            setLoading(false);
+            return;
+        }
+
+        // 2. Query relevant submissions
         let q;
-        // Logic:
-        // If "all" assignments selected:
-        // We can't easily query submissions by teacherId because submissions don't have teacherId.
-        // Option 1: Fetch all assignments for this teacher, get their IDs, and query submissions IN those IDs.
-        // Option 2: Fetch all students for this teacher, and filter submissions by those student IDs.
-        
-        // Let's go with Option 1 since we already fetched assignments.
-        // Although Firestore "in" query limits to 10. 
-        // Better: Fetch all submissions, and client-side filter for assignments that belong to this teacher.
-        // OR: Add teacherId to submissions (best long term, but requires migration).
-        
-        // Quick Fix for now: Fetch all submissions (or limit if possible) and filter in memory by checking if assignmentId is in the teacher's assignments list.
-        // Note: 'assignments' state is populated with ONLY this teacher's assignments.
-        
-        if (selectedAssignmentId === "all") {
-             // Querying ALL submissions is bad if db is huge. 
-             // Ideally we query Submissions where assignmentId IN [list of teacher's assignment IDs].
-             // But if list > 10, we can't.
-             // Fallback: Query all, but filter. Or query by students.
-             // Given the context, let's query all submissions and filter by the assignments we know belong to this teacher.
-             q = collection(db, "submissions");
-        } else {
-            // Check if selectedAssignmentId belongs to this teacher
-            const assignment = assignments.find(a => a.id === selectedAssignmentId);
-            if (!assignment) {
-                // Not authorized or invalid
-                setLoading(false);
-                return;
-            }
+        if (selectedAssignmentId !== "all") {
             q = query(collection(db, "submissions"), where("assignmentId", "==", selectedAssignmentId));
+        } else {
+            // If we have a selected course, we could also filter by students in that course.
+            // But let's stick to assignment-based filtering for now as it's more direct for "grades".
+            q = collection(db, "submissions");
         }
         
         const submissionsSnap = await getDocs(q);
         const studentMap = new Map<string, { name: string; email: string; scores: number[]; count: number }>();
-        
-        // Set of valid assignment IDs for this teacher
-        const validAssignmentIds = new Set(assignments.map(a => a.id));
+        const validAssignmentIds = new Set(filteredAssignmentIds);
+
+        // Fetch students in the course to cross-reference (if course selected)
+        let courseStudentIds = new Set<string>();
+        if (selectedCourseId !== "all") {
+            const courseStudentsSnap = await getDocs(query(collection(db, "students"), where("courseId", "==", selectedCourseId)));
+            courseStudentsSnap.docs.forEach(d => courseStudentIds.add(d.id));
+        }
 
         submissionsSnap.forEach((doc) => {
           const data = doc.data();
           if (data.status === 'draft') return; 
           
-          // Verify assignment belongs to teacher
-          if (!validAssignmentIds.has(data.assignmentId)) return;
+          // Verify assignment belongs to filter
+          if (validAssignmentIds.size > 0 && !validAssignmentIds.has(data.assignmentId)) return;
 
           const studentId = data.studentId;
           
+          // If course is selected, only show students in that course
+          if (selectedCourseId !== "all" && !courseStudentIds.has(studentId)) return;
+
           if (!studentMap.has(studentId)) {
             studentMap.set(studentId, { 
               name: data.studentName || "Unknown Student", 
@@ -108,7 +138,7 @@ export default function TeacherGradesPage() {
           }
         });
 
-        // Fetch names from students collection for any "Unknown Student" entries
+        // 3. Populate names from student docs if missing
         const unknownStudents = Array.from(studentMap.entries())
           .filter(([_, data]) => data.name === "Unknown Student");
         
@@ -153,7 +183,7 @@ export default function TeacherGradesPage() {
     }
 
     fetchStudentsAndGrades();
-  }, [selectedAssignmentId, user, assignments]);
+  }, [selectedAssignmentId, selectedCourseId, user, assignments]);
 
   const deleteStudent = async (studentId: string) => {
     if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions.")) return;
@@ -179,23 +209,44 @@ export default function TeacherGradesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 className="text-3xl font-bold">Gradebook</h1>
             <p className="text-muted-foreground">View student performance and submissions.</p>
         </div>
-        <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">Filter by Assignment:</label>
-            <select 
-                className="border rounded p-2 bg-background"
-                value={selectedAssignmentId}
-                onChange={(e) => setSelectedAssignmentId(e.target.value)}
-            >
-                <option value="all">All Assignments</option>
-                {assignments.map(a => (
-                    <option key={a.id} value={a.id}>{a.title}</option>
-                ))}
-            </select>
+        <div className="flex flex-wrap items-center gap-4 bg-muted/30 p-4 rounded-lg border">
+            <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Class</label>
+                <select 
+                    className="border rounded p-2 bg-background text-sm min-w-[150px]"
+                    value={selectedCourseId}
+                    onChange={(e) => {
+                        setSelectedCourseId(e.target.value);
+                        setSelectedAssignmentId("all"); // Reset assignment filter when class changes
+                    }}
+                >
+                    <option value="all">All Classes</option>
+                    {courses.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Assignment</label>
+                <select 
+                    className="border rounded p-2 bg-background text-sm min-w-[150px]"
+                    value={selectedAssignmentId}
+                    onChange={(e) => setSelectedAssignmentId(e.target.value)}
+                >
+                    <option value="all">All Assignments</option>
+                    {assignments
+                        .filter(a => selectedCourseId === "all" || a.courseId === selectedCourseId)
+                        .map(a => (
+                            <option key={a.id} value={a.id}>{a.title}</option>
+                        ))}
+                </select>
+            </div>
         </div>
       </div>
 

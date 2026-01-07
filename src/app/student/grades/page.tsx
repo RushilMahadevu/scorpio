@@ -41,9 +41,11 @@ export default function StudentGradesPage() {
       if (!user) return;
 
       try {
-        // Get Student's Teacher ID
+        // Get Student's Teacher ID and Course ID
         const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const studentTeacherId = studentDoc.exists() ? studentDoc.data().teacherId : null;
+        const studentData = studentDoc.exists() ? studentDoc.data() : null;
+        const studentTeacherId = studentData?.teacherId;
+        const studentCourseId = studentData?.courseId;
 
         const q = query(collection(db, "submissions"), where("studentId", "==", user.uid));
         const snapshot = await getDocs(q);
@@ -55,22 +57,28 @@ export default function StudentGradesPage() {
           let assignmentTitle = "Unknown Assignment";
           let assignmentExists = false;
           let assignmentTeacherId = null;
+          let assignmentCourseId = null;
 
           if (data.assignmentId) {
             const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
             if (assignmentDoc.exists()) {
               const assignData = assignmentDoc.data();
               assignmentTitle = assignData.title;
-              assignmentTeacherId = assignData.teacherId; // May be undefined for old data
+              assignmentTeacherId = assignData.teacherId;
+              assignmentCourseId = assignData.courseId;
               assignmentExists = true;
             }
           }
 
           if (!assignmentExists) return null;
           
-          // Strict Filtering: Only show grades for assignments from current teacher
-          // OR if the assignment has no teacherId (legacy)
-          if (studentTeacherId && assignmentTeacherId && studentTeacherId !== assignmentTeacherId) {
+          // Strict Filtering:
+          // 1. If student is in a course, only show assignments from that course
+          if (studentCourseId) {
+            if (assignmentCourseId !== studentCourseId) return null;
+          } 
+          // 2. Legacy fallback: if student has teacher but no course, filter by teacher
+          else if (studentTeacherId && assignmentTeacherId && studentTeacherId !== assignmentTeacherId) {
              return null;
           }
 

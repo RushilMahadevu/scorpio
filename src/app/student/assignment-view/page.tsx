@@ -12,7 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save } from "lucide-react";
 import Link from "next/link";
 import { MathInputField } from "@/components/math-input";
 import ReactMarkdown from "react-markdown";
@@ -86,14 +90,23 @@ function AssignmentDetailContent() {
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          // Check if student belongs to this teacher
+          // Check if student belongs to this teacher or course (New Strict Logic)
           const studentDoc = await getDoc(doc(db, "students", user.uid));
           const studentData = studentDoc.exists() ? studentDoc.data() : null;
           
-          if (data.teacherId && (!studentData || studentData.teacherId !== data.teacherId)) {
-            // Not authorized
-            setLoading(false);
-            return;
+          if (data.courseId) {
+            // Strict Course Check
+            if (studentData?.courseId !== data.courseId) {
+               console.log("Unauthorized: Student not in this course");
+               setLoading(false);
+               return;
+            }
+          } else if (data.teacherId) {
+            // Legacy Teacher Check
+            if (!studentData || studentData.teacherId !== data.teacherId) {
+               setLoading(false);
+               return;
+            }
           }
 
           const assignmentData = {
