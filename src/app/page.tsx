@@ -5,12 +5,6 @@ import { motion } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem
-} from "@/components/ui/dropdown-menu";
-import {
   Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, Cloud, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText
 } from "lucide-react";
 import Link from "next/link";
@@ -26,8 +20,6 @@ const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [docsOpen, setDocsOpen] = useState(false);
-  const [mobileDocsOpen, setMobileDocsOpen] = useState(false);
 
   const features = [
     { icon: Brain, title: "AI-Powered LLM Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture using advanced LLMs", tag: "Gemini 2.5 Flash" },
@@ -72,75 +64,29 @@ export default function Home() {
       { id: "challenge", label: "Challenge" },
       { id: "features", label: "Features" },
       { id: "workflow", label: "Workflow" },
-      { id: "cta", label: "Get Started" },
-      { id: "docs", label: "Docs" }
+      { id: "cta", label: "Get Started" }
     ].map(({ id, label }) => (
-      <DropdownMenu key={id} onOpenChange={(open) => id === "docs" && setDocsOpen(open)}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="group font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer flex items-center gap-1"
-            type="button"
-            onClick={id !== "docs" ? () => {
-              const el = document.getElementById(id);
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-              setMenuOpen(false); // close menu if open
-            } : undefined}
-          >
-            {label}
-            {id === "docs" && (
-              <motion.div
-                animate={{ rotate: docsOpen ? 180 : 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="flex items-center justify-center"
-              >
-                <ChevronDown className="size-3" aria-hidden="true" />
-              </motion.div>
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        {id === "docs" && (
-          <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                <Github className="mr-2 h-4 w-4" />
-                GitHub
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/about" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                <Info className="mr-2 h-4 w-4" />
-                About
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/research" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Research
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/contact" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                <Mail className="mr-2 h-4 w-4" />
-                Contact
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/privacy" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                <Shield className="mr-2 h-4 w-4" />
-                Privacy
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/terms" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                <FileText className="mr-2 h-4 w-4" />
-                Terms
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        )}
-      </DropdownMenu>
+      <Button
+        key={id}
+        variant="ghost"
+        className="group font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer flex items-center gap-1"
+        type="button"
+        onClick={() => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }}
+      >
+        {label}
+      </Button>
     ))}
+    <Link href="/about">
+      <Button
+        variant="ghost"
+        className="group font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer flex items-center gap-1"
+      >
+        Docs
+      </Button>
+    </Link>
   </nav>
 
   {/* Actions */}
@@ -186,81 +132,29 @@ export default function Home() {
             { id: "challenge", label: "Challenge" },
             { id: "features", label: "Features" },
             { id: "workflow", label: "Workflow" },
-            { id: "cta", label: "Get Started" },
-            { id: "docs", label: "Docs" }
-          ].map(({ id, label }) =>
-            id !== "docs" ? (
-              <Button
-                key={id}
-                variant="ghost"
-                className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
-                onClick={() => {
-                  const el = document.getElementById(id);
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                  setMenuOpen(false);
-                }}
-              >
-                {label}
-              </Button>
-            ) : (
-              <DropdownMenu key={id} onOpenChange={(open) => id === "docs" && setMobileDocsOpen(open)}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="group justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left flex items-center gap-1"
-                  >
-                    {label}
-                    <motion.div
-                      animate={{ rotate: mobileDocsOpen ? 180 : 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="flex items-center justify-center"
-                    >
-                      <ChevronDown className="size-4" aria-hidden="true" />
-                    </motion.div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  {/* Docs links */}
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                      <Github className="mr-2 h-4 w-4" />
-                      GitHub
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/about" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                      <Info className="mr-2 h-4 w-4" />
-                      About
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/research" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Research
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/contact" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                      <Mail className="mr-2 h-4 w-4" />
-                      Contact
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/privacy" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                      <Shield className="mr-2 h-4 w-4" />
-                      Privacy
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/terms" onClick={() => setMenuOpen(false)} className="flex items-center cursor-pointer">
-                      <FileText className="mr-2 h-4 w-4" />
-                      Terms
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )
-          )}
+            { id: "cta", label: "Get Started" }
+          ].map(({ id, label }) => (
+            <Button
+              key={id}
+              variant="ghost"
+              className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
+              onClick={() => {
+                const el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+                setMenuOpen(false);
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+          <Link href="/about" onClick={() => setMenuOpen(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
+            >
+              Docs
+            </Button>
+          </Link>
         </nav>
         <div className="px-6 pb-6">
           <div className="flex flex-col gap-2">
@@ -348,7 +242,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
             >
-              A modern, space-inspired learning platform where students and teachers collaborate, assign, and grade with the power of AI.
+                  An AI-powered physics LMS with research-grade tutoring and immersive learning tools designed to foster breakthrough understanding.
             </motion.p>
 
             {/* Stats Bar */}

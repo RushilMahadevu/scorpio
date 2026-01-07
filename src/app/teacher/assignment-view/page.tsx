@@ -103,7 +103,15 @@ function AssignmentDetailsContent() {
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 15 } }
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      transition: { 
+        type: "spring" as const, // <-- fix: type assertion
+        stiffness: 100, 
+        damping: 15 
+      } 
+    }
   };
 
   if (loading) {
