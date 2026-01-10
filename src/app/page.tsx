@@ -209,12 +209,13 @@ export default function Home() {
               <span className="text-xs font-semibold tracking-wide text-primary/90 uppercase">Research-Grade AI Tutoring</span>
             </motion.div>
 
-            <div
-              className="flex justify-center mb-8 relative cursor-pointer group"
-              onClick={() => setLogoRotation(prev => prev + 360)}
-            >
-              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 opacity-60 pointer-events-none" />
+            <div className="flex justify-center mb-8 relative">
+              <div className="absolute inset-x-0 inset-y-0 flex items-center justify-center pointer-events-none z-0">
+                <div className="w-20 h-20 bg-primary/20 blur-3xl rounded-full scale-150 opacity-60" />
+              </div>
               <motion.div
+                className="relative cursor-pointer z-10"
+                onClick={() => setLogoRotation(prev => prev + 360)}
                 animate={{ 
                   rotate: logoRotation,
                 }}
@@ -225,7 +226,7 @@ export default function Home() {
                   ease: [0.16, 1, 0.3, 1] // Premium inertial ease-out
                 }}
               >
-                <Logo size={80} className="text-foreground relative z-10 drop-shadow-[0_0_25px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] transition-all duration-300" />
+                <Logo size={80} className="text-foreground drop-shadow-[0_0_25px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] transition-all duration-300" />
               </motion.div>
             </div>
 
