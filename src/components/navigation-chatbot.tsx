@@ -158,7 +158,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
       {/* Toggle Button */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-md z-50 bg-card/40 border border-border/50 backdrop-blur-sm hover:bg-card/60 hover:border-border transition-all"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-md z-50 bg-card/40 border border-border/50 backdrop-blur-sm hover:bg-card/60 hover:border-border transition-all cursor-pointer"
         size="icon"
         aria-label="Navigation Assistant"
       >
@@ -187,7 +187,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 <button
                   key={index}
                   onClick={() => handleNavigation(action.path, action.label)}
-                  className="flex flex-col items-center p-2 rounded-md hover:bg-accent transition-all group"
+                  className="flex flex-col items-center p-2 rounded-md hover:bg-accent transition-all group cursor-pointer"
                   title={action.label}
                 >
                   <action.icon className="h-5 w-5 mb-1" />
@@ -275,7 +275,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 onClick={handleSendMessage}
                 size="icon"
                 disabled={!input.trim() || isLoading || !!rateLimitError}
-                className="h-10 w-10"
+                className="h-10 w-10 cursor-pointer hover:bg-primary/80 transition-all"
               >
                 <Send className="h-4 w-4" />
               </Button>

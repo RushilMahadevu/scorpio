@@ -161,9 +161,9 @@ export default function StudentGradesPage() {
                     <TableCell className="text-right">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="cursor-pointer hover:text-primary">
                             <Eye className="h-4 w-4 mr-2" />
-                            View Details
+                            View
                           </Button>
                         </DialogTrigger>
                         <DialogContent>

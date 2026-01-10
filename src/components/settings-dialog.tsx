@@ -120,8 +120,8 @@ export function SettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
+        <Button variant="ghost" size="icon" className="cursor-pointer">
+          <SettingsIcon className="h-[1.2rem] w-[1.2rem] cursor-pointer" />
           <span className="sr-only">Settings</span>
         </Button>
       </DialogTrigger>

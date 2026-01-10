@@ -102,7 +102,7 @@ function SidebarContent({
             {!isCollapsed && <span className="text-xs font-medium text-muted-foreground">Main Page</span>}
           </Link>
         </div>
-        <div className="border-t bg-background/95 space-y-2 pt-4">
+        <div className="border-t bg-transparent space-y-2 pt-4">
         <div
           className={cn(
             "flex items-center justify-between px-2",
@@ -114,11 +114,11 @@ function SidebarContent({
               Sidebar
             </span>
           )}
-          <Button variant="ghost" size="icon" onClick={onToggle}>
+          <Button variant="ghost" size="icon" onClick={onToggle} className="cursor-pointer">
             {isCollapsed ? (
-              <PanelRight className="h-4 w-4" />
+              <PanelRight className="h-4 w-4 cursor-pointer" />
             ) : (
-              <PanelLeft className="h-4 w-4" />
+              <PanelLeft className="h-4 w-4 cursor-pointer" />
             )}
           </Button>
         </div>
