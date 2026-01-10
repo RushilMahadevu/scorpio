@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, ChevronRight, Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -217,35 +218,43 @@ export default function TeacherGradesPage() {
         <div className="flex flex-wrap items-center gap-4 bg-muted/30 p-4 rounded-lg border">
             <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Class</label>
-                <select 
-                    className="border rounded p-2 bg-background text-sm min-w-[150px]"
+                <Select
                     value={selectedCourseId}
-                    onChange={(e) => {
-                        setSelectedCourseId(e.target.value);
-                        setSelectedAssignmentId("all"); // Reset assignment filter when class changes
+                    onValueChange={(value) => {
+                        setSelectedCourseId(value);
+                        setSelectedAssignmentId("all");
                     }}
                 >
-                    <option value="all">All Classes</option>
-                    {courses.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
+                    <SelectTrigger className="w-[180px] cursor-pointer bg-background">
+                        <SelectValue placeholder="All Classes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
+                        {courses.map(c => (
+                            <SelectItem key={c.id} value={c.id} className="cursor-pointer">{c.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Assignment</label>
-                <select 
-                    className="border rounded p-2 bg-background text-sm min-w-[150px]"
+                <Select
                     value={selectedAssignmentId}
-                    onChange={(e) => setSelectedAssignmentId(e.target.value)}
+                    onValueChange={setSelectedAssignmentId}
                 >
-                    <option value="all">All Assignments</option>
-                    {assignments
-                        .filter(a => selectedCourseId === "all" || a.courseId === selectedCourseId)
-                        .map(a => (
-                            <option key={a.id} value={a.id}>{a.title}</option>
-                        ))}
-                </select>
+                    <SelectTrigger className="w-[200px] cursor-pointer bg-background">
+                        <SelectValue placeholder="All Assignments" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" className="cursor-pointer">All Assignments</SelectItem>
+                        {assignments
+                            .filter(a => selectedCourseId === "all" || a.courseId === selectedCourseId)
+                            .map(a => (
+                                <SelectItem key={a.id} value={a.id} className="cursor-pointer">{a.title}</SelectItem>
+                            ))}
+                    </SelectContent>
+                </Select>
             </div>
         </div>
       </div>
@@ -287,7 +296,7 @@ export default function TeacherGradesPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Link href={`/teacher/grades/student?studentId=${student.id}`}>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="cursor-pointer">
                             View Details
                             <ChevronRight className="h-4 w-4 ml-2" />
                           </Button>
@@ -295,6 +304,7 @@ export default function TeacherGradesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="cursor-pointer"
                           onClick={() => deleteStudent(student.id)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />

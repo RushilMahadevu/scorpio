@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Trash2, Eye } from "lucide-react";
-import { ChevronDown } from "lucide-react";
 
 interface Assignment {
   id: string;
@@ -31,8 +31,6 @@ export default function AssignmentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
   const [filter, setFilter] = useState<string>("all");
   const [sort, setSort] = useState<string>("dueDateAsc");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [sortOpen, setSortOpen] = useState(false);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -125,62 +123,49 @@ export default function AssignmentsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div className="flex gap-2 flex-wrap items-center">
             {/* Class Filter */}
-            <div className="relative inline-block">
-                <select 
-                    className="h-10 w-[140px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={selectedCourseId}
-                    onChange={(e) => setSelectedCourseId(e.target.value)}
-                >
-                    <option value="all">All Classes</option>
-                    {courses.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
-            </div>
+            <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+              <SelectTrigger className="w-[180px] cursor-pointer">
+                <SelectValue placeholder="All Classes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
+                {courses.map((c) => (
+                  <SelectItem key={c.id} value={c.id} className="cursor-pointer">
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
           {/* Filtering Dropdown */}
-          <div className="relative inline-block">
-            <Button variant="outline" className="flex items-center gap-2 min-w-[140px]" onClick={() => setFilterOpen((open) => !open)}>
-              Status: {(() => {
-                if (filter === "all") return "All";
-                if (filter === "active") return "Active";
-                if (filter === "pastDue") return "Past Due";
-                return "All";
-              })()} <ChevronDown className="w-4 h-4 ml-1" />
-            </Button>
-            {filterOpen && (
-              <div className="absolute bg-popover rounded shadow mt-2 min-w-[140px] z-10">
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setFilter('all'); setFilterOpen(false); }}>All</button>
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setFilter('active'); setFilterOpen(false); }}>Active</button>
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setFilter('pastDue'); setFilterOpen(false); }}>Past Due</button>
-              </div>
-            )}
-          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[150px] cursor-pointer">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="cursor-pointer">All Status</SelectItem>
+              <SelectItem value="active" className="cursor-pointer">Active</SelectItem>
+              <SelectItem value="pastDue" className="cursor-pointer">Past Due</SelectItem>
+            </SelectContent>
+          </Select>
+
           {/* Sorting Dropdown */}
-          <div className="relative inline-block">
-            <Button variant="outline" className="flex items-center gap-2 min-w-[180px]" onClick={() => setSortOpen((open) => !open)}>
-              Sort by: {(() => {
-                if (sort === "dueDateAsc") return "Due Date (Earliest)";
-                if (sort === "dueDateDesc") return "Due Date (Latest)";
-                if (sort === "titleAsc") return "Title (A-Z)";
-                if (sort === "titleDesc") return "Title (Z-A)";
-                return "Due Date (Earliest)";
-              })()} <ChevronDown className="w-4 h-4 ml-1" />
-            </Button>
-            {sortOpen && (
-              <div className="absolute bg-popover rounded shadow mt-2 min-w-[180px] z-10">
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setSort('dueDateAsc'); setSortOpen(false); }}>Due Date (Earliest)</button>
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setSort('dueDateDesc'); setSortOpen(false); }}>Due Date (Latest)</button>
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setSort('titleAsc'); setSortOpen(false); }}>Title (A-Z)</button>
-                <button className="block w-full px-4 py-2 text-left hover:bg-muted" onClick={() => { setSort('titleDesc'); setSortOpen(false); }}>Title (Z-A)</button>
-              </div>
-            )}
-          </div>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-[200px] cursor-pointer">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="dueDateAsc" className="cursor-pointer">Due Date (Earliest)</SelectItem>
+              <SelectItem value="dueDateDesc" className="cursor-pointer">Due Date (Latest)</SelectItem>
+              <SelectItem value="titleAsc" className="cursor-pointer">Title (A-Z)</SelectItem>
+              <SelectItem value="titleDesc" className="cursor-pointer">Title (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         {/* Create Assignment Button on right */}
         <div className="flex justify-end">
           <Link href="/teacher/create">
-            <Button>
+            <Button className="cursor-pointer">
               <PlusCircle className="h-4 w-4 mr-2" />
               Create Assignment
             </Button>
@@ -241,13 +226,14 @@ export default function AssignmentsPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Link href={`/teacher/assignment-view?id=${assignment.id}`}>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="cursor-pointer">
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="cursor-pointer"
                           onClick={() => handleDelete(assignment.id)}
                         >
                           <Trash2 className="h-4 w-4" />

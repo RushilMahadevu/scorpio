@@ -28,6 +28,7 @@ export default function ResourcesPage() {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
+  const [filterCourseId, setFilterCourseId] = useState<string>("all");
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
@@ -136,19 +137,19 @@ export default function ResourcesPage() {
               <div className="grid w-full gap-1.5">
                 <Label>Class (Optional)</Label>
                 <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="cursor-pointer">
                     <SelectValue placeholder="All Classes" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
+                    <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
                     {courses.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      <SelectItem key={c.id} value={c.id} className="cursor-pointer">{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <Button type="submit" disabled={adding} className="w-full md:w-auto self-end">
+            <Button type="submit" disabled={adding} className="w-full md:w-auto self-end cursor-pointer">
               {adding ? (
                  <>Adding...</>
               ) : (
@@ -161,9 +162,24 @@ export default function ResourcesPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Resource Library</CardTitle>
-          <CardDescription>{resources.length} resources available</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle>Resource Library</CardTitle>
+            <CardDescription>{resources.length} resources available</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={filterCourseId} onValueChange={setFilterCourseId}>
+              <SelectTrigger className="w-[180px] cursor-pointer">
+                <SelectValue placeholder="All Classes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
+                {courses.map(c => (
+                  <SelectItem key={c.id} value={c.id} className="cursor-pointer">{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -181,7 +197,9 @@ export default function ResourcesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {resources.map((resource) => (
+                {resources
+                  .filter(r => filterCourseId === "all" || r.courseId === filterCourseId)
+                  .map((resource) => (
                   <TableRow key={resource.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -208,6 +226,7 @@ export default function ResourcesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="cursor-pointer"
                           onClick={() => handleDelete(resource.id)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />

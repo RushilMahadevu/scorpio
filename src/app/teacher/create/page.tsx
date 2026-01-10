@@ -28,7 +28,7 @@ function CollapsibleSection({ title, children, defaultOpen = false }: { title: s
     <div className="border rounded mb-4">
       <button
         type="button"
-        className="w-full flex items-center justify-between px-4 py-2 bg-muted hover:bg-muted/70 font-medium text-left"
+        className="w-full flex items-center justify-between px-4 py-2 bg-muted hover:bg-muted/70 font-medium text-left cursor-pointer"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
@@ -265,7 +265,7 @@ export default function CreateAssignmentPage() {
             {/* Generate with AI Dialog */}
             <Dialog open={aiOpen} onOpenChange={setAiOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary">
+                <Button variant="secondary" className="cursor-pointer">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Generate with AI
                 </Button>
@@ -351,7 +351,7 @@ export default function CreateAssignmentPage() {
             {/* Import from Text Dialog */}
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary">
+                <Button variant="secondary" className="cursor-pointer">
                   <FileText className="h-4 w-4 mr-2" />
                   Import from Text
                 </Button>
@@ -408,36 +408,39 @@ export default function CreateAssignmentPage() {
             <CardDescription>Basic information and class settings</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="course">Assign to Class <span className="text-destructive">*</span></Label>
-              <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                <SelectTrigger id="course">
-                  <SelectValue placeholder="Select a class..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses.length === 0 ? (
-                    <SelectItem value="none" disabled>No classes found. Create one first.</SelectItem>
-                  ) : (
-                    courses.map(course => (
-                      <SelectItem key={course.id} value={course.id}>
-                        {course.name} <span className="text-muted-foreground text-xs">({course.code})</span>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Newton's Laws Practice"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="course">Assign to Class <span className="text-destructive">*</span></Label>
+                <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+                  <SelectTrigger id="course" className="cursor-pointer">
+                    <SelectValue placeholder="Select a class..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses.length === 0 ? (
+                      <SelectItem value="none" disabled>No classes found. Create one first.</SelectItem>
+                    ) : (
+                      courses.map(course => (
+                        <SelectItem key={course.id} value={course.id} className="cursor-pointer">
+                          {course.name} <span className="text-muted-foreground text-xs">({course.code})</span>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Newton's Laws Practice"
-                required
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -448,29 +451,33 @@ export default function CreateAssignmentPage() {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
-              <Input
-                id="dueDate"
-                type="datetime-local"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
-              <Input
-                id="timeLimit"
-                type="number"
-                min="0"
-                placeholder="Optional (leave empty for no limit)"
-                value={timeLimit}
-                onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
-              />
-              <p className="text-xs text-muted-foreground">
-                Set a time limit in minutes. Leave empty for no time limit.
-              </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date <span className="text-destructive">*</span></Label>
+                <Input
+                  id="dueDate"
+                  type="datetime-local"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  required
+                  className="cursor-pointer"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
+                <Input
+                  id="timeLimit"
+                  type="number"
+                  min="0"
+                  placeholder="Optional (leave empty for no limit)"
+                  value={timeLimit}
+                  onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Set a time limit in minutes. Leave empty for no time limit.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -481,28 +488,28 @@ export default function CreateAssignmentPage() {
             <div className="space-y-2">
               <Label>Grading Type</Label>
               <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex gap-4">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ai" id="grading-ai" />
-                  <Label htmlFor="grading-ai">AI Graded</Label>
+                <div className="flex items-center space-x-2 cursor-pointer">
+                  <RadioGroupItem value="ai" id="grading-ai" className="cursor-pointer" />
+                  <Label htmlFor="grading-ai" className="cursor-pointer font-normal">AI Graded</Label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="manual" id="grading-manual" />
-                  <Label htmlFor="grading-manual">Teacher Graded</Label>
+                <div className="flex items-center space-x-2 cursor-pointer">
+                  <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer" />
+                  <Label htmlFor="grading-manual" className="cursor-pointer font-normal">Teacher Graded</Label>
                 </div>
               </RadioGroup>
               <p className="text-xs text-muted-foreground">
                 AI Graded assignments are graded immediately upon submission. Teacher Graded assignments require manual review.
               </p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 id="requireWork"
                 checked={requireWorkSubmission}
                 onChange={(e) => setRequireWorkSubmission(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded border-gray-300 cursor-pointer"
               />
-              <Label htmlFor="requireWork" className="cursor-pointer">
+              <Label htmlFor="requireWork" className="cursor-pointer font-normal">
                 Require students to submit work (PDF/Images)
               </Label>
             </div>
@@ -537,9 +544,10 @@ export default function CreateAssignmentPage() {
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className="cursor-pointer"
                       onClick={() => removeQuestion(question.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                   <MathInputField
@@ -560,6 +568,7 @@ export default function CreateAssignmentPage() {
                         type="button"
                         variant={question.type === btn.type ? "default" : "outline"}
                         size="sm"
+                        className="cursor-pointer"
                         onClick={() =>
                           updateQuestion(question.id, btn.type === "true-false"
                             ? { type: btn.type as "true-false", options: ["True", "False"] }
@@ -596,6 +605,7 @@ export default function CreateAssignmentPage() {
                         type="button"
                         variant="outline"
                         size="sm"
+                        className="cursor-pointer"
                         onClick={() => addOption(question.id)}
                       >
                         Add Option
@@ -610,7 +620,7 @@ export default function CreateAssignmentPage() {
                 </div>
               </Card>
             ))}
-            <Button type="button" variant="outline" onClick={addQuestion} className="w-full">
+            <Button type="button" variant="outline" onClick={addQuestion} className="w-full cursor-pointer">
               <PlusCircle className="h-4 w-4 mr-2" />
               Add Question
             </Button>
@@ -618,10 +628,10 @@ export default function CreateAssignmentPage() {
         </Card>
 
         <div className="flex gap-4">
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="cursor-pointer">
             {loading ? "Creating..." : "Create Assignment"}
           </Button>
-          <Button type="button" variant="outline" onClick={() => router.back()}>
+          <Button type="button" variant="outline" onClick={() => router.back()} className="cursor-pointer">
             Cancel
           </Button>
         </div>

@@ -136,6 +136,7 @@ export default function StudentsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => deleteStudent(student.id)}
+                        className="hover:text-destructive cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

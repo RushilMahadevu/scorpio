@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExternalLink, FileText, Search, Video, File } from "lucide-react";
 import Link from "next/link";
 
@@ -92,13 +92,16 @@ export default function StudentResourcesPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-          <TabsList>
-            <TabsTrigger value="all" className="cursor-pointer">All</TabsTrigger>
-            <TabsTrigger value="video" className="cursor-pointer">Videos</TabsTrigger>
-            <TabsTrigger value="document" className="cursor-pointer">Documents</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <Select value={activeTab} onValueChange={setActiveTab}>
+          <SelectTrigger className="w-[180px] cursor-pointer">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="cursor-pointer">All Types</SelectItem>
+            <SelectItem value="video" className="cursor-pointer">Videos</SelectItem>
+            <SelectItem value="document" className="cursor-pointer">Documents</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
@@ -136,7 +139,7 @@ export default function StudentResourcesPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild className="w-full" variant="outline">
+                <Button asChild className="w-full cursor-pointer" variant="outline">
                   <Link href={resource.url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Open Resource
