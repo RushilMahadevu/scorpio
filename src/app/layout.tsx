@@ -29,9 +29,11 @@ export const metadata: Metadata = {
     "AI Learning Platform"
   ],
   icons: [
+    { rel: "icon", url: "/favicon.ico" },
     { rel: "icon", url: "/favicon-light.ico", media: "(prefers-color-scheme: light)" },
     { rel: "icon", url: "/favicon-dark.ico", media: "(prefers-color-scheme: dark)" },
-    { rel: "apple-touch-icon", url: "/apple-touch-icon.png" },
+    { rel: "icon", type: "image/svg+xml", url: "/favicon.svg" },
+    { rel: "apple-touch-icon", url: "/favicon-light.ico" }, // Fallback since png is missing
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
