@@ -20,6 +20,7 @@ const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoRotation, setLogoRotation] = useState(0);
 
   const features = [
     { icon: Brain, title: "AI-Powered LLM Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture using advanced LLMs", tag: "Gemini 2.5 Flash" },
@@ -208,15 +209,25 @@ export default function Home() {
               <span className="text-xs font-semibold tracking-wide text-primary/90 uppercase">Research-Grade AI Tutoring</span>
             </motion.div>
 
-            <motion.div
-              className="flex justify-center mb-8 relative"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.35, duration: 0.8, type: "spring" }}
+            <div
+              className="flex justify-center mb-8 relative cursor-pointer group"
+              onClick={() => setLogoRotation(prev => prev + 360)}
             >
-              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 opacity-50" />
-              <Logo size={80} className="text-foreground relative z-10 drop-shadow-[0_0_25px_rgba(var(--primary),0.3)]" />
-            </motion.div>
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 opacity-60 pointer-events-none" />
+              <motion.div
+                animate={{ 
+                  rotate: logoRotation,
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ 
+                  duration: 2.5, 
+                  ease: [0.16, 1, 0.3, 1] // Premium inertial ease-out
+                }}
+              >
+                <Logo size={80} className="text-foreground relative z-10 drop-shadow-[0_0_25px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] transition-all duration-300" />
+              </motion.div>
+            </div>
 
             <motion.h1
               className="text-6xl md:text-8xl font-black mb-6 text-foreground pb-2"

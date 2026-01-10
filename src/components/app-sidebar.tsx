@@ -102,34 +102,34 @@ function SidebarContent({
             {!isCollapsed && <span className="text-xs font-medium text-muted-foreground">Main Page</span>}
           </Link>
         </div>
-        <div className="border-t bg-transparent space-y-2 pt-4">
+        <div className="border-t bg-background/50 backdrop-blur-sm space-y-1 pt-4 pb-2">
         <div
           className={cn(
-            "flex items-center justify-between px-2",
+            "flex items-center justify-between px-4 py-1",
             isCollapsed && "justify-center"
           )}
         >
           {!isCollapsed && (
-            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Sidebar
             </span>
           )}
-          <Button variant="ghost" size="icon" onClick={onToggle} className="cursor-pointer">
+          <Button variant="ghost" size="icon" onClick={onToggle} className="cursor-pointer hover:bg-muted">
             {isCollapsed ? (
-              <PanelRight className="h-4 w-4 cursor-pointer" />
+              <PanelRight className="h-4 w-4" />
             ) : (
-              <PanelLeft className="h-4 w-4 cursor-pointer" />
+              <PanelLeft className="h-4 w-4" />
             )}
           </Button>
         </div>
         <div
           className={cn(
-            "flex items-center justify-between px-2",
+            "flex items-center justify-between px-4 py-1",
             isCollapsed && "justify-center"
           )}
         >
           {!isCollapsed && (
-            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Settings
             </span>
           )}
