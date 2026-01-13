@@ -7,6 +7,13 @@ import { db, uploadFilesToStorage, type WorkFile } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +82,6 @@ function AssignmentDetailContent() {
     const handleBlur = () => {
       setUnfocusCount((count) => count + 1);
       setShowUnfocusPopup(true);
-      setTimeout(() => setShowUnfocusPopup(false), 2000);
     };
     window.addEventListener('blur', handleBlur);
     return () => window.removeEventListener('blur', handleBlur);
@@ -484,26 +490,46 @@ function AssignmentDetailContent() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
-      {showUnfocusPopup && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 20,
-            right: 20,
-            background: 'red',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            zIndex: 1000,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            border: '2px solid #fff',
-          }}
-          className="dark:bg-red-900 dark:text-white dark:border-red-700"
+      <Dialog open={showUnfocusPopup}>
+        <DialogContent 
+          className={`sm:max-w-md border-2 ${unfocusCount <= 1 ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30" : "border-red-500 bg-red-50 dark:bg-red-950/30"}`}
+          showCloseButton={false}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
         >
-          <div style={{fontWeight: 'bold'}}>You left the assignment tab!</div>
-          <div style={{fontSize: '0.95em'}}>Please stay in this tab until you submit.</div>
-        </div>
-      )}
+          <DialogHeader>
+            <DialogTitle className={`flex items-center gap-2 text-lg font-bold ${unfocusCount <= 1 ? "text-yellow-700 dark:text-yellow-500" : "text-red-600"}`}>
+              {unfocusCount <= 1 ? <AlertCircle className="h-6 w-6 text-yellow-600" /> : <AlertTriangle className="h-6 w-6 text-red-500" />}
+              {unfocusCount <= 1 ? "Tab Switch Detected" : "Academic Integrity Violation"}
+            </DialogTitle>
+            <DialogDescription className={`pt-3 text-sm leading-relaxed ${unfocusCount <= 1 ? "text-yellow-800/80 dark:text-yellow-200/80" : "text-red-800/80 dark:text-red-200/80"}`}>
+              {unfocusCount <= 1 ? (
+                <div className="space-y-2 font-medium">
+                  <p>It looks like you navigated away from the assignment tab.</p>
+                  <p>Please remain on this page to ensure your assessment is completed without interruption. This is your first warning.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p>Multiple instances of tab switching have been detected.</p>
+                  <p className="font-bold underline text-red-700 dark:text-red-400">This event has been logged and your instructor has been notified.</p>
+                  <p className="text-xs opacity-80 mt-2 italic">Continued violations may result in disciplinary action or a zero on this assessment.</p>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center mt-6">
+            <Button 
+              size="lg"
+              variant={unfocusCount <= 1 ? "default" : "destructive"} 
+              onClick={() => setShowUnfocusPopup(false)}
+              className="w-full sm:w-auto px-10 shadow-lg font-bold uppercase tracking-wide cursor-pointer"
+            >
+              {unfocusCount <= 1 ? "Return to Assignment" : "Acknowledge Violation"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
         <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4 mr-2" />
