@@ -62,6 +62,7 @@ function AssignmentDetailContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [existingSubmission, setExistingSubmission] = useState<any>(null);
 
   // Timer State
@@ -77,15 +78,20 @@ function AssignmentDetailContent() {
   // Tab unfocus tracking
   const [unfocusCount, setUnfocusCount] = useState(0);
   const [showUnfocusPopup, setShowUnfocusPopup] = useState(false);
+  const ignoreNextBlurRef = useState({ current: false })[0];
 
   useEffect(() => {
     const handleBlur = () => {
+      if (ignoreNextBlurRef.current) {
+        ignoreNextBlurRef.current = false;
+        return;
+      }
       setUnfocusCount((count) => count + 1);
       setShowUnfocusPopup(true);
     };
     window.addEventListener('blur', handleBlur);
     return () => window.removeEventListener('blur', handleBlur);
-  }, []);
+  }, [ignoreNextBlurRef]);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -280,7 +286,7 @@ function AssignmentDetailContent() {
 
   const handleSaveDraft = async () => {
     if (!assignment || !user) return;
-    
+    ignoreNextBlurRef.current = true;
     setSubmitting(true);
     try {
         // Fetch student name from students collection
@@ -328,14 +334,15 @@ function AssignmentDetailContent() {
   };
 
   const handleSubmit = async () => {
+    console.log('handleSubmit called');
+    setSubmitError(null);
     if (!assignment || !user) return;
-    
+    ignoreNextBlurRef.current = true;
     // Validate work submission
     if (assignment.requireWorkSubmission && uploadedFiles.length === 0) {
       alert("Please upload your work (PDF or images) before submitting.");
       return;
     }
-    
     setSubmitting(true);
     setUploadProgress({}); // Reset progress
 
@@ -369,7 +376,8 @@ function AssignmentDetailContent() {
         console.error("Error fetching student name:", error);
       }
 
-      const submissionData = {
+      // Remove forbidden fields for student update
+      const submissionData: any = {
         assignmentId: assignment.id,
         studentId: user.uid,
         studentName: studentName,
@@ -377,13 +385,16 @@ function AssignmentDetailContent() {
         answers: answersArray,
         submittedAt: new Date(),
         graded: false,
-        score: null,
         totalPoints: assignment.questions.reduce((acc, q) => acc + (q.points || 10), 0),
         earnedPoints: null,
         workFiles: workFilesData,
         unfocusCount,
         status: 'submitted',
       };
+      // Do not include score, feedback, gradedAnswers if present
+      delete submissionData.score;
+      delete submissionData.feedback;
+      delete submissionData.gradedAnswers;
 
       let docRef;
       if (existingSubmission?.id) {
@@ -410,6 +421,7 @@ function AssignmentDetailContent() {
       router.push("/student/submissions");
     } catch (error) {
       console.error("Error submitting:", error);
+      setSubmitError(error instanceof Error ? error.message : String(error));
     } finally {
       setSubmitting(false);
     }
@@ -740,30 +752,35 @@ function AssignmentDetailContent() {
 
       {!submitted && (
         <div className="flex flex-col gap-4">
-            <Button 
-              onClick={handleSaveDraft} 
-              disabled={submitting} 
-              variant="outline"
-              className="w-full"
-            >
-              Save Draft
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
-              className="w-full"
-            >
-              {submitting ? (
-                Object.keys(uploadProgress).length > 0 ? 
-                  `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
-                  "Submitting..."
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  Submit Assignment
-                </>
-              )}
-            </Button>
+          {submitError && (
+            <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 text-sm text-center">
+              Submission failed: {submitError}
+            </div>
+          )}
+          <Button 
+            onClick={handleSaveDraft} 
+            disabled={submitting} 
+            variant="outline"
+            className="w-full"
+          >
+            Save Draft
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
+            className="w-full"
+          >
+            {submitting ? (
+              Object.keys(uploadProgress).length > 0 ? 
+                `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
+                "Submitting..."
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Submit Assignment
+              </>
+            )}
+          </Button>
         </div>
       )}
     </div>

@@ -253,6 +253,11 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
+              whileHover={{ 
+                textShadow: "0 0 20px rgba(255,255,255,0.1), 0 0 40px rgba(255,255,255,0.2)",
+                scale: 1.005,
+                transition: { duration: 0.3 }
+              }}
             >
                   An AI-powered physics LMS with research-grade tutoring and immersive learning tools designed to foster breakthrough understanding.
             </motion.p>

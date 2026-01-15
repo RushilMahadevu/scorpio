@@ -17,6 +17,7 @@ interface Resource {
   url: string;
   createdAt: any;
   type?: "video" | "document" | "link";
+  courseId?: string;
 }
 
 export default function StudentResourcesPage() {
@@ -34,27 +35,34 @@ export default function StudentResourcesPage() {
         const studentDoc = await getDoc(doc(db, "students", user.uid));
         const studentData = studentDoc.exists() ? studentDoc.data() : null;
         const teacherId = studentData?.teacherId;
-        const courseId = studentData?.courseId;
+        const studentCourseId = studentData?.courseId;
         
-        let q;
-        if (courseId) {
-            // New system: filter by course
-            q = query(collection(db, "resources"), where("courseId", "==", courseId), orderBy("createdAt", "desc"));
-        } else if (teacherId) {
-            // Fallback for legacy
-            q = query(collection(db, "resources"), where("teacherId", "==", teacherId), orderBy("createdAt", "desc"));
-        } else {
+        if (!teacherId) {
              setResources([]);
              setLoading(false);
              return;
         }
+
+        // Fetch all resources for this teacher
+        // Note: Filtering by course is done client-side so "All Classes" (null) resources are visible
+        const q = query(
+          collection(db, "resources"), 
+          where("teacherId", "==", teacherId), 
+          orderBy("createdAt", "desc")
+        );
 
         const querySnapshot = await getDocs(q);
         const resourceList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as Resource[];
-        setResources(resourceList);
+        
+        // Filter: include resources for specific course OR for all classes (null)
+        const finalResources = resourceList.filter(r => 
+          !r.courseId || r.courseId === studentCourseId
+        );
+        
+        setResources(finalResources);
       } catch (error) {
         console.error("Error fetching resources:", error);
       } finally {
