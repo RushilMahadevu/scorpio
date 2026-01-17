@@ -51,6 +51,7 @@ export default function TeacherDashboard() {
   const [newCourseName, setNewCourseName] = useState("");
   const [newCourseCode, setNewCourseCode] = useState("");
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     async function fetchStats() {
@@ -156,7 +157,6 @@ export default function TeacherDashboard() {
       if (code !== user.uid) {
          try {
              // We can't query teachers by ID easily without knowing it, but we can try to fetch it
-             // But wait, we are checking if *code* is a valid ID.
              const teacherDoc = await getDocs(query(collection(db, "teachers"), where("__name__", "==", code)));
              if (!teacherDoc.empty) {
                  alert("This code is reserved by another teacher (Legacy ID). Please choose another.");
@@ -175,7 +175,7 @@ export default function TeacherDashboard() {
 
       setNewCourseName("");
       setNewCourseCode("");
-      
+      setDialogOpen(false); // Close dialog after creation
       // Refresh courses
       const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), orderBy("createdAt", "desc")));
       setCourses(coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
@@ -281,7 +281,7 @@ export default function TeacherDashboard() {
             <CardTitle>My Classes</CardTitle>
             <CardDescription>Manage your class names and codes</CardDescription>
           </div>
-          <Dialog>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2 cursor-pointer hover:bg-primary/90 transition-colors" >
                 <PlusCircle className="h-4 w-4" />
@@ -311,7 +311,7 @@ export default function TeacherDashboard() {
                     id="code" 
                     placeholder="e.g. PHYS101" 
                     value={newCourseCode}
-                    onChange={(e) => setNewCourseCode(e.target.value)}
+                    onChange={(e) => setNewCourseCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
                   />
                   <p className="text-xs text-muted-foreground">This is the code students will use to join.</p>
                 </div>

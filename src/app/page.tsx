@@ -343,7 +343,7 @@ export default function Home() {
         </section>
 
         {/* Container Scroll Section */}
-        <div id="mission-control" className="flex flex-col overflow-hidden">
+        <div id="mission-control" className="flex flex-col">
           <ContainerScroll
             titleComponent={
               <div className="flex flex-col items-center justify-center mb-10">
@@ -363,7 +363,7 @@ export default function Home() {
             }
           >
             <Image
-              src="/teacher-dashboard.png"
+              src="/mission-control.png"
               alt="Scorpio Teacher Dashboard showing assignments and student progress"
               height={1280}
               width={2650}
