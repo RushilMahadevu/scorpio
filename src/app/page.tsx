@@ -10,8 +10,11 @@ import {
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/ui/logo";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
 const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod => mod.DemoCarousel), {
   ssr: false,
@@ -322,9 +325,9 @@ export default function Home() {
               transition={{ delay: 2.2, duration: 0.6 }}
             >
               <button
-                aria-label="Scroll to Challenge"
+                aria-label="Scroll to Mission Control"
                 onClick={() => {
-                  const el = document.getElementById("challenge");
+                  const el = document.getElementById("mission-control");
                   if (el) {
                     el.scrollIntoView({ behavior: "smooth" });
                   }
@@ -338,6 +341,37 @@ export default function Home() {
           </motion.div>
 
         </section>
+
+        {/* Container Scroll Section */}
+        <div id="mission-control" className="flex flex-col overflow-hidden">
+          <ContainerScroll
+            titleComponent={
+              <div className="flex flex-col items-center justify-center mb-10">
+                 <Link href="/signup" className="mb-4">
+                    <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
+                       <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
+                       <span className="text-primary font-medium">Teacher Dashboard</span>
+                    </Badge>
+                  </Link>
+                <h1 className="text-4xl md:text-6xl font-black text-center bg-clip-text text-transparent bg-gradient-to-b from-foreground via-foreground/90 to-foreground/50 pb-4 leading-tight">
+                  Mission Control <br />
+                  <span className="text-5xl md:text-[6rem] font-bold mt-1 leading-none text-foreground">
+                    For Your Classroom
+                  </span>
+                </h1>
+              </div>
+            }
+          >
+            <Image
+              src="/teacher-dashboard.png"
+              alt="Scorpio Teacher Dashboard showing assignments and student progress"
+              height={1280}
+              width={2650}
+              className="mx-auto rounded-2xl object-contain h-full w-full bg-zinc-900"
+              draggable={false}
+            />
+          </ContainerScroll>
+        </div>
 
         {/* Challenge Section */}
         <section id="challenge" className="container mx-auto px-6 py-32">
@@ -673,7 +707,7 @@ export default function Home() {
                 Built by <span className="text-foreground font-semibold">Rushil Mahadevu</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                © 2025 Scorpio. All rights reserved.
+                © {new Date().getFullYear()} Scorpio. All rights reserved.
               </div>
             </div>
           </div>
