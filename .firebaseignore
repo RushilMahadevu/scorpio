@@ -1,0 +1,6 @@
+firebase-debug.log
+.next/cache
+node_modules
+.git
+*.log
+.DS_Store

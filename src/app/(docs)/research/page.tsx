@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, TrendingUp, Target, Download } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, TrendingUp, Target, Download, Eye, LayoutDashboard } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Research & Methodology | Scorpio AI Effectiveness Study",
@@ -112,145 +113,179 @@ export default function ResearchPage() {
             Our ablation study demonstrates how a layered architecture of inference-time rules can transform
             a general-purpose LLM into a specialized Socratic tutor.
             </p>
-            <div className="mt-8">
-                <Button asChild className="gap-2 cursor-pointer">
-                    <a href="/architecture.pdf" target="_blank" rel="noopener noreferrer">
-                        <Download className="h-4 w-4" />
-                        Download System Architecture PDF
-                    </a>
-                </Button>
-            </div>
         </div>
 
-        {/* Key Findings */}
-        <section className="space-y-4">
-            <h2 className="flex items-center gap-2 text-2xl font-bold">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              Key Findings
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {researchHighlights.map((item, index) => (
-                <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-semibold text-base">{item.metric}</h3>
-                        <Badge variant={item.significance === 'High' ? 'default' : 'secondary'} className="text-xs">
-                        {item.significance}
-                        </Badge>
+        <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8 max-w-md">
+                <TabsTrigger value="dashboard" className="gap-2 cursor-pointer hover:scale-98 transition-transform">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                </TabsTrigger>
+                <TabsTrigger value="paper" className="gap-2 cursor-pointer hover:scale-98 transition-transform">
+                    <Eye className="h-4 w-4" />
+                    Full Paper
+                </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="dashboard" className="space-y-10">
+                {/* Key Findings */}
+                <section className="space-y-4">
+                    <h2 className="flex items-center gap-2 text-2xl font-bold">
+                      <TrendingUp className="h-6 w-6 text-primary" />
+                      Key Findings
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {researchHighlights.map((item, index) => (
+                        <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-3">
+                                <h3 className="font-semibold text-base">{item.metric}</h3>
+                                <Badge variant={item.significance === 'High' ? 'default' : 'secondary'} className="text-xs">
+                                {item.significance}
+                                </Badge>
+                            </div>
+                            <p className="text-sm text-foreground/80 mb-2">{item.finding}</p>
+                            <p className="text-xs text-primary font-medium">{item.impact}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                    <p className="text-sm text-foreground/80 mb-2">{item.finding}</p>
-                    <p className="text-xs text-primary font-medium">{item.impact}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-        </section>
+                </section>
 
-        {/* Constraint Performance Table */}
-        <section className="space-y-4">
-            <h2 className="flex items-center gap-2 text-2xl font-bold">
-              <Target className="h-6 w-6 text-primary" />
-              System Performance
-            </h2>
-            <Card className="overflow-hidden border-border/50">
-                <div className="overflow-x-auto">
-                    <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/50">
-                        <TableHead>Constraint Level</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Domain Adh.</TableHead>
-                        <TableHead className="text-right">DAR</TableHead>
-                        <TableHead className="text-right">LaTeX %</TableHead>
-                        <TableHead className="text-right">Avg Q's</TableHead>
-                        <TableHead className="text-right">Quality</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {constraintLevels.map((level, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="font-medium">{level.level}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground">{level.description}</TableCell>
-                            <TableCell className="text-right font-mono text-xs">{level.domainAdherence}</TableCell>
-                            <TableCell className="text-right font-mono text-xs">{level.directAnswerRate}</TableCell>
-                            <TableCell className="text-right font-mono text-xs">{level.latexUsage}</TableCell>
-                            <TableCell className="text-right font-mono text-xs">{level.avgQuestions}</TableCell>
-                            <TableCell className="text-right font-mono text-xs">{level.pedagogicalQuality}</TableCell>
-                        </TableRow>
-                        ))}
-                    </TableBody>
-                    </Table>
+                {/* Constraint Performance Table */}
+                <section className="space-y-4">
+                    <h2 className="flex items-center gap-2 text-2xl font-bold">
+                      <Target className="h-6 w-6 text-primary" />
+                      System Performance
+                    </h2>
+                    <Card className="overflow-hidden border-border/50">
+                        <div className="overflow-x-auto">
+                            <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/50">
+                                <TableHead>Constraint Level</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead className="text-right">Domain Adh.</TableHead>
+                                <TableHead className="text-right">DAR</TableHead>
+                                <TableHead className="text-right">LaTeX %</TableHead>
+                                <TableHead className="text-right">Avg Q's</TableHead>
+                                <TableHead className="text-right">Quality</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {constraintLevels.map((level, index) => (
+                                <TableRow key={index}>
+                                    <TableCell className="font-medium">{level.level}</TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">{level.description}</TableCell>
+                                    <TableCell className="text-right font-mono text-xs">{level.domainAdherence}</TableCell>
+                                    <TableCell className="text-right font-mono text-xs">{level.directAnswerRate}</TableCell>
+                                    <TableCell className="text-right font-mono text-xs">{level.latexUsage}</TableCell>
+                                    <TableCell className="text-right font-mono text-xs">{level.avgQuestions}</TableCell>
+                                    <TableCell className="text-right font-mono text-xs">{level.pedagogicalQuality}</TableCell>
+                                </TableRow>
+                                ))}
+                            </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
+                </section>
+
+                {/* Difficulty Performance */}
+                <section className="space-y-4">
+                     <h2 className="text-xl font-bold">Performance by Difficulty</h2>
+                     <Card className="border-border/50">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/50">
+                                <TableHead>Difficulty</TableHead>
+                                <TableHead className="text-right">Quality</TableHead>
+                                <TableHead className="text-right">Rule Adherence %</TableHead>
+                                <TableHead className="text-right">Avg Length (Chars)</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow>
+                                <TableCell className="font-medium">Basic</TableCell>
+                                <TableCell className="text-right font-mono">3.72</TableCell>
+                                <TableCell className="text-right font-mono">77.8%</TableCell>
+                                <TableCell className="text-right font-mono">399</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                <TableCell className="font-medium">Intermediate</TableCell>
+                                <TableCell className="text-right font-mono">4.05</TableCell>
+                                <TableCell className="text-right font-mono">100.0%</TableCell>
+                                <TableCell className="text-right font-mono">641</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                <TableCell className="font-medium">Advanced</TableCell>
+                                <TableCell className="text-right font-mono">4.13</TableCell>
+                                <TableCell className="text-right font-mono">100.0%</TableCell>
+                                <TableCell className="text-right font-mono">1578</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                <TableCell className="font-medium">College</TableCell>
+                                <TableCell className="text-right font-mono">3.75</TableCell>
+                                <TableCell className="text-right font-mono">100.0%</TableCell>
+                                <TableCell className="text-right font-mono">3322</TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                     </Card>
+                </section>
+
+                {/* Methodology */}
+                <section className="space-y-4">
+                     <h2 className="text-xl font-bold">Methodology</h2>
+                     <Card className="border-border/50">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/50">
+                                <TableHead>Category</TableHead>
+                                <TableHead>Count/Details</TableHead>
+                                <TableHead>Breakdown</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {methodologyData.map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell className="font-medium">{item.category}</TableCell>
+                                    <TableCell>{item.count}</TableCell>
+                                    <TableCell className="text-muted-foreground italic">{item.breakdown}</TableCell>
+                                </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                     </Card>
+                </section>
+            </TabsContent>
+
+            <TabsContent value="paper" className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold tracking-tight">Full Length Research Paper</h2>
+                        <p className="text-muted-foreground text-sm italic">Last Updated Jan. 18, 2026</p>
+                    </div>
+                    <Button asChild className="gap-2">
+                        <a href="/scorpio-paper.pdf" download>
+                            <Download className="h-4 w-4" />
+                            Download PDF
+                        </a>
+                    </Button>
                 </div>
-            </Card>
-        </section>
-
-        {/* Difficulty Performance */}
-        <section className="space-y-4">
-             <h2 className="text-xl font-bold">Performance by Difficulty</h2>
-             <Card className="border-border/50">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/50">
-                        <TableHead>Difficulty</TableHead>
-                        <TableHead className="text-right">Quality</TableHead>
-                        <TableHead className="text-right">Rule Adherence %</TableHead>
-                        <TableHead className="text-right">Avg Length (Chars)</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow>
-                        <TableCell className="font-medium">Basic</TableCell>
-                        <TableCell className="text-right font-mono">3.72</TableCell>
-                        <TableCell className="text-right font-mono">77.8%</TableCell>
-                        <TableCell className="text-right font-mono">399</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="font-medium">Intermediate</TableCell>
-                        <TableCell className="text-right font-mono">4.05</TableCell>
-                        <TableCell className="text-right font-mono">100.0%</TableCell>
-                        <TableCell className="text-right font-mono">641</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="font-medium">Advanced</TableCell>
-                        <TableCell className="text-right font-mono">4.13</TableCell>
-                        <TableCell className="text-right font-mono">100.0%</TableCell>
-                        <TableCell className="text-right font-mono">1578</TableCell>
-                        </TableRow>
-                        <TableRow>
-                        <TableCell className="font-medium">College</TableCell>
-                        <TableCell className="text-right font-mono">3.75</TableCell>
-                        <TableCell className="text-right font-mono">100.0%</TableCell>
-                        <TableCell className="text-right font-mono">3322</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-             </Card>
-        </section>
-
-        {/* Methodology */}
-        <section className="space-y-4">
-             <h2 className="text-xl font-bold">Methodology</h2>
-             <Card className="border-border/50">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-muted/50">
-                        <TableHead>Category</TableHead>
-                        <TableHead>Count/Details</TableHead>
-                        <TableHead>Breakdown</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {methodologyData.map((item, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="font-medium">{item.category}</TableCell>
-                            <TableCell>{item.count}</TableCell>
-                            <TableCell className="text-muted-foreground italic">{item.breakdown}</TableCell>
-                        </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-             </Card>
-        </section>
+                <Card className="p-0 overflow-hidden bg-muted border-border/50 h-[800px] relative">
+                    <iframe 
+                        src="/scorpio-paper.pdf#toolbar=0" 
+                        className="w-full h-full border-none"
+                        title="Scorpio Research Paper"
+                    />
+                </Card>
+                <div className="flex justify-center py-4">
+                    <p className="text-sm text-muted-foreground italic">
+                        Can't see the preview? <a href="/scorpio-paper.pdf" className="text-primary underline">Download the PDF</a>.
+                    </p>
+                </div>
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }
