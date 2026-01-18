@@ -1,7 +1,7 @@
 "use client";
 
 import { SpaceBackground } from "@/components/ui/space-background";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
   const features = [
     { icon: Brain, title: "AI-Powered LLM Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture using advanced LLMs", tag: "Gemini 2.5 Flash" },
@@ -61,36 +62,71 @@ export default function Home() {
   </Link>
 
 
-  {/* Navigation - Centered (shadcn-styled buttons, ready for dropdown) */}
-  <nav className="absolute left-1/2 -translate-x-1/2 hidden lg:flex space-x-2">
+  {/* Navigation - Centered (Modern Sliding Hover) */}
+  <nav 
+    className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center p-1 bg-background/20 backdrop-blur-lg rounded-full border border-border/30"
+    onMouseLeave={() => setHoveredNav(null)}
+  >
     {[
       { id: "home", label: "Home" },
       { id: "challenge", label: "Challenge" },
       { id: "features", label: "Features" },
       { id: "workflow", label: "Workflow" },
-      { id: "cta", label: "Get Started" }
-    ].map(({ id, label }) => (
-      <Button
-        key={id}
-        variant="ghost"
-        className="group font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer flex items-center gap-1"
-        type="button"
-        onClick={() => {
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
+      { id: "cta", label: "Get Started" },
+      { id: "docs", label: "Docs", href: "/about" }
+    ].map((navItem) => (
+      <div
+        key={navItem.id}
+        className="relative px-1"
+        onMouseEnter={() => setHoveredNav(navItem.id)}
       >
-        {label}
-      </Button>
+        <AnimatePresence>
+          {hoveredNav === navItem.id && (
+            <motion.div
+              layoutId="navbar-highlight"
+              className="absolute inset-0 bg-primary/5 rounded-full z-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 150, 
+                damping: 25, 
+                mass: 1.2,
+                duration: 0.8 
+              }}
+            />
+          )}
+        </AnimatePresence>
+        
+        {navItem.href ? (
+          <Link href={navItem.href}>
+            <Button
+              variant="link"
+              className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent ${
+                hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
+              }`}
+            >
+              {navItem.label}
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            variant="link"
+            type="button"
+            onClick={() => {
+              const el = document.getElementById(navItem.id);
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent ${
+              hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
+            }`}
+          >
+            {navItem.label}
+          </Button>
+        )}
+      </div>
     ))}
-    <Link href="/about">
-      <Button
-        variant="ghost"
-        className="group font-medium text-muted-foreground hover:text-foreground px-3 cursor-pointer flex items-center gap-1"
-      >
-        Docs
-      </Button>
-    </Link>
   </nav>
 
   {/* Actions */}
