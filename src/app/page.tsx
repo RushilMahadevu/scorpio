@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/ui/logo";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 
@@ -21,10 +21,49 @@ const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod
   loading: () => <div className="h-[540px] w-full flex items-center justify-center bg-muted/20 rounded-2xl animate-pulse">Loading Demonstrations...</div>
 });
 
+interface GitHubCommit {
+  sha: string;
+  message: string;
+  date: string;
+  url: string;
+  author: string;
+}
+
+// Simple helper for relative time
+function getRelativeTime(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return "just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays}d ago`;
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [githubData, setGithubData] = useState<{ totalCommits: string; recentCommits: GitHubCommit[] } | null>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/github/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setGithubData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch GitHub stats:", error);
+      }
+    }
+    fetchStats();
+  }, []);
 
   const features = [
     { icon: Brain, title: "AI-Powered LLM Tutoring", description: "Research-grade tutoring with 4-layer constraint architecture using advanced LLMs", tag: "Gemini 2.5 Flash" },
@@ -69,10 +108,9 @@ export default function Home() {
   >
     {[
       { id: "home", label: "Home" },
-      { id: "challenge", label: "Challenge" },
+      { id: "mission-control", label: "Dashboard" },
       { id: "features", label: "Features" },
-      { id: "workflow", label: "Workflow" },
-      { id: "cta", label: "Get Started" },
+      { id: "activity", label: "Activity" },
       { id: "docs", label: "Docs", href: "/about" }
     ].map((navItem) => (
       <div
@@ -169,10 +207,9 @@ export default function Home() {
         <nav className="flex flex-col space-y-2 px-6 py-6 flex-1 overflow-y-auto">
           {[
             { id: "home", label: "Home" },
-            { id: "challenge", label: "Challenge" },
+            { id: "mission-control", label: "Dashboard" },
             { id: "features", label: "Features" },
-            { id: "workflow", label: "Workflow" },
-            { id: "cta", label: "Get Started" }
+            { id: "activity", label: "Activity" }
           ].map(({ id, label }) => (
             <Button
               key={id}
@@ -650,6 +687,75 @@ export default function Home() {
             </motion.div>
           </motion.div>
         </section>
+
+        {/* Recent Development Activity */}
+        {githubData && (
+          <section id="activity" className="container mx-auto px-6 py-20">
+            <motion.div
+              className="max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="flex items-center justify-between mb-10">
+                <div className="space-y-2">
+                   <div className="flex items-center gap-3">
+                      <h2 className="text-3xl font-bold">Recent Development</h2>
+                      <Badge variant="outline" className="rounded-full px-3 py-1 bg-primary/5 text-primary border-primary/20 font-bold">
+                        {githubData.totalCommits}+ Commits
+                      </Badge>
+                   </div>
+                  <p className="text-muted-foreground font-medium text-sm">Real-time updates from our GitHub repository</p>
+                </div>
+                <Link 
+                  href="https://github.com/RushilMahadevu/scorpio/commits/main" 
+                  target="_blank"
+                  className="text-sm font-bold text-primary hover:underline flex items-center"
+                >
+                  View all
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </div>
+
+              <div className="space-y-4">
+                {githubData.recentCommits.map((commit, i) => (
+                  <motion.div
+                    key={commit.sha}
+                    className="p-5 rounded-2xl border bg-card/10 hover:bg-card/30 transition-all group flex items-start gap-4"
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <div className="mt-1 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <Github className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">{commit.sha}</span>
+                        <span className="text-xs text-muted-foreground font-medium">• {getRelativeTime(commit.date)}</span>
+                      </div>
+                      <p className="font-bold text-foreground leading-snug truncate group-hover:text-primary transition-colors">
+                        {commit.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 font-medium italic">
+                        By {commit.author}
+                      </p>
+                    </div>
+                    <Link 
+                      href={commit.url} 
+                      target="_blank"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity self-center p-2 rounded-full hover:bg-muted"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </section>
+        )}
 
         {/* CTA */}
         <section id="cta" className="container mx-auto px-6 py-32 text-center">
