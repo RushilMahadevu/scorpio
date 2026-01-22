@@ -292,7 +292,7 @@ interface ChatMessage {
   content: string;
 }
 
-type ConstraintLevel = "NONE" | "DOMAIN_ONLY" | "DOMAIN_PEDAGOGY" | "DOMAIN_PEDAGOGY_NOTATION" | "FULL";
+export type ConstraintLevel = "NONE" | "DOMAIN_ONLY" | "DOMAIN_PEDAGOGY" | "DOMAIN_PEDAGOGY_NOTATION" | "FULL" | "STRICT_CONCISE";
 
 interface ValidationResult {
   passed: boolean;
@@ -870,12 +870,23 @@ const NOTATION_CONSTRAINT = "Use proper physics notation: vectors as \\vec{v}, i
 // SOCRATIC_CONSTRAINT: Implements Socratic method by using guiding questions and building on student responses to foster discovery
 const SOCRATIC_CONSTRAINT = "Use the Socratic method: ask guiding questions, build on student responses, help students discover answers themselves.";
 
+// STRICT_CONCISE_CONSTRAINT: Forces very short, strictly pedagogical guidance for assignments
+const STRICT_CONCISE_CONSTRAINT = `CRITICAL: You are guiding a student during an active assignment. 
+- BE CONCISE. Remember responses are directed toward an AP level student.
+- YOU HAVE FULL ACCESS to the assignment content provided in the context below.
+- NEVER give hints that are too revealing.
+- FOCUS ONLY on the immediate block or concept the student is stuck on.
+- NO fluff, no broad explanations, no "I'd be happy to help". Just the Socratic nudge.
+- If a student asks about a specific question, use the context to see that question's text.
+- Keep the tone professional and observant.`;
+
 const CONSTRAINT_LEVELS: Record<ConstraintLevel, string> = {
   NONE: "",
   DOMAIN_ONLY: DOMAIN_CONSTRAINT,
   DOMAIN_PEDAGOGY: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT,
   DOMAIN_PEDAGOGY_NOTATION: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT,
   FULL: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + SOCRATIC_CONSTRAINT,
+  STRICT_CONCISE: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + STRICT_CONCISE_CONSTRAINT,
 };
 
 function formatChatHistory(messages: ChatMessage[]): string {
@@ -925,8 +936,16 @@ export async function helpSolveProblem(
       ? `Previous conversation:\n${formatChatHistory(chatHistory)}\n\n` 
       : "";
     
-    const context = assignmentContext ? `Assignment context: ${assignmentContext}\n\n` : "";
-    const prompt = `${constraints}\n\n${context}${historyContext}Help me solve this physics problem step-by-step: "${problem}". Do not just give the answer, explain the steps clearly. If this relates to our previous conversation, reference earlier explanations.`;
+    const context = assignmentContext ? `=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===\n${assignmentContext}\n==========================================\n\n` : "";
+    const prompt = `${constraints}\n\n${context}${historyContext}The student is asking: "${problem}". 
+    
+    IMPORTANT: You have full access to the "=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===" above. 
+    - If the student asks about "Question 1" and the text for that question is empty in the context, check the assignment title and description.
+    - If you genuinely cannot find information about a specific question in the provided context, ask the student to clarify or paste the question text.
+    - If asked about concepts or formulas, refer to the context first before explaining.
+    - NEVER say "I cannot see the assignment" or "I don't have access to the text" if the information IS provided in the context above.
+    
+    Help the student think through the problem step-by-step using the Socratic method. Do not just give the answer.`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;

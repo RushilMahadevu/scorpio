@@ -61,6 +61,8 @@ export default function CreateAssignmentPage() {
   const [timeLimit, setTimeLimit] = useState<number | "">("");
   const [gradingType, setGradingType] = useState<"ai" | "manual">("manual");
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
+  const [allowAIHelp, setAllowAIHelp] = useState(false);
+  const [enableTabDetection, setEnableTabDetection] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
@@ -214,6 +216,8 @@ export default function CreateAssignmentPage() {
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
         requireWorkSubmission,
+        enableTabDetection,
+        allowAIHelp,
         questions,
         createdAt: new Date(),
         type: "standard",
@@ -516,6 +520,39 @@ export default function CreateAssignmentPage() {
             <p className="text-xs text-muted-foreground pl-6">
               When enabled, students must upload their work (PDFs or images) to submit the assignment. For timed tests, students will have 5 additional minutes after time expires to upload their work.
             </p>
+
+            <div className="flex items-center space-x-2 cursor-pointer pt-2">
+              <input
+                type="checkbox"
+                id="allowAIHelp"
+                checked={allowAIHelp}
+                onChange={(e) => setAllowAIHelp(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+              />
+              <Label htmlFor="allowAIHelp" className="cursor-pointer font-normal">
+                Allow AI Assistance (Beta)
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              When enabled, students can use the AI tutor to get help with specific questions during the assignment.
+            </p>
+
+            <div className="flex items-center space-x-2 cursor-pointer pt-2">
+              <input
+                type="checkbox"
+                id="enableTabDetection"
+                checked={enableTabDetection}
+                onChange={(e) => setEnableTabDetection(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+              />
+              <Label htmlFor="enableTabDetection" className="cursor-pointer font-normal">
+                Enable Tab/Focus Detection
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              When enabled, the system will track if a student leaves the assignment tab and warn/notify you of potential cheating.
+            </p>
+
             <div className="space-y-2">
               <Label htmlFor="rubric">Rubric / Grading Criteria</Label>
               <Textarea

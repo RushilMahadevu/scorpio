@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, collection, addDoc, query, where, getDocs, setDoc } from "firebase/firestore";
 import { db, uploadFilesToStorage, type WorkFile } from "@/lib/firebase";
@@ -23,9 +23,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save } from "lucide-react";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Bot, Lightbulb, User, ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { MathInputField } from "@/components/math-input";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { helpSolveProblem } from "@/lib/gemini";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -49,10 +57,19 @@ interface Assignment {
   gradingType?: "ai" | "manual";
   timeLimit?: number;
   requireWorkSubmission?: boolean;
+  allowAIHelp?: boolean;
+  enableTabDetection?: boolean;
   type?: string;
 }
 
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
 function AssignmentDetailContent() {
+  const isMobile = useIsMobile();
   const searchParams = useSearchParams();
   const id = searchParams ? searchParams.get("id") ?? "" : "";
   const router = useRouter();
@@ -82,6 +99,9 @@ function AssignmentDetailContent() {
 
   useEffect(() => {
     const handleBlur = () => {
+      // strict check for false
+      if (assignment?.enableTabDetection === false) return; 
+
       if (ignoreNextBlurRef.current) {
         ignoreNextBlurRef.current = false;
         return;
@@ -91,7 +111,7 @@ function AssignmentDetailContent() {
     };
     window.addEventListener('blur', handleBlur);
     return () => window.removeEventListener('blur', handleBlur);
-  }, [ignoreNextBlurRef]);
+  }, [ignoreNextBlurRef, assignment]);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -130,6 +150,8 @@ function AssignmentDetailContent() {
             gradingType: data.gradingType || "ai",
             timeLimit: data.timeLimit,
             requireWorkSubmission: data.requireWorkSubmission || false,
+            allowAIHelp: data.allowAIHelp || false,
+            enableTabDetection: data.enableTabDetection ?? true, // Default to true if not present
             type: data.type || "standard",
           };
           setAssignment(assignmentData);
@@ -239,6 +261,91 @@ function AssignmentDetailContent() {
       setTimerActive(true);
     }
     setHasStarted(true);
+  };
+
+  // AI Helper Logic
+  const [aiHelperOpen, setAiHelperOpen] = useState(false);
+  const [aiMessages, setAiMessages] = useState<ChatMessage[]>([]);
+  const [aiInput, setAiInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom of AI messages
+  useEffect(() => {
+    if (scrollRef.current) {
+        // Use scrollTo on the parent to avoid document-level jumping with scrollIntoView
+        const container = scrollRef.current.parentElement;
+        if (container) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+    }
+  }, [aiMessages, aiLoading]);
+
+  const handleAiSendMessage = async () => {
+    if (!aiInput.trim() || aiLoading || !assignment) return;
+    
+    // Explicitly define the message structure to match ChatMessage interface
+    const userMessage: ChatMessage = { 
+      id: crypto.randomUUID(), 
+      role: "user", 
+      content: aiInput 
+    };
+    
+    setAiMessages(prev => [...prev, userMessage]);
+    setAiInput("");
+    setAiLoading(true);
+
+    try {
+        // Construct comprehensive context
+        const assignmentContext = `ASSIGNMENT TITLE: ${assignment.title}
+ASSIGNMENT DESCRIPTION: ${assignment.description}
+
+ASSIGNMENT QUESTIONS:
+${assignment.questions.map((q, i) => {
+  const optionsStr = (q.type === 'multiple-choice' && q.options) 
+    ? `\nOptions: ${q.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(", ")}` 
+    : "";
+  return `QUESTION ${i + 1}:
+Type: ${q.type}
+Text: ${q.text || "[This question has no text description. Refer to the assignment title/description.]"}${optionsStr}`;
+}).join("\n\n")}`;
+        
+        // Include current student answers in context if they exist
+        const studentAnswersContext = Object.keys(answers).length > 0 
+          ? `\n\nSTUDENT'S CURRENT ANSWERS (DRAFT):\n${assignment.questions.map((q, i) => answers[q.id] ? `Question ${i+1} Answer: ${answers[q.id]}` : "").filter(Boolean).join("\n")}`
+          : "";
+        
+        const fullContext = assignmentContext + studentAnswersContext;
+        
+        // Map local ChatMessage to the format helpSolveProblem expects
+        const historyForAi = aiMessages.map(m => ({ role: m.role, content: m.content }));
+        
+        const response = await helpSolveProblem(
+            userMessage.content,
+            historyForAi,
+            "STRICT_CONCISE",
+            fullContext
+        );
+        
+        const aiResponse: ChatMessage = { 
+          id: crypto.randomUUID(), 
+          role: "assistant", 
+          content: response 
+        };
+        setAiMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+        console.error("AI Error:", error);
+        setAiMessages(prev => [...prev, { 
+          id: crypto.randomUUID(), 
+          role: "assistant", 
+          content: "I'm having trouble connecting right now. Please try again." 
+        }]);
+    } finally {
+        setAiLoading(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -501,7 +608,7 @@ function AssignmentDetailContent() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-20">
+    <div className="flex h-[100dvh] w-full bg-background overflow-hidden relative">
       <Dialog open={showUnfocusPopup}>
         <DialogContent 
           className={`sm:max-w-md border-2 ${unfocusCount <= 1 ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30" : "border-red-500 bg-red-50 dark:bg-red-950/30"}`}
@@ -542,18 +649,27 @@ function AssignmentDetailContent() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
+      <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+        <ResizablePanel 
+          id="main-content"
+          order={1}
+          defaultSize={aiHelperOpen && !isMobile ? 70 : 100} 
+          className="h-full flex flex-col min-w-0"
+        >
+          <div className="flex-1 overflow-y-auto relative scroll-smooth">
+            <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 pb-20">
+              <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
         <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Link>
         
         <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end hidden sm:flex">
             <span className="text-xs text-muted-foreground">Progress</span>
-            <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
+            <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
               <div 
-                className="h-full bg-primary transition-all duration-500" 
+                className="h-full bg-indigo-600 transition-all duration-500" 
                 style={{ width: `${calculateProgress()}%` }}
               />
             </div>
@@ -564,11 +680,28 @@ function AssignmentDetailContent() {
               {inGracePeriod && (
                 <span className="text-xs text-orange-600 font-semibold">GRACE PERIOD</span>
               )}
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-md font-mono font-bold ${inGracePeriod ? 'bg-orange-100 text-orange-600' : timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
-                <Clock className="h-4 w-4" />
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md font-mono font-bold text-sm ${inGracePeriod ? 'bg-orange-100 text-orange-600' : timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
+                <Clock className="h-3.5 w-3.5" />
                 {formatTime(timeLeft)}
               </div>
             </div>
+          )}
+
+          {assignment?.allowAIHelp && !submitted && (
+            <Button
+              variant={aiHelperOpen ? "default" : "outline"}
+              size="sm"
+              onClick={() => setAiHelperOpen(!aiHelperOpen)}
+              className={`cursor-pointer transition-all duration-300 ${
+                aiHelperOpen 
+                  ? "bg-black hover:bg-zinc-900 text-white shadow-md ring-2 ring-zinc-500/20 ring-offset-2" 
+                  : "border-zinc-300 hover:border-zinc-500 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              }`}
+            >
+              <Sparkles className={`h-4 w-4 mr-1.5 ${aiHelperOpen ? "animate-pulse" : ""}`} />
+              <span className="hidden xs:inline">AI Tutor</span>
+              <span className="xs:hidden">AI</span>
+            </Button>
           )}
         </div>
       </div>
@@ -783,6 +916,202 @@ function AssignmentDetailContent() {
           </Button>
         </div>
       )}
+            </div>
+          </div>
+        </ResizablePanel>
+
+        {!isMobile && aiHelperOpen && (
+          <>
+            <ResizableHandle withHandle className="bg-zinc-200 dark:bg-zinc-800" />
+            <ResizablePanel 
+              id="ai-tutor-panel"
+              order={2}
+              defaultSize={30} 
+              minSize={20} 
+              className="bg-zinc-50/50 dark:bg-zinc-950/20 flex flex-col h-full overflow-hidden"
+            >
+               {/* Desktop Sidebar Content */}
+               <div className="p-4 h-16 border-b flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
+                      <Bot className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xs tracking-tight leading-none uppercase">Physics Tutor</h3>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Socratic Mode</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)} className="h-8 w-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <X className="h-4 w-4" />
+                  </Button>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto px-4 pt-4">
+                  <div className="space-y-6 pb-10">
+                    {aiMessages.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-20 text-center px-6">
+                        <div className="w-16 h-16 rounded-[2rem] bg-white dark:bg-zinc-900 border shadow-sm flex items-center justify-center mb-6">
+                          <Lightbulb className="h-8 w-8 text-zinc-400" />
+                        </div>
+                        <h4 className="font-bold text-lg mb-2">Need a hint?</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed max-w-[240px]">
+                          Instead of answers, I'll ask questions to help you unlock the logic behind these physics problems.
+                        </p>
+                        <div className="mt-8 w-full space-y-2">
+                           <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("How do I start thinking about Question 1?"); handleAiSendMessage(); }}>
+                              <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
+                              Approach to Question 1
+                           </Button>
+                           <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("What are the key principles for this topic?"); handleAiSendMessage(); }}>
+                              <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
+                              Key Principles
+                           </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {aiMessages.map((msg) => (
+                      <motion.div
+                        initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        key={msg.id}
+                        className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                      >
+                        <div className={`flex items-start gap-3 max-w-[95%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className={`mt-1 h-7 w-7 rounded-full shrink-0 flex items-center justify-center shadow-sm ${
+                            msg.role === 'user' ? 'bg-zinc-900 text-white' : 'bg-white border dark:bg-zinc-800'
+                          }`}>
+                            {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-zinc-400" />}
+                          </div>
+                          <div
+                            className={`rounded-2xl px-4 py-3 shadow-sm border ${
+                              msg.role === 'user'
+                                ? 'bg-zinc-900 text-white border-transparent rounded-tr-none'
+                                : 'bg-white dark:bg-zinc-900 text-foreground border-zinc-100 dark:border-zinc-800 rounded-tl-none'
+                            }`}
+                          >
+                             <MarkdownRenderer className="text-sm leading-relaxed prose-sm dark:prose-invert prose-p:my-0.5 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800">{msg.content}</MarkdownRenderer>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                    
+                    {aiLoading && (
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 h-7 w-7 rounded-full bg-white border dark:bg-zinc-800 flex items-center justify-center">
+                          <Bot className="h-4 w-4 text-zinc-400" />
+                        </div>
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center justify-center shadow-sm">
+                          <div className="flex gap-1.5">
+                            <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={scrollRef} />
+                  </div>
+               </div>
+
+               <div className="p-4 bg-white dark:bg-zinc-900 border-t">
+                  <div className="relative flex items-end gap-2">
+                    <Textarea
+                      value={aiInput}
+                      onChange={(e) => setAiInput(e.target.value)}
+                      placeholder="Ask for guidance..."
+                      disabled={aiLoading}
+                      rows={1}
+                      className="min-h-[48px] max-h-[160px] pr-12 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 resize-none py-3.5 focus-visible:ring-zinc-900"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleAiSendMessage();
+                        }
+                      }}
+                    />
+                    <Button 
+                      onClick={handleAiSendMessage}
+                      disabled={aiLoading || !aiInput.trim()} 
+                      size="icon"
+                      className="absolute right-1.5 bottom-1.5 h-9 w-9 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-md active:scale-95"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-[8px] text-center mt-3 uppercase tracking-[0.2em] font-black text-zinc-300 dark:text-zinc-600">
+                    AI Pedagogical Protocol Active
+                  </p>
+               </div>
+            </ResizablePanel>
+          </>
+        )}
+      </ResizablePanelGroup>
+
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobile && aiHelperOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setAiHelperOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 w-[85%] bg-background z-[101] shadow-2xl flex flex-col"
+            >
+                <div className="p-4 border-b flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
+                      <Bot className="h-5 w-5" />
+                    </div>
+                    <span className="font-bold text-sm uppercase tracking-tight">AI Advisor</span>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto px-4 py-8">
+                   <div className="space-y-6 pb-10">
+                      {aiMessages.map((msg) => (
+                        <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                          <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm border ${msg.role === 'user' ? 'bg-zinc-900 text-white rounded-tr-none border-transparent' : 'bg-white dark:bg-zinc-800 text-foreground rounded-tl-none border-zinc-100 dark:border-zinc-700'}`}>
+                             <MarkdownRenderer>{msg.content}</MarkdownRenderer>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={scrollRef} />
+                   </div>
+                </div>
+
+                <div className="p-4 border-t bg-zinc-50 dark:bg-zinc-900 pb-10">
+                   <div className="flex gap-2">
+                      <Input 
+                        value={aiInput}
+                        onChange={(e) => setAiInput(e.target.value)}
+                        placeholder="Ask a question..."
+                        className="rounded-full bg-white dark:bg-black p-6 shadow-md border-zinc-200"
+                        onKeyDown={(e) => e.key === 'Enter' && handleAiSendMessage()}
+                      />
+                      <Button onClick={handleAiSendMessage} className="rounded-full h-12 w-12 p-0 bg-zinc-900 dark:bg-white">
+                        <Send className="h-5 w-5" />
+                      </Button>
+                   </div>
+                </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
