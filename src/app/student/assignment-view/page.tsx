@@ -669,8 +669,8 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
             <span className="text-xs text-muted-foreground">Progress</span>
             <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
               <div 
-                className="h-full bg-indigo-600 transition-all duration-500" 
-                style={{ width: `${calculateProgress()}%` }}
+              className="h-full bg-emerald-600 transition-all duration-500" 
+              style={{ width: `${calculateProgress()}%` }}
               />
             </div>
           </div>

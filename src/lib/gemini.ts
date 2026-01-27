@@ -874,6 +874,7 @@ const SOCRATIC_CONSTRAINT = "Use the Socratic method: ask guiding questions, bui
 const STRICT_CONCISE_CONSTRAINT = `CRITICAL: You are guiding a student during an active assignment. 
 - BE CONCISE. Remember responses are directed toward an AP level student.
 - YOU HAVE FULL ACCESS to the assignment content provided in the context below.
+- DON'T GIVE ANSWER TO STUDENT EVEN IF SEEN IN CONTEXT. (especially for multiple choice)
 - NEVER give hints that are too revealing.
 - FOCUS ONLY on the immediate block or concept the student is stuck on.
 - NO fluff, no broad explanations, no "I'd be happy to help". Just the Socratic nudge.
