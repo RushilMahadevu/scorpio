@@ -96,6 +96,7 @@ function AssignmentDetailContent() {
   const [unfocusCount, setUnfocusCount] = useState(0);
   const [showUnfocusPopup, setShowUnfocusPopup] = useState(false);
   const ignoreNextBlurRef = useState({ current: false })[0];
+  const lastUploadClickTime = useRef<number>(0);
 
   useEffect(() => {
     const handleBlur = () => {
@@ -106,6 +107,14 @@ function AssignmentDetailContent() {
         ignoreNextBlurRef.current = false;
         return;
       }
+
+      // Check if blur is within 30 seconds of clicking upload button
+      const now = Date.now();
+      const timeSinceUploadClick = now - lastUploadClickTime.current;
+      if (timeSinceUploadClick < 30000) { // 30 seconds in milliseconds
+        return; // Ignore blur during file upload buffer period
+      }
+
       setUnfocusCount((count) => count + 1);
       setShowUnfocusPopup(true);
     };
@@ -822,7 +831,10 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => document.getElementById('workFiles')?.click()}
+                onClick={() => {
+                  lastUploadClickTime.current = Date.now();
+                  document.getElementById('workFiles')?.click();
+                }}
                 disabled={submitted}
               >
                 <Upload className="h-4 w-4 mr-2" />
