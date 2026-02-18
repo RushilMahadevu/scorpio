@@ -1,7 +1,7 @@
 "use client";
 
 import { SpaceBackground } from "@/components/ui/space-background";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +52,13 @@ export default function Home() {
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [githubData, setGithubData] = useState<{ totalCommits: string; recentCommits: GitHubCommit[] } | null>(null);
   const [isLoadingGithub, setIsLoadingGithub] = useState(true);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     async function fetchStats() {
@@ -273,6 +280,11 @@ export default function Home() {
       </Link>
     </div>
   </div>
+  {/* Subtle Scroll Progress Bar */}
+  <motion.div
+    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-primary/40 origin-left z-50"
+    style={{ scaleX }}
+  />
 </motion.header>
 
       <main className="relative z-10">
@@ -303,12 +315,14 @@ export default function Home() {
                 onClick={() => setLogoRotation(prev => prev + 360)}
                 animate={{ 
                   rotate: logoRotation,
+                  y: [0, -10, 0]
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ 
-                  duration: 2.5, 
-                  ease: [0.16, 1, 0.3, 1] // Premium inertial ease-out
+                  rotate: { type: "spring", stiffness: 60, damping: 12 },
+                  y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+                  default: { duration: 2.5, ease: [0.16, 1, 0.3, 1] }
                 }}
               >
                 <Logo size={80} className="text-foreground drop-shadow-[0_0_25px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] transition-all duration-300" />
@@ -356,7 +370,8 @@ export default function Home() {
                 hidden: {},
                 visible: {
                   transition: {
-                    staggerChildren: 0.1
+                    staggerChildren: 0.1,
+                    delayChildren: 1.0
                   }
                 }
               }}
@@ -365,9 +380,10 @@ export default function Home() {
                 <motion.div
                   key={i}
                   className="space-y-1 p-4 rounded-2xl bg-background/5 backdrop-blur-sm border border-white/5 hover:bg-white/2.5 transition-colors"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+                  }}
                 >
                   <div className="text-xl font-bold text-foreground">{stat.value}</div>
                   <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
@@ -571,19 +587,40 @@ export default function Home() {
                   Scorpio features a custom-built LaTeX engine designed specifically for physics pedagogy. From complex integrals to 4-vector notation, our interface ensures symbols are rendered with publication-grade precision.
                 </p>
               </div>
-              <ul className="space-y-4">
+              <motion.ul 
+                className="space-y-4"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={{
+                  hidden: {},
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1,
+                      delayChildren: 0.4
+                    }
+                  }
+                }}
+              >
                  {[
                    "Intuitive Math Builder UI",
                    "Real-time KaTeX Syntax Validation",
                    "Physics-optimized Symbol Library",
                    "Dynamic Preview & Correction"
                  ].map((text, i) => (
-                   <li key={i} className="flex items-center gap-3 text-sm font-bold text-foreground/80">
+                   <motion.li 
+                    key={i} 
+                    className="flex items-center gap-3 text-sm font-bold text-foreground/80"
+                    variants={{
+                      hidden: { opacity: 0, x: -10 },
+                      visible: { opacity: 1, x: 0 }
+                    }}
+                   >
                       <div className="h-2 w-2 rounded-full bg-primary" />
                       {text}
-                   </li>
+                   </motion.li>
                  ))}
-              </ul>
+              </motion.ul>
             </div>
             <div className="flex-1 w-full lg:w-1/2 p-6 lg:p-12 relative">
                <Dialog>
@@ -903,19 +940,39 @@ export default function Home() {
                 </p>
               </div>
               
-              <div className="grid sm:grid-cols-2 gap-6">
+              <motion.div 
+                className="grid sm:grid-cols-2 gap-6"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={{
+                  hidden: {},
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1
+                    }
+                  }
+                }}
+              >
                  {[
                    { label: "Direct Answer Rate", value: "0%", active: true },
                    { label: "Expert Score Gain", value: "+0.67", active: true },
                    { label: "LaTeX Density", value: "0.92", active: false },
                    { label: "Pedagogical Quality", value: "4.62", active: false }
                  ].map((stat, i) => (
-                   <div key={i} className="p-6 rounded-2xl border border-border/40 bg-card/20 backdrop-blur-sm space-y-2 group hover:border-secondary/30 transition-colors">
+                   <motion.div 
+                    key={i} 
+                    className="p-6 rounded-2xl border border-border/40 bg-card/20 backdrop-blur-sm space-y-2 group hover:border-secondary/30 transition-colors"
+                    variants={{
+                      hidden: { opacity: 0, y: 15 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                   >
                       <div className="text-3xl font-black text-foreground group-hover:text-secondary-foreground transition-colors">{stat.value}</div>
                       <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</div>
-                   </div>
+                   </motion.div>
                  ))}
-              </div>
+              </motion.div>
 
               <div className="pt-4 flex flex-wrap gap-4">
                 <Link href="/research" target="_blank">
