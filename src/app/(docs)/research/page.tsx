@@ -330,7 +330,7 @@ export default function ResearchPage() {
                         <CardContent className="pt-6">
                             <p className="text-muted-foreground mb-6 leading-relaxed">
                                 Our experimental design isolates each layer of the Scorpio constraint architecture to measure its specific contribution to pedagogical effectiveness. 
-                                We tested a battery of <strong>28 physics questions</strong> across 4 difficulty tiers (Basic, Intermediate, Advanced, College) and 3 question types (Conceptual, Procedural, Adversarial).
+                                We tested a battery of <strong>25 physics questions</strong> across 4 difficulty tiers (Basic, Intermediate, Advanced, College) and 3 question types (Conceptual, Procedural, Adversarial).
                                 Each question was generated 5 times per constraint level to ensure statistical reliability.
                             </p>
                             <Table>
@@ -364,7 +364,7 @@ export default function ResearchPage() {
                             <p className="text-muted-foreground text-sm italic">Updated February 16, 2026</p>
                         </div>
                         <Button asChild className="gap-2">
-                            <a href="/scorpio-paper.pdf" download>
+                            <a href="/Scorpio_Verifiable_Physics_Tutoring_LLM.pdf" download>
                                 <Download className="h-4 w-4" />
                                 Download PDF
                             </a>
@@ -392,14 +392,14 @@ export default function ResearchPage() {
 
                 <Card className="p-0 overflow-hidden bg-muted border-border/50 h-[800px] relative">
                     <iframe 
-                        src="/scorpio-paper.pdf#toolbar=0" 
+                        src="/Scorpio_Verifiable_Physics_Tutoring_LLM.pdf#toolbar=0" 
                         className="w-full h-full border-none"
                         title="Scorpio Research Paper"
                     />
                 </Card>
                 <div className="flex justify-center py-4">
                     <p className="text-sm text-muted-foreground italic">
-                        Can't see the preview? <a href="/scorpio-paper.pdf" className="text-primary underline">Download the PDF</a>.
+                        Can't see the preview? <a href="/Scorpio_Verifiable_Physics_Tutoring_LLM.pdf" className="text-primary underline">Download the PDF</a>.
                     </p>
                 </div>
             </TabsContent>
