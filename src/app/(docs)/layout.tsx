@@ -5,7 +5,7 @@ import { Logo } from "@/components/ui/logo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Assuming these exist
-import { Menu, ArrowLeft } from "lucide-react";
+import { Menu, ArrowLeft, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
@@ -34,11 +34,13 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full flex items-center gap-2 text-muted-foreground hover:text-primary px-0 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-3 text-muted-foreground hover:text-primary px-3 py-5 rounded-xl font-bold transition-all hover:bg-primary/10 active:scale-[0.98] cursor-pointer group"
                     aria-label="Back to Home"
                   >
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="">Home</span>
+                    <div className="p-1.5 bg-muted/50 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      <Home className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    </div>
+                    <span className="text-sm tracking-tight">Return Home</span>
                   </Button>
                 </Link>
             </div>
@@ -65,16 +67,18 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                         </div>
                         <div className="p-4">
                              <DocsSidebar />
-                             <div className="mt-8 pt-6 border-t">
+                             <div className="mt-8 pt-6 border-t border-border/40">
                                 <Link href="/" className="w-full block">
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="w-full flex items-center gap-2 text-muted-foreground hover:text-primary px-0 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+                                    className="w-full flex items-center gap-3 text-muted-foreground hover:text-primary px-3 py-5 rounded-xl font-bold transition-all hover:bg-primary/10 active:scale-[0.98] cursor-pointer group"
                                     aria-label="Back to Home"
                                   >
-                                    <ArrowLeft className="h-4 w-4" />
-                                    <span className="">Home</span>
+                                    <div className="p-1.5 bg-muted/50 rounded-lg group-hover:bg-primary/20 transition-colors text-primary">
+                                      <Home className="h-4.5 w-4.5" />
+                                    </div>
+                                    <span className="text-base tracking-tight">Return Home</span>
                                   </Button>
                                 </Link>
                              </div>

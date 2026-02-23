@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { BookOpen, FileText, Info, Mail, Shield } from "lucide-react";
 
 const items = [
-  { title: "About Vision", href: "/about", icon: Info },
+  { title: "About", href: "/about", icon: Info },
   { title: "Research & Data", href: "/research", icon: BookOpen },
   { title: "Privacy Policy", href: "/privacy", icon: Shield },
   { title: "Terms of Service", href: "/terms", icon: FileText },

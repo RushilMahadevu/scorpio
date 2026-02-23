@@ -18,6 +18,13 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const DemoCarousel = dynamic(() => import("@/components/demo-carousel").then(mod => mod.DemoCarousel), {
   ssr: false,
   loading: () => <div className="h-[540px] w-full flex items-center justify-center bg-muted/20 rounded-2xl animate-pulse">Loading Demonstrations...</div>
@@ -125,11 +132,22 @@ export default function Home() {
       { id: "workflow", label: "Workflow" },
       { id: "efficacy", label: "Research" },
       { id: "activity", label: "Activity" },
-      { id: "docs", label: "Docs", href: "/about" }
+      { 
+        id: "docs", 
+        label: "Docs", 
+        dropdownItems: [
+          { label: "About Scorpio", href: "/about", icon: Info },
+          { label: "Research & Methodology", href: "/research", icon: Brain },
+          { label: "Privacy Policy", href: "/privacy", icon: Shield },
+          { label: "Terms of Service", href: "/terms", icon: FileText },
+          { label: "Contact Us", href: "/contact", icon: Mail },
+
+        ]
+      }
     ].map((navItem) => (
       <div
         key={navItem.id}
-        className="relative px-1"
+        className="relative px-1 group/navitem"
         onMouseEnter={() => setHoveredNav(navItem.id)}
       >
         <AnimatePresence>
@@ -151,7 +169,54 @@ export default function Home() {
           )}
         </AnimatePresence>
         
-        {navItem.href ? (
+        {navItem.dropdownItems ? (
+          <DropdownMenu 
+            modal={false} 
+            open={hoveredNav === navItem.id} 
+            onOpenChange={(open) => {
+              if (!open) setHoveredNav(null);
+            }}
+          >
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="link"
+                className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent flex items-center gap-1.5 ${
+                  hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
+                }`}
+              >
+                {navItem.label}
+                <motion.div
+                  animate={{ 
+                    rotate: hoveredNav === navItem.id ? 180 : 0,
+                    color: hoveredNav === navItem.id ? "var(--primary)" : "var(--muted-foreground)"
+                  }}
+                  transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+                  className="flex items-center justify-center opacity-60"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                </motion.div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="center" 
+              className="w-56 bg-background/80 backdrop-blur-xl border-border/50 p-1.5 shadow-2xl rounded-2xl animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+              onMouseEnter={() => setHoveredNav(navItem.id)}
+              onMouseLeave={() => setHoveredNav(null)}
+              sideOffset={8}
+            >
+              {navItem.dropdownItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 group/item">
+                    <div className="p-1.5 bg-primary/5 rounded-lg group-hover/item:bg-primary/20 transition-colors">
+                      <item.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-semibold text-[11px] tracking-tight">{item.label}</span>
+                  </DropdownMenuItem>
+                </Link>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : navItem.href ? (
           <Link href={navItem.href}>
             <Button
               variant="link"
@@ -240,16 +305,30 @@ export default function Home() {
               {label}
             </Button>
           ))}
-          <Link href="/about" onClick={() => setMenuOpen(false)}>
-            <Button
-              variant="ghost"
-              className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
-            >
-              Docs
-            </Button>
-          </Link>
+          <div className="pt-6 pb-2 border-t mt-4 space-y-1">
+             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-4 block">Resources & Docs</span>
+             {[
+               { label: "About Scorpio", href: "/about", icon: Info },
+               { label: "Research & Methodology", href: "/research", icon: Brain },
+               { label: "Privacy Policy", href: "/privacy", icon: Shield },
+               { label: "Terms of Service", href: "/terms", icon: FileText },
+                { label: "Contact Support", href: "/contact", icon: Mail }
+             ].map((item) => (
+                <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]"
+                  >
+                    <div className="p-2 bg-primary/5 rounded-lg">
+                      <item.icon className="h-4.5 w-4.5 text-primary" />
+                    </div>
+                    {item.label}
+                  </Button>
+                </Link>
+             ))}
+          </div>
         </nav>
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 pt-4 border-t bg-muted/5">
           <div className="flex flex-col gap-2">
             <Link href="/login">
               <Button variant="outline" size="lg" className="w-full font-medium cursor-pointer">
@@ -1219,13 +1298,6 @@ export default function Home() {
                 <span className="text-sm font-medium">Research</span>
               </Link>
               <Link
-                href="/contact"
-                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                <Mail className="h-5 w-5" />
-                <span className="text-sm font-medium">Contact</span>
-              </Link>
-              <Link
                 href="/privacy"
                 className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
@@ -1238,6 +1310,13 @@ export default function Home() {
               >
                 <FileText className="h-5 w-5" />
                 <span className="text-sm font-medium">Terms</span>
+              </Link>
+              <Link
+                href="/contact"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <Mail className="h-5 w-5" />
+                <span className="text-sm font-medium">Contact</span>
               </Link>
             </div>
 
