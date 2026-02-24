@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { login, logout } from "@/lib/firebase";
+import { login, logout, db, auth } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryRole, setRecoveryRole] = useState<"student" | "teacher">("student");
+  const [recoveryAccessCode, setRecoveryAccessCode] = useState("");
+  const [isRecovering, setIsRecovering] = useState(false);
+
+  useEffect(() => {
+    if (user && !recoveryEmail) {
+      setRecoveryEmail(user.email || "");
+    }
+  }, [user, recoveryEmail]);
 
   useEffect(() => {
     if (!authLoading && user && role && role !== "checking") {
@@ -58,27 +69,169 @@ export default function LoginPage() {
     await logout();
   };
 
+  const handleRecovery = async () => {
+    if (!recoveryEmail) {
+      setError("Please enter your email");
+      return;
+    }
+
+    if (recoveryRole === "teacher" && recoveryAccessCode !== process.env.NEXT_PUBLIC_TEACHER_ACCESS_CODE) {
+      setError("Invalid Teacher Access Code");
+      return;
+    }
+
+    setLoading(true);
+    setIsRecovering(true);
+    setError("");
+
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("No session found. Please sign in again.");
+      
+      const collectionName = recoveryRole === "teacher" ? "teachers" : "students";
+      const userData: any = {
+        uid: currentUser.uid,
+        email: recoveryEmail,
+        name: recoveryEmail,
+        role: recoveryRole,
+        createdAt: new Date(),
+      };
+
+      console.log("Attempting to recover account for", currentUser.uid, "as", recoveryRole);
+
+      // Attempt all writes and capture individual failures
+      const results = await Promise.allSettled([
+        setDoc(doc(db, "users", currentUser.uid), userData),
+        setDoc(doc(db, collectionName, currentUser.uid), userData)
+      ]);
+
+      const failedIndices = results.map((r, i) => r.status === 'rejected' ? i : -1).filter(i => i !== -1);
+      
+      if (failedIndices.length > 0) {
+        failedIndices.forEach(idx => {
+          const collection = idx === 0 ? "users" : collectionName;
+          const error = (results[idx] as PromiseRejectedResult).reason;
+          console.error(`Firestore write failure in ${collection}:`, error);
+        });
+        throw (results[failedIndices[0]] as PromiseRejectedResult).reason;
+      }
+
+      // Force session refresh
+      const idToken = await user.getIdToken();
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, role: recoveryRole }),
+      });
+
+      router.refresh();
+      window.location.reload(); // Hard reload to refresh auth context
+    } catch (err) {
+      console.error("Recovery error:", err);
+      setError("Account recovery failed. Please try again.");
+      setLoading(false);
+      setIsRecovering(false);
+    }
+  };
+
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (user && role === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+        <SpaceBackground />
+        <Card className="w-full max-w-md relative z-10 backdrop-blur-md bg-background/80 border-primary/20 shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-destructive">Account Error</CardTitle>
+            <div className="flex justify-center mb-4">
+              <Logo size={48} className="text-primary animate-pulse" />
+            </div>
+            <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">Account Recovery</CardTitle>
             <CardDescription>
-              Your account was created but the profile setup is incomplete. This usually happens if there was a permission error during sign up.
+              Profile setup was interrupted. Complete it now to continue.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
-              Please sign out and try creating a new account with a different email address.
-            </p>
-            <Button className="w-full" onClick={handleLogout}>
-              Sign Out
-            </Button>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-md mb-4"
+              >
+                {error}
+              </motion.div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="rec-email" className="text-sm font-medium">Account Email</Label>
+              <Input 
+                id="rec-email" 
+                type="email"
+                placeholder="Enter your email" 
+                value={recoveryEmail} 
+                onChange={(e) => setRecoveryEmail(e.target.value)}
+                disabled={loading}
+                className="bg-background/50 border-white/10 focus:border-primary/50"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Account Role</Label>
+              <Tabs 
+                defaultValue="student" 
+                onValueChange={(v) => setRecoveryRole(v as "student" | "teacher")}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1">
+                  <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
+                    <GraduationCap className="h-4 w-4" />
+                    Student
+                  </TabsTrigger>
+                  <TabsTrigger value="teacher" className="flex items-center gap-2 cursor-pointer">
+                    <Presentation className="h-4 w-4" />
+                    Teacher
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {recoveryRole === "teacher" && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-2 pt-2"
+              >
+                <Label htmlFor="rec-code" className="text-sm font-medium">Teacher Access Code</Label>
+                <Input 
+                  id="rec-code" 
+                  type="password" 
+                  placeholder="Enter required access code" 
+                  value={recoveryAccessCode} 
+                  onChange={(e) => setRecoveryAccessCode(e.target.value)}
+                  disabled={loading}
+                  className="bg-background/50 border-white/10 focus:border-primary/50"
+                />
+              </motion.div>
+            )}
+
+            <div className="pt-4 flex flex-col gap-3">
+              <Button 
+                className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 transition-all active:scale-95 py-6 h-auto text-base" 
+                onClick={handleRecovery}
+                disabled={loading}
+              >
+                {loading && isRecovering ? "Setting up profile..." : "Finalize Profile"}
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="w-full text-muted-foreground hover:text-foreground transition-colors py-2 h-auto" 
+                onClick={handleLogout}
+                disabled={loading}
+              >
+                Sign Out & Start Over
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
