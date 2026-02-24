@@ -214,19 +214,34 @@ export async function convertFilesToBase64(files: File[]): Promise<WorkFile[]> {
 export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
-  // Create user document in Firestore
-  const collectionName = role === "teacher" ? "teachers" : "students";
+  
+  // Create user document in Unified collection (Phase 2.1)
   const userData: any = {
+    uid: user.uid,
+    email: user.email,
+    displayName: name,
+    role: role,
+    createdAt: new Date(),
+    lastLoginAt: new Date(),
+  };
+
+  if (role === "student" && classCode) {
+    userData.teacherId = classCode;
+  }
+
+  // Update unified collection
+  await setDoc(doc(db, "users", user.uid), userData);
+
+  // Sync back to legacy for compatibility if needed (Optional, but safer for now)
+  const legacyCollection = role === "teacher" ? "teachers" : "students";
+  await setDoc(doc(db, legacyCollection, user.uid), {
     uid: user.uid,
     email: user.email,
     name: name,
     role: role,
     createdAt: new Date(),
-  };
-  if (role === "student" && classCode) {
-    userData.teacherId = classCode;
-  }
-  await setDoc(doc(db, collectionName, user.uid), userData);
+  });
+
   return userCredential;
 };
 
@@ -265,7 +280,19 @@ export const signInWithGoogleForTeacher = async () => {
   const provider = new GoogleAuthProvider();
   provider.addScope("https://www.googleapis.com/auth/forms.body.readonly");
   const result = await signInWithPopup(auth, provider);
-  // Optionally, create teacher doc if not exists
+  
+  // Unified Users collection sync (Phase 2.1)
+  const userData = {
+    uid: result.user.uid,
+    email: result.user.email,
+    displayName: result.user.displayName || result.user.email || "Unknown Teacher",
+    role: "teacher" as const,
+    lastLoginAt: new Date(),
+  };
+
+  await setDoc(doc(db, "users", result.user.uid), userData, { merge: true });
+
+  // Legacy sync
   const teacherDocRef = doc(db, "teachers", result.user.uid);
   const teacherDocSnap = await getDoc(teacherDocRef);
   if (!teacherDocSnap.exists()) {

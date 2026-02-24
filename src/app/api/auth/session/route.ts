@@ -19,11 +19,34 @@ export async function POST(req: NextRequest) {
     const expiresIn = 60 * 60 * 24 * 5 * 1000;
     
     // Verify the ID token first to ensure it's valid and check connectivity
+    let decodedToken;
     try {
-      await adminAuth.verifyIdToken(idToken);
+      decodedToken = await adminAuth.verifyIdToken(idToken);
     } catch (verifyError) {
       console.error('Token verification failed:', verifyError);
       return NextResponse.json({ error: 'Invalid ID token' }, { status: 401 });
+    }
+
+    // Optional sync: Ensure token has the most up-to-date role and organizationId (Phase 1.2)
+    const userId = decodedToken.uid;
+    const userDocRef = adminDb!.collection("users").doc(userId);
+    const userDoc = await userDocRef.get();
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const currentClaims = {
+        role: userData?.role || role || "student",
+        organizationId: userData?.organizationId || null,
+      };
+
+      // Only re-set if token claims are missing or out of sync
+      if (!decodedToken.role || decodedToken.organizationId !== currentClaims.organizationId) {
+         await adminAuth.setCustomUserClaims(userId, currentClaims);
+         console.log(`Synced custom claims for user ${userId}:`, currentClaims);
+      }
+    } else if (role) {
+      // First time sign-up logic (if doc doesn't exist yet but role is provided)
+      await adminAuth.setCustomUserClaims(userId, { role, organizationId: null });
     }
 
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });

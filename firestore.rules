@@ -2,43 +2,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Helper function to check if the user is a teacher
     function isTeacher() {
-      return request.auth != null && exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+      return request.auth != null && (
+        request.auth.token.role == 'teacher' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher'
+      );
     }
 
+    // Helper function to check if the user is in the correct organization
+    function isMemberOf(orgId) {
+      return request.auth != null && (
+        request.auth.token.organizationId == orgId ||
+        request.auth.token.orgId == orgId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId
+      );
+    }
+
+    // Helper function to check if the user is the specific student
     function isStudent(userId) {
       return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Unified Users collection - allows users to see peers in their network
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isTeacher());
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     // Teachers collection
     match /teachers/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     // Students collection
     match /students/{userId} {
       allow read: if request.auth != null;
-      allow create: if isStudent(userId);
-      allow update: if isStudent(userId) || isTeacher();
-      allow delete: if isStudent(userId) || isTeacher();
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if (request.auth != null && request.auth.uid == userId) || isTeacher();
+      allow delete: if (request.auth != null && request.auth.uid == userId) || isTeacher();
     }
 
     // Assignments collection
     match /assignments/{assignmentId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && (
+        resource.data.visibility == 'global' || 
+        (resource.data.visibility == 'network' && isMemberOf(resource.data.organizationId)) ||
+        resource.data.teacherId == request.auth.uid
+      );
       allow create: if isTeacher();
-      allow update: if isTeacher();
-      allow delete: if isTeacher();
+      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
     }
 
     // Submissions collection
     match /submissions/{submissionId} {
       allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isTeacher());
       allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
-      // Prevent students from updating the grade fields
+      // Prevent students from updating certain protected fields
       allow update: if isTeacher() || (
-        request.auth.uid == resource.data.studentId && 
+        request.auth != null && request.auth.uid == resource.data.studentId && 
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['score', 'feedback', 'gradedAnswers'])
       );
       allow delete: if isTeacher();
@@ -56,6 +80,16 @@ service cloud.firestore {
       allow create: if isTeacher();
       allow update: if isTeacher();
       allow delete: if isTeacher();
+    }
+
+    // Organizations / Networks
+    match /organizations/{orgId} {
+      // Teachers can read organization data if they belong to it
+      allow read: if request.auth != null; 
+      // Only teachers can create organizations
+      allow create: if isTeacher();
+      // Only the owner (the person who created it/pays) can update organization settings
+      allow update: if isTeacher() && resource.data.ownerId == request.auth.uid;
     }
   }
 }

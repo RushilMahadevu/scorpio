@@ -38,6 +38,13 @@ interface GitHubCommit {
   author: string;
 }
 
+interface LandingNavItem {
+  id: string;
+  label: string;
+  href?: string;
+  dropdownItems?: { label: string; href: string; icon: any }[];
+}
+
 // Simple helper for relative time
 function getRelativeTime(dateString: string) {
   const date = new Date(dateString);
@@ -125,7 +132,7 @@ export default function Home() {
     className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center p-1 bg-background/20 backdrop-blur-lg rounded-full border border-border/30"
     onMouseLeave={() => setHoveredNav(null)}
   >
-    {[
+    {([
       { id: "home", label: "Home" },
       { id: "mission-control", label: "Dashboard" },
       { id: "demos", label: "Demos" },
@@ -144,7 +151,7 @@ export default function Home() {
 
         ]
       }
-    ].map((navItem) => (
+    ] as LandingNavItem[]).map((navItem) => (
       <div
         key={navItem.id}
         className="relative px-1 group/navitem"

@@ -6,8 +6,8 @@ declare global {
   }
 }
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
@@ -20,7 +20,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy } from "lucide-react";
+import { toast } from "sonner";
 // Collapsible section for advanced options
 function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -51,8 +52,18 @@ interface Question {
 }
 
 export default function CreateAssignmentPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin" /></div>}>
+      <CreateAssignmentForm />
+    </Suspense>
+  );
+}
+
+function CreateAssignmentForm() {
   const router = useRouter();
-  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const forkId = searchParams.get("fork");
+  const { user, profile } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [title, setTitle] = useState("");
@@ -60,12 +71,38 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState("");
   const [timeLimit, setTimeLimit] = useState<number | "">("");
   const [gradingType, setGradingType] = useState<"ai" | "manual">("manual");
+  const [visibility, setVisibility] = useState<"private" | "network" | "global">("private");
+  const [topic, setTopic] = useState<string>("other");
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
   const [allowAIHelp, setAllowAIHelp] = useState(false);
   const [enableTabDetection, setEnableTabDetection] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
+
+  useEffect(() => {
+    if (forkId === "true") {
+      const stored = sessionStorage.getItem("forked_assignment");
+      if (stored) {
+        try {
+          const assignment = JSON.parse(stored);
+          setTitle(`${assignment.title} (Copy)`);
+          setDescription(assignment.description || "");
+          setVisibility("private"); // Default to private for copies
+          if (assignment.questions) {
+            setQuestions(assignment.questions.map((q: any) => ({
+              ...q,
+              id: crypto.randomUUID()
+            })));
+          }
+          toast.success("Assignment forked! Choose a class to assign it.");
+          // We'll keep it in sessionStorage for now in case of refresh
+        } catch (e) {
+          console.error("Error parsing forked assignment", e);
+        }
+      }
+    }
+  }, [forkId]);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -88,10 +125,11 @@ export default function CreateAssignmentPage() {
   const [aiLoading, setAiLoading] = useState(false);
 
   // Import from Text State
+            // Cleanup or final actions can be placed here if needed
   const [importOpen, setImportOpen] = useState(false);
   const [importText, setImportText] = useState("");
   const [importLoading, setImportLoading] = useState(false);
-
+  
   const handleImportQuestions = async () => {
     if (!importText.trim()) {
       alert("Please paste some text to import questions.");
@@ -194,7 +232,7 @@ export default function CreateAssignmentPage() {
     } catch (error) {
       console.error("Failed to generate questions", error);
     } finally {
-      setAiLoading(false);
+      // Removed misplaced closing tag `</CollapsibleSection>`
     }
   };
 
@@ -210,7 +248,10 @@ export default function CreateAssignmentPage() {
       const assignmentRef = await addDoc(collection(db, "assignments"), {
         title,
         description,
+        topic,
         teacherId: user?.uid,
+        organizationId: visibility === "network" ? profile?.organizationId : (profile?.organizationId || null),
+        visibility,
         courseId: selectedCourseId,
         dueDate: new Date(dueDate),
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
@@ -425,6 +466,26 @@ export default function CreateAssignmentPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="topic">Primary Topic</Label>
+                <Select value={topic} onValueChange={setTopic}>
+                  <SelectTrigger id="topic" className="cursor-pointer">
+                    <SelectValue placeholder="Select a topic..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kinematics">Kinematics</SelectItem>
+                    <SelectItem value="dynamics">Dynamics (Newton's Laws)</SelectItem>
+                    <SelectItem value="energy">Energy & Momentum</SelectItem>
+                    <SelectItem value="thermo">Thermodynamics</SelectItem>
+                    <SelectItem value="em">Electricity & Magnetism</SelectItem>
+                    <SelectItem value="waves">Waves & Optics</SelectItem>
+                    <SelectItem value="modern">Modern Physics</SelectItem>
+                    <SelectItem value="other">General / Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
                 <Label htmlFor="course">Assign to Class <span className="text-destructive">*</span></Label>
                 <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
                   <SelectTrigger id="course" className="cursor-pointer">
@@ -442,7 +503,6 @@ export default function CreateAssignmentPage() {
                     )}
                   </SelectContent>
                 </Select>
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -488,24 +548,45 @@ export default function CreateAssignmentPage() {
 
         {/* Collapsible advanced options */}
         <CollapsibleSection title="Advanced Options" defaultOpen={false}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Grading Type</Label>
-              <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex gap-4">
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <RadioGroupItem value="ai" id="grading-ai" className="cursor-pointer" />
-                  <Label htmlFor="grading-ai" className="cursor-pointer font-normal">AI Graded</Label>
-                </div>
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer" />
-                  <Label htmlFor="grading-manual" className="cursor-pointer font-normal">Teacher Graded</Label>
-                </div>
-              </RadioGroup>
-              <p className="text-xs text-muted-foreground">
-                AI Graded assignments are graded immediately upon submission. Teacher Graded assignments require manual review.
-              </p>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label>Visibility</Label>
+                <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as "private" | "network" | "global")} className="flex flex-col gap-2">
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <RadioGroupItem value="private" id="visible-private" className="cursor-pointer" />
+                    <Label htmlFor="visible-private" className="cursor-pointer font-normal">Private (Only you & your students)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="cursor-pointer" />
+                    <Label htmlFor="visible-network" className={`cursor-pointer font-normal ${!profile?.organizationId ? 'text-muted-foreground font-italic' : ''}`}>
+                      Network {profile?.organizationId ? "" : "(Join a Network first)"}
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <RadioGroupItem value="global" id="visible-global" className="cursor-pointer" />
+                    <Label htmlFor="visible-global" className="cursor-pointer font-normal">Global (All Scorpio Teachers)</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Grading Type</Label>
+                <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex flex-col gap-2">
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <RadioGroupItem value="ai" id="grading-ai" className="cursor-pointer" />
+                    <Label htmlFor="grading-ai" className="cursor-pointer font-normal">AI Graded</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer" />
+                    <Label htmlFor="grading-manual" className="cursor-pointer font-normal">Teacher Graded</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
-            <div className="flex items-center space-x-2 cursor-pointer">
+            
+            <div className="space-y-4 pt-4 border-t">
+              <div className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 id="requireWork"
@@ -553,19 +634,21 @@ export default function CreateAssignmentPage() {
               When enabled, the system will track if a student leaves the assignment tab and warn/notify you of potential cheating.
             </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="rubric">Rubric / Grading Criteria</Label>
-              <Textarea
-                id="rubric"
-                value={rubric}
-                onChange={(e) => setRubric(e.target.value)}
-                placeholder="Enter grading criteria or rubric details..."
-                rows={4}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="rubric">Rubric / Grading Criteria</Label>
+                <Textarea
+                  id="rubric"
+                  value={rubric}
+                  onChange={(e) => setRubric(e.target.value)}
+                  placeholder="Enter grading criteria or rubric details..."
+                  rows={4}
+                />
+              </div>
             </div>
           </div>
         </CollapsibleSection>
 
+        {/* Ensure proper nesting of the Card component */}
         <Card>
           <CardHeader>
             <CardTitle>Questions</CardTitle>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Trash2, Eye } from "lucide-react";
+import { PlusCircle, Trash2, Eye, Share2, Globe, Lock, ShieldCheck } from "lucide-react";
 
 interface Assignment {
   id: string;
@@ -21,6 +21,8 @@ interface Assignment {
   createdAt: Date;
   courseId?: string;
   courseName?: string;
+  visibility?: "private" | "network" | "global";
+  organizationId?: string;
 }
 
 export default function AssignmentsPage() {
@@ -85,6 +87,15 @@ export default function AssignmentsPage() {
       setAssignments(assignments.filter((a) => a.id !== id));
     } catch (error) {
       console.error("Error deleting assignment:", error);
+    }
+  }
+
+  async function updateVisibility(id: string, visibility: "private" | "network" | "global") {
+    try {
+      await updateDoc(doc(db, "assignments", id), { visibility });
+      setAssignments(assignments.map(a => a.id === id ? { ...a, visibility } : a));
+    } catch (error) {
+      console.error("Error updating visibility:", error);
     }
   }
 
@@ -201,6 +212,7 @@ export default function AssignmentsPage() {
                   <TableHead>Class</TableHead>
                   <TableHead>Questions</TableHead>
                   <TableHead>Due Date</TableHead>
+                  <TableHead>Visibility</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -219,9 +231,25 @@ export default function AssignmentsPage() {
                     <TableCell>{assignment.questions?.length || 0}</TableCell>
                     <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant={isPastDue(assignment.dueDate) ? "secondary" : "default"}>
-                        {isPastDue(assignment.dueDate) ? "Past Due" : "Active"}
-                      </Badge>
+                      <Select 
+                        value={assignment.visibility || "private"} 
+                        onValueChange={(val: "private" | "network" | "global") => updateVisibility(assignment.id, val)}
+                      >
+                        <SelectTrigger className="w-[110px] h-8 text-xs cursor-pointer">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="private" className="text-xs cursor-pointer">
+                            <span className="flex items-center gap-1.5"><Lock className="h-3 w-3" /> Private</span>
+                          </SelectItem>
+                          <SelectItem value="network" className="text-xs cursor-pointer">
+                            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> Network</span>
+                          </SelectItem>
+                          <SelectItem value="global" className="text-xs cursor-pointer">
+                            <span className="flex items-center gap-1.5"><Globe className="h-3 w-3" /> Global</span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

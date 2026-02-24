@@ -115,13 +115,15 @@ export default function StudentDashboard() {
     if (!user || !classCode) return;
     setJoining(true);
     try {
+      const code = classCode.trim();
       // Check if code matches a course
-      const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", classCode.trim())));
+      const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", code)));
       
       let newTeacherId = "";
       let newCourseId = "";
       let newCourseName = "";
       let newCourseCode = "";
+      let newSchoolId = "";
 
       if (!coursesSnap.empty) {
         const courseDoc = coursesSnap.docs[0];
@@ -130,25 +132,26 @@ export default function StudentDashboard() {
         newCourseId = courseDoc.id;
         newCourseName = courseData.name;
         newCourseCode = courseData.code;
+        newSchoolId = courseData.schoolId || "pilot_school";
       } else {
         throw new Error("Invalid class code.");
       }
 
+      // Update student profile with new teacher, course, AND school
       await updateDoc(doc(db, "students", user.uid), {
         teacherId: newTeacherId,
-        courseId: newCourseId
+        courseId: newCourseId,
+        schoolId: newSchoolId, // Auto-migrate the student to the teacher's school
+        updatedAt: new Date()
       });
       
-      setTeacherId(newTeacherId);
-      setCourseId(newCourseId);
-      setCourseName(newCourseName);
-      setCourseCode(newCourseCode);
-      
-      alert("Joined class successfully!");
+      alert("Joined class successfully! Refreshing...");
+      window.location.reload(); // Reload to pick up new claims
     } catch (error: any) {
       console.error("Error joining class:", error);
       alert(`Failed to join class: ${error.message}`);
-    } finally {
+    }
+    finally {
       setJoining(false);
     }
   };

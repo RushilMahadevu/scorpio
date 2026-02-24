@@ -9,6 +9,25 @@ const model = getGenerativeModel(genAI, {
   },
 });
 
+/**
+ * Scrubs Personal Identifiable Information (PII) from text before sending to LLM.
+ * Targets: Emails, common phone numbers, and potential ID patterns.
+ * This is a critical compliance step for FERPA/COPPA.
+ */
+export function scrubPII(text: string): string {
+  if (!text) return text;
+  
+  return text
+    // Email addresses
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[EMAIL]")
+    // Phone numbers (Common formats: (123) 456-7890, 123-456-7890, 123.456.7890)
+    .replace(/(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g, "[PHONE]")
+    // Generic ID patterns (e.g. SSN-like 9-digit patterns)
+    .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[ID]")
+    // Credit card numbers (Simple 13-16 digit check)
+    .replace(/\b(?:\d[ -]*?){13,16}\b/g, "[SENSITIVE]");
+}
+
 // Helper: Split text into question chunks (robust, skips section headers, requires min text length)
 function splitIntoQuestions(text: string): string[] {
   const lines = text.split('\n');
@@ -934,11 +953,11 @@ export async function helpSolveProblem(
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
     const historyContext = chatHistory.length > 0 
-      ? `Previous conversation:\n${formatChatHistory(chatHistory)}\n\n` 
+      ? `Previous conversation:\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content) })))}\n\n` 
       : "";
     
-    const context = assignmentContext ? `=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===\n${assignmentContext}\n==========================================\n\n` : "";
-    const prompt = `${constraints}\n\n${context}${historyContext}The student is asking: "${problem}". 
+    const context = assignmentContext ? `=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===\n${scrubPII(assignmentContext)}\n==========================================\n\n` : "";
+    const prompt = `${constraints}\n\n${context}${historyContext}The student is asking: "${scrubPII(problem)}". 
     
     IMPORTANT: You have full access to the "=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===" above. 
     - If the student asks about "Question 1" and the text for that question is empty in the context, check the assignment title and description.
@@ -963,9 +982,9 @@ export async function helpSolveProblem(
 export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ score: number, feedback: string }> {
   try {
     const prompt = `You are an expert teacher. Grade the following student answer.
-    Question: "${question}"
-    ${rubric ? `Rubric/Correct Answer: "${rubric}"` : ''}
-    Student Answer: "${answer}"
+    Question: "${scrubPII(question)}"
+    ${rubric ? `Rubric/Correct Answer: "${scrubPII(rubric)}"` : ''}
+    Student Answer: "${scrubPII(answer)}"
     
     Provide a score out of 10 and brief feedback.
     Return ONLY a JSON object with the following format:

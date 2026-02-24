@@ -1,11 +1,28 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles, User, LogOut, Settings as SettingsIcon, Palette, Info, KeyRound, Mail, Shield, FileText } from "lucide-react"
+import { 
+  Moon, 
+  Sun, 
+  Sparkles, 
+  User, 
+  LogOut, 
+  Settings as SettingsIcon, 
+  Palette, 
+  Info, 
+  KeyRound, 
+  Mail, 
+  Shield, 
+  FileText,
+  CreditCard,
+  Building2,
+  CheckCircle2
+} from "lucide-react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -139,11 +156,17 @@ export function SettingsDialog() {
         </DialogHeader>
 
         <Tabs defaultValue="account" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${role === "teacher" ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="account" className="flex items-center gap-1 cursor-pointer">
               <User className="h-3 w-3" />
               <span className="hidden sm:inline">Account</span>
             </TabsTrigger>
+            {role === "teacher" && (
+              <TabsTrigger value="billing" className="flex items-center gap-1 cursor-pointer">
+                <CreditCard className="h-3 w-3" />
+                <span className="hidden sm:inline">Billing</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="appearance" className="flex items-center gap-1 cursor-pointer">
               <Palette className="h-3 w-3" />
               <span className="hidden sm:inline">Appearance</span>
@@ -208,6 +231,65 @@ export function SettingsDialog() {
                     Sign Out
                   </Button>
                 </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="billing" className="space-y-6 mt-4 p-1">
+            <div className="space-y-6">
+              <div className="p-4 rounded-xl border-2 border-primary/20 bg-primary/5 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-lg">Current Plan: Free</h3>
+                    <p className="text-sm text-muted-foreground">Limited to individual classroom features.</p>
+                  </div>
+                  <Badge variant="outline" className="animate-pulse bg-background">BETA</Badge>
+                </div>
+                <div className="bg-background/50 rounded-lg p-3 text-xs space-y-2">
+                   <div className="flex items-center gap-2">
+                     <CheckCircle2 className="h-3 w-3 text-green-500" />
+                     <span>Unlimited assignments for your students</span>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <CheckCircle2 className="h-3 w-3 text-green-500" />
+                     <span>AI-Powered Physics Tutoring</span>
+                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold flex items-center gap-2">
+                   <Building2 className="h-4 w-4 text-primary" />
+                   Department Network Plans
+                </h4>
+                <div className="grid grid-cols-1 gap-3">
+                   <div className="p-4 border rounded-xl hover:border-primary/50 transition-colors cursor-pointer group">
+                      <div className="flex justify-between items-center mb-1">
+                         <span className="font-bold">Pro Teacher</span>
+                         <span className="text-sm font-medium">$9/mo</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">Priority AI support & Global library sharing.</p>
+                      <Button size="sm" className="w-full text-xs" variant="secondary">Upgrade</Button>
+                   </div>
+                   
+                   <div className="p-4 border rounded-xl border-orange-500/30 bg-orange-500/5 hover:border-orange-500 transition-colors cursor-pointer relative overflow-hidden">
+                      <div className="absolute top-0 right-0 bg-orange-500 text-white text-[10px] px-2 py-0.5 font-bold rounded-bl-lg">
+                        POPULAR
+                      </div>
+                      <div className="flex justify-between items-center mb-1">
+                         <span className="font-bold">Department Network</span>
+                         <span className="text-sm font-medium">$49/mo</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">Up to 10 teachers. Private department library.</p>
+                      <Button size="sm" className="w-full text-xs bg-orange-500 hover:bg-orange-600 border-none">Select for Team</Button>
+                   </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <p className="text-[10px] text-center text-muted-foreground italic">
+                  Billing is currently disabled during the Scorpio Beta. All features are free for active physics teachers.
+                </p>
               </div>
             </div>
           </TabsContent>

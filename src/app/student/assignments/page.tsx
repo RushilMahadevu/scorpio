@@ -17,6 +17,8 @@ interface Assignment {
   description: string;
   dueDate: Date;
   questions: any[];
+  courseId: string;
+  teacherId: string;
 }
 
 export default function StudentAssignmentsPage() {
