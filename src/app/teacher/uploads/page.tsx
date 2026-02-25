@@ -254,7 +254,7 @@ export default function ResourcesPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
-            <CardTitle>Resource Library</CardTitle>
+            <CardTitle>Resource Archive</CardTitle>
             <CardDescription>{resources.length} resources available</CardDescription>
           </div>
           <div className="flex items-center gap-2">

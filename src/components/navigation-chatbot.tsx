@@ -113,14 +113,26 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        console.error("Failed to parse error response:", e);
+      }
 
       if (!response.ok) {
         if (response.status === 429) {
-          setRateLimitError(data.error);
+          setRateLimitError(data?.error || "Rate limit exceeded");
           return;
         }
-        throw new Error(data.error || 'Failed to get AI response');
+        
+        // Return the server-provided error directly in the chat for better UX
+        const errorMessage = data?.error || `Server Error (${response.status}): The AI service is currently unavailable.`;
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: errorMessage
+        }]);
+        return;
       }
 
       const aiResponse = data.text;
@@ -135,11 +147,11 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
       if (data.remainingRequests <= 3 && data.remainingRequests > 0) {
         setRateLimitWarning(`Warning: Only ${data.remainingRequests} navigation AI requests left in this hour.`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting AI response:", error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I'm having trouble right now. Try using the quick actions below or contact support at rushil.mahadevu@gmail.com" 
+        content: `Connection Error: ${error.message || 'The request could not be completed'}. Please try again later or contact support.` 
       }]);
     } finally {
       setIsLoading(false);

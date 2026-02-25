@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { polar } from "@/lib/polar";
 import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(req: Request) {
@@ -20,47 +20,73 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // 2. Define Price IDs (normally from env)
-    // For demo/dev purposes, use hardcoded or from env
-    const prices: Record<string, string> = {
-      pro_teacher: process.env.STRIPE_PRO_TEACHER_PRICE_ID || "price_pro_teacher",
-      department_network: process.env.STRIPE_NETWORK_PRICE_ID || "price_department_network",
+    // 2. Define Polar Product IDs
+    const products: Record<string, string | undefined> = {
+      standard_monthly: process.env.POLAR_MONTHLY_ID,
+      standard_yearly: process.env.POLAR_YEARLY_ID,
+      // Transition fallbacks
+      pro_monthly: process.env.POLAR_MONTHLY_ID,
+      pro_yearly: process.env.POLAR_YEARLY_ID,
+      scorpio_monthly: process.env.POLAR_MONTHLY_ID,
+      scorpio_yearly: process.env.POLAR_YEARLY_ID,
+      scorpio_pro: process.env.POLAR_PRODUCT_ID,
+      department_monthly: process.env.POLAR_MONTHLY_ID,
+      department_yearly: process.env.POLAR_YEARLY_ID,
+      department_network: process.env.POLAR_PRODUCT_ID,
     };
 
-    const priceId = prices[planId];
-    if (!priceId) {
-      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    const productId = products[planId];
+    if (!productId) {
+      console.error(`Missing Polar ID for plan: ${planId}. Check .env.local.`);
+      return NextResponse.json({ 
+        error: "Configuration Error", 
+        message: `Plan ID '${planId}' is not mapped to a Polar Price ID in the environment variables.` 
+      }, { status: 400 });
     }
 
-    // 3. Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/teacher/network?success=true`,
-      cancel_url: `${req.headers.get("origin")}/teacher/network?canceled=true`,
-      customer_email: orgData.ownerEmail, // We should ensure this exists
-      client_reference_id: organizationId,
-      metadata: {
-        userId,
-        organizationId,
-        planId,
-      },
-      subscription_data: {
-        metadata: {
-          organizationId,
-        },
-      },
-    });
+    // 3. Create Polar Checkout Session
+    try {
+      if (!polar) {
+        return NextResponse.json({ error: "Polar SDK not initialized" }, { status: 500 });
+      }
 
-    return NextResponse.json({ url: session.url });
-  } catch (error) {
-    console.error("Stripe Checkout Error:", error);
-    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
+      // In @polar-sh/sdk v0.44.0, you must use the `products` array with Price IDs
+      // Ensure POLAR_PRODUCT_ID in .env.local is a Price ID (starts with pri_)
+      const checkoutOptions: any = {
+        products: [productId], 
+        successUrl: `${req.headers.get("origin")}/teacher/network?success=true`,
+        includeConfirmationEmail: true,
+        metadata: {
+          organizationId: String(organizationId),
+          userId: String(userId),
+          planId: String(planId),
+        },
+      };
+
+      if (orgData?.ownerEmail) {
+        checkoutOptions.customerEmail = orgData.ownerEmail;
+      }
+
+      const result = await polar.checkouts.create(checkoutOptions);
+
+      if (!result || !result.url) {
+        return NextResponse.json({ error: "No checkout URL returned from Polar" }, { status: 500 });
+      }
+
+      return NextResponse.json({ url: result.url });
+    } catch (polarError: any) {
+      console.error("Polar API error details:", polarError);
+      return NextResponse.json({ 
+        error: "Polar Checkout Error", 
+        message: polarError.message || "Unknown error",
+        details: polarError.body || "No additional details"
+      }, { status: 500 });
+    }
+  } catch (error: any) {
+    console.error("Checkout route error:", error);
+    return NextResponse.json({ 
+      error: "Internal Server Error",
+      message: error?.message || "An unexpected error occurred"
+    }, { status: 500 });
   }
 }

@@ -138,14 +138,32 @@ export default function StudentDashboard() {
       }
 
       // Update student profile with new teacher, course, AND school
-      await updateDoc(doc(db, "students", user.uid), {
+      const syncData = {
         teacherId: newTeacherId,
         courseId: newCourseId,
         schoolId: newSchoolId, // Auto-migrate the student to the teacher's school
         updatedAt: new Date()
+      };
+
+      // 1. Update legacy students collection
+      await updateDoc(doc(db, "students", user.uid), syncData);
+
+      // 2. Also sync to the unified users collection for Phase 2.1 features (like AI billing)
+      // Check if we can find the teacher's organizationId to inherit it
+      let organizationId = null;
+      try {
+        const teacherUserDoc = await getDoc(doc(db, "users", newTeacherId));
+        if (teacherUserDoc.exists()) {
+          organizationId = teacherUserDoc.data()?.organizationId;
+        }
+      } catch (e) { console.error("Could not fetch teacher organization", e); }
+
+      await updateDoc(doc(db, "users", user.uid), {
+        ...syncData,
+        organizationId: organizationId || null
       });
       
-      alert("Joined class successfully! Refreshing...");
+      alert(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
       window.location.reload(); // Reload to pick up new claims
     } catch (error: any) {
       console.error("Error joining class:", error);

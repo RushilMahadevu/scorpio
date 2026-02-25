@@ -329,20 +329,34 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         
         const fullContext = assignmentContext + studentAnswersContext;
         
-        // Map local ChatMessage to the format helpSolveProblem expects
+        // Map local ChatMessage to the format our API expects
         const historyForAi = aiMessages.map(m => ({ role: m.role, content: m.content }));
         
-        const response = await helpSolveProblem(
-            userMessage.content,
-            historyForAi,
-            "STRICT_CONCISE",
-            fullContext
-        );
+        const response = await fetch("/api/student/tutor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: userMessage.content,
+            userId: user?.uid,
+            role: "student",
+            mode: "tutor",
+            chatHistory: historyForAi,
+            assignmentContext: fullContext
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "AI service failed");
+        }
+
+        const data = await response.json();
+        const responseText = data.response || "No response received.";
         
         const aiResponse: ChatMessage = { 
           id: crypto.randomUUID(), 
           role: "assistant", 
-          content: response 
+          content: responseText 
         };
         setAiMessages(prev => [...prev, aiResponse]);
     } catch (error) {

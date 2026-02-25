@@ -691,7 +691,7 @@ export default function Home() {
                  {[
                    "Intuitive Math Builder UI",
                    "Real-time KaTeX Syntax Validation",
-                   "Physics-optimized Symbol Library",
+                   "Waypoints Reference System",
                    "Dynamic Preview & Correction"
                  ].map((text, i) => (
                    <motion.li 
@@ -976,7 +976,7 @@ export default function Home() {
                   { title: "Adaptive Socratic Guidance", desc: "Engage with a constraint-led AI specialized in guiding derivations.", icon: <SquareFunction className="h-3.5 w-3.5" /> },
                   { title: "Immersive Problem Solving", desc: "Interact with physics challenges through high-fidelity math rendering.", icon: <Orbit className="h-3.5 w-3.5" /> },
                   { title: "Continuous Feedback Loop", desc: "Receive immediate sanity checks for unit consistency and physical logic.", icon: <ShieldCheck className="h-3.5 w-3.5" /> },
-                  { title: "Synthesized Learning Path", desc: "Access a consolidated library of resources tailored to current coursework.", icon: <MessageCircle className="h-3.5 w-3.5" /> }
+                  { title: "Synthesized Learning Path", desc: "Access a collection of Waypoints tailored to current coursework.", icon: <MessageCircle className="h-3.5 w-3.5" /> }
                 ].map((item, i) => (
                   <motion.div
                     key={i}

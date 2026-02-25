@@ -9,14 +9,14 @@ import {
   BarChart3,
   GraduationCap,
   Building2,
-  BookOpen
+  Waypoints,
 } from "lucide-react";
 import { AppSidebar } from "./app-sidebar";
 
 const navItems = [
   { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
   { href: "/teacher/network", label: "Network", icon: Building2 },
-  { href: "/teacher/library", label: "Physics Library", icon: BookOpen },
+  { href: "/teacher/waypoints", label: "Waypoints", icon: Waypoints },
   { href: "/teacher/assignments", label: "My Assignments", icon: FileText },
   { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
   { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },

@@ -83,7 +83,7 @@ function repairIncompleteJson(json: string): string {
 }
 
 // Helper: Parse a single batch of questions using Gemini
-async function parseSingleBatch(batchText: string, startNumber: number, model: any): Promise<any[]> {
+async function parseSingleBatch(batchText: string, startNumber: number, model: any): Promise<{ questions: any[], usage: { inputTokens: number, outputTokens: number } }> {
   const prompt = `Parse these quiz questions into a JSON array. Return ONLY the JSON array, no markdown, no other text.
 
 QUESTIONS:
@@ -133,7 +133,13 @@ JSON array:`;
     if (!Array.isArray(parsed)) {
       throw new Error('Parsed result is not an array');
     }
-    return parsed;
+    return {
+      questions: parsed,
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+      }
+    };
   } catch (e) {
     throw new Error(`Failed to parse questions in batch starting at ${startNumber}. Please try with fewer questions.`);
   }
@@ -922,7 +928,7 @@ export async function explainPhysicsConcept(
   concept: string, 
   chatHistory: ChatMessage[] = [],
   constraintLevel: ConstraintLevel = "FULL"
-): Promise<string> {
+): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
     const historyContext = chatHistory.length > 0 
@@ -934,13 +940,19 @@ export async function explainPhysicsConcept(
     const result = await model.generateContent(prompt);
     const response = await result.response;
     console.log("Explain concept response:", response);
-    return response.text();
+    return {
+      text: response.text(),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+      }
+    };
   } catch (error) {
     console.error("Error explaining concept:", error);
     if (error instanceof Error) {
-      return `Error: ${error.message}`;
+      return { text: `Error: ${error.message}` };
     }
-    return "Sorry, I couldn't explain that concept right now.";
+    return { text: "Sorry, I couldn't explain that concept right now." };
   }
 }
 
@@ -949,7 +961,7 @@ export async function helpSolveProblem(
   chatHistory: ChatMessage[] = [],
   constraintLevel: ConstraintLevel = "FULL",
   assignmentContext?: string
-): Promise<string> {
+): Promise<{ text: string, usage?: { promptTokenCount: number, candidatesTokenCount: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
     const historyContext = chatHistory.length > 0 
@@ -969,17 +981,23 @@ export async function helpSolveProblem(
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    return {
+      text: response.text(),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+      }
+    };
   } catch (error) {
     console.error("Error solving problem:", error);
     if (error instanceof Error) {
-      return `Error: ${error.message}`;
+      return { text: `Error: ${error.message}` };
     }
-    return "Sorry, I couldn't help solve that problem right now.";
+    return { text: "Sorry, I couldn't help solve that problem right now." };
   }
 }
 
-export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ score: number, feedback: string }> {
+export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ score: number, feedback: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const prompt = `You are an expert teacher. Grade the following student answer.
     Question: "${scrubPII(question)}"
@@ -1004,11 +1022,22 @@ export async function gradeResponse(question: string, answer: string, rubric?: s
         const data = JSON.parse(jsonStr);
         return {
             score: typeof data.score === 'number' ? data.score : 0,
-            feedback: data.feedback || "No feedback provided."
+            feedback: data.feedback || "No feedback provided.",
+            usage: {
+                inputTokens: response.usageMetadata?.promptTokenCount || 0,
+                outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+            }
         };
     } catch (parseError) {
         console.error("Error parsing AI response:", text);
-        return { score: 0, feedback: "Error parsing grading response." };
+        return { 
+            score: 0, 
+            feedback: "Error parsing grading response.", 
+            usage: {
+                inputTokens: response.usageMetadata?.promptTokenCount || 0,
+                outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+            }
+        };
     }
 
   } catch (error) {
@@ -1112,7 +1141,7 @@ export async function runAblationStudy(): Promise<AblationResult[]> {
   return results;
 }
 
-export async function generateAssignmentQuestions(topic: string, count: number, difficulty: string, questionType: string = "mixed"): Promise<any[]> {
+export async function generateAssignmentQuestions(topic: string, count: number, difficulty: string, questionType: string = "mixed"): Promise<{ questions: any[], usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const prompt = `Generate ${count} physics questions about "${topic}" at a ${difficulty} difficulty level.
     The question type should be: ${questionType}.
@@ -1144,10 +1173,16 @@ export async function generateAssignmentQuestions(topic: string, count: number, 
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     const cleanJson = jsonMatch ? jsonMatch[0] : text;
     
-    return JSON.parse(cleanJson);
+    return {
+      questions: JSON.parse(cleanJson),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+      }
+    };
   } catch (error) {
     console.error("Error generating questions:", error);
-    return [];
+    return { questions: [] };
   }
 }
 
@@ -1155,7 +1190,7 @@ export async function generateAssignmentQuestions(topic: string, count: number, 
  * Parses pasted text (from Google Forms, Word, etc.) and extracts questions
  * using AI to intelligently identify question text, types, and options
  */
-export async function parseQuestionsFromText(text: string): Promise<any[]> {
+export async function parseQuestionsFromText(text: string): Promise<{ questions: any[], usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     // Split text into individual questions first
     const questionChunks = splitIntoQuestions(text);
@@ -1165,17 +1200,29 @@ export async function parseQuestionsFromText(text: string): Promise<any[]> {
     // Process in batches of 5 questions to avoid token limits
     const BATCH_SIZE = 5;
     const allQuestions: any[] = [];
+    let totalPromptTokens = 0;
+    let totalCandidateTokens = 0;
+
     for (let i = 0; i < questionChunks.length; i += BATCH_SIZE) {
       const batch = questionChunks.slice(i, i + BATCH_SIZE);
       const batchText = batch.join('\n\n');
-      const batchQuestions = await parseSingleBatch(batchText, i + 1, model);
+      const { questions: batchQuestions, usage } = await parseSingleBatch(batchText, i + 1, model);
+      
+      if (usage) {
+        totalPromptTokens += usage.inputTokens;
+        totalCandidateTokens += usage.outputTokens;
+      }
+      
       allQuestions.push(...batchQuestions);
       // Small delay between batches to avoid rate limits
       if (i + BATCH_SIZE < questionChunks.length) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
-    return validateAndNormalizeQuestions(allQuestions);
+    return {
+      questions: validateAndNormalizeQuestions(allQuestions),
+      usage: { inputTokens: totalPromptTokens, outputTokens: totalCandidateTokens }
+    };
   } catch (error) {
     console.error("Error parsing questions from text:", error);
     if (error instanceof Error) {
@@ -1216,7 +1263,7 @@ export async function getNavigationResponse(
   userRole: 'student' | 'teacher',
   featuresContext: string,
   systemPrompt: string
-): Promise<string> {
+): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const fullPrompt = `${systemPrompt}
 
@@ -1230,9 +1277,18 @@ If suggesting navigation, wrap the path in parentheses like this: (/student/grad
 
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
-    return response.text();
+    
+    return {
+      text: response.text(),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0,
+      }
+    };
   } catch (error) {
     console.error("Error getting navigation response:", error);
-    return "I'm sorry, I'm having trouble processing your request right now.";
+    return { 
+      text: "I'm sorry, I'm having trouble processing your request right now." 
+    };
   }
 }

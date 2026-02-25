@@ -26,7 +26,10 @@ service cloud.firestore {
 
     // Unified Users collection - allows users to see peers in their network
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isTeacher());
+      allow read: if request.auth != null && (
+        request.auth.uid == userId || 
+        (isTeacher() && isMemberOf(resource.data.organizationId))
+      );
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
@@ -84,12 +87,21 @@ service cloud.firestore {
 
     // Organizations / Networks
     match /organizations/{orgId} {
-      // Teachers can read organization data if they belong to it
-      allow read: if request.auth != null; 
+      // Allow authenticated users to get an organization by ID (for joining/verified checks)
+      allow get: if request.auth != null;
+      // Listing/Querying organizations is reserved for members
+      allow list: if isMemberOf(orgId);
+      
       // Only teachers can create organizations
       allow create: if isTeacher();
       // Only the owner (the person who created it/pays) can update organization settings
       allow update: if isTeacher() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Usage Analytics logs for metered billing
+    match /usage_analytics/{logId} {
+      // Allow members of the organization to read their own usage logs
+      allow read, list: if isMemberOf(resource.data.organizationId);
     }
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { gradeResponse } from '@/lib/gemini';
+import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
 export async function POST(req: NextRequest) {
   if (!adminDb) {
@@ -25,9 +26,32 @@ export async function POST(req: NextRequest) {
 
     const submissionData = submissionSnap.data();
     const assignmentId = submissionData?.assignmentId;
+    const studentId = submissionData?.studentId;
 
-    if (!assignmentId) {
+    if (!assignmentId || !studentId) {
       return NextResponse.json({ error: 'Invalid submission data' }, { status: 400 });
+    }
+
+    // --- Budget Check ---
+    const studentDoc = await adminDb.collection("users").doc(studentId).get();
+    const studentData = studentDoc.exists ? studentDoc.data() : null;
+    let organizationId = studentData?.organizationId;
+
+    // Fallback: If student doesn't have an organization, inherit from teacher
+    if (!organizationId && studentData?.role === "student" && studentData?.teacherId) {
+        const teacherDoc = await adminDb.collection("users").doc(studentData.teacherId).get();
+        if (teacherDoc.exists) {
+            organizationId = teacherDoc.data()?.organizationId;
+        }
+    }
+
+    if (!organizationId) {
+        return NextResponse.json({ error: "No organization found for grading budget." }, { status: 403 });
+    }
+
+    const budgetCheck = await checkBudget(organizationId, "grading");
+    if (!budgetCheck.allowed) {
+        return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
 
     // 2. Fetch Assignment
@@ -46,6 +70,8 @@ export async function POST(req: NextRequest) {
     let totalScore = 0;
     let maxScore = 0;
     const gradedAnswers = [];
+    let totalPromptTokens = 0;
+    let totalCandidateTokens = 0;
 
     for (const ans of answers) {
       const question = questions.find((q: any) => q.id === ans.questionId);
@@ -65,12 +91,18 @@ export async function POST(req: NextRequest) {
         try {
             // Combine question-specific rubric (correctAnswer) with global rubric
             const combinedRubric = [question.correctAnswer, globalRubric].filter(Boolean).join("\n\nGlobal Assignment Rubric:\n");
-            const gradingResult = await gradeResponse(question.text, ans.answer, combinedRubric);
-            feedback = gradingResult.feedback;
+            const result = await gradeResponse(question.text, ans.answer, combinedRubric);
+            feedback = result.feedback;
+            
+            // Track usage
+            if (result.usage) {
+                totalPromptTokens += result.usage.inputTokens;
+                totalCandidateTokens += result.usage.outputTokens;
+            }
             
             // Calculate score based on points
             // gradingResult.score is out of 10
-            const rawScore = gradingResult.score; // 0-10
+            const rawScore = result.score; // 0-10
             score = (rawScore / 10) * points;
             
         } catch (e) {
@@ -86,6 +118,38 @@ export async function POST(req: NextRequest) {
       }
 
       totalScore += score;
+      gradedAnswers.push({
+        ...ans,
+        feedback,
+        score,
+        maxPoints: points
+      });
+    }
+
+    // Record cumulative usage
+    if (totalPromptTokens > 0 || totalCandidateTokens > 0) {
+        await recordUsage(organizationId, "grading", totalPromptTokens, totalCandidateTokens);
+    }
+
+    const finalScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+
+    // 4. Update Submission
+    await submissionRef.update({
+      score: finalScore,
+      totalPoints: maxScore,
+      earnedPoints: totalScore,
+      answers: gradedAnswers,
+      graded: true,
+      gradedAt: new Date()
+    });
+
+    return NextResponse.json({ success: true, score: finalScore });
+
+  } catch (error) {
+    console.error("Error in grading API:", error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
       gradedAnswers.push({
         ...ans,
         feedback,

@@ -67,8 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Check if student
               const studentDoc = await getDoc(doc(db, "students", firebaseUser.uid));
               if (studentDoc.exists()) {
+                const studentData = studentDoc.data();
+                const newProfile: Partial<UserProfile> = {
+                  uid: firebaseUser.uid,
+                  email: firebaseUser.email || "",
+                  displayName: firebaseUser.displayName || studentData.name || "Unknown Student",
+                  role: "student",
+                  teacherId: studentData.teacherId || null,
+                  courseId: studentData.courseId || null,
+                  schoolId: studentData.schoolId || null,
+                  createdAt: studentData.createdAt || serverTimestamp(),
+                  lastLoginAt: serverTimestamp(),
+                };
+                
+                await setDoc(doc(db, "users", firebaseUser.uid), newProfile, { merge: true });
                 setRole("student");
-                // Optional: Migrate students too if needed for network features
+                setProfile(newProfile as UserProfile);
               } else {
                 setRole(null);
               }

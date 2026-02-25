@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { adminAuth } from '@/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing ID token' }, { status: 400 });
     }
 
-    if (!adminAuth) {
-      console.error('Firebase Admin Auth not initialized. Check environment variables.');
+    if (!adminAuth || !adminDb) {
+      console.error('Firebase Admin not initialized. Check environment variables.');
       return NextResponse.json({ error: 'Auth service unavailable' }, { status: 500 });
     }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +10,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Users, Building2, UserPlus, LogOut, Loader2, Link, Crown, UserMinus, ShieldAlert, MoreHorizontal, Copy } from "lucide-react";
-import { Organization, UserProfile } from "@/lib/types";
-import { toast } from "sonner";
+import { 
+  PlusCircle, 
+  Users, 
+  Building2, 
+  UserPlus, 
+  LogOut, 
+  Loader2, 
+  Link, 
+  Crown, 
+  UserMinus, 
+  ShieldAlert, 
+  MoreHorizontal, 
+  Copy, 
+  Sparkles, 
+  CreditCard, 
+  CheckCircle2, 
+  Lock,
+  Calculator,
+  Zap
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -22,7 +47,11 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, CreditCard, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import { Organization, UserProfile } from "@/lib/types";
+import { AICostCalculator } from "@/components/admin/ai-cost-calculator";
+import { UsageAnalytics } from "@/components/admin/usage-analytics";
+import { cn } from "@/lib/utils";
 
 export default function NetworkPage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -35,6 +64,16 @@ export default function NetworkPage() {
   const [newOrgName, setNewOrgName] = useState("");
   const [joiningOrgId, setJoiningOrgId] = useState("");
   const [upgrading, setUpgrading] = useState(false);
+  const [updatingBudget, setUpdatingBudget] = useState(false);
+  const [tempBudget, setTempBudget] = useState<string>("");
+
+  useEffect(() => {
+    if (organization?.aiBudgetLimit !== undefined) {
+      setTempBudget((organization.aiBudgetLimit / 100).toFixed(4));
+    } else {
+      setTempBudget("10.0000");
+    }
+  }, [organization]);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -68,6 +107,30 @@ export default function NetworkPage() {
       toast.error("An error occurred.");
     } finally {
       setUpgrading(false);
+    }
+  };
+
+  const handleUpdateBudget = async () => {
+    if (!user || !organization || user.uid !== organization.ownerId) return;
+    
+    const budgetCents = parseFloat(tempBudget) * 100;
+    if (isNaN(budgetCents) || budgetCents < 0) {
+      toast.error("Please enter a valid budget amount.");
+      return;
+    }
+
+    setUpdatingBudget(true);
+    try {
+      await updateDoc(doc(db, "organizations", organization.id), {
+        aiBudgetLimit: budgetCents
+      });
+      toast.success("AI Budget updated successfully!");
+      setOrganization(prev => prev ? { ...prev, aiBudgetLimit: budgetCents } : null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update AI Budget.");
+    } finally {
+      setUpdatingBudget(false);
     }
   };
 
@@ -129,9 +192,10 @@ export default function NetworkPage() {
 
     try {
       // 1. Fetch organization details
-      const orgSnap = await getDocs(query(collection(db, "organizations"), where("id", "==", profile.organizationId)));
-      if (!orgSnap.empty) {
-        setOrganization({ id: orgSnap.docs[0].id, ...orgSnap.docs[0].data() } as Organization);
+      const orgRef = doc(db, "organizations", profile.organizationId);
+      const orgSnap = await getDoc(orgRef);
+      if (orgSnap.exists()) {
+        setOrganization({ id: orgSnap.id, ...orgSnap.data() } as Organization);
       }
 
       // 2. Fetch network members
@@ -152,9 +216,12 @@ export default function NetworkPage() {
         id: orgRef.id,
         name: newOrgName,
         ownerId: user.uid,
-        ownerEmail: user.email || "", // Add for Stripe sessions
+        ownerEmail: user.email || "", // Add for Polar sessions
         subscriptionStatus: "none",
         planId: "free",
+        aiUsageCurrent: 0,
+        aiBudgetLimit: 50, // Individual/Free $0.50 starting credit
+        baseMonthlyFee: 0,
         createdAt: new Date(),
       };
       
@@ -180,23 +247,37 @@ export default function NetworkPage() {
     const cleanId = joiningOrgId.trim();
     if (!user || !cleanId) return;
     try {
-      // Verify org exists
-      const orgSnap = await getDocs(query(collection(db, "organizations"), where("id", "==", cleanId)));
-      if (orgSnap.empty) {
-        alert("Network not found. Please check the ID.");
+      // 1. Verify org exists and check capacity
+      const orgRef = doc(db, "organizations", cleanId);
+      const orgSnap = await getDoc(orgRef);
+      
+      if (!orgSnap.exists()) {
+        toast.error("Network not found. Please check the ID.");
         return;
       }
 
+      const orgData = orgSnap.data();
+      const membersSnap = await getDocs(query(collection(db, "users"), where("organizationId", "==", cleanId)));
+      
+      if (membersSnap.size >= 10) {
+        toast.error("This network has reached its 10-practitioner limit.");
+        return;
+      }
+
+      // 2. Join the network
       await setDoc(doc(db, "users", user.uid), {
         organizationId: cleanId,
-        role: "teacher", // Ensure role is set during migration
+        role: "teacher",
         email: user.email,
         displayName: user.displayName || "Unknown Teacher",
         lastLoginAt: new Date()
       }, { merge: true });
+      
+      toast.success(`Joined ${orgData.name}!`);
       window.location.reload();
     } catch (e) {
       console.error(e);
+      toast.error("Failed to join network. You may already be in one or have insufficient permissions.");
     }
   }
 
@@ -246,9 +327,9 @@ export default function NetworkPage() {
   return (
     <div className="container p-6 mx-auto space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Physics Network</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Scorpio Network</h1>
         <p className="text-muted-foreground max-w-2xl">
-          Coordinate with your department, share curriculum resources, and build a localized physics teaching collective.
+          Coordinate with your department, share curriculum resources, and build your local Scorpio Collective.
         </p>
       </div>
 
@@ -292,6 +373,11 @@ export default function NetworkPage() {
             </CardFooter>
           </Card>
         </div>
+      ) : !organization ? (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Retrieving organization details...</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2">
@@ -308,23 +394,6 @@ export default function NetworkPage() {
                       Physics Network Active • ID: {organization?.id}
                     </CardDescription>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  {user?.uid === organization.ownerId && organization.planId === "free" && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                      onClick={() => handleUpgrade("department_network")}
-                      disabled={upgrading}
-                    >
-                      {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                      Upgrade to Pro
-                    </Button>
-                  )}
-                  <Badge variant="secondary" className="capitalize">
-                    {organization?.planId} Plan
-                  </Badge>
                 </div>
               </div>
             </CardHeader>
@@ -372,7 +441,7 @@ export default function NetworkPage() {
                         {user?.uid === organization.ownerId && member.uid !== user.uid ? (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -407,6 +476,202 @@ export default function NetworkPage() {
           </Card>
 
           <div className="space-y-6">
+            {user?.uid === organization.ownerId && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-primary" />
+                    Network Billing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="p-3 bg-background border rounded-lg flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] uppercase text-muted-foreground font-bold">Current Plan</p>
+                      <p className="text-sm font-bold capitalize">{organization.planId === "free" ? "Free" : "Standard"}</p>
+                    </div>
+                    {organization.planId !== "free" && (
+                      <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 shadow-[0_0_8px_rgba(16,185,129,0.2)]">Active</Badge>
+                    )}
+                  </div>
+                  
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full text-xs h-9 cursor-pointer">
+                        Manage Plan & Billing
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-3xl border-none bg-card p-0 overflow-hidden ring-1 ring-border shadow-2xl">                      
+                      <div className="p-8 space-y-8">
+                        <DialogHeader className="p-0">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-2xl">
+                              <Sparkles className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-left">
+                              <DialogTitle className="text-2xl font-bold tracking-tight">The Scorpio Network</DialogTitle>
+                              <DialogDescription className="text-sm">
+                                Elevate your department with classroom-grade AI and teacher-first tools.
+                              </DialogDescription>
+                            </div>
+                          </div>
+                        </DialogHeader>
+
+                        {/* Current Plan Overview (Compact) */}
+                        <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20 backdrop-blur-sm">
+                          <div className="flex items-center gap-4">
+                            <div className={cn(
+                              "h-2.5 w-2.5 rounded-full",
+                              organization.planId === "free" ? "bg-muted-foreground/30" : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"
+                            )} />
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-0.5">Active Network License</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-base font-bold capitalize">
+                                  {organization.planId === "free" ? "Free" : "Standard"}
+                                </p>
+                                {organization.planId !== "free" && (
+                                  <Badge variant="outline" className="text-[9px] font-mono py-0 opacity-70">
+                                    {organization.planId.includes("yearly") ? "ANNUAL" : "MONTHLY"}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="bg-background/50 border-none font-medium text-[10px] flex items-center gap-1.5">
+                            Standard Capacity
+                          </Badge>
+                        </div>
+
+                        {organization.planId === "free" ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Monthly Plan */}
+                            <div className="group relative p-6 border border-border bg-card rounded-3xl flex flex-col justify-between hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5">
+                              <div className="space-y-6">
+                                <div>
+                                  <Badge variant="outline" className="mb-4 font-mono text-[9px] uppercase tracking-widest border-border/50">Standard Monthly</Badge>
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="text-4xl font-black tracking-tighter">$4.99</span>
+                                    <span className="text-muted-foreground text-sm font-medium">/mo</span>
+                                  </div>
+                                </div>
+                                
+                                <ul className="space-y-3">
+                                  {[
+                                    "Full Teacher AI Dashboard",
+                                    "Shared Network Waypoints",
+                                    "Real-time Mastery Views",
+                                    "Cancel anytime"
+                                  ].map((feature) => (
+                                    <li key={feature} className="flex items-center gap-3 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                      <span>{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              <Button 
+                                className="cursor-pointer mt-8 w-full bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold py-6 text-sm rounded-2xl"
+                                onClick={() => handleUpgrade("standard_monthly")}
+                                disabled={upgrading}
+                              >
+                                {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Start Monthly Standard"}
+                              </Button>
+                            </div>
+
+                            {/* Yearly Plan - HIGH IMPACT */}
+                            <div className="relative p-7 border-2 border-primary bg-primary/[0.01] rounded-3xl flex flex-col justify-between shadow-2xl shadow-primary/10 overflow-hidden transition-transform hover:scale-[1.02] duration-300">
+                              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] px-4 py-1.5 font-black uppercase tracking-widest rounded-bl-2xl">
+                                50% OFF • RECOMMENDED
+                              </div>
+                              
+                              <div className="space-y-6">
+                                <div>
+                                  <Badge className="mb-4 bg-primary hover:bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest border-none">Standard Yearly</Badge>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-black tracking-tighter">$29.88</span>
+                                    <span className="text-muted-foreground text-sm font-medium">/year</span>
+                                  </div>
+                                  <p className="text-[11px] text-primary font-bold mt-1.5 flex items-center gap-1.5">
+                                    <Zap className="h-3 w-3" />
+                                    Just $2.49/mo (Save $30/yr)
+                                  </p>
+                                </div>
+                                
+                                <ul className="space-y-3">
+                                  {[
+                                    "Everything in Monthly",
+                                    "Priority Processing",
+                                    "Extended Usage History",
+                                    "Department-wide Discount"
+                                  ].map((feature) => (
+                                    <li key={feature} className="flex items-center gap-3 text-xs font-semibold">
+                                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                                      <span>{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              <Button 
+                                className="cursor-pointer mt-8 w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 text-sm rounded-2xl shadow-lg shadow-primary/20"
+                                onClick={() => handleUpgrade("standard_yearly")}
+                                disabled={upgrading}
+                              >
+                                {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Claim Annual Standard"}
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 flex items-center gap-4">
+                              <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center">
+                                <CheckCircle2 className="h-6 w-6 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold">Subscription Fully Active</h4>
+                                <p className="text-sm text-muted-foreground">Your department is powered by Scorpio AI.</p>
+                              </div>
+                            </div>
+                            <div className="p-4 bg-muted/30 rounded-xl text-xs text-center text-muted-foreground italic border border-border/50">
+                                Management & Billing is handled securely via Polar. 
+                                <a href="https://polar.sh/scorpio/portal" target="_blank" className="text-primary font-bold ml-1 hover:underline">Launch Portal</a>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Token Pricing Transparency Footer */}
+                        {organization.planId === "free" && (
+                          <div className="bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/50 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className="p-2.5 bg-background border rounded-xl shadow-sm">
+                                <Sparkles className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Zero Markup Policy</p>
+                                <p className="text-sm font-medium">Pay exact raw Gemini 2.5 Flash token costs.</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-4">
+                              <div className="text-center px-4 border-l border-border/50">
+                                <p className="text-lg font-black font-mono leading-none">$0.15</p>
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1">1M Input</p>
+                              </div>
+                              <div className="text-center px-4 border-l border-border/50">
+                                <p className="text-lg font-black font-mono leading-none">$0.60</p>
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1">1M Output</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border-primary/10 bg-primary/5">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -424,11 +689,77 @@ export default function NetworkPage() {
                   </div>
                   <Copy className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                 </div>
-                <Button className="w-full" onClick={copyInviteLink}>
+                <Button className="cursor-pointer w-full" onClick={copyInviteLink}>
                   Copy Invitation Link
                 </Button>
               </CardContent>
             </Card>
+
+            {organization.planId !== "free" && (
+              <Card className="border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-950/10">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      AI Budgeting (Monthly)
+                    </CardTitle>
+                    <Badge variant="outline" className="text-[10px] font-mono border-emerald-200 text-emerald-700 bg-emerald-100/50">
+                      LIVE
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-[11px]">
+                    Manage pay-as-you-go AI limits for your network.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Usage
+                      </p>
+                      <p className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
+                        ${((organization.aiUsageCurrent || 0) / 100).toFixed(4)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Limit</p>
+                      <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                        ${((organization.aiBudgetLimit || 0) / 100).toFixed(4)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {user?.uid === organization.ownerId && (
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="ai-budget" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Monthly AI Cap ($)</Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            id="ai-budget" 
+                            type="number" 
+                            step="0.0001" 
+                            className="h-10 font-mono text-sm rounded-xl focus-visible:ring-emerald-500" 
+                            value={tempBudget}
+                            onChange={(e) => setTempBudget(e.target.value)}
+                          />
+                          <Button 
+                            className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                            onClick={handleUpdateBudget}
+                            disabled={updatingBudget}
+                          >
+                            {updatingBudget ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed px-1">
+                        AI services will halt automatically once this threshold is reached to prevent overages.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader className="pb-2">
@@ -441,7 +772,7 @@ export default function NetworkPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full text-destructive hover:bg-destructive/10" onClick={leaveNetwork}>
+                <Button variant="outline" className="cursor-pointer w-full text-destructive hover:bg-destructive/10" onClick={leaveNetwork}>
                   <LogOut className="mr-2 h-4 w-4" />
                   {user?.uid === organization.ownerId ? "Disband Network" : "Leave Network"}
                 </Button>
@@ -452,6 +783,17 @@ export default function NetworkPage() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        </div>
+      )}
+
+      {profile?.role === "teacher" && profile?.organizationId && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-border/50">
+          <div className="space-y-4">
+            <UsageAnalytics organizationId={profile.organizationId} />
+          </div>
+          <div className="space-y-4">
+            <AICostCalculator />
           </div>
         </div>
       )}

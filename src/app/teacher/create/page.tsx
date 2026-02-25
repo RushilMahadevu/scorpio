@@ -8,10 +8,10 @@ declare global {
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { generateAssignmentQuestions, parseQuestionsFromText, parseQuestionsManually } from "@/lib/gemini";
+import { parseQuestionsManually } from "@/lib/gemini";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,8 +20,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { Organization } from "@/lib/types";
 // Collapsible section for advanced options
 function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -63,8 +64,9 @@ function CreateAssignmentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const forkId = searchParams.get("fork");
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -79,6 +81,24 @@ function CreateAssignmentForm() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
+
+  const isFreePlan = authLoading || !organization || organization.planId === "free";
+
+  useEffect(() => {
+    async function fetchOrg() {
+      if (profile?.organizationId) {
+        try {
+          const orgSnap = await getDoc(doc(db, "organizations", profile.organizationId));
+          if (orgSnap.exists()) {
+            setOrganization({ id: orgSnap.id, ...orgSnap.data() } as Organization);
+          }
+        } catch (e) {
+          console.error("Error fetching organization", e);
+        }
+      }
+    }
+    fetchOrg();
+  }, [profile?.organizationId]);
 
   useEffect(() => {
     if (forkId === "true") {
@@ -149,7 +169,19 @@ function CreateAssignmentForm() {
       } catch (manualError) {
         console.log("Manual parsing failed, trying AI parser...", manualError);
         // Fall back to AI parsing
-        parsedQuestions = await parseQuestionsFromText(importText);
+        const res = await fetch("/api/ai/parse", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: importText, userId: user?.uid }),
+        });
+        
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "AI Parsing failed");
+        }
+        
+        const result = await res.json();
+        parsedQuestions = result.questions;
       }
       const newQuestions = parsedQuestions.map((q: any) => ({
         id: crypto.randomUUID(),
@@ -216,7 +248,25 @@ function CreateAssignmentForm() {
     if (!aiTopic) return;
     setAiLoading(true);
     try {
-      const generatedQuestions = await generateAssignmentQuestions(aiTopic, aiCount, aiDifficulty, aiQuestionType);
+      const res = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: aiTopic,
+          count: aiCount,
+          difficulty: aiDifficulty,
+          questionType: aiQuestionType,
+          userId: user?.uid,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to generate questions.");
+      }
+
+      const result = await res.json();
+      const generatedQuestions = result.questions;
       const newQuestions = generatedQuestions.map((q: any) => ({
         id: crypto.randomUUID(),
         text: q.text,
@@ -229,10 +279,12 @@ function CreateAssignmentForm() {
       setQuestions([...questions, ...newQuestions]);
       setAiOpen(false);
       setAiTopic("");
-    } catch (error) {
+      toast.success(`Successfully generated ${newQuestions.length} questions!`);
+    } catch (error: any) {
       console.error("Failed to generate questions", error);
+      toast.error(error.message || "Failed to generate questions. Please try again.");
     } finally {
-      // Removed misplaced closing tag `</CollapsibleSection>`
+      setAiLoading(false);
     }
   };
 
@@ -310,16 +362,27 @@ function CreateAssignmentForm() {
             {/* Generate with AI Dialog */}
             <Dialog open={aiOpen} onOpenChange={setAiOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary" className="cursor-pointer">
+                <Button 
+                  variant="secondary" 
+                  className="cursor-pointer"
+                  disabled={isFreePlan}
+                  onClick={(e) => {
+                    if (isFreePlan) {
+                      e.preventDefault();
+                      toast.error("AI Generation requires a Standard subscription.");
+                    }
+                  }}
+                >
                   <Sparkles className="h-4 w-4 mr-2" />
                   Generate with AI
+                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                  <DialogTitle>Generate Questions with AI</DialogTitle>
+                  <DialogTitle>Generate Questions with Scorpio AI</DialogTitle>
                   <DialogDescription>
-                    Enter a topic and let AI create questions for you.
+                    Provide context or learning objectives and Scorpio AI will generate physics questions.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -396,9 +459,14 @@ function CreateAssignmentForm() {
             {/* Import from Text Dialog */}
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary" className="cursor-pointer">
+                <Button 
+                  variant="secondary" 
+                  className="cursor-pointer"
+                  disabled={isFreePlan}
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   Import from Text
+                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-5xl w-full">
@@ -572,10 +640,22 @@ function CreateAssignmentForm() {
 
               <div className="space-y-3">
                 <Label>Grading Type</Label>
-                <RadioGroup value={gradingType} onValueChange={(v) => setGradingType(v as "ai" | "manual")} className="flex flex-col gap-2">
+                <RadioGroup 
+                  value={gradingType} 
+                  onValueChange={(v) => {
+                    if (isFreePlan && v === "ai") {
+                      toast.error("AI Grading requires a Standard subscription.");
+                      return;
+                    }
+                    setGradingType(v as "ai" | "manual");
+                  }} 
+                  className="flex flex-col gap-2"
+                >
                   <div className="flex items-center space-x-2 cursor-pointer">
-                    <RadioGroupItem value="ai" id="grading-ai" className="cursor-pointer" />
-                    <Label htmlFor="grading-ai" className="cursor-pointer font-normal">AI Graded</Label>
+                    <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} className="cursor-pointer" />
+                    <Label htmlFor="grading-ai" className={`cursor-pointer font-normal ${isFreePlan ? 'text-muted-foreground' : ''}`}>
+                      AI Graded {isFreePlan && <Lock className="inline h-3 w-3 ml-1" />}
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2 cursor-pointer">
                     <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer" />
@@ -607,11 +687,18 @@ function CreateAssignmentForm() {
                 type="checkbox"
                 id="allowAIHelp"
                 checked={allowAIHelp}
-                onChange={(e) => setAllowAIHelp(e.target.checked)}
+                disabled={isFreePlan}
+                onChange={(e) => {
+                  if (isFreePlan) {
+                    toast.error("AI Assistance requires a Standard subscription.");
+                    return;
+                  }
+                  setAllowAIHelp(e.target.checked);
+                }}
                 className="h-4 w-4 rounded border-gray-300 cursor-pointer"
               />
-              <Label htmlFor="allowAIHelp" className="cursor-pointer font-normal">
-                Allow AI Assistance (Beta)
+              <Label htmlFor="allowAIHelp" className={`cursor-pointer font-normal ${isFreePlan ? 'text-muted-foreground' : ''}`}>
+                Allow AI Assistance (Beta) {isFreePlan && <Lock className="inline h-3 w-3 ml-1" />}
               </Label>
             </div>
             <p className="text-xs text-muted-foreground pl-6">

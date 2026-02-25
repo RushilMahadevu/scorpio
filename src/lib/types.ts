@@ -26,10 +26,15 @@ export interface Organization {
   name: string;
   ownerId: string; // The primary teacher who manages the subscription
   ownerEmail?: string;
-  stripeCustomerId?: string;
+  polarCustomerId?: string; // Replaced Stripe with Polar
   subscriptionStatus: "active" | "past_due" | "canceled" | "none";
-  planId: "free" | "pro_teacher" | "department_network";
+  planId: "free" | "standard_monthly" | "standard_yearly" | "pro_monthly" | "pro_yearly" | string;
   createdAt: Timestamp | Date;
+  
+  // AI Budgeting & Usage
+  aiBudgetLimit: number; // Monthly budget in cents or "token units" (e.g. 500 = $5.00)
+  aiUsageCurrent: number; // Current month's usage in same units
+  baseMonthlyFee: number; // Flat fee for storage/base features
 }
 
 export interface PhysicsAssignment {
