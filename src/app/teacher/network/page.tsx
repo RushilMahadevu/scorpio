@@ -787,7 +787,7 @@ export default function NetworkPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
                       <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Usage
                       </p>
                       <p className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
@@ -845,15 +845,15 @@ export default function NetworkPage() {
                   </Badge>
                 </div>
                 <CardDescription className="text-[11px]">
-                  Shared practice budget calculated as <strong>Total Students ({studentCount})</strong> × <strong>Allowance per Student</strong>.
+                  Shared sandbox budget calculated as <strong>Total Students ({studentCount})</strong> × <strong>Allowance per Student</strong>.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
                     <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
-                      <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                      Usage
+                      <Boxes className="h-2.5 w-2.5 text-indigo-500" />
+                      Sandbox Usage
                     </p>
                     <p className="text-lg font-black font-mono text-indigo-600 dark:text-indigo-400">
                       {organization.sandboxUsageCurrent || 0}

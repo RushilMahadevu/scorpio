@@ -7,7 +7,22 @@ import { useAuth } from "@/contexts/auth-context";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap, Boxes, Download, FileJson, FileSpreadsheet, ExternalLink, Printer } from "lucide-react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -59,7 +74,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
       collection(db, "usage_analytics"),
       where("organizationId", "==", organizationId),
       orderBy("timestamp", "desc"),
-      limit(100) // Get more for the chart
+      limit(250) // Detailed overview of recent history
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -115,11 +130,50 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
 
   const getTypeIcon = (type: string) => {
     switch(type) {
-      case "navigation": return <MessageCircle className="h-4 w-4" />;
-      case "tutor": return <Bot className="h-4 w-4" />;
-      case "grading": return <GraduationCap className="h-4 w-4" />;
-      default: return <Activity className="h-4 w-4" />;
+      case "navigation": return <MessageCircle className="h-4 w-4 text-blue-500" />;
+      case "tutor": return <Bot className="h-4 w-4 text-purple-500" />;
+      case "grading": return <GraduationCap className="h-4 w-4 text-emerald-500" />;
+      case "sandbox": return <Boxes className="h-4 w-4 text-indigo-500" />;
+      case "parsing": return <FileText className="h-4 w-4 text-amber-500" />;
+      case "security": return <ShieldAlert className="h-4 w-4 text-rose-500" />;
+      default: return <Activity className="h-4 w-4 text-zinc-500" />;
     }
+  };
+
+  const exportData = (format: 'csv' | 'json') => {
+    if (usage.length === 0) return;
+    
+    let content = "";
+    let mimeType = "";
+    let extension = "";
+
+    if (format === 'csv') {
+      const headers = ["ID", "Type", "Input Tokens", "Output Tokens", "Cost (USD)", "Timestamp"];
+      const rows = usage.map(u => [
+        u.id, 
+        u.type, 
+        u.inputTokens, 
+        u.outputTokens, 
+        (u.costCents / 100).toFixed(6), 
+        u.timestamp.toISOString()
+      ].join(","));
+      content = [headers.join(","), ...rows].join("\n");
+      mimeType = "text/csv";
+      extension = "csv";
+    } else {
+      content = JSON.stringify(usage, null, 2);
+      mimeType = "application/json";
+      extension = "json";
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `usage-report-${organizationId?.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const chartConfig = {
@@ -163,7 +217,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="text-2xl font-bold font-mono">{stat.val}</div>
-              <p className="text-[10px] text-muted-foreground mt-0.5 mt-1">Last 100 events</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 mt-1">Last 250 events</p>
             </CardContent>
           </Card>
         ))}
@@ -244,12 +298,106 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
 
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            Recent Interactions
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Activity className="h-4 w-4 text-purple-500" />
+                AI Interaction Detail
+              </CardTitle>
+              <CardDescription className="text-[10px]">
+                Displaying the last 250 organizational usage events.
+              </CardDescription>
+            </div>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-wider gap-2 cursor-pointer">
+                  <ExternalLink className="h-3 w-3" />
+                  Full Report & Export
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+                <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-6">
+                  <div>
+                    <DialogTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-purple-500" />
+                      Usage Audit Trail
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Comprehensive log of all AI interactions in this network.
+                    </DialogDescription>
+                  </div>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="gap-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-xs h-9 cursor-pointer">
+                        <Download className="h-4 w-4" />
+                        Export Data
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => exportData('csv')} className="gap-2 cursor-pointer">
+                        <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                        <span>Export as CSV (.csv)</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportData('json')} className="gap-2 cursor-pointer">
+                        <FileJson className="h-4 w-4 text-amber-500" />
+                        <span>Export as JSON (.json)</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => window.print()} className="gap-2 cursor-pointer border-t mt-1">
+                        <Printer className="h-4 w-4 text-zinc-500" />
+                        <span>Print Report</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-auto mt-4 border rounded-xl">
+                  <Table>
+                    <TableHeader className="bg-muted/50 sticky top-0 z-20 backdrop-blur-md">
+                      <TableRow>
+                        <TableHead className="text-[11px] uppercase font-bold">Event Type</TableHead>
+                        <TableHead className="text-[11px] uppercase font-bold text-center">Input</TableHead>
+                        <TableHead className="text-[11px] uppercase font-bold text-center">Output</TableHead>
+                        <TableHead className="text-[11px] uppercase font-bold font-mono">Total Cost</TableHead>
+                        <TableHead className="text-right text-[11px] uppercase font-bold">Timestamp</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {usage.map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              {getTypeIcon(entry.type)}
+                              <span className="text-xs font-semibold capitalize">
+                                {entry.type}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center text-[11px] font-mono text-muted-foreground whitespace-nowrap">
+                            {entry.inputTokens.toLocaleString()} tx
+                          </TableCell>
+                          <TableCell className="text-center text-[11px] font-mono text-muted-foreground whitespace-nowrap">
+                            {entry.outputTokens.toLocaleString()} tx
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-[11px] font-mono font-black text-emerald-500">
+                              ${(entry.costCents / 100).toFixed(6)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right text-[10px] font-medium text-muted-foreground">
+                            {entry.timestamp.toLocaleDateString()} at {entry.timestamp.toLocaleTimeString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
-        <CardContent className="max-h-[300px] overflow-auto pt-0">
+        <CardContent className="max-h-[500px] overflow-auto pt-0">
           {usage.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No activities yet.</div>
           ) : (
@@ -263,12 +411,14 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {usage.slice(0, 10).map((entry) => (
+                {usage.map((entry) => (
                   <TableRow key={entry.id} className="border-border/20">
                     <TableCell className="py-2">
                       <div className="flex items-center gap-2">
                         {getTypeIcon(entry.type)}
-                        <span className="text-[11px] font-medium capitalize">{entry.type}</span>
+                        <span className="text-[11px] font-medium capitalize">
+                          {entry.type}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="py-2">

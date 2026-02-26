@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No organization found for budget tracking." }, { status: 403 });
     }
 
-    // 2. Check Sandbox/Practice Budget
+    // 2. Check Sandbox Budget
     const orgRef = adminDb.collection("organizations").doc(organizationId);
     const orgSnap = await orgRef.get();
     const orgData = orgSnap.data();
@@ -44,10 +44,10 @@ export async function POST(req: NextRequest) {
     const sandboxUsage = orgData?.sandboxUsageCurrent || 0;
 
     if (sandboxUsage >= sandboxLimit) {
-        return NextResponse.json({ error: "The monthly sandbox practice limit for your network has been reached." }, { status: 403 });
+        return NextResponse.json({ error: "The monthly sandbox limit for your network has been reached." }, { status: 403 });
     }
 
-    const budgetCheck = await checkBudget(organizationId, "practice");
+    const budgetCheck = await checkBudget(organizationId, "sandbox");
     if (!budgetCheck.allowed) {
         return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
@@ -55,9 +55,9 @@ export async function POST(req: NextRequest) {
     // 3. Generate Problem
     const result = await generateSandboxProblem(topic, difficulty, progress);
 
-    // 4. Record Usage and Increment Sandbox/Practice Count
+    // 4. Record Usage and Increment Sandbox Count
     if (result.usage) {
-        await recordUsage(organizationId, "practice", result.usage.inputTokens, result.usage.outputTokens);
+        await recordUsage(organizationId, "sandbox", result.usage.inputTokens, result.usage.outputTokens);
     }
 
     // Increment Sandbox Usage Current
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     if (courseId) {
         const courseRef = adminDb.collection("courses").doc(courseId);
         await courseRef.update({
-            practiceUsed: adminFieldWithValue.increment(1)
+            sandboxUsed: adminFieldWithValue.increment(1)
         });
     }
 

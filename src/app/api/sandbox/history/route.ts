@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Save to history with admin privileges
-    await adminDb.collection("practice_history").add({
+    await adminDb.collection("sandbox_history").add({
       studentId,
       topic,
       difficulty,
