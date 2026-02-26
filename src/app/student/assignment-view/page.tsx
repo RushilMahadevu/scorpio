@@ -73,7 +73,7 @@ function AssignmentDetailContent() {
   const searchParams = useSearchParams();
   const id = searchParams ? searchParams.get("id") ?? "" : "";
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -131,20 +131,45 @@ function AssignmentDetailContent() {
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          // Check if student belongs to this teacher or course (New Strict Logic)
-          const studentDoc = await getDoc(doc(db, "students", user.uid));
-          const studentData = studentDoc.exists() ? studentDoc.data() : null;
+          // Check if student belongs to this teacher or course (New Unified Logic)
+          let studentCourseId = profile?.courseId;
+          let studentTeacherId = profile?.teacherId;
+
+          // Fallback to legacy if profile is not yet fully populated or missing
+          if (!studentCourseId || !studentTeacherId) {
+            try {
+              const studentDoc = await getDoc(doc(db, "students", user.uid));
+              if (studentDoc.exists()) {
+                const sData = studentDoc.data();
+                studentCourseId = studentCourseId || sData.courseId;
+                studentTeacherId = studentTeacherId || sData.teacherId;
+              }
+            } catch (e) { console.error("Could not fetch legacy student profile", e); }
+          }
+
+          // --- LEGACY RESOLUTION START ---
+          if (studentTeacherId && !studentCourseId) {
+             const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", studentTeacherId.trim())));
+             if (!codeMatch.empty) {
+                const courseDoc = codeMatch.docs[0];
+                const courseData = courseDoc.data();
+                studentCourseId = courseDoc.id;
+                studentTeacherId = courseData.teacherId;
+             }
+          }
+          // --- LEGACY RESOLUTION END ---
           
           if (data.courseId) {
             // Strict Course Check
-            if (studentData?.courseId !== data.courseId) {
+            if (studentCourseId !== data.courseId) {
                console.log("Unauthorized: Student not in this course");
                setLoading(false);
                return;
             }
           } else if (data.teacherId) {
             // Legacy Teacher Check
-            if (!studentData || studentData.teacherId !== data.teacherId) {
+            if (studentTeacherId !== data.teacherId) {
+               console.log("Unauthorized: Student linked to different teacher");
                setLoading(false);
                return;
             }
@@ -223,7 +248,7 @@ function AssignmentDetailContent() {
       }
     }
     fetchAssignment();
-  }, [id, user]);
+  }, [id, user, profile]);
 
   // Timer Effect
   useEffect(() => {
@@ -359,12 +384,12 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
           content: responseText 
         };
         setAiMessages(prev => [...prev, aiResponse]);
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Error:", error);
         setAiMessages(prev => [...prev, { 
           id: crypto.randomUUID(), 
           role: "assistant", 
-          content: "I'm having trouble connecting right now. Please try again." 
+          content: error.message || "I'm having trouble connecting right now. Please try again." 
         }]);
     } finally {
         setAiLoading(false);
@@ -419,15 +444,17 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
     ignoreNextBlurRef.current = true;
     setSubmitting(true);
     try {
-        // Fetch student name from students collection
-        let studentName = user.displayName || "";
-        try {
-          const studentDoc = await getDoc(doc(db, "students", user.uid));
-          if (studentDoc.exists()) {
-            studentName = studentDoc.data().name || studentName;
+        // Fetch student name from profile or students collection
+        let studentName = profile?.displayName || profile?.name || user.displayName || "";
+        if (!studentName) {
+          try {
+            const studentDoc = await getDoc(doc(db, "students", user.uid));
+            if (studentDoc.exists()) {
+              studentName = studentDoc.data().name || studentName;
+            }
+          } catch (error) {
+            console.error("Error fetching student name:", error);
           }
-        } catch (error) {
-          console.error("Error fetching student name:", error);
         }
 
         const answersArray = assignment.questions.map((q) => ({
@@ -495,15 +522,17 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         answer: answers[q.id] || "",
       }));
 
-      // Fetch student name from students collection
-      let studentName = user.displayName || "";
-      try {
-        const studentDoc = await getDoc(doc(db, "students", user.uid));
-        if (studentDoc.exists()) {
-          studentName = studentDoc.data().name || studentName;
+      // Fetch student name from profile or students collection
+      let studentName = profile?.displayName || profile?.name || user.displayName || "";
+      if (!studentName) {
+        try {
+          const studentDoc = await getDoc(doc(db, "students", user.uid));
+          if (studentDoc.exists()) {
+            studentName = studentDoc.data().name || studentName;
+          }
+        } catch (error) {
+          console.error("Error fetching student name:", error);
         }
-      } catch (error) {
-        console.error("Error fetching student name:", error);
       }
 
       // Remove forbidden fields for student update
@@ -737,10 +766,26 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               <CardDescription>{assignment.description}</CardDescription>
             </div>
             {submitted && (
-              <Badge className="bg-green-500">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Submitted
-              </Badge>
+              <div className="flex flex-col items-end gap-2">
+                <Badge className={existingSubmission?.graded ? "bg-green-500" : "bg-blue-500"}>
+                  {existingSubmission?.graded ? (
+                    <>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Graded
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="h-3 w-3 mr-1" />
+                      Submitted
+                    </>
+                  )}
+                </Badge>
+                {existingSubmission?.graded && existingSubmission?.score !== undefined && (
+                  <div className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
+                    {existingSubmission.score}%
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <p className="text-sm text-muted-foreground">
@@ -754,20 +799,24 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
           <Card key={question.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
-                <Label className="text-base">Question {index + 1}</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-base">Question {index + 1}</Label>
+                  {existingSubmission?.graded && (
+                    <Badge variant="secondary" className="text-[10px] font-bold">
+                       {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score ?? 0} / {question.points ?? 10} PTS
+                    </Badge>
+                  )}
+                </div>
                 <Badge variant="outline">{question.points || 10} pts</Badge>
               </div>
-              <div className="prose prose-sm dark:prose-invert max-w-none mt-1">
-                <ReactMarkdown
-                  remarkPlugins={[remarkMath]}
-                  rehypePlugins={[rehypeKatex]}
-                >
-                  {question.text}
-                </ReactMarkdown>
-              </div>
             </CardHeader>
-            <CardContent>
-              {question.type === "multiple-choice" && question.options ? (
+            <CardContent className="space-y-6">
+              <MarkdownRenderer className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
+                {question.text}
+              </MarkdownRenderer>
+              
+              <div className="pt-2">
+                {question.type === "multiple-choice" && question.options ? (
                 <RadioGroup
                   value={answers[question.id] || ""}
                   onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
@@ -811,6 +860,38 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                   disabled={submitted}
                   rows={4}
                 />
+              )}
+              </div>
+
+              {/* AI Feedback Section */}
+              {existingSubmission?.graded && (
+                <div className="mt-8 pt-6 border-t space-y-4">
+                  {/* Feedback Block */}
+                  {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.feedback && (
+                    <div className="bg-muted/30 rounded-xl p-5 border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">AI Feedback</span>
+                      </div>
+                      <div className="text-sm leading-relaxed text-foreground italic">
+                        "{existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.feedback}"
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Correct Reference Section */}
+                  {(question.correctAnswer || existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score < (question.points || 10)) && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-emerald-600" />
+                        <Label className="text-[10px] uppercase font-bold tracking-widest text-emerald-700 dark:text-emerald-500">Correct Answer / Explanation</Label>
+                      </div>
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground bg-muted/20 p-4 rounded-lg border">
+                        <MarkdownRenderer>{question.correctAnswer || "No explanation provided."}</MarkdownRenderer>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>

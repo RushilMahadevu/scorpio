@@ -22,7 +22,7 @@ interface Submission {
 }
 
 export default function SubmissionsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,11 +30,32 @@ export default function SubmissionsPage() {
     async function fetchSubmissions() {
       if (!user) return;
       try {
-        // Get Student's Teacher ID and Course ID
-        const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const studentData = studentDoc.exists() ? studentDoc.data() : null;
-        const studentTeacherId = studentData?.teacherId;
-        const studentCourseId = studentData?.courseId;
+        // Get Student's Teacher ID and Course ID (Unified first)
+        let studentTeacherId = profile?.teacherId;
+        let studentCourseId = profile?.courseId;
+
+        if (!studentTeacherId || !studentCourseId) {
+          try {
+            const studentDoc = await getDoc(doc(db, "students", user.uid));
+            if (studentDoc.exists()) {
+              const studentData = studentDoc.data();
+              studentTeacherId = studentTeacherId || studentData.teacherId;
+              studentCourseId = studentCourseId || studentData.courseId;
+            }
+          } catch (e) { console.error("Could not fetch legacy student profile", e); }
+        }
+
+        // --- LEGACY RESOLUTION START ---
+        if (studentTeacherId && !studentCourseId) {
+           const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", studentTeacherId.trim())));
+           if (!codeMatch.empty) {
+              const courseDoc = codeMatch.docs[0];
+              const courseData = courseDoc.data();
+              studentCourseId = courseDoc.id;
+              studentTeacherId = courseData.teacherId;
+           }
+        }
+        // --- LEGACY RESOLUTION END ---
 
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
@@ -86,7 +107,7 @@ export default function SubmissionsPage() {
       }
     }
     fetchSubmissions();
-  }, [user]);
+  }, [user, profile]);
 
   return (
     <div className="space-y-6">

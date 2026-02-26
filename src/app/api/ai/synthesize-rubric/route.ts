@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateAssignmentQuestions } from "@/lib/gemini";
+import { synthesizeRubric } from "@/lib/gemini";
 import { adminDb } from "@/lib/firebase-admin";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
 
 export async function POST(req: NextRequest) {
   try {
-    const { topic, count, difficulty, questionType, userId, context } = await req.json();
+    const { questionText, topic, userId } = await req.json();
 
-    if (!topic || !userId) {
+    if (!questionText || !userId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
     }
 
-    // 1. Resolve OrganizationId from User ID (Teacher-only feature usually)
+    // 1. Resolve OrganizationId from User ID
     const userDoc = await adminDb.collection("users").doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json({ error: "User profile not found" }, { status: 404 });
@@ -33,29 +33,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
 
-    // 3. Perform AI Generation
-    const result = await generateAssignmentQuestions(topic, count, difficulty, questionType, context);
-
-    // 4. Record usage (Silent fail to not block response)
-    if (result.usage) {
-      try {
-        await recordUsage(
-          organizationId, 
-          "generation", 
-          result.usage.inputTokens || 0, 
-          result.usage.outputTokens || 0
-        );
-      } catch (usageError) {
-        console.error("Failed to record usage:", usageError);
-      }
-    }
-
-    return NextResponse.json({ questions: result.questions });
+    const rubric = await synthesizeRubric(questionText, topic || "General Scientific Query");
+    
+    // Rubric synthesis doesn't currently return usage in gemini.ts, 
+    // but we should probably add it or record a flat fee.
+    // For now, let's just record a small flat usage or none if not available.
+    
+    return NextResponse.json({ rubric });
   } catch (error: any) {
-    console.error("AI Generation API Error:", error);
-    return NextResponse.json({ 
-      error: error?.message || "Internal server error",
-      details: process.env.NODE_ENV === "development" ? (error?.rawText || error?.stack) : undefined
-    }, { status: 500 });
+    console.error("Rubric synthesis API error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

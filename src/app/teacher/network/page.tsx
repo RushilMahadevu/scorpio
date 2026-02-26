@@ -28,7 +28,8 @@ import {
   CheckCircle2, 
   Lock,
   Calculator,
-  Zap
+  Zap,
+  Boxes
 } from "lucide-react";
 import {
   Dialog,
@@ -66,12 +67,28 @@ export default function NetworkPage() {
   const [upgrading, setUpgrading] = useState(false);
   const [updatingBudget, setUpdatingBudget] = useState(false);
   const [tempBudget, setTempBudget] = useState<string>("");
+  const [updatingSandbox, setUpdatingSandbox] = useState(false);
+  const [tempSandboxLimit, setTempSandboxLimit] = useState<string>("");
+  const [tempSandboxLimitPerStudent, setTempSandboxLimitPerStudent] = useState<string>("");
+  const [studentCount, setStudentCount] = useState<number>(0);
 
   useEffect(() => {
     if (organization?.aiBudgetLimit !== undefined) {
       setTempBudget((organization.aiBudgetLimit / 100).toFixed(4));
     } else {
       setTempBudget("10.0000");
+    }
+
+    if (organization?.sandboxLimitPerStudent !== undefined) {
+      setTempSandboxLimitPerStudent(organization.sandboxLimitPerStudent.toString());
+    } else {
+      setTempSandboxLimitPerStudent("0");
+    }
+
+    if (organization?.sandboxLimit !== undefined) {
+      setTempSandboxLimit(organization.sandboxLimit.toString());
+    } else {
+      setTempSandboxLimit("0");
     }
   }, [organization]);
 
@@ -131,6 +148,38 @@ export default function NetworkPage() {
       toast.error("Failed to update AI Budget.");
     } finally {
       setUpdatingBudget(false);
+    }
+  };
+
+  const handleUpdateSandboxLimit = async () => {
+    if (!user || !organization || user.uid !== organization.ownerId) return;
+    
+    const perMember = parseInt(tempSandboxLimitPerStudent);
+    if (isNaN(perMember) || perMember < 0) {
+      toast.error("Please enter a valid allowance.");
+      return;
+    }
+
+    // Sandbox limit is strictly for students
+    const totalLimit = perMember * studentCount;
+
+    setUpdatingSandbox(true);
+    try {
+      await updateDoc(doc(db, "organizations", organization.id), {
+        sandboxLimitPerStudent: perMember,
+        sandboxLimit: totalLimit
+      });
+      toast.success(`Sandbox Limit updated to ${totalLimit} total student units!`);
+      setOrganization(prev => prev ? { 
+        ...prev, 
+        sandboxLimitPerStudent: perMember,
+        sandboxLimit: totalLimit 
+      } : null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update sandbox limit.");
+    } finally {
+      setUpdatingSandbox(false);
     }
   };
 
@@ -198,9 +247,29 @@ export default function NetworkPage() {
         setOrganization({ id: orgSnap.id, ...orgSnap.data() } as Organization);
       }
 
-      // 2. Fetch network members
-      const membersSnap = await getDocs(query(collection(db, "users"), where("organizationId", "==", profile.organizationId)));
-      setNetworkMembers(membersSnap.docs.map(d => ({ uid: d.id, ...d.data() })));
+      // 2. Fetch network members (teachers only for primary pool)
+      const membersSnap = await getDocs(query(
+        collection(db, "users"), 
+        where("organizationId", "==", profile.organizationId),
+        where("role", "==", "teacher")
+      ));
+      const members = membersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      setNetworkMembers(members);
+
+      // 3. Count students across all network teachers
+      const teacherIds = members.map(m => m.uid);
+      if (teacherIds.length > 0) {
+          // Robust query: Look in users collection for anyone with role student and pointing to a teacher in this network
+          const studentsSnap = await getDocs(query(
+            collection(db, "users"), 
+            where("teacherId", "in", teacherIds), 
+            where("role", "==", "student")
+          ));
+          setStudentCount(studentsSnap.size);
+          console.log(`Found ${studentsSnap.size} network students for teachers: ${teacherIds.join(', ')}`);
+      } else {
+          setStudentCount(0);
+      }
     } catch (e) {
       console.error("Error fetching network info:", e);
     } finally {
@@ -221,6 +290,9 @@ export default function NetworkPage() {
         planId: "free",
         aiUsageCurrent: 0,
         aiBudgetLimit: 50, // Individual/Free $0.50 starting credit
+        sandboxLimitPerStudent: 10, // Target allowance per student
+        sandboxLimit: 0, // No students added yet
+        sandboxUsageCurrent: 0,
         baseMonthlyFee: 0,
         createdAt: new Date(),
       };
@@ -272,8 +344,8 @@ export default function NetworkPage() {
         displayName: user.displayName || "Unknown Teacher",
         lastLoginAt: new Date()
       }, { merge: true });
-      
-      toast.success(`Joined ${orgData.name}!`);
+
+      toast.success(`Joined ${orgData.name}! Connect with your students to sync your local collective.`);
       window.location.reload();
     } catch (e) {
       console.error(e);
@@ -760,6 +832,74 @@ export default function NetworkPage() {
                 </CardContent>
               </Card>
             )}
+
+            <Card className="border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Boxes className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    Sandbox Capacity (Monthly)
+                  </CardTitle>
+                  <Badge variant="outline" className="text-[10px] font-mono border-indigo-200 text-indigo-700 bg-indigo-100/50">
+                    NETWORK LIMIT
+                  </Badge>
+                </div>
+                <CardDescription className="text-[11px]">
+                  Shared practice budget calculated as <strong>Total Students ({studentCount})</strong> × <strong>Allowance per Student</strong>.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
+                      <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                      Usage
+                    </p>
+                    <p className="text-lg font-black font-mono text-indigo-600 dark:text-indigo-400">
+                      {organization.sandboxUsageCurrent || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Network Pool</p>
+                    <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                      {organization.sandboxLimit || 0}
+                    </p>
+                  </div>
+                </div>
+
+                {user?.uid === organization.ownerId && (
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="sandbox-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Allowance Per Student (Sandbox Only)</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          id="sandbox-limit" 
+                          type="number" 
+                          className="h-10 font-mono text-sm rounded-xl focus-visible:ring-indigo-500" 
+                          value={tempSandboxLimitPerStudent}
+                          onChange={(e) => setTempSandboxLimitPerStudent(e.target.value)}
+                        />
+                        <Button 
+                          className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                          onClick={handleUpdateSandboxLimit}
+                          disabled={updatingSandbox}
+                        >
+                          {updatingSandbox ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recalculate"}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest flex justify-between">
+                         Current Capacity Estimate <span>{parseInt(tempSandboxLimitPerStudent || "0") * studentCount} Problems</span>
+                      </p>
+                      <p className="text-[9px] text-muted-foreground mt-1 text-right italic">
+                        Teachers are excluded from this pool. Only students are counted.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader className="pb-2">

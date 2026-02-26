@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ interface Assignment {
 }
 
 export default function StudentAssignmentsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -33,11 +33,50 @@ export default function StudentAssignmentsPage() {
     async function fetchData() {
       if (!user) return;
       try {
-        // Fetch student details to get teacherId and courseId
-        const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const studentData = studentDoc.exists() ? studentDoc.data() : null;
-        const teacherId = studentData?.teacherId;
-        const courseId = studentData?.courseId;
+        // Source of truth: Use unified profile if available, otherwise fallback to legacy students collection
+        let teacherId = profile?.teacherId;
+        let courseId = profile?.courseId;
+
+        if (!courseId || !teacherId) {
+          try {
+            const studentDoc = await getDoc(doc(db, "students", user.uid));
+            if (studentDoc.exists()) {
+              const studentData = studentDoc.data();
+              teacherId = teacherId || studentData.teacherId;
+              courseId = courseId || studentData.courseId;
+            }
+          } catch (e) { console.error("Could not fetch legacy student profile", e); }
+        }
+
+        // --- LEGACY RESOLUTION START ---
+        // If we have a teacherId but NO courseId, the teacherId might actually be a Class Code
+        if (teacherId && !courseId) {
+             const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", teacherId.trim())));
+             if (!codeMatch.empty) {
+                const courseDoc = codeMatch.docs[0];
+                const courseData = courseDoc.data();
+                courseId = courseDoc.id;
+                teacherId = courseData.teacherId;
+                
+                // AUTO-SYNC resolution so it persists
+                try {
+                  await setDoc(doc(db, "students", user.uid), { 
+                    courseId, 
+                    teacherId 
+                  }, { merge: true });
+                  
+                  await setDoc(doc(db, "users", user.uid), { 
+                    courseId, 
+                    teacherId 
+                  }, { merge: true });
+                } catch (e) {
+                  console.warn("Could not sync resolved legacy code", e);
+                }
+
+                console.log("Resolved legacy code in assignments page:", teacherId, courseId);
+             }
+        }
+        // --- LEGACY RESOLUTION END ---
 
         let data: Assignment[] = [];
         if (courseId) {
@@ -48,7 +87,7 @@ export default function StudentAssignmentsPage() {
           data = assignmentsSnap.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
-            dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
+            dueDate: doc.data().dueDate?.toDate?.() || (doc.data().dueDate ? new Date(doc.data().dueDate) : new Date()),
           })) as Assignment[];
         } else if (teacherId) {
           // Fallback for legacy connections
@@ -79,7 +118,7 @@ export default function StudentAssignmentsPage() {
       }
     }
     fetchData();
-  }, [user]);
+  }, [user, profile]);
 
   const isPastDue = (date: Date) => new Date(date) < new Date();
 

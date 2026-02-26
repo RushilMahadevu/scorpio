@@ -6,10 +6,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { MathBuilderModal } from "@/components/math-builder-modal";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 interface MathInputFieldProps {
   value: string;
@@ -467,18 +464,18 @@ export function MathInputField({
 
       {/* Live Preview */}
       {!compact && (
-        <Card className="p-4">
-          <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Preview:</div>
-          <div className="prose prose-sm dark:prose-invert max-w-none min-h-[3rem] flex items-center">
+        <Card className="p-4 bg-muted/30">
+          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+             <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
+             Live Preview
+          </div>
+          <div className="min-h-[3rem] flex items-center">
             {value ? (
-              <ReactMarkdown
-                remarkPlugins={[remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-              >
+              <MarkdownRenderer className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
                 {value}
-              </ReactMarkdown>
+              </MarkdownRenderer>
             ) : (
-              <span className="text-muted-foreground italic">Your formatted text will appear here...</span>
+              <span className="text-muted-foreground italic text-sm">Your formatted text will appear here...</span>
             )}
           </div>
         </Card>

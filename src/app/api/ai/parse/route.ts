@@ -49,8 +49,11 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ questions: result.questions });
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Parse API Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ 
+      error: error?.message || "Internal server error",
+      details: process.env.NODE_ENV === "development" ? error?.stack : undefined
+    }, { status: 500 });
   }
 }

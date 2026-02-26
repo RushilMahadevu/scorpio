@@ -14,6 +14,8 @@ export interface UserProfile {
   
   // Primary Relationships
   teacherId?: string; // For students: direct link to primary teacher
+  courseId?: string; // For students: direct link to primary class/course
+  schoolId?: string; // For students: linked school
   classIds: string[]; // List of /classes/{id} the user belongs to
   
   // Metadata
@@ -34,6 +36,9 @@ export interface Organization {
   // AI Budgeting & Usage
   aiBudgetLimit: number; // Monthly budget in cents or "token units" (e.g. 500 = $5.00)
   aiUsageCurrent: number; // Current month's usage in same units
+  sandboxLimitPerStudent: number; // NEW: Allowance assigned per member
+  sandboxLimit: number; // Calculated: sandboxLimitPerStudent * memberCount
+  sandboxUsageCurrent: number; // Current month's sandbox usage count
   baseMonthlyFee: number; // Flat fee for storage/base features
 }
 

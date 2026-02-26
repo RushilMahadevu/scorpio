@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User, sendPasswordResetEmail, updateEmail, updatePassword } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch, deleteDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage";
 import { getAI, GoogleAIBackend } from "firebase/ai";
 
 const firebaseConfig = {
@@ -225,8 +225,22 @@ export const register = async (email: string, password: string, role: "teacher" 
     lastLoginAt: new Date(),
   };
 
+  let resolvedTeacherId = classCode || null;
+  let resolvedCourseId = null;
+
   if (role === "student" && classCode) {
-    userData.teacherId = classCode;
+    try {
+      // Try to resolve classCode to a course first
+      const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", classCode.trim())));
+      if (!coursesSnap.empty) {
+        const courseData = coursesSnap.docs[0].data();
+        resolvedTeacherId = courseData.teacherId;
+        resolvedCourseId = coursesSnap.docs[0].id;
+      }
+    } catch (e) { console.error("Error resolving class code during registration", e); }
+    
+    userData.teacherId = resolvedTeacherId;
+    userData.courseId = resolvedCourseId;
   }
 
   // Update unified collection
@@ -234,13 +248,20 @@ export const register = async (email: string, password: string, role: "teacher" 
 
   // Sync back to legacy for compatibility if needed (Optional, but safer for now)
   const legacyCollection = role === "teacher" ? "teachers" : "students";
-  await setDoc(doc(db, legacyCollection, user.uid), {
+  const legacyData: any = {
     uid: user.uid,
     email: user.email,
     name: name,
     role: role,
     createdAt: new Date(),
-  });
+  };
+
+  if (role === "student") {
+    legacyData.teacherId = resolvedTeacherId;
+    legacyData.courseId = resolvedCourseId;
+  }
+
+  await setDoc(doc(db, legacyCollection, user.uid), legacyData);
 
   return userCredential;
 };
@@ -257,6 +278,118 @@ export const logout = async () => {
 export const onAuthChange = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
 };
+
+/**
+ * Deletes all submissions and stored files for a specific student to save storage space.
+ * 
+ * @param studentId The UID of the student
+ * @param courseId Optional course ID to target specific class data (if provided)
+ */
+export async function cleanupStudentData(studentId: string, courseId?: string) {
+  try {
+     // 1. Determine which submissions to delete
+     let submissionDocs: any[] = [];
+     
+     if (courseId) {
+        // Find all assignments for this course
+        const assignmentsSnap = await getDocs(query(collection(db, "assignments"), where("courseId", "==", courseId)));
+        const assignmentIds = assignmentsSnap.docs.map(d => d.id);
+        
+        if (assignmentIds.length === 0) return;
+
+        // Find submissions for this student belonging to these assignments
+        // Note: 'where in' is limited to 30 items.
+        const chunks = [];
+        for (let i = 0; i < assignmentIds.length; i += 30) {
+            chunks.push(assignmentIds.slice(i, i + 30));
+        }
+
+        for (const chunk of chunks) {
+            const q = query(collection(db, "submissions"), where("studentId", "==", studentId), where("assignmentId", "in", chunk));
+            const snap = await getDocs(q);
+            submissionDocs.push(...snap.docs);
+        }
+     } else {
+        // Delete all submissions for this student
+        const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
+        const snapshot = await getDocs(q);
+        submissionDocs = snapshot.docs;
+     }
+
+     if (submissionDocs.length === 0) return;
+
+     const batch = writeBatch(db);
+     const storageTasks: Promise<void>[] = [];
+     
+     submissionDocs.forEach((subDoc) => {
+        const data = subDoc.data();
+        
+        // 2. Iterate and delete files from storage
+        if (data.workFiles && Array.isArray(data.workFiles)) {
+           data.workFiles.forEach((file: WorkFile) => {
+              if (file.url) {
+                 try {
+                  const fileRef = ref(storage, file.url);
+                  storageTasks.push(deleteObject(fileRef).catch(e => console.warn(`Failed to delete storage file ${file.url}:`, e)));
+                 } catch (e) {
+                   console.warn("Invalid storage URL in cleanup:", file.url);
+                 }
+              }
+           });
+        }
+        batch.delete(subDoc.ref);
+     });
+
+     // 3. Execute deletions
+     await Promise.all(storageTasks);
+     await batch.commit();
+
+  } catch (error) {
+    console.error("Error cleaning up student data:", error);
+    throw error;
+  }
+}
+
+/**
+ * Completely removes a user's entire account including all stored data (submissions, storage files, profile).
+ * Should be called while the user is still logged in (to delete Auth account) or by an admin.
+ */
+export async function deleteFullAccount(uid: string, role: string) {
+    try {
+        // 1. Data Cleanup (Student specific)
+        if (role === 'student' || role === 'checking') {
+            await cleanupStudentData(uid);
+            await deleteDoc(doc(db, "students", uid)).catch(() => {});
+        }
+
+        // 2. Data Cleanup (Teacher specific)
+        if (role === 'teacher') {
+            const batch = writeBatch(db);
+            // Delete assignments
+            const assignmentsSnap = await getDocs(query(collection(db, "assignments"), where("teacherId", "==", uid)));
+            assignmentsSnap.forEach(d => batch.delete(d.ref));
+            
+            // Delete courses
+            const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", uid)));
+            coursesSnap.forEach(d => batch.delete(d.ref));
+            
+            await batch.commit();
+            await deleteDoc(doc(db, "teachers", uid)).catch(() => {});
+        }
+
+        // 3. Delete Unified user doc
+        await deleteDoc(doc(db, "users", uid));
+        
+        // 4. Finally, try to delete the Auth record if it's the current user
+        const currentUser = auth.currentUser;
+        if (currentUser && currentUser.uid === uid) {
+            await deleteUser(currentUser);
+        }
+    } catch (error) {
+        console.error("Full account deletion error:", error);
+        throw error;
+    }
+}
 
 export const resetPassword = async (email: string) => {
   return sendPasswordResetEmail(auth, email);

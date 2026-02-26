@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, deleteDoc, doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, where, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { db, cleanupStudentData } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -30,24 +30,74 @@ export default function StudentsPage() {
     async function fetchStudents() {
       if (!user) return;
       try {
-        // Fetch courses first to map IDs
-        const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid)));
+        setLoading(true);
+        // Fetch courses first to map IDs (include legacy search too)
+        const [cSnap1, cSnap2] = await Promise.all([
+           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))),
+           getDocs(query(collection(db, "courses"), where("code", "==", user.uid)))
+        ]);
+        
         const courseMap: Record<string, string> = {};
-        coursesSnap.docs.forEach(d => {
+        const myCourseIds = new Set<string>();
+        const myCodes = new Set<string>();
+        
+        [...cSnap1.docs, ...cSnap2.docs].forEach(d => {
             courseMap[d.id] = d.data().name;
+            myCourseIds.add(d.id);
+            if (d.data().code) myCodes.add(d.data().code);
         });
 
-        const q = query(collection(db, "students"), where("teacherId", "==", user.uid));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => {
-           const sData = doc.data();
-           return {
-            id: doc.id,
-            ...sData,
-            courseName: sData.courseId ? courseMap[sData.courseId] : undefined
-          };
-        }) as Student[];
-        setStudents(data);
+        const myCodesArr = Array.from(myCodes);
+
+        // Query both legacy and unified collections to find students assigned to this teacher
+        // Added graceful catch to avoid one failing collection from blocking the whole list
+        const [legacyByUid, legacyByCourses, unifiedByUid, unifiedByCourses, legacyByCodes] = await Promise.all([
+          getDocs(query(collection(db, "students"), where("teacherId", "==", user.uid))).catch(() => ({docs:[]} as any)),
+          (myCourseIds.size > 0 
+             ? getDocs(query(collection(db, "students"), where("courseId", "in", Array.from(myCourseIds).slice(0, 30)))) 
+             : Promise.resolve({docs:[]} as any)
+          ),
+          getDocs(query(collection(db, "users"), where("teacherId", "==", user.uid), where("role", "==", "student"))).catch(() => ({docs:[]} as any)),
+          (myCourseIds.size > 0 
+             ? getDocs(query(collection(db, "users"), where("courseId", "in", Array.from(myCourseIds).slice(0, 30)), where("role", "==", "student"))) 
+             : Promise.resolve({docs:[]} as any)
+          ),
+          (myCodesArr.length > 0 
+             ? getDocs(query(collection(db, "students"), where("teacherId", "in", myCodesArr.slice(0, 30)))) 
+             : Promise.resolve({docs:[]} as any)
+          )
+        ]);
+
+        const studentsMap = new Map<string, Student>();
+        
+        const allDocs = [
+          ...legacyByUid.docs,
+          ...legacyByCourses.docs,
+          ...unifiedByUid.docs,
+          ...unifiedByCourses.docs,
+          ...legacyByCodes.docs
+        ];
+
+        allDocs.forEach((doc) => {
+          const sData = doc.data();
+          // Filter: only include if they direct-link to teacher, belong to one of our courses, or use one of our legacy codes
+          const isOurStudent = sData.teacherId === user.uid || 
+                               (sData.courseId && myCourseIds.has(sData.courseId)) ||
+                               (sData.teacherId && myCodes.has(sData.teacherId));
+          
+          if (isOurStudent && !studentsMap.has(doc.id)) {
+            studentsMap.set(doc.id, {
+              id: doc.id,
+              email: sData.email || "unknown@student.com",
+              name: sData.displayName || sData.name || (sData.email ? sData.email.split("@")[0] : "Student"),
+              createdAt: sData.createdAt?.toDate ? sData.createdAt.toDate() : (sData.createdAt ? new Date(sData.createdAt) : new Date()),
+              courseId: sData.courseId,
+              courseName: sData.courseId ? courseMap[sData.courseId] : undefined
+            } as Student);
+          }
+        });
+
+        setStudents(Array.from(studentsMap.values()));
       } catch (error) {
         console.error("Error fetching students:", error);
       } finally {
@@ -58,9 +108,18 @@ export default function StudentsPage() {
   }, [user]);
 
   const deleteStudent = async (studentId: string) => {
-    if (!confirm("Are you sure you want to remove this student?")) return;
+    if (!confirm("Are you sure you want to remove this student? This will remove them from your class lists and delete their submissions to save storage space.")) return;
     try {
-      await deleteDoc(doc(db, "students", studentId));
+      // 1. Storage & Submissions Cleanup (Space saving)
+      await cleanupStudentData(studentId);
+
+      // 2. Remove Profile links from both systems
+      await Promise.all([
+        deleteDoc(doc(db, "students", studentId)),
+        // We reset their teacherId/courseId instead of deleting the whole user doc
+        // in case they want to join another teacher later.
+        setDoc(doc(db, "users", studentId), { teacherId: null, courseId: null }, { merge: true })
+      ]);
       setStudents(students.filter((s) => s.id !== studentId));
     } catch (error: any) {
       console.error("Error deleting student:", error);

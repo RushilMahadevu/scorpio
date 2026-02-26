@@ -19,6 +19,7 @@ const ESTIMATED_BUFFER = {
   tutor: 0.5,       // $0.005
   grading: 1.0,     // $0.01
   generation: 5.0,  // $0.05
+  practice: 0.2,    // $0.002
 };
 
 /**

@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "next-themes";
 import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -112,6 +113,7 @@ export default function RootLayout({
         >
           <SpaceEffectsProvider>
             <AuthProvider>{children}</AuthProvider>
+            <Toaster position="top-center" richColors />
           </SpaceEffectsProvider>
         </ThemeProvider>
       </body>

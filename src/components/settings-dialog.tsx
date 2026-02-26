@@ -16,7 +16,8 @@ import {
   FileText,
   CreditCard,
   Building2,
-  CheckCircle2
+  CheckCircle2,
+  Trash2
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
@@ -38,7 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
 import { useAuth } from "@/contexts/auth-context"
-import { logout, resetPassword, changeEmail } from "@/lib/firebase"
+import { logout, resetPassword, changeEmail, deleteFullAccount } from "@/lib/firebase"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -74,6 +75,29 @@ export function SettingsDialog() {
     await logout()
     router.push("/login")
     setOpen(false)
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!user) return
+    const confirmDelete = confirm("CRITICAL: This will permanently delete your account and ALL your data (submissions, storage files, profile). This cannot be undone. Are you absolutely sure?")
+    if (!confirmDelete) return
+
+    try {
+      setAlertMessage("Deleting account and data...")
+      setAlertType("success")
+      
+      await deleteFullAccount(user.uid, role || "student")
+      
+      setAlertMessage("Account deleted successfully. Goodbye.")
+      setTimeout(() => {
+        router.push("/signup")
+        setOpen(false)
+      }, 2000)
+    } catch (error: any) {
+      console.error("Error deleting account:", error)
+      setAlertMessage(`Failed to delete account: ${error.message}`)
+      setAlertType("error")
+    }
   }
 
   const getInitials = (name: string | null | undefined, email?: string | null) => {
@@ -224,6 +248,24 @@ export function SettingsDialog() {
                     <LogOut className="mr-3 h-4 w-4" />
                     Sign Out
                   </Button>
+
+                  <Separator className="my-2" />
+                  
+                  <div className="space-y-2 mt-4">
+                    <h4 className="text-sm font-medium text-destructive">Danger Zone</h4>
+                    <p className="text-[10px] text-muted-foreground leading-snug">
+                       Once you delete your account, there is no going back. All submissions, uploaded work files, and profile data will be permanently purged.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDeleteAccount}
+                      className="w-full justify-start h-10 text-destructive hover:bg-destructive/10 cursor-pointer"
+                    >
+                      <Trash2 className="mr-3 h-4 w-4" />
+                      Delete Account Permanently
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

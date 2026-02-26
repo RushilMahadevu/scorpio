@@ -7,6 +7,12 @@ const model = getGenerativeModel(genAI, {
     temperature: 0.7,
     maxOutputTokens: 2048,
   },
+  safetySettings: [
+    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+  ]
 });
 
 /**
@@ -110,24 +116,22 @@ JSON array:`;
     generationConfig: {
       maxOutputTokens: 2048,
       temperature: 0.1,
+      responseMimeType: "application/json",
     }
   });
   const response = await result.response;
   let responseText = response.text().trim();
-  responseText = responseText
-    .replace(/^```\s*json\s*/gi, '')
-    .replace(/^```\s*/gi, '')
-    .replace(/```\s*$/gi, '')
-    .replace(/```/g, '')
-    .trim();
-  const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) {
-    throw new Error(`Failed to parse batch starting at question ${startNumber}`);
+  
+  // Extract only the array portion for robustness
+  const startIdx = responseText.indexOf('[');
+  const endIdx = responseText.lastIndexOf(']');
+  
+  if (startIdx === -1 || endIdx === -1) {
+    throw new Error(`Failed to extract JSON array from batch starting at ${startNumber}`);
   }
-  let cleanJson = jsonMatch[0];
-  if (!cleanJson.endsWith(']')) {
-    cleanJson = repairIncompleteJson(cleanJson);
-  }
+  
+  let cleanJson = responseText.substring(startIdx, endIdx + 1).trim();
+  
   try {
     const parsed = JSON.parse(cleanJson);
     if (!Array.isArray(parsed)) {
@@ -141,7 +145,7 @@ JSON array:`;
       }
     };
   } catch (e) {
-    throw new Error(`Failed to parse questions in batch starting at ${startNumber}. Please try with fewer questions.`);
+    throw new Error(`Failed to parse questions in batch starting at ${startNumber}. Error: ${e instanceof Error ? e.message : 'Invalid JSON format'}`);
   }
 }
 /**
@@ -997,42 +1001,111 @@ export async function helpSolveProblem(
   }
 }
 
-export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ score: number, feedback: string, usage?: { inputTokens: number, outputTokens: number } }> {
+export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ 
+  score: number, 
+  feedback: string, 
+  reasoning?: string,
+  usage?: { inputTokens: number, outputTokens: number } 
+}> {
   try {
-    const prompt = `You are an expert teacher. Grade the following student answer.
-    Question: "${scrubPII(question)}"
-    ${rubric ? `Rubric/Correct Answer: "${scrubPII(rubric)}"` : ''}
-    Student Answer: "${scrubPII(answer)}"
+    // Basic verification of inputs
+    if (!question || !answer) {
+      return { score: 0, feedback: "Missing question or answer text for grading." };
+    }
+
+    const prompt = `You are an expert academic tutor and evaluator. 
+    Your goal is to grade student responses accurately based on the provided rubric and offer helpful feedback.
+
+    QUESTION:
+    "${scrubPII(question)}"
+
+    ${rubric ? `GRADING RUBRIC / CORRECT REFERENCE:\n"${scrubPII(rubric)}"` : ''}
+
+    STUDENT SUBMISSION:
+    "${scrubPII(answer)}"
     
-    Provide a score out of 10 and brief feedback.
-    Return ONLY a JSON object with the following format:
+    INSTRUCTIONS:
+    1. Evaluate the student's response for accuracy and conceptual understanding.
+    2. Be fair but encouraging. If the final answer is correct, give high marks even if steps are abbreviated.
+    3. If multiple questions are asked (e.g., a and b), award partial credit proportional to what is solved correctly.
+    4. If the student shows logical thinking but uses the wrong numbers or makes a calculation error, award 20-50% partial credit for that part.
+    5. Provide a score from 0.0 to 10.0 (decimals allowed). A score of 10.0 means perfect or functionally equivalent.
+    6. Generate "technical_reasoning": Explain to the teacher why you gave this score (cite rubric if provided).
+    7. Generate "student_feedback": Instructional feedback. Be specific about what they did right or wrong.
+    8. Identify "misconceptions": List any specific misunderstandings found.
+
+    Return ONLY a JSON object:
     {
-      "score": number, // A number between 0 and 10
-      "feedback": string // Brief feedback explaining the score
+      "score": number,
+      "technical_reasoning": string,
+      "student_feedback": string,
+      "misconceptions": string[]
     }`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
     
-    // Clean up markdown code blocks if present
-    const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
+    let text = "";
+    try {
+        text = response.text();
+    } catch (textError) {
+        console.error("Failed to get text from AI response:", textError);
+        // Check if it's a safety block
+        if (response.candidates && response.candidates[0]?.finishReason === 'SAFETY') {
+            return { score: 0, feedback: "Response blocked by safety filters. Please review manually." };
+        }
+        throw textError;
+    }
+    
+    if (!text) {
+        throw new Error("AI returned empty response");
+    }
+
+    // Robust JSON extraction: Find the first '{' and last '}'
+    const startIdx = text.indexOf('{');
+    const endIdx = text.lastIndexOf('}');
+    
+    if (startIdx === -1 || endIdx === -1) {
+      console.error("No JSON found in AI response. Raw text:", text);
+      throw new Error("Invalid format from AI grader");
+    }
+    
+    const jsonStr = text.substring(startIdx, endIdx + 1).trim();
     
     try {
         const data = JSON.parse(jsonStr);
+        
+        // Ensure score is a number and capped
+        let score = 0;
+        if (typeof data.score === 'number') {
+            score = Math.min(10, Math.max(0, data.score));
+        } else if (typeof data.score === 'string') {
+            // Handle cases like "8/10"
+            if (data.score.includes('/')) {
+                const parts = data.score.split('/');
+                const num = parseFloat(parts[0]);
+                const den = parseFloat(parts[1]) || 10;
+                score = (num / den) * 10;
+            } else {
+                score = parseFloat(data.score) || 0;
+            }
+            score = Math.min(10, Math.max(0, score));
+        }
+
         return {
-            score: typeof data.score === 'number' ? data.score : 0,
-            feedback: data.feedback || "No feedback provided.",
+            score,
+            feedback: data.student_feedback || data.feedback || "No feedback provided.",
+            reasoning: data.technical_reasoning || data.reasoning || "",
             usage: {
                 inputTokens: response.usageMetadata?.promptTokenCount || 0,
                 outputTokens: response.usageMetadata?.candidatesTokenCount || 0
             }
         };
     } catch (parseError) {
-        console.error("Error parsing AI response:", text);
+        console.error("Error parsing AI response. Raw text:", text);
         return { 
             score: 0, 
-            feedback: "Error parsing grading response.", 
+            feedback: "Evaluation format error. The grader output was not valid JSON.", 
             usage: {
                 inputTokens: response.usageMetadata?.promptTokenCount || 0,
                 outputTokens: response.usageMetadata?.candidatesTokenCount || 0
@@ -1040,9 +1113,43 @@ export async function gradeResponse(question: string, answer: string, rubric?: s
         };
     }
 
+  } catch (error: any) {
+    console.error("Error in gradeResponse:", error);
+    return { 
+        score: 0, 
+        feedback: `Grading engine error: ${error?.message || "Unknown error"}. Please check manually.`,
+        reasoning: `Error details: ${JSON.stringify(error)}`
+    };
+  }
+}
+
+/**
+ * Synthesize a highly precise scoring guide for a specific question.
+ * Used during assignment creation to help teachers build better rubrics.
+ */
+export async function synthesizeRubric(questionText: string, topic: string) {
+  try {
+    const prompt = `
+      You are an academic curriculum assistant.
+      Your task is to create a detailed Scoring Guide for a question about "${topic}".
+      
+      QUESTION: "${questionText}"
+
+      Please provide:
+      1. Essential Concepts: What must the student demonstrate understanding of?
+      2. Scoring Breakdown: What specific elements earn points?
+      3. Common Mistakes: What should be penalized?
+      4. Model Answer: An ideal response.
+
+      Use clear Markdown. Be professional and constructive.
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error("Error grading response:", error);
-    return { score: 0, feedback: "Error grading response." };
+    console.error("Error synthesizing rubric:", error);
+    return "Failed to synthesize rubric. Please provide manual guidelines.";
   }
 }
 
@@ -1141,40 +1248,104 @@ export async function runAblationStudy(): Promise<AblationResult[]> {
   return results;
 }
 
-export async function generateAssignmentQuestions(topic: string, count: number, difficulty: string, questionType: string = "mixed"): Promise<{ questions: any[], usage?: { inputTokens: number, outputTokens: number } }> {
+export async function generateAssignmentQuestions(
+  topic: string, 
+  count: number, 
+  difficulty: string, 
+  questionType: string = "mixed",
+  learningObjectives?: string
+): Promise<{ questions: any[], usage?: { inputTokens: number, outputTokens: number } }> {
   try {
-    const prompt = `Generate ${count} physics questions about "${topic}" at a ${difficulty} difficulty level.
-    The question type should be: ${questionType}.
-    If "mixed", generate a variety of types (multiple-choice, true-false, short-answer, text).
+    const prompt = `You are an expert curriculum designer.
+    Generate ${count} professional and academic questions about "${topic}" at a ${difficulty} level.
+
+    ${learningObjectives ? `CONTEXT/LEARNING OBJECTIVES:\n"${learningObjectives}"\n` : ""}
+
+    Question type: ${questionType} (if mixed, generate a variety).
+
+    INSTRUCTIONS:
+    1. Core Principles: Focus on fundamental concepts and accurate representation.
+    2. LaTeX Support: ALWAYS use LaTeX for math/physics formulas (e.g., $E=mc^2$).
+    3. Rubric Synthesis: Provide a grading guide or correct answer for EVERY question.
+    4. Quality: Ensure high academic standards for the ${difficulty} target.
+
+    Return ONLY a valid JSON object. Do not include any comments or extra characters.
+    Format:
+    {
+      "questions": [
+        {
+          "text": "Question text using LaTeX...",
+          "type": "multiple-choice | true-false | short-answer | text",
+          "options": ["A", "B", "C", "D"],
+          "correctAnswer": "Answer or scoring guide...",
+          "points": 10
+        }
+      ]
+    }
+    `;
     
-    Return ONLY a raw JSON array of objects. Do not include any other text.
-    Each object must have:
-    - "text": The question text.
-    - "type": One of "multiple-choice", "true-false", "short-answer", "text".
-    - "options": An array of strings (required for multiple-choice, optional for others).
-    - "correctAnswer": The correct answer string (or sample answer for "text").
-    
-    For "true-false", options should be ["True", "False"].
-    For "short-answer" and "text", options can be empty.
-    
-    Example format:
-    [
-      {"text": "Q1", "type": "multiple-choice", "options": ["A", "B", "C", "D"], "correctAnswer": "A"},
-      {"text": "Q2", "type": "true-false", "options": ["True", "False"], "correctAnswer": "True"},
-      {"text": "Q3", "type": "short-answer", "options": [], "correctAnswer": "The answer"},
-      {"text": "Q4", "type": "text", "options": [], "correctAnswer": "Detailed explanation..."}
-    ]`;
-    
-    const result = await model.generateContent(prompt);
+    // Explicitly set generation configuration for JSON response
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 4096,
+        responseMimeType: "application/json",
+      }
+    });
     const response = await result.response;
-    const text = response.text();
+    let text = response.text()?.trim() || "[]";
     
-    // Clean up potential markdown or extra text
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    const cleanJson = jsonMatch ? jsonMatch[0] : text;
+    // Safety check for empty or blocked response
+    if (!text || text.length < 2) {
+      throw new Error("AI returned an empty response. Please try with a more specific topic.");
+    }
+
+    // Aggressive cleanup for JSON results
+    // 1. Remove Markdown code blocks if present
+    if (text.includes("```")) {
+      text = text.replace(/```json\n?|```\n?|```$/g, "").trim();
+    }
     
+    // 2. Identify the likely JSON structure (could be an array or an object)
+    const jsonStartIdx = text.search(/[\[\{]/);
+    const jsonEndIdx = Math.max(text.lastIndexOf(']'), text.lastIndexOf('}'));
+    
+    if (jsonStartIdx === -1 || jsonEndIdx === -1) {
+        console.error("AI did not return any JSON structure. Raw text:", text);
+        const err = new Error("AI returned a non-JSON response. Please try adjusting the topic context.");
+        (err as any).rawText = text;
+        throw err;
+    }
+
+    const cleanJson = text.substring(jsonStartIdx, jsonEndIdx + 1).trim();
+    
+    let parsedData: any;
+    try {
+        // Remove comments
+        const sanitizeJson = cleanJson
+          .replace(/\/\/.*/g, '') 
+          .replace(/\/\*[\s\S]*?\*\//g, '');
+          
+        parsedData = JSON.parse(sanitizeJson);
+    } catch (parseError) {
+        console.error("Error parsing AI JSON:", cleanJson);
+        try {
+            // Attempt common fixes
+            const recovery = cleanJson
+              .replace(/,\s*\]/g, ']') 
+              .replace(/,\s*\}/g, '}') 
+              .replace(/[\n\r]/g, ' '); 
+            parsedData = JSON.parse(recovery);
+        } catch (e) {
+            const err = new Error("AI generated an invalid question format. Try simplifying the topic context.");
+            (err as any).rawText = text;
+            throw err;
+        }
+    }
+
     return {
-      questions: JSON.parse(cleanJson),
+      questions: validateAndNormalizeQuestions(parsedData),
       usage: {
         inputTokens: response.usageMetadata?.promptTokenCount || 0,
         outputTokens: response.usageMetadata?.candidatesTokenCount || 0
@@ -1182,6 +1353,7 @@ export async function generateAssignmentQuestions(topic: string, count: number, 
     };
   } catch (error) {
     console.error("Error generating questions:", error);
+    if (error instanceof Error) throw error;
     return { questions: [] };
   }
 }
@@ -1232,27 +1404,57 @@ export async function parseQuestionsFromText(text: string): Promise<{ questions:
   }
 }
 
-function validateAndNormalizeQuestions(questions: any[]): any[] {
-  if (!Array.isArray(questions) || questions.length === 0) {
-    throw new Error("No questions found in the provided text. Please check the format.");
+function validateAndNormalizeQuestions(data: any): any[] {
+  let questions: any[] = [];
+  
+  // 1. Resolve to an array
+  if (Array.isArray(data)) {
+    questions = data;
+  } else if (data && typeof data === 'object') {
+    // If it's an object with a 'questions' or 'items' key
+    if (Array.isArray(data.questions)) {
+      questions = data.questions;
+    } else if (Array.isArray(data.items)) {
+      questions = data.items;
+    } else {
+      // If it's a single question object, wrap it
+      if (data.text || data.question) {
+        questions = [data];
+      } else {
+        console.error("No array found in AI JSON response:", data);
+        throw new Error("AI returned a JSON object but no list of questions was found.");
+      }
+    }
   }
   
-  // Validate and normalize questions
+  if (questions.length === 0) {
+    throw new Error("AI returned an empty result or invalid structure.");
+  }
+  
+  // 2. Validate and normalize questions
   const validatedQuestions = questions.map((q: any, index: number) => {
-    if (!q.text || typeof q.text !== 'string') {
-      throw new Error(`Question ${index + 1} is missing question text`);
+    // Attempt to salvage question even if text is in a different property
+    const qText = q.text || q.question || q.problem || "";
+    if (!qText || typeof qText !== 'string') {
+      console.warn(`Question ${index + 1} has no text:`, q);
+      return null;
     }
     
     const validTypes = ["multiple-choice", "true-false", "short-answer", "text"];
     const type = validTypes.includes(q.type) ? q.type : "text";
     
     return {
-      text: q.text.trim(),
+      text: qText.trim(),
       type,
       options: Array.isArray(q.options) ? q.options.filter(Boolean) : [],
-      correctAnswer: q.correctAnswer || "",
+      correctAnswer: q.correctAnswer || q.answer || "",
+      points: Number(q.points) || 10,
     };
-  });
+  }).filter((q): q is any => q !== null);
+  
+  if (validatedQuestions.length === 0) {
+     throw new Error("No valid questions could be extracted from the AI response.");
+  }
   
   console.log(`Successfully parsed ${validatedQuestions.length} questions`);
   return validatedQuestions;
@@ -1290,5 +1492,104 @@ If suggesting navigation, wrap the path in parentheses like this: (/student/grad
     return { 
       text: "I'm sorry, I'm having trouble processing your request right now." 
     };
+  }
+}
+
+export async function generateSandboxProblem(
+  topic: string,
+  difficulty: string,
+  progress: number = 0
+): Promise<{ problem: any, usage?: { inputTokens: number, outputTokens: number } }> {
+  try {
+    const varietySeed = Math.random().toString(36).substring(7);
+    const prompt = `Generate a high-quality physics problem for the topic: ${topic} at ${difficulty} level.
+    Current Unit Progress: ${progress + 1}. Variety Key: ${varietySeed}. 
+    
+    IMPORTANT: Provide variety. If Unit Progress > 1, create a scenario that is distinct from common introductory examples in this topic. 
+
+    Return ONLY a JSON object with:
+    {
+      "problem": "detailed physics scenario description. Surround EVERY mathematical variable, unit, and formula with $...$ (e.g. $m=5.0\\text{ kg}$, $v=0$).",
+      "latex": "The core formula needed (e.g. \\\\Delta x = v_0t + \\\\frac{1}{2}at^2).",
+      "correctAnswer": "numerical value only (as a string)",
+      "unit": "unit abbreviation",
+      "explanation": "comprehensive step-by-step logic. Surround ALL math symbols, formulas, and variables with $...$ or $$...$$. Use clear LaTeX.",
+      "hints": ["hint 1", "hint 2", "hint 3"]
+    }
+    Requirements:
+    - Numerical accuracy is paramount.
+    - Provide variety in values and scenario context.
+    - DO NOT use unescaped backslashes in the JSON output. All TeX commands must be double-escaped: \\\\frac, \\\\Delta, etc.
+    - Always use $...$ for variables in text (do not write PE, write $P.E.$).
+    - Return ONLY the JSON object.`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.8,
+        responseMimeType: "application/json",
+      }
+    });
+
+    const response = await result.response;
+    let text = response.text().trim();
+
+    if (!text) {
+      // Check if it was blocked by safety
+      const safetyRatings = response.promptFeedback?.safetyRatings;
+      if (safetyRatings?.some(r => r.blocked)) {
+        throw new Error("AI output blocked for safety reasons. Please adjust your research topic.");
+      }
+      throw new Error("AI returned an empty data stream.");
+    }
+
+    // Isolation logic for robustness
+    const startIdx = text.indexOf('{');
+    const endIdx = text.lastIndexOf('}');
+    
+    if (startIdx === -1 || endIdx === -1) {
+      console.error("Malformed AI Response (No JSON brackets):", text);
+      throw new Error(`The physics engine failed to structure a valid response (Length: ${text.length}).`);
+    }
+
+    const cleanJson = text.substring(startIdx, endIdx + 1).trim();
+    
+    // Robust cleanup: protect valid escapes, then normalize solo backslashes
+    const sanitized = cleanJson
+      .replace(/\\n/g, '__NL__') // Protect real newlines if any
+      .replace(/\\(?!["\\])/g, '\\\\') // Double escape every backslash EXCEPT those protecting quotes or already doubled
+      .replace(/__NL__/g, '\\n') // Restore newlines
+      .replace(/,\s*([\}\]])/g, '$1') // Remove trailing commas
+      .trim();
+
+    try {
+      const parsed = JSON.parse(sanitized);
+      return {
+        problem: parsed,
+        usage: {
+          inputTokens: response.usageMetadata?.promptTokenCount || 0,
+          outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+        }
+      };
+    } catch (e) {
+      // Emergency attempt: just parse the raw substring if sanitization broke it
+      try {
+        const rawParsed = JSON.parse(cleanJson.replace(/[\n\r]/g, ' '));
+        return {
+          problem: rawParsed,
+          usage: {
+            inputTokens: response.usageMetadata?.promptTokenCount || 0,
+            outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+          }
+        };
+      } catch (e2) {
+        console.error("Critical JSON Parse Failure:", sanitized);
+        throw new Error("The physics engine returned an unstable result. Retrying...");
+      }
+    }
+  } catch (error: any) {
+    console.error("generateSandboxProblem error:", error);
+    throw error;
   }
 }

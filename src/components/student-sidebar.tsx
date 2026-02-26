@@ -6,13 +6,17 @@ import {
   Bot, 
   FileCheck,
   Library,
-  GraduationCap
+  GraduationCap,
+  PackageOpen,
+  Boxes
 } from "lucide-react";
 import { AppSidebar } from "./app-sidebar";
 
 const navItems = [
   { href: "/student", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/assignments", label: "Assignments", icon: FileText },
+  { href: "/student/sandbox", label: "Sandbox", icon: Boxes },
+  { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },
   { href: "/student/tutor", label: "AI Tutor", icon: Bot },
   { href: "/student/submissions", label: "My Submissions", icon: FileCheck },
   { href: "/student/resources", label: "Resources", icon: Library },

@@ -135,15 +135,15 @@ export function AICostCalculator() {
               <Slider 
                 value={[queriesPerStudent]} 
                 onValueChange={(val) => setQueriesPerStudent(val[0])}
-                max={500} 
+                max={3000} 
                 min={0}
                 step={1}
                 className="cursor-pointer py-1"
               />
               <div className="flex justify-between text-[9px] text-zinc-400 font-medium lowercase">
-                <span>Light (10)</span>
-                <span>~{(queriesPerStudent / 30).toFixed(1)}/day</span>
-                <span>Heavy (100+)</span>
+                <span>Light (150+)</span>
+                <span>~{(queriesPerStudent / 30).toFixed(1)} queries/day avg</span>
+                <span>Heavy (750+)</span>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, writeBatch, doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, cleanupStudentData } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -107,8 +107,12 @@ export default function TeacherGradesPage() {
         // Fetch students in the course to cross-reference (if course selected)
         let courseStudentIds = new Set<string>();
         if (selectedCourseId !== "all") {
-            const courseStudentsSnap = await getDocs(query(collection(db, "students"), where("courseId", "==", selectedCourseId)));
-            courseStudentsSnap.docs.forEach(d => courseStudentIds.add(d.id));
+            const [snap1, snap2] = await Promise.all([
+                getDocs(query(collection(db, "students"), where("courseId", "==", selectedCourseId))),
+                getDocs(query(collection(db, "users"), where("courseId", "==", selectedCourseId), where("role", "==", "student")))
+            ]);
+            snap1.docs.forEach(d => courseStudentIds.add(d.id));
+            snap2.docs.forEach(d => courseStudentIds.add(d.id));
         }
 
         submissionsSnap.forEach((doc) => {
@@ -146,6 +150,7 @@ export default function TeacherGradesPage() {
         await Promise.all(
           unknownStudents.map(async ([studentId, _]) => {
             try {
+              // Try legacy students first
               const studentDoc = await getDoc(doc(db, "students", studentId));
               if (studentDoc.exists()) {
                 const studentData = studentDoc.data();
@@ -153,6 +158,17 @@ export default function TeacherGradesPage() {
                 if (student) {
                   student.name = studentData.name || "Unknown Student";
                   student.email = studentData.email || student.email;
+                }
+              } else {
+                // Try unified users second
+                const userDoc = await getDoc(doc(db, "users", studentId));
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  const student = studentMap.get(studentId);
+                  if (student) {
+                    student.name = userData.displayName || userData.name || "Unknown Student";
+                    student.email = userData.email || student.email;
+                  }
                 }
               }
             } catch (error) {
@@ -187,15 +203,10 @@ export default function TeacherGradesPage() {
   }, [selectedAssignmentId, selectedCourseId, user, assignments]);
 
   const deleteStudent = async (studentId: string) => {
-    if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions.")) return;
+    if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions and uploaded storage files to save space.")) return;
     try {
-      const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
-      const snapshot = await getDocs(q);
-      const batch = writeBatch(db);
-      snapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
+      // 1. Cleanup Storage and Submissions
+      await cleanupStudentData(studentId, selectedCourseId === "all" ? undefined : selectedCourseId);
       
       setStudents(students.filter((s) => s.id !== studentId));
     } catch (error: any) {

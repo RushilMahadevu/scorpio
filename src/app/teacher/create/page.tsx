@@ -15,14 +15,16 @@ import { parseQuestionsManually } from "@/lib/gemini";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 // Collapsible section for advanced options
 function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -138,8 +140,7 @@ function CreateAssignmentForm() {
 
   // AI Generation State
   const [aiOpen, setAiOpen] = useState(false);
-  const [aiTopic, setAiTopic] = useState("");
-  const [aiCount, setAiCount] = useState(3);
+  const [aiTopic, setAiTopic] = useState("");  const [aiContext, setAiContext] = useState("");  const [aiCount, setAiCount] = useState(3);
   const [aiDifficulty, setAiDifficulty] = useState("Medium");
   const [aiQuestionType, setAiQuestionType] = useState("mixed");
   const [aiLoading, setAiLoading] = useState(false);
@@ -176,8 +177,14 @@ function CreateAssignmentForm() {
         });
         
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "AI Parsing failed");
+          let errMsg = "AI Parsing failed";
+          try {
+            const err = await res.json();
+            errMsg = err.error || errMsg;
+          } catch (e) {
+            errMsg = `Parsing error (${res.status})`;
+          }
+          throw new Error(errMsg);
         }
         
         const result = await res.json();
@@ -194,10 +201,10 @@ function CreateAssignmentForm() {
       setQuestions([...questions, ...newQuestions]);
       setImportOpen(false);
       setImportText("");
-      alert(`Successfully imported ${newQuestions.length} questions!`);
-    } catch (error) {
+      toast.success(`Successfully imported ${newQuestions.length} questions!`);
+    } catch (error: any) {
       console.error("Failed to import questions", error);
-      alert(error instanceof Error ? error.message : "Failed to import questions. Please try again or paste fewer questions at once.");
+      toast.error(error.message || "Failed to import questions. Please try again.");
     } finally {
       setImportLoading(false);
     }
@@ -244,6 +251,46 @@ function CreateAssignmentForm() {
     }
   };
 
+  const [aiGenerating, setAiGenerating] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const handleSynthesizeRubric = async (questionId: string) => {
+    const question = questions.find((q) => q.id === questionId);
+    if (!question || !question.text) return;
+    
+    setAiGenerating(questionId);
+    try {
+      const res = await fetch("/api/ai/synthesize-rubric", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionText: question.text,
+          topic: title || "Physics Problem",
+          userId: user?.uid,
+        }),
+      });
+
+      if (!res.ok) {
+        let errMsg = "AI failed to generate a grading rubric.";
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch (e) {
+          errMsg = `Rubric synthesis error (${res.status})`;
+        }
+        throw new Error(errMsg);
+      }
+      
+      const { rubric } = await res.json();
+      updateQuestion(questionId, { correctAnswer: rubric });
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to generate rubric.");
+    } finally {
+      setAiGenerating(null);
+    }
+  };
+
   const handleAiGenerate = async () => {
     if (!aiTopic) return;
     setAiLoading(true);
@@ -257,12 +304,19 @@ function CreateAssignmentForm() {
           difficulty: aiDifficulty,
           questionType: aiQuestionType,
           userId: user?.uid,
+          context: aiContext,
         }),
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to generate questions.");
+        let errMsg = "Failed to generate questions.";
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch (e) {
+          errMsg = `AI Generation API error (${res.status})`;
+        }
+        throw new Error(errMsg);
       }
 
       const result = await res.json();
@@ -273,7 +327,7 @@ function CreateAssignmentForm() {
         type: q.type,
         options: q.options || [],
         correctAnswer: q.correctAnswer,
-        points: 10,
+        points: q.points || 10,
       }));
       
       setQuestions([...questions, ...newQuestions]);
@@ -378,79 +432,91 @@ function CreateAssignmentForm() {
                   {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl">
+              <DialogContent className="max-w-3xl">
                 <DialogHeader>
-                  <DialogTitle>Generate Questions with Scorpio AI</DialogTitle>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    AI Question Generator
+                  </DialogTitle>
                   <DialogDescription>
-                    Provide context or learning objectives and Scorpio AI will generate physics questions.
+                    Provide a topic and context to automatically generate assignment questions.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Topic</Label>
-                      <Input 
-                        placeholder="e.g. Kinematics, Thermodynamics" 
-                        value={aiTopic}
-                        onChange={(e) => setAiTopic(e.target.value)}
-                      />
+                <div className="space-y-6 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="ai-topic">Focus Topic</Label>
+                          <Input 
+                            id="ai-topic"
+                            placeholder="e.g. Kinematics" 
+                            value={aiTopic}
+                            onChange={(e) => setAiTopic(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ai-count">Number of Questions</Label>
+                            <Input 
+                                id="ai-count"
+                                type="number" 
+                                min={1} 
+                                max={10} 
+                                value={aiCount}
+                                onChange={(e) => setAiCount(parseInt(e.target.value))}
+                            />
+                        </div>
                     </div>
+
                     <div className="space-y-2">
-                      <Label>Number of Questions</Label>
-                      <Input 
-                        type="number" 
-                        min={1} 
-                        max={10} 
-                        value={aiCount}
-                        onChange={(e) => setAiCount(parseInt(e.target.value))}
-                      />
+                       <Label htmlFor="ai-context">Instructions or Learning Objectives (Optional)</Label>
+                       <Textarea 
+                         id="ai-context"
+                         placeholder="e.g. Focus on Newton's Second Law, include technical friction analysis..." 
+                         value={aiContext}
+                         onChange={(e) => setAiContext(e.target.value)}
+                         rows={3}
+                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Difficulty</Label>
-                      <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Easy" id="easy" />
-                          <Label htmlFor="easy">Easy</Label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Difficulty Level</Label>
+                            <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
+                                {['Easy', 'Medium', 'Hard'].map((diff) => (
+                                    <div key={diff} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={diff} id={`diff-${diff}`} />
+                                        <Label htmlFor={`diff-${diff}`} className="text-sm font-normal">{diff}</Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Medium" id="medium" />
-                          <Label htmlFor="medium">Medium</Label>
+
+                        <div className="space-y-2">
+                            <Label>Question Type</Label>
+                            <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
+                                {[
+                                    { value: 'mixed', label: 'Mixed' },
+                                    { value: 'multiple-choice', label: 'Multiple Choice' },
+                                    { value: 'true-false', label: 'True/False' },
+                                    { value: 'short-answer', label: 'Short Answer' },
+                                    { value: 'text', label: 'Free Response' }
+                                ].map((type) => (
+                                    <div key={type.value} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={type.value} id={`type-${type.value}`} />
+                                        <Label htmlFor={`type-${type.value}`} className="text-xs font-normal">{type.label}</Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Hard" id="hard" />
-                          <Label htmlFor="hard">Hard</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Question Type</Label>
-                      <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="mixed" id="mixed" />
-                          <Label htmlFor="mixed">Mixed</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="multiple-choice" id="mcq" />
-                          <Label htmlFor="mcq">Multiple Choice</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="true-false" id="tf" />
-                          <Label htmlFor="tf">True/False</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="short-answer" id="sa" />
-                          <Label htmlFor="sa">Short Answer</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="text" id="text" />
-                          <Label htmlFor="text">Free Response</Label>
-                        </div>
-                      </RadioGroup>
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button onClick={handleAiGenerate} disabled={aiLoading || !aiTopic}>
-                      {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Generate
+                    <Button 
+                        onClick={handleAiGenerate} 
+                        disabled={aiLoading || !aiTopic}
+                        className="w-full sm:w-auto"
+                    >
+                        {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Generate Questions
                     </Button>
                 </DialogFooter>
               </DialogContent>
@@ -511,32 +577,50 @@ function CreateAssignmentForm() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* Full Preview Toggle */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsPreviewOpen(true)}
+              className="cursor-pointer hover:bg-zinc-100 transition-colors"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Preview Assignment
+            </Button>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
+        <Card className="border-zinc-200 shadow-sm overflow-hidden">
+          {gradingType === "ai" && (
+            <div className="absolute top-0 right-0 p-4">
+              <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5">
+                AI GRADING ENABLED
+              </Badge>
+            </div>
+          )}
           <CardHeader>
             <CardTitle>Assignment Details</CardTitle>
-            <CardDescription>Basic information and class settings</CardDescription>
+            <CardDescription>Basic information for the assignment.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+                <Label htmlFor="title">Assignment Title <span className="text-destructive">*</span></Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Newton's Laws Practice"
+                  placeholder="e.g. Unit 1: Kinematics"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="topic">Primary Topic</Label>
+                <Label htmlFor="topic">Topic / Subject</Label>
                 <Select value={topic} onValueChange={setTopic}>
-                  <SelectTrigger id="topic" className="cursor-pointer">
+                  <SelectTrigger id="topic">
                     <SelectValue placeholder="Select a topic..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -553,19 +637,19 @@ function CreateAssignmentForm() {
               </div>
             </div>
 
-            <div className="space-y-2 pt-2">
-                <Label htmlFor="course">Assign to Class <span className="text-destructive">*</span></Label>
+            <div className="space-y-2">
+                <Label htmlFor="course">Class / Section <span className="text-destructive">*</span></Label>
                 <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                  <SelectTrigger id="course" className="cursor-pointer">
+                  <SelectTrigger id="course">
                     <SelectValue placeholder="Select a class..." />
                   </SelectTrigger>
                   <SelectContent>
                     {courses.length === 0 ? (
-                      <SelectItem value="none" disabled>No classes found. Create one first.</SelectItem>
+                      <SelectItem value="none" disabled>No classes found.</SelectItem>
                     ) : (
                       courses.map(course => (
-                        <SelectItem key={course.id} value={course.id} className="cursor-pointer">
-                          {course.name} <span className="text-muted-foreground text-xs">({course.code})</span>
+                        <SelectItem key={course.id} value={course.id}>
+                          {course.name} ({course.code})
                         </SelectItem>
                       ))
                     )}
@@ -573,18 +657,75 @@ function CreateAssignmentForm() {
                 </Select>
             </div>
 
+            {gradingType === "ai" && (
+               <div className="space-y-3 p-4 bg-muted/30 border rounded-lg">
+                 <div className="flex items-center justify-between">
+                   <Label htmlFor="rubric" className="text-sm font-semibold">Global Grading Rubric</Label>
+                   <Button
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      className="h-8"
+                      onClick={async () => {
+                         if (!title) {
+                           toast.error("Please enter a title first.");
+                           return;
+                         }
+                         setAiLoading(true);
+                         try {
+                           const prompt = `Generate a high-level grading rubric for an assignment titled "${title}". Focus on expectations for accuracy, units, and reasoning.`;
+                           const response = await fetch('/api/chat', {
+                             method: 'POST',
+                             headers: { 'Content-Type': 'application/json' },
+                             body: JSON.stringify({ 
+                               message: prompt, 
+                               userId: user?.uid,
+                               userRole: 'teacher' 
+                             })
+                           });
+
+                           if (!response.ok) {
+                             const err = await response.json();
+                             throw new Error(err.error || "Failed to generate rubric.");
+                           }
+
+                           const data = await response.json();
+                           setRubric(data.text);
+                           toast.success("Rubric generated.");
+                         } catch (e: any) {
+                            toast.error(e.message || "Failed to generate rubric.");
+                         } finally {
+                           setAiLoading(false);
+                         }
+                      }}
+                   >
+                     <Sparkles className="h-3.5 w-3.5 mr-2" />
+                     Generate Rubric
+                   </Button>
+                 </div>
+                 <Textarea
+                    id="rubric"
+                    value={rubric}
+                    onChange={(e) => setRubric(e.target.value)}
+                    placeholder="General criteria for grading this assignment..."
+                    rows={4}
+                    className="bg-background text-sm"
+                 />
+               </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what students need to do..."
-                rows={3}
+                placeholder="Learning objectives or instructions for students..."
+                rows={2}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date <span className="text-destructive">*</span></Label>
                 <Input
@@ -593,22 +734,20 @@ function CreateAssignmentForm() {
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   required
-                  className="cursor-pointer"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
-                <Input
-                  id="timeLimit"
-                  type="number"
-                  min="0"
-                  placeholder="Optional (leave empty for no limit)"
-                  value={timeLimit}
-                  onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Set a time limit in minutes. Leave empty for no time limit.
-                </p>
+                <Label htmlFor="timeLimit">Time Limit (Minutes)</Label>
+                <div className="relative">
+                  <Input
+                    id="timeLimit"
+                    type="number"
+                    min="0"
+                    placeholder="Unlimited"
+                    value={timeLimit}
+                    onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
+                  />
+                </div>
               </div>
             </div>
           </CardContent>
@@ -721,16 +860,18 @@ function CreateAssignmentForm() {
               When enabled, the system will track if a student leaves the assignment tab and warn/notify you of potential cheating.
             </p>
 
-              <div className="space-y-2">
-                <Label htmlFor="rubric">Rubric / Grading Criteria</Label>
-                <Textarea
-                  id="rubric"
-                  value={rubric}
-                  onChange={(e) => setRubric(e.target.value)}
-                  placeholder="Enter grading criteria or rubric details..."
-                  rows={4}
-                />
-              </div>
+              {gradingType !== 'ai' && (
+                <div className="space-y-2">
+                  <Label htmlFor="rubric">Manual Grading Rubric / Criteria</Label>
+                  <Textarea
+                    id="rubric"
+                    value={rubric}
+                    onChange={(e) => setRubric(e.target.value)}
+                    placeholder="Enter grading criteria or rubric details..."
+                    rows={4}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </CollapsibleSection>
@@ -746,21 +887,31 @@ function CreateAssignmentForm() {
               <Card key={question.id} className="p-4">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Question {index + 1}</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="cursor-pointer"
-                      onClick={() => removeQuestion(question.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <Label className="text-sm font-semibold">Question {index + 1}</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">Points</Label>
+                        <Input
+                          type="number"
+                          value={question.points || 10}
+                          onChange={(e) => updateQuestion(question.id, { points: parseInt(e.target.value) || 0 })}
+                          className="w-12 h-8 text-xs px-1 text-center"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeQuestion(question.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                   <MathInputField
                     value={question.text}
                     onChange={(value) => updateQuestion(question.id, { text: value })}
-                    placeholder="Enter your question..."
+                    placeholder="Enter your question text here..."
                     rows={3}
                   />
                   <div className="flex flex-wrap gap-2">
@@ -775,7 +926,6 @@ function CreateAssignmentForm() {
                         type="button"
                         variant={question.type === btn.type ? "default" : "outline"}
                         size="sm"
-                        className="cursor-pointer"
                         onClick={() =>
                           updateQuestion(question.id, btn.type === "true-false"
                             ? { type: btn.type as "true-false", options: ["True", "False"] }
@@ -786,6 +936,30 @@ function CreateAssignmentForm() {
                       </Button>
                     ))}
                   </div>
+                  {(question.type === "text" || question.type === "short-answer") && (
+                    <div className="space-y-3 bg-muted/20 p-4 rounded-lg border border-dashed">
+                       <div className="flex items-center justify-between gap-4">
+                          <Label className="text-[10px] uppercase font-bold text-muted-foreground">Grading Guide / Correct Answer</Label>
+                          <Button 
+                            type="button"
+                            variant="link" 
+                            size="sm"
+                            disabled={aiGenerating === question.id || !question.text}
+                            onClick={() => handleSynthesizeRubric(question.id)}
+                            className="h-auto p-0 text-xs text-primary"
+                          >
+                            {aiGenerating === question.id ? "Generating..." : "Generate with AI"}
+                          </Button>
+                       </div>
+                       <Textarea
+                         value={question.correctAnswer || ""}
+                         onChange={(e) => updateQuestion(question.id, { correctAnswer: e.target.value })}
+                         placeholder="Explain what defines a correct answer for this question..."
+                         className="text-sm bg-background min-h-[100px]"
+                       />
+                    </div>
+                  )}
+
                   {question.type === "multiple-choice" && (
                     <div className="space-y-2 pl-4">
                       {question.options?.map((option, optionIndex) => (
@@ -843,6 +1017,87 @@ function CreateAssignmentForm() {
           </Button>
         </div>
       </form>
+
+      {/* Full Assignment Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Student View Preview</DialogTitle>
+            <DialogDescription>
+              This is how your assignment will appear to students.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-8 py-4">
+            <div className="space-y-2 border-b pb-6">
+              <h2 className="text-3xl font-bold tracking-tight">{title || "Untitled Assignment"}</h2>
+              <p className="text-muted-foreground">{description || "No description provided."}</p>
+              <div className="flex gap-4 text-xs font-medium uppercase tracking-tighter text-muted-foreground pt-2">
+                <span>Due: {dueDate ? new Date(dueDate).toLocaleString() : "Not set"}</span>
+                {timeLimit && <span>Time Limit: {timeLimit} mins</span>}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {questions.length === 0 ? (
+                <div className="py-20 text-center border-2 border-dashed rounded-xl">
+                  <p className="text-muted-foreground italic">No questions added yet.</p>
+                </div>
+              ) : (
+                questions.map((question, index) => (
+                  <Card key={question.id} className="overflow-hidden border-zinc-200">
+                    <CardHeader className="bg-muted/30 pb-4">
+                      <div className="flex justify-between items-start">
+                        <Label className="text-base font-bold">Question {index + 1}</Label>
+                        <Badge variant="outline" className="font-mono">{question.points || 10} PTS</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-6">
+                      <MarkdownRenderer>
+                        {question.text || "*No question text entered.*"}
+                      </MarkdownRenderer>
+                      
+                      <div className="space-y-3">
+                        {question.type === "multiple-choice" && (
+                          <div className="grid gap-2">
+                            {question.options?.map((option, oIdx) => (
+                              <div key={oIdx} className="flex items-center gap-3 p-3 rounded-lg border bg-zinc-50/50">
+                                <div className="w-4 h-4 rounded-full border border-zinc-300" />
+                                <MarkdownRenderer className="text-sm prose-p:my-0">{option || `Option ${oIdx + 1}`}</MarkdownRenderer>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {question.type === "true-false" && (
+                          <div className="grid gap-2">
+                            {["True", "False"].map((option) => (
+                              <div key={option} className="flex items-center gap-3 p-3 rounded-lg border bg-zinc-50/50">
+                                <div className="w-4 h-4 rounded-full border border-zinc-300" />
+                                <span className="text-sm">{option}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {(question.type === "text" || question.type === "short-answer") && (
+                          <div className="p-4 rounded-lg border border-dashed bg-zinc-50/30 text-muted-foreground text-sm italic">
+                            Student will provide a {question.type === "short-answer" ? "short" : "long"}-form response.
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
+            <Button onClick={() => setIsPreviewOpen(false)} variant="default" className="w-full sm:w-auto">
+              Close Preview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -28,7 +28,11 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null && (
         request.auth.uid == userId || 
-        (isTeacher() && isMemberOf(resource.data.organizationId))
+        isTeacher() ||
+        // Allow students to read their teacher's profile to resolve Organization ID
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId == userId ||
+        // Allow students to read their teacher's profile via course lookup
+        get(/databases/$(database)/documents/courses/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId)).data.teacherId == userId
       );
       allow write: if request.auth != null && request.auth.uid == userId;
     }
@@ -43,8 +47,8 @@ service cloud.firestore {
     match /students/{userId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if (request.auth != null && request.auth.uid == userId) || isTeacher();
-      allow delete: if (request.auth != null && request.auth.uid == userId) || isTeacher();
+      allow update: if request.auth != null && (request.auth.uid == userId || isTeacher());
+      allow delete: if request.auth != null && (request.auth.uid == userId || isTeacher());
     }
 
     // Assignments collection
@@ -52,7 +56,9 @@ service cloud.firestore {
       allow read: if request.auth != null && (
         resource.data.visibility == 'global' || 
         (resource.data.visibility == 'network' && isMemberOf(resource.data.organizationId)) ||
-        resource.data.teacherId == request.auth.uid
+        resource.data.teacherId == request.auth.uid ||
+        resource.data.courseId == get(/databases/$(database)/documents/students/$(request.auth.uid)).data.courseId ||
+        resource.data.courseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId
       );
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
@@ -83,6 +89,13 @@ service cloud.firestore {
       allow create: if isTeacher();
       allow update: if isTeacher();
       allow delete: if isTeacher();
+    }
+
+    // Practice History
+    match /practice_history/{historyId} {
+      allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isTeacher());
+      allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.studentId == request.auth.uid;
     }
 
     // Organizations / Networks

@@ -26,3 +26,4 @@ if (!admin.apps.length) {
 
 export const adminDb = admin.apps.length ? admin.firestore() : null;
 export const adminAuth = admin.apps.length ? admin.auth() : null;
+export const adminFieldWithValue = admin.firestore.FieldValue;

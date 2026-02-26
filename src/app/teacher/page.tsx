@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy, limit, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,14 +57,54 @@ export default function TeacherDashboard() {
     async function fetchStats() {
       if (!user) return;
       try {
-        const assignmentsSnap = await getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid)));
-        const studentsSnap = await getDocs(
-          query(collection(db, "students"), where("teacherId", "==", user.uid))
-        );
+        // 1. Fetch courses first (including legacy) to resolve course-based student counts
+        const [cSnap1, cSnap2] = await Promise.all([
+           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))).catch(() => ({docs:[]} as any)),
+           getDocs(query(collection(db, "courses"), where("code", "==", user.uid))).catch(() => ({docs:[]} as any))
+        ]);
         
+        const courseDocs = [...cSnap1.docs, ...cSnap2.docs];
+        const myCourseIdsArr = Array.from(new Set(courseDocs.map(d => d.id))).slice(0, 30);
+        const myCodesArr = Array.from(new Set(courseDocs.map(d => d.data().code))).filter(code => !!code).slice(0, 30);
+        
+        // 2. Fetch all relevant data snapshots
+        // Fetch data with individual error handling to avoid one query failure blocking everything
+        const [assignmentsSnap, legacySnap, unifiedSnap, legacyByCourseSnap, unifiedByCourseSnap, legacyByCodeSnap] = await Promise.all([
+          getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid))).catch(e => ({ docs: [], size: 0 } as any)),
+          getDocs(query(collection(db, "students"), where("teacherId", "==", user.uid))).catch(e => ({ docs: [], size: 0 } as any)),
+          getDocs(query(collection(db, "users"), where("teacherId", "==", user.uid), where("role", "==", "student"))).catch(e => ({ docs: [], size: 0 } as any)),
+          (myCourseIdsArr.length > 0 
+            ? getDocs(query(collection(db, "students"), where("courseId", "in", myCourseIdsArr))).catch(e => ({ docs: [], size: 0 } as any))
+            : Promise.resolve({ docs: [], size: 0 } as any)),
+          (myCourseIdsArr.length > 0 
+            ? getDocs(query(collection(db, "users"), where("courseId", "in", myCourseIdsArr), where("role", "==", "student"))).catch(e => ({ docs: [], size: 0 } as any))
+            : Promise.resolve({ docs: [], size: 0 } as any)),
+          (myCodesArr.length > 0
+            ? getDocs(query(collection(db, "students"), where("teacherId", "in", myCodesArr))).catch(e => ({ docs: [], size: 0 } as any))
+            : Promise.resolve({ docs: [], size: 0 } as any))
+        ]);
+
+        const uniqueStudentIds = new Set([
+          ...legacySnap.docs.map((d: any) => d.id),
+          ...unifiedSnap.docs.map((d: any) => d.id),
+          ...legacyByCourseSnap.docs.map((d: any) => d.id),
+          ...unifiedByCourseSnap.docs.map((d: any) => d.id),
+          ...legacyByCodeSnap.docs.map((d: any) => d.id)
+        ]);
+        
+        // Auto-migrate the legacy course records found
+        for (const d of cSnap2.docs) {
+           if (d.data().teacherId !== user.uid) {
+                try {
+                  await setDoc(doc(db, "courses", d.id), { teacherId: user.uid }, { merge: true });
+                } catch (e) { console.warn("Failed to auto-migrate course record", e); }
+           }
+        }
+        setCourses(courseDocs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
+
         // We can't query submissions by teacherId directly unless we add it to the submission.
         // Instead, filter submissions by checking if assignmentId belongs to one of our assignments.
-        const myAssignmentIds = new Set(assignmentsSnap.docs.map(d => d.id));
+        const myAssignmentIds = new Set(assignmentsSnap.docs.map((d: any) => d.id));
         
         // Warning: Fetching all submissions might be slow if DB is large. 
         // Ideal: Submissions should have 'teacherId' or we query per assignment.
@@ -80,7 +120,7 @@ export default function TeacherDashboard() {
 
         setStats({
           totalAssignments: assignmentsSnap.size,
-          totalStudents: studentsSnap.size,
+          totalStudents: uniqueStudentIds.size,
           completedSubmissions: completed,
           pendingSubmissions: pending,
         });
@@ -100,7 +140,7 @@ export default function TeacherDashboard() {
         
         // Get assignment titles
         const assignmentsMap: Record<string, any> = {};
-        assignmentsSnap.docs.forEach((doc) => {
+        assignmentsSnap.docs.forEach((doc: any) => {
           assignmentsMap[doc.id] = doc.data();
         });
 
@@ -121,14 +161,6 @@ export default function TeacherDashboard() {
           .filter((sub): sub is PendingSubmission => sub !== null);
 
         setPendingGrading(pendingWithDetails);
-
-        // Fetch courses
-        try {
-          const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), orderBy("createdAt", "desc")));
-          setCourses(coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
-        } catch (e) {
-          console.log("No courses found or error fetching courses", e);
-        }
 
       } catch (error) {
         console.error("Error fetching stats:", error);

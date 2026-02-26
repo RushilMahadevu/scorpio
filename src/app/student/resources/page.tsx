@@ -21,7 +21,7 @@ interface Resource {
 }
 
 export default function StudentResourcesPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,11 +31,32 @@ export default function StudentResourcesPage() {
     async function fetchResources() {
       if (!user) return;
       try {
-        // Fetch student profile to get teacherId and courseId
-        const studentDoc = await getDoc(doc(db, "students", user.uid));
-        const studentData = studentDoc.exists() ? studentDoc.data() : null;
-        const teacherId = studentData?.teacherId;
-        const studentCourseId = studentData?.courseId;
+        // Fetch student profile to get teacherId and courseId (Unified first)
+        let teacherId = profile?.teacherId;
+        let studentCourseId = profile?.courseId;
+
+        if (!teacherId || !studentCourseId) {
+          try {
+            const studentDoc = await getDoc(doc(db, "students", user.uid));
+            if (studentDoc.exists()) {
+              const studentData = studentDoc.data();
+              teacherId = teacherId || studentData.teacherId;
+              studentCourseId = studentCourseId || studentData.courseId;
+            }
+          } catch (e) { console.error("Could not fetch legacy student profile", e); }
+        }
+
+        // --- LEGACY RESOLUTION START ---
+        if (teacherId && !studentCourseId) {
+           const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", teacherId.trim())));
+           if (!codeMatch.empty) {
+              const courseDoc = codeMatch.docs[0];
+              const courseData = courseDoc.data();
+              studentCourseId = courseDoc.id;
+              teacherId = courseData.teacherId;
+           }
+        }
+        // --- LEGACY RESOLUTION END ---
         
         if (!teacherId) {
              setResources([]);
@@ -70,7 +91,7 @@ export default function StudentResourcesPage() {
       }
     }
     fetchResources();
-  }, [user]);
+  }, [user, profile]);
 
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase());

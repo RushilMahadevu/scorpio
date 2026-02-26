@@ -90,8 +90,11 @@ export async function POST(req: NextRequest) {
       remainingRequests: maxRequests - usage.count
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat API Error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: error?.message || 'Internal server error',
+      details: process.env.NODE_ENV === "development" ? error?.stack : undefined
+    }, { status: 500 });
   }
 }
