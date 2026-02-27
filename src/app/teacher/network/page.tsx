@@ -24,6 +24,7 @@ import {
   MoreHorizontal, 
   Copy, 
   Sparkles, 
+  NotebookPen,
   CreditCard, 
   CheckCircle2, 
   Lock,
@@ -186,7 +187,7 @@ export default function NetworkPage() {
         notebookLimitPerStudent: perMember,
         aiNotebookLimitPerStudent: aiPerMember
       });
-      toast.success(`Digital Notebook limits updated!`);
+      toast.success(`Notebook limits updated!`);
       setOrganization(prev => prev ? { 
         ...prev, 
         notebookLimitPerStudent: perMember,
@@ -566,7 +567,7 @@ export default function NetworkPage() {
 
           <div className="space-y-6">
             {user?.uid === organization.ownerId && (
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 shadow-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-primary" />
@@ -784,6 +785,40 @@ export default function NetworkPage() {
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-destructive" />
+                  Network Management
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Manage your association with this network.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="outline" className="cursor-pointer w-full text-destructive hover:bg-destructive/10" onClick={leaveNetwork}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {user?.uid === organization.ownerId ? "Disband Network" : "Leave Network"}
+                </Button>
+                {user?.uid === organization.ownerId && (
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    Note: Disbanding will remove all members from the network.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {organization && (
+        <div className="space-y-6 pt-8 border-t border-border/50">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-bold tracking-tight">Capacities & Limits</h2>
+            <p className="text-sm text-muted-foreground">Manage pay-as-you-go AI limits and shared resources for your network.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {organization.planId !== "free" && (
               <Card className="border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-950/10">
                 <CardHeader className="pb-2">
@@ -851,7 +886,6 @@ export default function NetworkPage() {
             )}
 
             <Card className="border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10">
-              {/* ... Sandbox Card Content ... */}
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -923,8 +957,8 @@ export default function NetworkPage() {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    Digital Notebook (Monthly AI)
+                    <NotebookPen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    Notebook (Monthly)
                   </CardTitle>
                   <Badge variant="outline" className="text-[10px] font-mono border-blue-200 text-blue-700 bg-blue-100/50">
                     NETWORK LIMIT
@@ -988,29 +1022,6 @@ export default function NetworkPage() {
                       </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-destructive" />
-                  Network Management
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Manage your association with this network.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button variant="outline" className="cursor-pointer w-full text-destructive hover:bg-destructive/10" onClick={leaveNetwork}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {user?.uid === organization.ownerId ? "Disband Network" : "Leave Network"}
-                </Button>
-                {user?.uid === organization.ownerId && (
-                  <p className="text-[10px] text-muted-foreground text-center">
-                    Note: Disbanding will remove all members from the network.
-                  </p>
                 )}
               </CardContent>
             </Card>

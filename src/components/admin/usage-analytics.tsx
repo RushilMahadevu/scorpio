@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap, Boxes, Download, FileJson, FileSpreadsheet, ExternalLink, Printer } from "lucide-react";
+import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap, Boxes, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -39,7 +39,8 @@ import {
   AreaChart, 
   Area, 
   LineChart, 
-  Line 
+  Line,
+  Cell
 } from "recharts";
 
 interface UsageEntry {
@@ -59,9 +60,16 @@ interface DailyUsage {
   output: number;
 }
 
+interface TypeDistribution {
+  name: string;
+  value: number;
+  color: string;
+}
+
 export function UsageAnalytics({ organizationId }: { organizationId: string | null }) {
   const [usage, setUsage] = useState<UsageEntry[]>([]);
   const [dailyData, setDailyData] = useState<DailyUsage[]>([]);
+  const [typeDistribution, setTypeDistribution] = useState<TypeDistribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,8 +106,45 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
         dailyMap.set(d, existing);
       });
 
+      // Process for Type Distribution
+      const typeMap = new Map<string, number>();
+      entries.forEach(entry => {
+        typeMap.set(entry.type, (typeMap.get(entry.type) || 0) + 1);
+      });
+
+      const typeColors: Record<string, string> = {
+        navigation: "#3b82f6", // blue-500
+        tutor: "#a855f7",     // purple-500
+        grading: "#10b981",   // emerald-500
+        sandbox: "#6366f1",   // indigo-500
+        parsing: "#f59e0b",   // amber-500
+        security: "#f43f5e",  // rose-500
+        notebook: "#0ea5e9",   // sky-500
+        practice: "#f97316",   // orange-500
+        generation: "#ec4899", // pink-500
+        other: "#71717a"      // zinc-500
+      };
+
+      const distData = Array.from(typeMap.entries()).map(([name, value]) => ({
+        name,
+        value,
+        color: typeColors[name] || typeColors.other
+      })).sort((a, b) => b.value - a.value);
+
+      setTypeDistribution(distData);
+
       // Sort chronological
       const sortedDaily = Array.from(dailyMap.values()).reverse();
+      
+      // Ensure we have at least 2 points for proper AreaChart rendering (handles first date visibility)
+      if (sortedDaily.length === 1) {
+        const firstDate = new Date(entries[entries.length - 1].timestamp);
+        const prevDate = new Date(firstDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        const prevDateStr = prevDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        sortedDaily.unshift({ date: prevDateStr, totalCost: 0, queries: 0, input: 0, output: 0 });
+      }
+
       setDailyData(sortedDaily);
       
       setLoading(false);
@@ -136,6 +181,9 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
       case "sandbox": return <Boxes className="h-4 w-4 text-indigo-500" />;
       case "parsing": return <FileText className="h-4 w-4 text-amber-500" />;
       case "security": return <ShieldAlert className="h-4 w-4 text-rose-500" />;
+      case "notebook": return <Notebook className="h-4 w-4 text-sky-500" />;
+      case "practice": return <PencilRuler className="h-4 w-4 text-orange-500" />;
+      case "generation": return <Sparkles className="h-4 w-4 text-pink-500" />;
       default: return <Activity className="h-4 w-4 text-zinc-500" />;
     }
   };
@@ -187,6 +235,14 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
     }
   };
 
+  const typeConfig: any = {};
+  typeDistribution.forEach(item => {
+    typeConfig[item.name] = {
+      label: item.name.charAt(0).toUpperCase() + item.name.slice(1),
+      color: item.color
+    };
+  });
+
   if (loading) {
     return (
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -217,84 +273,176 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="text-2xl font-bold font-mono">{stat.val}</div>
-              <p className="text-[10px] text-muted-foreground mt-0.5 mt-1">Last 250 events</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Last 250 events</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+      <div className="space-y-6">
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-purple-400" />
+                  Interactions & Cost Trend
+                </CardTitle>
+                <CardDescription className="text-[10px]">
+                  AI engagement grouped by calendar date.
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="text-[9px] px-2 py-0 border-purple-500/30 text-purple-400 bg-purple-500/5">
+                Live
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4 pb-12">
+            {dailyData.length > 0 ? (
+              <div className="h-[250px] w-full mt-4">
+                <ChartContainer config={chartConfig}>
+                  <AreaChart 
+                    data={dailyData} 
+                    margin={{ top: 10, right: 30, left: 20, bottom: 75 }} // keep bottom as 75 for x-axis label padding
+                  >
+                    <defs>
+                      <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorQueries" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted/30" stroke="#888888" />
+                    <XAxis 
+                      dataKey="date" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: "#888888", fontSize: 10 }}
+                      minTickGap={20}
+                      padding={{ left: 10, right: 10 }}
+                    />
+                    <YAxis 
+                      hide 
+                    />
+                    <ChartTooltip />
+                    <Area 
+                      type="monotone" 
+                      dataKey="totalCost" 
+                      stroke="#a855f7" 
+                      strokeWidth={2}
+                      fillOpacity={1} 
+                      fill="url(#colorCost)" 
+                      name="totalCost"
+                      animationDuration={1000}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="queries" 
+                      stroke="#3b82f6" 
+                      strokeWidth={1}
+                      fillOpacity={1} 
+                      fill="url(#colorQueries)" 
+                      name="queries"
+                      animationDuration={1500}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              </div>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
+                No recent usage history recorded.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-purple-400" />
-                Interactions & Cost Trend
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Boxes className="h-4 w-4 text-emerald-400" />
+                Interactions by Type
               </CardTitle>
-              <CardDescription className="text-xs">
-                AI engagement grouped by calendar date.
+              <CardDescription className="text-[10px]">
+                Workload breakdown across services.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-[10px] px-2 py-0 border-purple-500/30 text-purple-400 bg-purple-500/5">
-              Live
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {dailyData.length > 0 ? (
-            <div className="h-[250px] w-full">
-              <ChartContainer config={chartConfig}>
-                <AreaChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorQueries" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted/30" stroke="#888888" />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: "#888888", fontSize: 10 }}
-                    minTickGap={20}
-                  />
-                  <YAxis 
-                    hide 
-                  />
-                  <ChartTooltip />
-                  <Area 
-                    type="monotone" 
-                    dataKey="totalCost" 
-                    stroke="#a855f7" 
-                    strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorCost)" 
-                    name="totalCost"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="queries" 
-                    stroke="#3b82f6" 
-                    strokeWidth={1}
-                    fillOpacity={1} 
-                    fill="url(#colorQueries)" 
-                    name="queries"
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </div>
-          ) : (
-            <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
-              No recent usage history recorded.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {typeDistribution.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div className="md:col-span-3 h-[250px] w-full">
+                  <ChartContainer config={typeConfig}>
+                    <BarChart 
+                      data={typeDistribution} 
+                      layout="vertical"
+                      margin={{ left: 25, right: 40, top: 10, bottom: 10 }}
+                    >
+                      <XAxis type="number" hide />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        tickLine={false} 
+                        axisLine={false}
+                        tick={(props) => {
+                          const { x, y, payload } = props;
+                          return (
+                            <g transform={`translate(${x},${y})`}>
+                              <foreignObject x="-100" y="-12" width="100" height="24">
+                                <div className="flex items-center justify-end w-full h-full pr-3 gap-2">
+                                  {getTypeIcon(payload.value)}
+                                  <span className="text-[12px] text-[#888888] capitalize font-medium">
+                                    {payload.value}
+                                  </span>
+                                </div>
+                              </foreignObject>
+                            </g>
+                          );
+                        }}
+                        width={100}
+                      />
+                      <ChartTooltip />
+                      <Bar 
+                        dataKey="value" 
+                        radius={[0, 4, 4, 0]} 
+                        barSize={12}
+                        animationDuration={2000}
+                      >
+                        {typeDistribution.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.color} 
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ChartContainer>
+                </div>
+                
+                <div className="flex flex-col justify-center space-y-4 border-l border-border/50 pl-8 min-w-[140px]">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Usage Summary</p>
+                  {typeDistribution.slice(0, 6).map((item) => (
+                    <div key={item.name} className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-3 capitalize min-w-[80px]">
+                        {getTypeIcon(item.name)}
+                        <span className="text-muted-foreground font-medium">{item.name}</span>
+                      </div>
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
+                No data available.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader>
