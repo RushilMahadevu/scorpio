@@ -72,6 +72,7 @@ export default function NetworkPage() {
   const [tempSandboxLimitPerStudent, setTempSandboxLimitPerStudent] = useState<string>("");
   const [updatingNotebook, setUpdatingNotebook] = useState(false);
   const [tempNotebookLimitPerStudent, setTempNotebookLimitPerStudent] = useState<string>("");
+  const [tempAiNotebookLimitPerStudent, setTempAiNotebookLimitPerStudent] = useState<string>("");
   const [studentCount, setStudentCount] = useState<number>(0);
 
   useEffect(() => {
@@ -91,6 +92,12 @@ export default function NetworkPage() {
       setTempNotebookLimitPerStudent(organization.notebookLimitPerStudent.toString());
     } else {
       setTempNotebookLimitPerStudent("0");
+    }
+
+    if (organization?.aiNotebookLimitPerStudent !== undefined) {
+      setTempAiNotebookLimitPerStudent(organization.aiNotebookLimitPerStudent.toString());
+    } else {
+      setTempAiNotebookLimitPerStudent("50");
     }
   }, [organization]);
 
@@ -134,29 +141,56 @@ export default function NetworkPage() {
     }
   };
 
+  const handleUpdateBudget = async () => {
+    if (!user || !organization || user.uid !== organization.ownerId) return;
+
+    const budget = parseFloat(tempBudget);
+    if (isNaN(budget) || budget < 0) {
+      toast.error("Please enter a valid budget.");
+      return;
+    }
+
+    setUpdatingBudget(true);
+    try {
+      // Store in cents for precision
+      const budgetInCents = Math.round(budget * 100);
+      await updateDoc(doc(db, "organizations", organization.id), {
+        aiBudgetLimit: budgetInCents
+      });
+      toast.success(`Monthly AI Budget updated to $${budget.toFixed(4)}`);
+      setOrganization(prev => prev ? { 
+        ...prev, 
+        aiBudgetLimit: budgetInCents 
+      } : null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update budget.");
+    } finally {
+      setUpdatingBudget(false);
+    }
+  };
+
   const handleUpdateNotebookLimit = async () => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
     
     const perMember = parseInt(tempNotebookLimitPerStudent);
-    if (isNaN(perMember) || perMember < 0) {
+    const aiPerMember = parseInt(tempAiNotebookLimitPerStudent);
+    if (isNaN(perMember) || perMember < 0 || isNaN(aiPerMember) || aiPerMember < 0) {
       toast.error("Please enter a valid allowance.");
       return;
     }
-
-    // Notebook limit also strictly for students
-    const totalLimit = perMember * studentCount;
 
     setUpdatingNotebook(true);
     try {
       await updateDoc(doc(db, "organizations", organization.id), {
         notebookLimitPerStudent: perMember,
-        notebookLimit: totalLimit
+        aiNotebookLimitPerStudent: aiPerMember
       });
-      toast.success(`Digital Notebook Limit updated to ${totalLimit} total student interactions!`);
+      toast.success(`Digital Notebook limits updated!`);
       setOrganization(prev => prev ? { 
         ...prev, 
         notebookLimitPerStudent: perMember,
-        notebookLimit: totalLimit 
+        aiNotebookLimitPerStudent: aiPerMember
       } : null);
     } catch (e) {
       console.error(e);
@@ -903,40 +937,53 @@ export default function NetworkPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
-                      <Zap className="h-2.5 w-2.5 text-blue-500" />
-                      Notebook Usage
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                      Notebook Count
                     </p>
-                    <p className="text-lg font-black font-mono text-blue-600 dark:text-blue-400">
-                      {organization.notebookUsageCurrent || 0}
+                    <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                      {organization.notebookLimitPerStudent || 0}
                     </p>
+                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">Per Student</p>
                   </div>
                   <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Network Pool</p>
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 text-blue-600 dark:text-blue-400">AI Monthly Rate</p>
                     <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
-                      {organization.notebookLimit || 0}
+                      {organization.aiNotebookLimitPerStudent || 0}
                     </p>
+                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">Chats/Member</p>
                   </div>
                 </div>
 
                 {user?.uid === organization.ownerId && (
                   <div className="space-y-3 pt-2">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="notebook-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Notebook Interactions per Student</Label>
-                      <div className="flex gap-2">
+                    <div className="flex gap-3">
+                      <div className="flex-1 space-y-1.5">
+                        <Label htmlFor="nb-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Notebooks</Label>
                         <Input 
-                          id="notebook-limit" 
+                          id="nb-limit" 
                           type="number" 
                           className="h-10 font-mono text-sm rounded-xl focus-visible:ring-blue-500" 
                           value={tempNotebookLimitPerStudent}
                           onChange={(e) => setTempNotebookLimitPerStudent(e.target.value)}
                         />
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <Label htmlFor="ai-nb-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">AI Chats</Label>
+                        <Input 
+                          id="ai-nb-limit" 
+                          type="number" 
+                          className="h-10 font-mono text-sm rounded-xl focus-visible:ring-blue-500" 
+                          value={tempAiNotebookLimitPerStudent}
+                          onChange={(e) => setTempAiNotebookLimitPerStudent(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-end">
                         <Button 
                           className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
                           onClick={handleUpdateNotebookLimit}
                           disabled={updatingNotebook}
                         >
-                          {updatingNotebook ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recalculate"}
+                          {updatingNotebook ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
                         </Button>
                       </div>
                     </div>

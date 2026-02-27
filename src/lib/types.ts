@@ -36,9 +36,12 @@ export interface Organization {
   // AI Budgeting & Usage
   aiBudgetLimit: number; // Monthly budget in cents or "token units" (e.g. 500 = $5.00)
   aiUsageCurrent: number; // Current month's usage in same units
-  sandboxLimitPerStudent: number; // NEW: Allowance assigned per member
+  sandboxLimitPerStudent: number; // Allowance assigned per member
   sandboxLimit: number; // Calculated: sandboxLimitPerStudent * memberCount
   sandboxUsageCurrent: number; // Current month's sandbox usage count
+  notebookLimitPerStudent?: number; // Max notebooks a student can create
+  aiNotebookLimitPerStudent?: number; // Max AI interactions per student per month
+  notebookLimit?: number; // Total network usage limit for interactions
   baseMonthlyFee: number; // Flat fee for storage/base features
 }
 

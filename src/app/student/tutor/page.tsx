@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bot, Send, User, Lightbulb, Calculator, ShieldAlert, Zap, Lock } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { toast } from "sonner";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Organization } from "@/lib/types";
 
@@ -88,6 +88,33 @@ export default function TutorPage() {
   const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const [isFreePlan, setIsFreePlan] = useState(false);
   const [planLoading, setPlanLoading] = useState(true);
+
+  // --- PERSIST CHAT HISTORY ---
+  useEffect(() => {
+    if (!user || user.uid === "loading") return;
+
+    // We store the session in a unique tutor_sessions document for each student
+    const sessionRef = doc(db, "tutor_sessions", user.uid);
+    
+    const unsubscribe = onSnapshot(sessionRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.messages && Array.isArray(data.messages)) {
+          setMessages(data.messages);
+        }
+      } else {
+        // First time? Create the document
+        setDoc(sessionRef, {
+          studentId: user.uid,
+          messages: [],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     async function checkPlan() {
@@ -186,8 +213,17 @@ export default function TutorPage() {
         type: mode,
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      const finalMessages = [...messages, userMessage, assistantMessage];
+      setMessages(finalMessages);
       setTypingId(assistantMessage.id);
+
+      // Persist to Firestore
+      if (user) {
+        updateDoc(doc(db, "tutor_sessions", user.uid), {
+          messages: finalMessages,
+          updatedAt: serverTimestamp()
+        });
+      }
     } catch (error: any) {
       console.error("Error getting response:", error);
       const errorMessage: Message = {
@@ -195,9 +231,18 @@ export default function TutorPage() {
         role: "assistant",
         content: error.message || "Sorry, I encountered an error.",
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      
+      const updatedMessagesWithErr = [...messages, userMessage, errorMessage];
+      setMessages(updatedMessagesWithErr);
       setTypingId(null);
       
+      if (user) {
+        updateDoc(doc(db, "tutor_sessions", user.uid), {
+          messages: updatedMessagesWithErr,
+          updatedAt: serverTimestamp()
+        });
+      }
+
       if (error.message.includes("Budget")) {
         setRateLimitError(error.message);
       }

@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ 
-  model: "gemini-2.0-flash", // Using 2.0-flash for consistent performance
-  generationConfig: {
-    temperature: 0.7,
-    maxOutputTokens: 1024,
-  }
-});
+import { getNotebookAssistantResponse } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   if (!adminDb) {
@@ -56,53 +47,29 @@ export async function POST(req: NextRequest) {
     }
 
     const budgetCheck = await checkBudget(organizationId, "notebook");
-    if (!budgetCheck.allowed) {
-        return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
+    if (budgetCheck.allowed) {
+        // 3. Generate AI Response using centralized gemini helper
+        const result = await getNotebookAssistantResponse(messages, notebookContent);
+        const responseText = result.content;
+
+        // 4. Record Usage and Increment Notebook Count
+        if (result.usage) {
+            await recordUsage(
+              organizationId, 
+              "notebook", 
+              result.usage.inputTokens, 
+              result.usage.outputTokens
+            );
+        }
+
+        await orgRef.update({
+            notebookUsageCurrent: adminFieldWithValue.increment(1)
+        });
+
+        return NextResponse.json({ content: responseText });
     }
 
-    // 3. Prepare System Prompt with Notebook Context
-    const systemPrompt = `You are an AI Study Copilot for a student's digital notebook. 
-Your goal is to help them organize their thoughts, explain complex concepts, and provide research assistance.
-Keep your answers concise and academically useful.
-
-CONTEXT (The student's current notebook content):
----
-${notebookContent || "Notebook is empty."}
----
-
-Guide the student based on their notes or answer their questions directly.`;
-
-    const chat = model.startChat({
-      history: [
-        { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Understood. I'm ready to help you with your notebook." }] },
-        ...messages.map((m: any) => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.content }]
-        })).slice(0, -1) // All but the last message which goes into sendMessage
-      ]
-    });
-
-    const lastMessage = messages[messages.length - 1].content;
-    const result = await chat.sendMessage(lastMessage);
-    const response = await result.response;
-    const responseText = response.text();
-
-    // 4. Record Usage and Increment Notebook Count
-    if (response.usageMetadata) {
-        await recordUsage(
-          organizationId, 
-          "notebook", 
-          response.usageMetadata.promptTokenCount, 
-          response.usageMetadata.candidatesTokenCount
-        );
-    }
-
-    await orgRef.update({
-        notebookUsageCurrent: adminFieldWithValue.increment(1)
-    });
-
-    return NextResponse.json({ content: responseText });
+    return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
 
   } catch (error: any) {
     console.error('Notebook Copilot API Error:', error);
