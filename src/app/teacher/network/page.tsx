@@ -70,6 +70,8 @@ export default function NetworkPage() {
   const [updatingSandbox, setUpdatingSandbox] = useState(false);
   const [tempSandboxLimit, setTempSandboxLimit] = useState<string>("");
   const [tempSandboxLimitPerStudent, setTempSandboxLimitPerStudent] = useState<string>("");
+  const [updatingNotebook, setUpdatingNotebook] = useState(false);
+  const [tempNotebookLimitPerStudent, setTempNotebookLimitPerStudent] = useState<string>("");
   const [studentCount, setStudentCount] = useState<number>(0);
 
   useEffect(() => {
@@ -85,10 +87,10 @@ export default function NetworkPage() {
       setTempSandboxLimitPerStudent("0");
     }
 
-    if (organization?.sandboxLimit !== undefined) {
-      setTempSandboxLimit(organization.sandboxLimit.toString());
+    if (organization?.notebookLimitPerStudent !== undefined) {
+      setTempNotebookLimitPerStudent(organization.notebookLimitPerStudent.toString());
     } else {
-      setTempSandboxLimit("0");
+      setTempNotebookLimitPerStudent("0");
     }
   }, [organization]);
 
@@ -99,57 +101,6 @@ export default function NetworkPage() {
       router.replace("/teacher/network");
     }
   }, [searchParams, router]);
-
-  const handleUpgrade = async (planId: string) => {
-    if (!user || !organization) return;
-    setUpgrading(true);
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.uid,
-          organizationId: organization.id,
-          planId,
-        }),
-      });
-      const { url, error } = await response.json();
-      if (url) {
-        window.location.href = url;
-      } else {
-        toast.error(error || "Failed to initiate checkout.");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("An error occurred.");
-    } finally {
-      setUpgrading(false);
-    }
-  };
-
-  const handleUpdateBudget = async () => {
-    if (!user || !organization || user.uid !== organization.ownerId) return;
-    
-    const budgetCents = parseFloat(tempBudget) * 100;
-    if (isNaN(budgetCents) || budgetCents < 0) {
-      toast.error("Please enter a valid budget amount.");
-      return;
-    }
-
-    setUpdatingBudget(true);
-    try {
-      await updateDoc(doc(db, "organizations", organization.id), {
-        aiBudgetLimit: budgetCents
-      });
-      toast.success("AI Budget updated successfully!");
-      setOrganization(prev => prev ? { ...prev, aiBudgetLimit: budgetCents } : null);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to update AI Budget.");
-    } finally {
-      setUpdatingBudget(false);
-    }
-  };
 
   const handleUpdateSandboxLimit = async () => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
@@ -180,6 +131,38 @@ export default function NetworkPage() {
       toast.error("Failed to update sandbox limit.");
     } finally {
       setUpdatingSandbox(false);
+    }
+  };
+
+  const handleUpdateNotebookLimit = async () => {
+    if (!user || !organization || user.uid !== organization.ownerId) return;
+    
+    const perMember = parseInt(tempNotebookLimitPerStudent);
+    if (isNaN(perMember) || perMember < 0) {
+      toast.error("Please enter a valid allowance.");
+      return;
+    }
+
+    // Notebook limit also strictly for students
+    const totalLimit = perMember * studentCount;
+
+    setUpdatingNotebook(true);
+    try {
+      await updateDoc(doc(db, "organizations", organization.id), {
+        notebookLimitPerStudent: perMember,
+        notebookLimit: totalLimit
+      });
+      toast.success(`Digital Notebook Limit updated to ${totalLimit} total student interactions!`);
+      setOrganization(prev => prev ? { 
+        ...prev, 
+        notebookLimitPerStudent: perMember,
+        notebookLimit: totalLimit 
+      } : null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update notebook limit.");
+    } finally {
+      setUpdatingNotebook(false);
     }
   };
 
@@ -834,6 +817,7 @@ export default function NetworkPage() {
             )}
 
             <Card className="border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10">
+              {/* ... Sandbox Card Content ... */}
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -895,6 +879,66 @@ export default function NetworkPage() {
                       <p className="text-[9px] text-muted-foreground mt-1 text-right italic">
                         Teachers are excluded from this pool. Only students are counted.
                       </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/10">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    Digital Notebook (Monthly AI)
+                  </CardTitle>
+                  <Badge variant="outline" className="text-[10px] font-mono border-blue-200 text-blue-700 bg-blue-100/50">
+                    NETWORK LIMIT
+                  </Badge>
+                </div>
+                <CardDescription className="text-[11px]">
+                  Shared digital notebook AI budget for research and note-taking.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
+                      <Zap className="h-2.5 w-2.5 text-blue-500" />
+                      Notebook Usage
+                    </p>
+                    <p className="text-lg font-black font-mono text-blue-600 dark:text-blue-400">
+                      {organization.notebookUsageCurrent || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Network Pool</p>
+                    <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                      {organization.notebookLimit || 0}
+                    </p>
+                  </div>
+                </div>
+
+                {user?.uid === organization.ownerId && (
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="notebook-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Notebook Interactions per Student</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          id="notebook-limit" 
+                          type="number" 
+                          className="h-10 font-mono text-sm rounded-xl focus-visible:ring-blue-500" 
+                          value={tempNotebookLimitPerStudent}
+                          onChange={(e) => setTempNotebookLimitPerStudent(e.target.value)}
+                        />
+                        <Button 
+                          className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                          onClick={handleUpdateNotebookLimit}
+                          disabled={updatingNotebook}
+                        >
+                          {updatingNotebook ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recalculate"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}

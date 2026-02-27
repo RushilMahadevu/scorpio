@@ -20,6 +20,7 @@ const ESTIMATED_BUFFER = {
   grading: 1.0,     // $0.01
   generation: 5.0,  // $0.05
   sandbox: 0.2,    // $0.002
+  notebook: 0.3,   // $0.003
 };
 
 /**
