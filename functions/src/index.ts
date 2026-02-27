@@ -8,25 +8,33 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-// import {onRequest} from "firebase-functions/https";
-// import * as logger from "firebase-functions/logger";
+import {onDocumentDeleted} from "firebase-functions/v2/firestore";
+import * as admin from "firebase-admin";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+admin.initializeApp();
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
+// Setting global options for all V2 functions.
 setGlobalOptions({ maxInstances: 10 });
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+/**
+ * Trigger to delete all submissions when an assignment is deleted.
+ */
+export const onAssignmentDeleted = onDocumentDeleted("assignments/{assignmentId}", async (event) => {
+    const assignmentId = event.params.assignmentId;
+    const db = admin.firestore();
+    const submissionsRef = db.collection("submissions");
+
+    const snapshot = await submissionsRef.where("assignmentId", "==", assignmentId).get();
+
+    if (snapshot.empty) {
+        return;
+    }
+
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    console.log(`Deleted ${snapshot.size} submissions for assignment ${assignmentId}`);
+});

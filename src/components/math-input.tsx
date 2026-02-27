@@ -35,17 +35,17 @@ const COMMON_SYMBOLS: SymbolButton[] = [
 ];
 
 const GREEK_LETTERS: SymbolButton[] = [
-  { label: "α", insert: "α", tooltip: "Alpha (angle, coefficient)" },
-  { label: "β", insert: "β", tooltip: "Beta (angle, coefficient)" },
-  { label: "γ", insert: "γ", tooltip: "Gamma (angle, coefficient)" },
-  { label: "θ", insert: "θ", tooltip: "Theta (angle)" },
-  { label: "λ", insert: "λ", tooltip: "Lambda (wavelength)" },
-  { label: "μ", insert: "μ", tooltip: "Mu (coefficient, micro)" },
-  { label: "π", insert: "π", tooltip: "Pi (3.14159...)" },
-  { label: "σ", insert: "σ", tooltip: "Sigma (stress, deviation)" },
-  { label: "ω", insert: "ω", tooltip: "Omega (angular velocity)" },
-  { label: "Δ", insert: "Δ", tooltip: "Delta (change in)" },
-  { label: "Ω", insert: "Ω", tooltip: "Omega (ohm, resistance)" },
+  { label: "α", insert: "$\\alpha$", tooltip: "Alpha (angle, coefficient)" },
+  { label: "β", insert: "$\\beta$", tooltip: "Beta (angle, coefficient)" },
+  { label: "γ", insert: "$\\gamma$", tooltip: "Gamma (angle, coefficient)" },
+  { label: "θ", insert: "$\\theta$", tooltip: "Theta (angle)" },
+  { label: "λ", insert: "$\\lambda$", tooltip: "Lambda (wavelength)" },
+  { label: "μ", insert: "$\\mu$", tooltip: "Mu (coefficient, micro)" },
+  { label: "π", insert: "$\\pi$", tooltip: "Pi (3.14159...)" },
+  { label: "σ", insert: "$\\sigma$", tooltip: "Sigma (stress, deviation)" },
+  { label: "ω", insert: "$\\omega$", tooltip: "Omega (angular velocity)" },
+  { label: "Δ", insert: "$\\Delta$", tooltip: "Delta (change in)" },
+  { label: "Ω", insert: "$\\Omega$", tooltip: "Omega (ohm, resistance)" },
 ];
 
 const ADVANCED_SYMBOLS: SymbolButton[] = [
@@ -57,6 +57,27 @@ const PHYSICS_TEMPLATES: SymbolButton[] = [
   { label: "m/s²", insert: " m/s²", tooltip: "Meters per second squared" },
   { label: "kg⋅m/s", insert: " kg⋅m/s", tooltip: "Momentum units" },
   { label: "N", insert: " N", tooltip: "Newtons (force)" },
+  { label: "J", insert: " J", tooltip: "Joules (energy/work)" },
+  { label: "W", insert: " W", tooltip: "Watts (power)" },
+  { label: "Pa", insert: " Pa", tooltip: "Pascals (pressure)" },
+  { label: "Ω", insert: " Ω", tooltip: "Ohms (resistance)" },
+  { label: "T", insert: " T", tooltip: "Tesla (magnetic field)" },
+];
+
+const KINEMATICS_EQUATIONS: SymbolButton[] = [
+  { label: "v = d/t", insert: "$v = \\frac{d}{t}$", tooltip: "Average velocity" },
+  { label: "vբ = vᵢ + at", insert: "$v_f = v_i + at$", tooltip: "1st Kinematic equation" },
+  { label: "Δx = vᵢt + ½at²", insert: "$\\Delta x = v_i t + \\frac{1}{2} a t^2$", tooltip: "2nd Kinematic equation" },
+  { label: "vբ² = vᵢ² + 2aΔx", insert: "$v_f^2 = v_i^2 + 2a\\Delta x$", tooltip: "3rd Kinematic equation" },
+  { label: "F = ma", insert: "$F = ma$", tooltip: "Newton's 2nd Law" },
+];
+
+const PHYSICS_CONSTANTS: SymbolButton[] = [
+  { label: "g", insert: "9.81 m/s²", tooltip: "Gravity (avg earth)" },
+  { label: "G", insert: "6.67 × 10^{-11}", tooltip: "Gravitational constant" },
+  { label: "c", insert: "3.00 × 10^8 m/s", tooltip: "Speed of light" },
+  { label: "k", insert: "8.99 × 10^9", tooltip: "Coulomb's constant" },
+  { label: "h", insert: "6.63 × 10^{-34} J⋅s", tooltip: "Planck's constant" },
 ];
 
 export function MathInputField({
@@ -378,16 +399,47 @@ export function MathInputField({
 
                 {/* Physics Templates */}
                 <div className="space-y-1.5">
-                  <div className="text-xs font-medium text-muted-foreground">Physics Templates:</div>
+                  <div className="text-xs font-medium text-muted-foreground">Physics Tools:</div>
                   <div className="flex flex-wrap gap-1.5">
+                    <span className="text-[10px] w-full text-muted-foreground/70 uppercase">Units:</span>
                     {PHYSICS_TEMPLATES.map((symbol, index) => (
+                      <Button
+                        key={index}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleInsert(symbol.insert)}
+                        className="h-8 min-w-8 px-2 text-sm font-medium"
+                        title={symbol.tooltip}
+                      >
+                        {symbol.label}
+                      </Button>
+                    ))}
+                    
+                    <span className="text-[10px] w-full text-muted-foreground/70 uppercase mt-2">Equations:</span>
+                    {KINEMATICS_EQUATIONS.map((symbol, index) => (
+                      <Button
+                        key={index}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleInsert(`${symbol.insert}`)}
+                        className="h-8 px-2 text-xs font-mono bg-zinc-100 dark:bg-zinc-800"
+                        title={symbol.tooltip}
+                      >
+                        {symbol.label}
+                      </Button>
+                    ))}
+
+                    <span className="text-[10px] w-full text-muted-foreground/70 uppercase mt-2">Constants:</span>
+                    {PHYSICS_CONSTANTS.map((symbol, index) => (
                       <Button
                         key={index}
                         type="button"
                         variant="secondary"
                         size="sm"
                         onClick={() => handleInsert(symbol.insert)}
-                        className="h-8 px-2 text-sm font-medium"
+                        className="h-8 px-2 text-xs"
                         title={symbol.tooltip}
                       >
                         {symbol.label}

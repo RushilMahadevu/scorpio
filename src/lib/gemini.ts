@@ -1013,8 +1013,8 @@ export async function gradeResponse(question: string, answer: string, rubric?: s
       return { score: 0, feedback: "Missing question or answer text for grading." };
     }
 
-    const prompt = `You are an expert academic tutor and evaluator. 
-    Your goal is to grade student responses accurately based on the provided rubric and offer helpful feedback.
+    const prompt = `You are an expert Physics professor and evaluator. 
+    Your goal is to grade student responses with scientific rigor.
 
     QUESTION:
     "${scrubPII(question)}"
@@ -1025,14 +1025,15 @@ export async function gradeResponse(question: string, answer: string, rubric?: s
     "${scrubPII(answer)}"
     
     INSTRUCTIONS:
-    1. Evaluate the student's response for accuracy and conceptual understanding.
-    2. Be fair but encouraging. If the final answer is correct, give high marks even if steps are abbreviated.
-    3. If multiple questions are asked (e.g., a and b), award partial credit proportional to what is solved correctly.
-    4. If the student shows logical thinking but uses the wrong numbers or makes a calculation error, award 20-50% partial credit for that part.
-    5. Provide a score from 0.0 to 10.0 (decimals allowed). A score of 10.0 means perfect or functionally equivalent.
-    6. Generate "technical_reasoning": Explain to the teacher why you gave this score (cite rubric if provided).
-    7. Generate "student_feedback": Instructional feedback. Be specific about what they did right or wrong.
-    8. Identify "misconceptions": List any specific misunderstandings found.
+    1. UNIT SENSITIVITY: In physics, numbers without units are meaningless. If the numerical value is correct but units are missing or incorrect (e.g., Joules instead of Watts), penalize the score by 10-20%.
+    2. VECTOR QUANTITIES: For vectors (Force, Velocity, Acceleration, Momentum), ensure the direction is identified if the question requires it.
+    3. SIGNIFICANT FIGURES: Check if the precision of the answer is reasonable given the inputs.
+    4. ERROR CARRIED FORWARD: If a student uses an incorrect answer from a previous part correctly in the current part, award full credit for the current part's logic.
+    5. CALCULATION ERRORS: If the student shows correct logical derivation but makes a minor math error, award 50-70% partial credit.
+    6. Provide a score from 0.0 to 10.0 (decimals allowed).
+    7. Generate "technical_reasoning": Explain precisely why the score was given, citing units, vectors, or logic.
+    8. Generate "student_feedback": Provide instructional feedback that helps correct physics misconceptions.
+    9. Identify "misconceptions": List specific physics misunderstandings (e.g., "confusing mass with weight").
 
     Return ONLY a JSON object:
     {

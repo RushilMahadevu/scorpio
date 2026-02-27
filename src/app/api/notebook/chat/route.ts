@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const orgSnap = await orgRef.get();
     const orgData = orgSnap.data();
 
-    const notebookLimit = orgData?.notebookLimit || 0;
+    const notebookLimit = orgData?.notebookLimit || 50;
     const notebookUsage = orgData?.notebookUsageCurrent || 0;
 
     if (notebookUsage >= notebookLimit) {

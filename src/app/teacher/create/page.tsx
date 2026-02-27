@@ -356,7 +356,7 @@ function CreateAssignmentForm() {
         description,
         topic,
         teacherId: user?.uid,
-        organizationId: visibility === "network" ? profile?.organizationId : (profile?.organizationId || null),
+        organizationId: profile?.organizationId || null,
         visibility,
         courseId: selectedCourseId,
         dueDate: new Date(dueDate),
