@@ -947,15 +947,16 @@ function formatChatHistory(messages: ChatMessage[]): string {
 export async function explainPhysicsConcept(
   concept: string, 
   chatHistory: ChatMessage[] = [],
-  constraintLevel: ConstraintLevel = "FULL"
+  constraintLevel: ConstraintLevel = "FULL",
+  studentNames: string[] = []
 ): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
     const historyContext = chatHistory.length > 0 
-      ? `Previous conversation:\n${formatChatHistory(chatHistory)}\n\n` 
+      ? `Previous conversation:\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content, studentNames) })))}\n\n` 
       : "";
     
-    const prompt = `${constraints}\n\n${historyContext}Explain the physics concept: "${concept}" in simple terms suitable for a high school student. Keep it concise. If this relates to our previous conversation, build on that context.`;
+    const prompt = `${constraints}\n\n${historyContext}Explain the physics concept: "${scrubPII(concept, studentNames)}" in simple terms suitable for a high school student. Keep it concise. If this relates to our previous conversation, build on that context.`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -980,16 +981,17 @@ export async function helpSolveProblem(
   problem: string, 
   chatHistory: ChatMessage[] = [],
   constraintLevel: ConstraintLevel = "FULL",
-  assignmentContext?: string
+  assignmentContext?: string,
+  studentNames: string[] = []
 ): Promise<{ text: string, usage?: { promptTokenCount: number, candidatesTokenCount: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
     const historyContext = chatHistory.length > 0 
-      ? `Previous conversation:\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content) })))}\n\n` 
+      ? `Previous conversation:\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content, studentNames) })))}\n\n` 
       : "";
     
-    const context = assignmentContext ? `=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===\n${scrubPII(assignmentContext)}\n==========================================\n\n` : "";
-    const prompt = `${constraints}\n\n${context}${historyContext}The student is asking: "${scrubPII(problem)}". 
+    const context = assignmentContext ? `=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===\n${scrubPII(assignmentContext, studentNames)}\n==========================================\n\n` : "";
+    const prompt = `${constraints}\n\n${context}${historyContext}The student is asking: "${scrubPII(problem, studentNames)}". 
     
     IMPORTANT: You have full access to the "=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===" above. 
     - If the student asks about "Question 1" and the text for that question is empty in the context, check the assignment title and description.
@@ -1017,7 +1019,12 @@ export async function helpSolveProblem(
   }
 }
 
-export async function gradeResponse(question: string, answer: string, rubric?: string): Promise<{ 
+export async function gradeResponse(
+  question: string, 
+  answer: string, 
+  rubric?: string,
+  studentNames: string[] = []
+): Promise<{ 
   score: number, 
   feedback: string, 
   reasoning?: string,
@@ -1033,12 +1040,12 @@ export async function gradeResponse(question: string, answer: string, rubric?: s
     Your goal is to grade student responses with scientific rigor.
 
     QUESTION:
-    "${scrubPII(question)}"
+    "${scrubPII(question, studentNames)}"
 
-    ${rubric ? `GRADING RUBRIC / CORRECT REFERENCE:\n"${scrubPII(rubric)}"` : ''}
+    ${rubric ? `GRADING RUBRIC / CORRECT REFERENCE:\n"${scrubPII(rubric, studentNames)}"` : ''}
 
     STUDENT SUBMISSION:
-    "${scrubPII(answer)}"
+    "${scrubPII(answer, studentNames)}"
     
     INSTRUCTIONS:
     1. UNIT SENSITIVITY: In physics, numbers without units are meaningless. If the numerical value is correct but units are missing or incorrect (e.g., Joules instead of Watts), penalize the score by 10-20%.

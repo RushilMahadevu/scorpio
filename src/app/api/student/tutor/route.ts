@@ -35,6 +35,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No organization found for user" }, { status: 403 });
     }
 
+    // 2.5 Resolve Student Names for PII Scrubbing
+    let studentNames: string[] = [];
+    try {
+      // Get all students for the teacher to mask fellow student names in the conversation
+      const teacherId = userData?.teacherId || userId;
+      const studentsSnapshot = await adminDb.collection("users")
+        .where("teacherId", "==", teacherId)
+        .where("role", "==", "student")
+        .get();
+      
+      studentNames = studentsSnapshot.docs.map(doc => doc.data().displayName || doc.data().name).filter(Boolean);
+      
+      // Also include current user just in case
+      if (userData?.displayName && !studentNames.includes(userData.displayName)) {
+        studentNames.push(userData.displayName);
+      }
+    } catch (e) {
+      console.error("Error resolving student names for scrubbing:", e);
+    }
+
     // 2. Check Budget for Organization
     const budgetCheck = await checkBudget(organizationId, "tutor");
     if (!budgetCheck.allowed) {
@@ -43,8 +63,8 @@ export async function POST(req: NextRequest) {
 
     // 3. Perform AI Operation
     const result = mode === "concept" 
-      ? await explainPhysicsConcept(message, chatHistory)
-      : await helpSolveProblem(message, chatHistory, "STRICT_CONCISE", assignmentContext);
+      ? await explainPhysicsConcept(message, chatHistory, "FULL", studentNames)
+      : await helpSolveProblem(message, chatHistory, "STRICT_CONCISE", assignmentContext, studentNames);
 
     // 4. Record usage if possible
     if (result.usage) {

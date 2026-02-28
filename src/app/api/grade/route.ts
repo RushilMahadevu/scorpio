@@ -54,6 +54,28 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
 
+    // 1.5 Resolve Student Names for PII Scrubbing
+    let studentNames: string[] = [];
+    try {
+      const teacherId = studentData?.teacherId;
+      if (teacherId) {
+        const studentsSnapshot = await adminDb.collection("users")
+          .where("teacherId", "==", teacherId)
+          .where("role", "==", "student")
+          .get();
+        
+        studentNames = studentsSnapshot.docs.map(doc => doc.data().displayName || doc.data().name).filter(Boolean);
+      }
+      
+      // Also include this student specifically
+      const currentName = studentData?.displayName || studentData?.name;
+      if (currentName && !studentNames.includes(currentName)) {
+        studentNames.push(currentName);
+      }
+    } catch (e) {
+      console.error("Error resolving student names for scrubbing:", e);
+    }
+
     // 2. Fetch Assignment
     const assignmentSnap = await adminDb.collection('assignments').doc(assignmentId).get();
     
@@ -101,7 +123,7 @@ export async function POST(req: NextRequest) {
         try {
             // Combine question-specific rubric (correctAnswer) with global rubric
             const combinedRubric = [question.correctAnswer, globalRubric].filter(Boolean).join("\n\nGlobal Assignment Rubric:\n");
-            const result = await gradeResponse(question.text, ans.answer, combinedRubric);
+            const result = await gradeResponse(question.text, ans.answer, combinedRubric, studentNames);
             feedback = result.feedback;
             reasoning = result.reasoning || "";
             
