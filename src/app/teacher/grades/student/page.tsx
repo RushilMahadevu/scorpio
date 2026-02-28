@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Download } from "lucide-react";
 import Link from "next/link";
+import { GradeExportButton } from "@/components/grade-export-button";
 
 interface Submission {
   id: string;
@@ -133,16 +134,29 @@ export default function StudentDetailsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/teacher/grades">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold">{studentName}</h1>
-          <p className="text-muted-foreground">Submission History</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/teacher/grades">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">{studentName}</h1>
+            <p className="text-muted-foreground">Submission History</p>
+          </div>
         </div>
+        <GradeExportButton 
+          data={submissions.map(s => ({
+            studentName,
+            studentEmail: "—", // Not directly stored in submission here
+            assignmentTitle: s.assignmentTitle,
+            score: s.score || 0,
+            totalPoints: 100,
+            submittedAt: s.submittedAt?.toLocaleDateString() || "N/A"
+          }))}
+          filename={`grades-${studentName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`}
+        />
       </div>
 
       {/* Assignment Filter Dropdown */}

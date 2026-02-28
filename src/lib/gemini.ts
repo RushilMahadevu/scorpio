@@ -19,11 +19,14 @@ const model = getGenerativeModel(genAI, {
  * Scrubs Personal Identifiable Information (PII) from text before sending to LLM.
  * Targets: Emails, common phone numbers, and potential ID patterns.
  * This is a critical compliance step for FERPA/COPPA.
+ * 
+ * @param text The input string to scrub
+ * @param studentNames Optional list of names to mask (e.g., student roster)
  */
-export function scrubPII(text: string): string {
+export function scrubPII(text: string, studentNames: string[] = []): string {
   if (!text) return text;
   
-  return text
+  let scrubbed = text
     // Email addresses
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[EMAIL]")
     // Phone numbers (Common formats: (123) 456-7890, 123-456-7890, 123.456.7890)
@@ -32,6 +35,19 @@ export function scrubPII(text: string): string {
     .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[ID]")
     // Credit card numbers (Simple 13-16 digit check)
     .replace(/\b(?:\d[ -]*?){13,16}\b/g, "[SENSITIVE]");
+
+  // Mask student names if provided (case-insensitive)
+  if (studentNames.length > 0) {
+    studentNames.forEach((name, index) => {
+      if (name && name.length > 2) {
+        // Create regex for the name with word boundaries
+        const nameRegex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        scrubbed = scrubbed.replace(nameRegex, `[STUDENT_${index + 1}]`);
+      }
+    });
+  }
+
+  return scrubbed;
 }
 
 // Helper: Split text into question chunks (robust, skips section headers, requires min text length)

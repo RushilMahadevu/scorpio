@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, ChevronRight, Trash2 } from "lucide-react";
+import { User, ChevronRight, Trash2, Download } from "lucide-react";
 import Link from "next/link";
+import { GradeExportButton } from "@/components/grade-export-button";
 
 interface Student {
   id: string;
@@ -227,6 +228,19 @@ export default function TeacherGradesPage() {
             <p className="text-muted-foreground">View student performance and submissions.</p>
         </div>
         <div className="flex flex-wrap items-center gap-4 bg-muted/30 p-4 rounded-lg border">
+            <GradeExportButton 
+                data={students.map(s => ({
+                    studentName: s.name,
+                    studentEmail: s.email,
+                    assignmentTitle: selectedAssignmentId !== "all" 
+                        ? assignments.find(a => a.id === selectedAssignmentId)?.title || "Selected Assignment" 
+                        : "All Assignments Summary",
+                    score: s.averageScore,
+                    totalPoints: 100, // Normalized for now
+                    submittedAt: new Date().toLocaleDateString()
+                }))}
+                filename={`grades-${selectedCourseId}-${new Date().toISOString().split('T')[0]}.csv`}
+            />
             <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Class</label>
                 <Select
