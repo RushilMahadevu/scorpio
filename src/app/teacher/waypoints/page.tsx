@@ -211,7 +211,7 @@ export default function WaypointsPage() {
           <TabsList className="bg-zinc-200 dark:bg-neutral-900 border border-zinc-200 dark:border-white/5 p-1 h-12">
             <TabsTrigger value="global" className="cursor-pointer gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-white">
               <Globe className="h-4 w-4" />
-              Cosmos
+              Global
             </TabsTrigger>
             <TabsTrigger value="network" className="cursor-pointer gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-white">
               <Users className="h-4 w-4" />
@@ -261,7 +261,7 @@ export default function WaypointsPage() {
             <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">No Waypoints Found</h3>
             <p className="text-zinc-500 dark:text-neutral-400 max-w-sm px-4">
               {activeTab === "network" && !profile?.organizationId 
-                ? "Switch to the Cosmos tab or join a department network to see shared waypoints."
+                ? "Switch to the Global tab or join a department network to see shared waypoints."
                 : "No active waypoints match your scan parameters. Try broadening your topic filter."}
             </p>
           </motion.div>

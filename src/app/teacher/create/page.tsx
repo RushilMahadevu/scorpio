@@ -21,7 +21,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -754,31 +756,60 @@ function CreateAssignmentForm() {
         </Card>
 
         {/* Collapsible advanced options */}
-        <CollapsibleSection title="Advanced Options" defaultOpen={false}>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label>Visibility</Label>
-                <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as "private" | "network" | "global")} className="flex flex-col gap-2">
-                  <div className="flex items-center space-x-2 cursor-pointer">
-                    <RadioGroupItem value="private" id="visible-private" className="cursor-pointer" />
-                    <Label htmlFor="visible-private" className="cursor-pointer font-normal">Private (Only you & your students)</Label>
+        <CollapsibleSection title="Advanced Configuration" defaultOpen={false}>
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <div className="flex items-center gap-2">
+                    <Waypoints className="h-4 w-4 text-primary" />
+                    <Label className="font-bold text-sm">Course Visibility</Label>
                   </div>
-                  <div className="flex items-center space-x-2 cursor-pointer">
-                    <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="cursor-pointer" />
-                    <Label htmlFor="visible-network" className={`cursor-pointer font-normal ${!profile?.organizationId ? 'text-muted-foreground font-italic' : ''}`}>
-                      Network {profile?.organizationId ? "" : "(Join a Network first)"}
-                    </Label>
+                  <Badge variant="outline" className="text-[9px] font-black tracking-widest text-primary border-primary/20 bg-primary/5 uppercase">
+                    Publishing
+                  </Badge>
+                </div>
+                
+                <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as "private" | "network" | "global")} className="space-y-3">
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer group">
+                    <RadioGroupItem value="private" id="visible-private" className="mt-1" />
+                    <div className="flex-grow">
+                      <Label htmlFor="visible-private" className="cursor-pointer font-bold block text-sm">Private</Label>
+                      <span className="text-xs text-muted-foreground">Only you and students in this class can access.</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2 cursor-pointer">
-                    <RadioGroupItem value="global" id="visible-global" className="cursor-pointer" />
-                    <Label htmlFor="visible-global" className="cursor-pointer font-normal">Global (All Scorpio Teachers)</Label>
+                  
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
+                    <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="mt-1" />
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="visible-network" className={`cursor-pointer font-bold block text-sm ${!profile?.organizationId ? 'text-muted-foreground' : ''}`}>
+                          Department Network
+                        </Label>
+                        {!profile?.organizationId && <Badge variant="secondary" className="text-[10px]">LOCKED</Badge>}
+                      </div>
+                      <span className="text-xs text-muted-foreground">Shared with colleagues in {profile?.organizationId || "your school"}.</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
+                    <RadioGroupItem value="global" id="visible-global" className="mt-1" />
+                    <div className="flex-grow">
+                      <Label htmlFor="visible-global" className="cursor-pointer font-bold block text-sm text-primary">Global Waypoint</Label>
+                      <span className="text-xs text-muted-foreground">Contribute to the public library of verified benchmarks.</span>
+                    </div>
                   </div>
                 </RadioGroup>
               </div>
 
-              <div className="space-y-3">
-                <Label>Grading Type</Label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <div className="flex items-center gap-2">
+                    <BrainCircuit className="h-4 w-4 text-primary" />
+                    <Label className="font-bold text-sm">Grading Logic</Label>
+                  </div>
+                </div>
+                
                 <RadioGroup 
                   value={gradingType} 
                   onValueChange={(v) => {
@@ -788,91 +819,110 @@ function CreateAssignmentForm() {
                     }
                     setGradingType(v as "ai" | "manual");
                   }} 
-                  className="flex flex-col gap-2"
+                  className="space-y-3"
                 >
-                  <div className="flex items-center space-x-2 cursor-pointer">
-                    <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} className="cursor-pointer" />
-                    <Label htmlFor="grading-ai" className={`cursor-pointer font-normal ${isFreePlan ? 'text-muted-foreground' : ''}`}>
-                      AI Graded {isFreePlan && <Lock className="inline h-3 w-3 ml-1" />}
-                    </Label>
+                  <div className={`flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer ${isFreePlan ? 'opacity-60' : ''}`}>
+                    <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} className="mt-1" />
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="grading-ai" className="cursor-pointer font-bold block text-sm">AI-Assisted Grading</Label>
+                        {isFreePlan && <Lock className="h-3 w-3" />}
+                      </div>
+                      <span className="text-xs text-muted-foreground">Automated feedback and scoring based on your rubric.</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2 cursor-pointer">
-                    <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer" />
-                    <Label htmlFor="grading-manual" className="cursor-pointer font-normal">Teacher Graded</Label>
+
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
+                    <RadioGroupItem value="manual" id="grading-manual" className="mt-1" />
+                    <div className="flex-grow">
+                      <Label htmlFor="manual" className="cursor-pointer font-bold block text-sm">Manual Teacher Review</Label>
+                      <span className="text-xs text-muted-foreground">Traditional grading workflow for maximum oversight.</span>
+                    </div>
                   </div>
                 </RadioGroup>
               </div>
             </div>
             
-            <div className="space-y-4 pt-4 border-t">
-              <div className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                id="requireWork"
-                checked={requireWorkSubmission}
-                onChange={(e) => setRequireWorkSubmission(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 cursor-pointer"
-              />
-              <Label htmlFor="requireWork" className="cursor-pointer font-normal">
-                Require students to submit work (PDF/Images)
-              </Label>
-            </div>
-            <p className="text-xs text-muted-foreground pl-6">
-              When enabled, students must upload their work (PDFs or images) to submit the assignment. For timed tests, students will have 5 additional minutes after time expires to upload their work.
-            </p>
+            <Separator />
 
-            <div className="flex items-center space-x-2 cursor-pointer pt-2">
-              <input
-                type="checkbox"
-                id="allowAIHelp"
-                checked={allowAIHelp}
-                disabled={isFreePlan}
-                onChange={(e) => {
-                  if (isFreePlan) {
-                    toast.error("AI Assistance requires a Standard subscription.");
-                    return;
-                  }
-                  setAllowAIHelp(e.target.checked);
-                }}
-                className="h-4 w-4 rounded border-gray-300 cursor-pointer"
-              />
-              <Label htmlFor="allowAIHelp" className={`cursor-pointer font-normal ${isFreePlan ? 'text-muted-foreground' : ''}`}>
-                Allow AI Assistance (Beta) {isFreePlan && <Lock className="inline h-3 w-3 ml-1" />}
-              </Label>
-            </div>
-            <p className="text-xs text-muted-foreground pl-6">
-              When enabled, students can use the AI tutor to get help with specific questions during the assignment.
-            </p>
-
-            <div className="flex items-center space-x-2 cursor-pointer pt-2">
-              <input
-                type="checkbox"
-                id="enableTabDetection"
-                checked={enableTabDetection}
-                onChange={(e) => setEnableTabDetection(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 cursor-pointer"
-              />
-              <Label htmlFor="enableTabDetection" className="cursor-pointer font-normal">
-                Enable Tab/Focus Detection
-              </Label>
-            </div>
-            <p className="text-xs text-muted-foreground pl-6">
-              When enabled, the system will track if a student leaves the assignment tab and warn/notify you of potential cheating.
-            </p>
-
-              {gradingType !== 'ai' && (
-                <div className="space-y-2">
-                  <Label htmlFor="rubric">Manual Grading Rubric / Criteria</Label>
-                  <Textarea
-                    id="rubric"
-                    value={rubric}
-                    onChange={(e) => setRubric(e.target.value)}
-                    placeholder="Enter grading criteria or rubric details..."
-                    rows={4}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="requireWork" 
+                    checked={requireWorkSubmission}
+                    onCheckedChange={(checked) => setRequireWorkSubmission(!!checked)}
                   />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="requireWork" className="text-sm font-bold flex items-center gap-2">
+                      <FileUp className="h-3.5 w-3.5" />
+                      Evidence Required
+                    </Label>
+                  </div>
                 </div>
-              )}
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Students must upload PDFs/Images of their scratch work to finalize submission.
+                </p>
+              </div>
+
+              <div className={`flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 ${isFreePlan ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="allowAIHelp" 
+                    checked={allowAIHelp}
+                    disabled={isFreePlan}
+                    onCheckedChange={(checked) => {
+                      if (isFreePlan) {
+                         toast.error("AI Assistance requires a Standard subscription.");
+                         return;
+                      }
+                      setAllowAIHelp(!!checked);
+                    }}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="allowAIHelp" className="text-sm font-bold flex items-center gap-2">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      AI Tutoring
+                    </Label>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Allows students to use the embedded AI tutor for conceptual hints during the task.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="enableTabDetection" 
+                    checked={enableTabDetection}
+                    onCheckedChange={(checked) => setEnableTabDetection(!!checked)}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="enableTabDetection" className="text-sm font-bold flex items-center gap-2">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      Integrity Shield
+                    </Label>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Detects and logs when students switch tabs or lose focus during the assignment.
+                </p>
+              </div>
             </div>
+
+            {gradingType !== 'ai' && (
+              <div className="space-y-2 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <Label htmlFor="rubric" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Manual Grading Criteria</Label>
+                <Textarea
+                  id="rubric"
+                  value={rubric}
+                  onChange={(e) => setRubric(e.target.value)}
+                  placeholder="Describe your expectations for partial credit and full marks..."
+                  className="min-h-[100px] resize-none bg-muted/20"
+                />
+              </div>
+            )}
           </div>
         </CollapsibleSection>
 
