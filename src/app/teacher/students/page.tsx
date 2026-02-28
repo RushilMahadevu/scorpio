@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Copy, Trash2, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { RosterImport } from "@/components/roster-import";
 
 interface Student {
   id: string;
@@ -138,13 +139,16 @@ export default function StudentsPage() {
           <h1 className="text-3xl font-bold">Students</h1>
           <p className="text-muted-foreground">View and manage your students</p>
         </div>
-        {user && (
-           <Button variant="outline" asChild>
-             <Link href="/teacher" className="flex items-center gap-2">
-                Manage Classes <ExternalLink className="h-4 w-4" />
-             </Link>
-           </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <RosterImport />
+          {user && (
+            <Button variant="outline" asChild>
+              <Link href="/teacher" className="flex items-center gap-2">
+                  Manage Classes <ExternalLink className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card>
