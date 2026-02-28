@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap, Boxes, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles } from "lucide-react";
+import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap,Component, Boxes, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -363,7 +363,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
           <CardHeader className="pb-2">
             <div className="space-y-1">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Boxes className="h-4 w-4 text-emerald-400" />
+                <Component className="h-4 w-4 text-emerald-400" />
                 Interactions by Type
               </CardTitle>
               <CardDescription className="text-[10px]">
@@ -373,13 +373,13 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
           </CardHeader>
           <CardContent className="pt-4">
             {typeDistribution.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                <div className="md:col-span-3 h-[250px] w-full">
+              <div className="space-y-6">
+                <div className="h-[200px] w-full">
                   <ChartContainer config={typeConfig}>
                     <BarChart 
                       data={typeDistribution} 
                       layout="vertical"
-                      margin={{ left: 25, right: 40, top: 10, bottom: 10 }}
+                      margin={{ left: 0, right: 40, top: 0, bottom: 60 }}
                     >
                       <XAxis type="number" hide />
                       <YAxis 
@@ -387,29 +387,13 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                         type="category" 
                         tickLine={false} 
                         axisLine={false}
-                        tick={(props) => {
-                          const { x, y, payload } = props;
-                          return (
-                            <g transform={`translate(${x},${y})`}>
-                              <foreignObject x="-100" y="-12" width="100" height="24">
-                                <div className="flex items-center justify-end w-full h-full pr-3 gap-2">
-                                  {getTypeIcon(payload.value)}
-                                  <span className="text-[12px] text-[#888888] capitalize font-medium">
-                                    {payload.value}
-                                  </span>
-                                </div>
-                              </foreignObject>
-                            </g>
-                          );
-                        }}
-                        width={100}
+                        hide
                       />
-                      <ChartTooltip />
+                      <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar 
                         dataKey="value" 
-                        radius={[0, 4, 4, 0]} 
-                        barSize={12}
-                        animationDuration={2000}
+                        radius={[ 16, 16, 16, 16]} 
+                        barSize={24}
                       >
                         {typeDistribution.map((entry, index) => (
                           <Cell 
@@ -421,16 +405,24 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                     </BarChart>
                   </ChartContainer>
                 </div>
-                
-                <div className="flex flex-col justify-center space-y-4 border-l border-border/50 pl-8 min-w-[140px]">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Usage Summary</p>
-                  {typeDistribution.slice(0, 6).map((item) => (
-                    <div key={item.name} className="flex items-center justify-between text-[11px]">
-                      <div className="flex items-center gap-3 capitalize min-w-[80px]">
-                        {getTypeIcon(item.name)}
-                        <span className="text-muted-foreground font-medium">{item.name}</span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {typeDistribution.map((item) => (
+                    <div 
+                      key={item.name} 
+                      className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/40 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-1 rounded-md bg-background border shadow-sm">
+                          {getTypeIcon(item.name)}
+                        </div>
+                        <span className="text-[11px] font-bold capitalize truncate">
+                          {item.name}
+                        </span>
                       </div>
-                      <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{item.value}</span>
+                      <div className="text-[10px] font-mono font-black bg-background border px-2 py-0.5 rounded-full">
+                        {item.value}
+                      </div>
                     </div>
                   ))}
                 </div>

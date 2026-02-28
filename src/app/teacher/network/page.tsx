@@ -201,6 +201,37 @@ export default function NetworkPage() {
     }
   };
 
+  const handleUpgrade = async (planId: string) => {
+    if (!user || !organization) return;
+    
+    setUpgrading(true);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.uid,
+          organizationId: organization.id,
+          planId: planId
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to start checkout.");
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned.");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Failed to start upgrade process.");
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
   const copyInviteLink = () => {
     if (!organization?.id) return;
     const url = `${window.location.protocol}//${window.location.host}/join/${organization.id}`;
