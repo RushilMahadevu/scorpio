@@ -1519,7 +1519,7 @@ If suggesting navigation, wrap the path in parentheses like this: (/student/grad
   }
 }
 
-export async function generateSandboxProblem(
+export async function generatePracticeProblem(
   topic: string,
   difficulty: string,
   progress: number = 0
@@ -1613,7 +1613,7 @@ export async function generateSandboxProblem(
       }
     }
   } catch (error: any) {
-    console.error("generateSandboxProblem error:", error);
+    console.error("generatePracticeProblem error:", error);
     throw error;
   }
 }

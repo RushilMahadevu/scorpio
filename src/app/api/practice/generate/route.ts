@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
-import { generateSandboxProblem } from '@/lib/gemini';
+import { generatePracticeProblem } from '@/lib/gemini';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
 export async function POST(req: NextRequest) {
@@ -34,48 +34,48 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No organization found for budget tracking." }, { status: 403 });
     }
 
-    // 2. Check Sandbox Budget
+    // 2. Check Practice Budget
     const orgRef = adminDb.collection("organizations").doc(organizationId);
     const orgSnap = await orgRef.get();
     const orgData = orgSnap.data();
 
-    // Verify sandbox limit
-    const sandboxLimit = orgData?.sandboxLimit || 100;
-    const sandboxUsage = orgData?.sandboxUsageCurrent || 0;
+    // Verify practice limit
+    const practiceLimit = orgData?.practiceLimit || 100;
+    const practiceUsage = orgData?.practiceUsageCurrent || 0;
 
-    if (sandboxUsage >= sandboxLimit) {
-        return NextResponse.json({ error: "The monthly sandbox limit for your network has been reached." }, { status: 403 });
+    if (practiceUsage >= practiceLimit) {
+        return NextResponse.json({ error: "The monthly practice limit for your network has been reached." }, { status: 403 });
     }
 
-    const budgetCheck = await checkBudget(organizationId, "sandbox");
+    const budgetCheck = await checkBudget(organizationId, "practice");
     if (!budgetCheck.allowed) {
         return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
 
     // 3. Generate Problem
-    const result = await generateSandboxProblem(topic, difficulty, progress);
+    const result = await generatePracticeProblem(topic, difficulty, progress);
 
-    // 4. Record Usage and Increment Sandbox Count
+    // 4. Record Usage and Increment Practice Count
     if (result.usage) {
-        await recordUsage(organizationId, "sandbox", result.usage.inputTokens, result.usage.outputTokens);
+        await recordUsage(organizationId, "practice", result.usage.inputTokens, result.usage.outputTokens);
     }
 
-    // Increment Sandbox Usage Current
+    // Increment Practice Usage Current
     await orgRef.update({
-        sandboxUsageCurrent: adminFieldWithValue.increment(1)
+        practiceUsageCurrent: adminFieldWithValue.increment(1)
     });
 
     if (courseId) {
         const courseRef = adminDb.collection("courses").doc(courseId);
         await courseRef.update({
-            sandboxUsed: adminFieldWithValue.increment(1)
+            practiceUsed: adminFieldWithValue.increment(1)
         });
     }
 
     return NextResponse.json(result.problem);
 
   } catch (error: any) {
-    console.error('Sandbox API Error:', error);
+    console.error('Practice API Error:', error);
     return NextResponse.json({ 
       error: error?.message || 'Failed to generate problem. Matrix calibration failed.' 
     }, { status: 500 });

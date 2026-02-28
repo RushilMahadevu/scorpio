@@ -7,6 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Calculator, Sparkles, User, HelpCircle, ArrowRight, Zap, Info, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +56,43 @@ export function AICostCalculator() {
               </div>
               <CardTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                 Investment Estimator
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-zinc-400 cursor-help inline-flex ml-2 transition-all hover:text-black dark:hover:text-white" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-zinc-200/50 shadow-2xl rounded-2xl">
+                    <div className="bg-zinc-900 p-4 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calculator className="h-4 w-4 text-zinc-400" />
+                        <p className="font-black text-xs uppercase tracking-widest">Network Budgeting</p>
+                      </div>
+                      <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
+                        Estimate your monthly network costs based on class size and AI usage intensity.
+                      </p>
+                    </div>
+                    <div className="p-4 space-y-3 bg-white dark:bg-zinc-950">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-start gap-3 bg-zinc-50 dark:bg-zinc-900/50 px-2 py-2 rounded-md border border-zinc-100 dark:border-zinc-800">
+                          <Zap className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                          <div className="space-y-0.5">
+                            <p className="font-black text-[9px] uppercase text-zinc-600 dark:text-zinc-400 font-mono tracking-wider">SAFETY CAPS</p>
+                            <p className="text-[10px] text-muted-foreground leading-snug">Set hard limits in Network Settings to ensure costs never exceed your budget.</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-start gap-3 bg-zinc-50 dark:bg-zinc-900/50 px-2 py-2 rounded-md border border-zinc-100 dark:border-zinc-800">
+                          <Sparkles className="h-3.5 w-3.5 text-purple-500 mt-0.5 shrink-0" />
+                          <div className="space-y-0.5">
+                            <p className="font-black text-[9px] uppercase text-zinc-600 dark:text-zinc-400 font-mono tracking-wider">ZERO SURCHARGE</p>
+                            <p className="text-[10px] text-muted-foreground leading-snug">Scorpio forwards raw API costs from Google Cloud directly to you with 0% markup.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                        <p className="text-[9px] text-zinc-400 font-medium uppercase tracking-tighter">Usage intensity affects token volume per interaction.</p>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </CardTitle>
             </div>
             <CardDescription className="text-xs text-zinc-500">

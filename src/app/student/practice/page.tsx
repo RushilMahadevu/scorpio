@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Boxes, 
+  BowArrow, 
   Zap, 
   BrainCircuit, 
   RefreshCw, 
@@ -59,7 +59,7 @@ interface GeneratedProblem {
   unit: string;
 }
 
-export default function Sandbox() {
+export default function Practice() {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -72,12 +72,12 @@ export default function Sandbox() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string; points: number } | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [currentHintIndex, setCurrentHintIndex] = useState(-1);
-  const [sandboxStatus, setSandboxStatus] = useState({ used: 0, limit: 0, remaining: 0, perMember: 0, connected: false });
+  const [practiceStatus, setPracticeStatus] = useState({ used: 0, limit: 0, remaining: 0, perMember: 0, connected: false });
   const [history, setHistory] = useState<any[]>([]);
   const [isInSession, setIsInSession] = useState(false);
   const [problemsInCurrentSession, setProblemsInCurrentSession] = useState(0);
 
-  // Fetch sandbox limit and history
+  // Fetch practice limit and history
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
@@ -112,31 +112,31 @@ export default function Sandbox() {
       }
 
       if (!orgId) {
-        setSandboxStatus(prev => ({ ...prev, limit: 0, connected: false }));
+        setPracticeStatus(prev => ({ ...prev, limit: 0, connected: false }));
         return;
       }
 
-      // Fetch Network/Organization Sandbox Limit
+      // Fetch Network/Organization Practice Limit
       const orgDoc = await getDoc(doc(db, "organizations", orgId));
       if (orgDoc.exists()) {
         const data = orgDoc.data();
-        const limit = data.sandboxLimit || 0;
-        const used = data.sandboxUsageCurrent || 0;
-        const perMember = data.sandboxLimitPerStudent || 0;
-        setSandboxStatus({ used, limit, remaining: Math.max(0, limit - used), perMember, connected: true });
+        const limit = data.practiceLimit || 0;
+        const used = data.practiceUsageCurrent || 0;
+        const perMember = data.practiceLimitPerStudent || 0;
+        setPracticeStatus({ used, limit, remaining: Math.max(0, limit - used), perMember, connected: true });
         
         // Auto-Provision Profile
         if (profile && !profile.organizationId) {
           updateDoc(doc(db, "users", user.uid), { organizationId: orgId }).catch(() => {});
         }
       } else {
-        setSandboxStatus(prev => ({ ...prev, connected: false }));
+        setPracticeStatus(prev => ({ ...prev, connected: false }));
       }
 
       // Fetch Student History
       const historySnap = await getDocs(
         query(
-          collection(db, "sandbox_history"),
+          collection(db, "practice_history"),
           where("studentId", "==", user.uid),
           orderBy("timestamp", "desc"),
           limit(5)
@@ -149,11 +149,11 @@ export default function Sandbox() {
 
   const generateProblem = async () => {
     const topicToUse = customTopic || selectedTopic;
-    if (!topicToUse || sandboxStatus.remaining <= 0) {
+    if (!topicToUse || practiceStatus.remaining <= 0) {
       if (!topicToUse) {
         toast.error("Please identify a research target first.");
-      } else if (sandboxStatus.remaining <= 0) {
-         toast.error("Your class has reached its monthly sandbox limit for this period.");
+      } else if (practiceStatus.remaining <= 0) {
+         toast.error("Your class has reached its monthly practice limit for this period.");
       }
       return;
     }
@@ -175,7 +175,7 @@ export default function Sandbox() {
     setCurrentHintIndex(-1);
 
     try {
-      const response = await fetch("/api/sandbox/generate", {
+      const response = await fetch("/api/practice/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -196,8 +196,8 @@ export default function Sandbox() {
       
       setProblem({ ...parsed, id: Date.now().toString() });
 
-      // Sandbox increment is now handled by the server (admin privileges)
-      setSandboxStatus(prev => ({ 
+      // Practice increment is now handled by the server (admin privileges)
+      setPracticeStatus(prev => ({ 
         ...prev, 
         used: prev.used + 1, 
         remaining: Math.max(0, prev.remaining - 1) 
@@ -237,7 +237,7 @@ export default function Sandbox() {
 
       // Log success in history via server API (bypasses direct Firestore permission issues)
       if (user) {
-        await fetch("/api/sandbox/history", {
+        await fetch("/api/practice/history", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
@@ -263,15 +263,15 @@ export default function Sandbox() {
         <div>
           <div className="flex items-center gap-4 mb-4">
              <div className="bg-primary/10 p-3 rounded-2xl">
-                <Boxes className="h-8 w-8 text-primary" />
+                <BowArrow className="h-8 w-8 text-primary" />
              </div>
              <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary px-3 py-1">Simulation Mode</Badge>
           </div>
           <h1 className="text-5xl font-black tracking-tighter">
-             Sandbox
+             Practice
           </h1>
           <p className="text-muted-foreground font-medium text-lg mt-2 max-w-md leading-snug">
-             High-fidelity physics sandbox environment for curriculum mastery.
+             High-fidelity physics practice environment for curriculum mastery.
           </p>
         </div>
 
@@ -279,27 +279,27 @@ export default function Sandbox() {
            <div className="flex justify-between items-center mb-1">
               <span className="text-[10px] font-black uppercase tracking-widest opacity-40 underline decoration-dotted decoration-primary/30" title="Total problems remaining for your entire school network.">Network Fuel</span>
               <span className="text-xs font-black font-mono text-primary flex items-center gap-2">
-                 {sandboxStatus.connected && sandboxStatus.limit > 0 ? (
+                 {practiceStatus.connected && practiceStatus.limit > 0 ? (
                    <>
-                     {sandboxStatus.remaining} <span className="opacity-20">/</span> {sandboxStatus.limit}
+                     {practiceStatus.remaining} <span className="opacity-20">/</span> {practiceStatus.limit}
                    </>
                  ) : (
-                   <span className="text-zinc-500 italic text-[10px]">{!sandboxStatus.connected ? "Network Disconnected" : "Limit Not Set"}</span>
+                   <span className="text-zinc-500 italic text-[10px]">{!practiceStatus.connected ? "Network Disconnected" : "Limit Not Set"}</span>
                  )}
               </span>
            </div>
            
-           {sandboxStatus.perMember > 0 && (
+           {practiceStatus.perMember > 0 && (
              <div className="flex justify-between items-center mb-3">
                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Allowance per student</span>
-               <span className="text-[10px] font-black font-mono">{sandboxStatus.perMember}</span>
+               <span className="text-[10px] font-black font-mono">{practiceStatus.perMember}</span>
              </div>
            )}
 
-           <Progress value={sandboxStatus.limit > 0 ? (sandboxStatus.remaining / sandboxStatus.limit) * 100 : 0} className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+           <Progress value={practiceStatus.limit > 0 ? (practiceStatus.remaining / practiceStatus.limit) * 100 : 0} className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
            <p className="text-[9px] text-muted-foreground mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
-              <span className={`h-1 w-1 rounded-full ${sandboxStatus.connected ? "bg-emerald-500 animate-pulse" : "bg-zinc-500"}`} />
-              {sandboxStatus.connected ? "Dynamic Network Capacity" : "Provisioning Status: Standby"}
+              <span className={`h-1 w-1 rounded-full ${practiceStatus.connected ? "bg-emerald-500 animate-pulse" : "bg-zinc-500"}`} />
+              {practiceStatus.connected ? "Dynamic Network Capacity" : "Provisioning Status: Standby"}
            </p>
         </div>
       </div>
@@ -310,7 +310,7 @@ export default function Sandbox() {
           <div className="md:col-span-8 space-y-10">
             <section className="space-y-6">
                 <div className="flex items-center justify-between">
-                   <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">01. Sandbox Target</h3>
+                   <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">01. Practice Target</h3>
                    <span className="text-[10px] font-bold text-primary/60 uppercase">Select or Search</span>
                 </div>
                 
@@ -388,13 +388,13 @@ export default function Sandbox() {
 
             <Button 
                 onClick={generateProblem} 
-                disabled={loading || (!selectedTopic && !customTopic) || sandboxStatus.remaining <= 0}
+                disabled={loading || (!selectedTopic && !customTopic) || practiceStatus.remaining <= 0}
                 className="cursor-pointer w-full h-20 rounded-[2rem] text-xl font-black bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:scale-[1.01] active:scale-95 transition-all shadow-2xl shadow-primary/10 disabled:opacity-40 mt-10"
             >
                 {loading ? (
                   <div className="flex items-center gap-3">
                      <RefreshCw className="h-6 w-6 animate-spin opacity-50" />
-                     Developing a Customized Sandbox...
+                     Developing a Customized Practice...
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">

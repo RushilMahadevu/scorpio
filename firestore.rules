@@ -104,7 +104,7 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.studentId == request.auth.uid;
     }
 
-    match /sandbox_history/{historyId} {
+    match /practice_history/{historyId} {
       allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isTeacher());
       allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
       allow delete: if request.auth != null && resource.data.studentId == request.auth.uid;

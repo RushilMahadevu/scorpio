@@ -30,8 +30,19 @@ import {
   Lock,
   Calculator,
   Zap,
-  Boxes
+  Boxes,
+  HelpCircle,
+  Info,
+  ChevronRight,
+  ShieldCheck,
+  BowArrow,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -68,9 +79,9 @@ export default function NetworkPage() {
   const [upgrading, setUpgrading] = useState(false);
   const [updatingBudget, setUpdatingBudget] = useState(false);
   const [tempBudget, setTempBudget] = useState<string>("");
-  const [updatingSandbox, setUpdatingSandbox] = useState(false);
-  const [tempSandboxLimit, setTempSandboxLimit] = useState<string>("");
-  const [tempSandboxLimitPerStudent, setTempSandboxLimitPerStudent] = useState<string>("");
+  const [updatingPractice, setUpdatingPractice] = useState(false);
+  const [tempPracticeLimit, setTempPracticeLimit] = useState<string>("");
+  const [tempPracticeLimitPerStudent, setTempPracticeLimitPerStudent] = useState<string>("");
   const [updatingNotebook, setUpdatingNotebook] = useState(false);
   const [tempNotebookLimitPerStudent, setTempNotebookLimitPerStudent] = useState<string>("");
   const [tempAiNotebookLimitPerStudent, setTempAiNotebookLimitPerStudent] = useState<string>("");
@@ -83,10 +94,10 @@ export default function NetworkPage() {
       setTempBudget("10.0000");
     }
 
-    if (organization?.sandboxLimitPerStudent !== undefined) {
-      setTempSandboxLimitPerStudent(organization.sandboxLimitPerStudent.toString());
+    if (organization?.practiceLimitPerStudent !== undefined) {
+      setTempPracticeLimitPerStudent(organization.practiceLimitPerStudent.toString());
     } else {
-      setTempSandboxLimitPerStudent("0");
+      setTempPracticeLimitPerStudent("0");
     }
 
     if (organization?.notebookLimitPerStudent !== undefined) {
@@ -110,35 +121,35 @@ export default function NetworkPage() {
     }
   }, [searchParams, router]);
 
-  const handleUpdateSandboxLimit = async () => {
+  const handleUpdatePracticeLimit = async () => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
     
-    const perMember = parseInt(tempSandboxLimitPerStudent);
+    const perMember = parseInt(tempPracticeLimitPerStudent);
     if (isNaN(perMember) || perMember < 0) {
       toast.error("Please enter a valid allowance.");
       return;
     }
 
-    // Sandbox limit is strictly for students
+    // Practice limit is strictly for students
     const totalLimit = perMember * studentCount;
 
-    setUpdatingSandbox(true);
+    setUpdatingPractice(true);
     try {
       await updateDoc(doc(db, "organizations", organization.id), {
-        sandboxLimitPerStudent: perMember,
-        sandboxLimit: totalLimit
+        practiceLimitPerStudent: perMember,
+        practiceLimit: totalLimit
       });
-      toast.success(`Sandbox Limit updated to ${totalLimit} total student units!`);
+      toast.success(`Practice Limit updated to ${totalLimit} total student units!`);
       setOrganization(prev => prev ? { 
         ...prev, 
-        sandboxLimitPerStudent: perMember,
-        sandboxLimit: totalLimit 
+        practiceLimitPerStudent: perMember,
+        practiceLimit: totalLimit 
       } : null);
     } catch (e) {
       console.error(e);
-      toast.error("Failed to update sandbox limit.");
+      toast.error("Failed to update practice limit.");
     } finally {
-      setUpdatingSandbox(false);
+      setUpdatingPractice(false);
     }
   };
 
@@ -339,9 +350,9 @@ export default function NetworkPage() {
         planId: "free",
         aiUsageCurrent: 0,
         aiBudgetLimit: 50, // Individual/Free $0.50 starting credit
-        sandboxLimitPerStudent: 10, // Target allowance per student
-        sandboxLimit: 0, // No students added yet
-        sandboxUsageCurrent: 0,
+        practiceLimitPerStudent: 10, // BowArrow allowance per student
+        practiceLimit: 0, // No students added yet
+        practiceUsageCurrent: 0,
         baseMonthlyFee: 0,
         createdAt: new Date(),
       };
@@ -446,55 +457,147 @@ export default function NetworkPage() {
   }
 
   return (
-    <div className="container p-6 mx-auto space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Scorpio Network</h1>
-        <p className="text-muted-foreground max-w-2xl">
-          Coordinate with your department, share curriculum resources, and build your local Scorpio Collective.
-        </p>
-      </div>
-
-      {!profile?.organizationId ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PlusCircle className="h-5 w-5 text-primary" />
-                Start a New Network
-              </CardTitle>
-              <CardDescription>Create a private network for your department or team.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="org-name">Network/Department Name</Label>
-                <Input id="org-name" placeholder="e.g. Scarsdale High Physics" value={newOrgName} onChange={(e) => setNewOrgName(e.target.value)} />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={createOrganization} className="w-full cursor-pointer">Create Network</Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-primary" />
-                Join Existing Network
-              </CardTitle>
-              <CardDescription>Enter a Network ID provided by your department lead.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="org-id">Network ID</Label>
-                <Input id="org-id" placeholder="Paste ID here..." value={joiningOrgId} onChange={(e) => setJoiningOrgId(e.target.value)} />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={joinOrganization} variant="outline" className="w-full cursor-pointer">Join Network</Button>
-            </CardFooter>
-          </Card>
+    <TooltipProvider>
+      <div className="container p-6 mx-auto space-y-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/50 pb-6">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
+              Scorpio Network
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-5 w-5 text-muted-foreground/50 cursor-help hover:text-primary transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[340px] p-0 overflow-hidden border-primary/20 shadow-2xl rounded-2xl">
+                  <div className="bg-primary p-5 text-primary-foreground">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building2 className="h-5 w-5" />
+                      <p className="font-black text-[10px] uppercase tracking-[0.2em]">Network Command</p>
+                    </div>
+                    <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
+                      Think of your Network as a physical Department. It synchronizes curriculum and pools AI resources for all associated teachers and students.
+                    </p>
+                  </div>
+                  <div className="p-5 grid grid-cols-2 gap-4 bg-white dark:bg-zinc-950">
+                    <div className="space-y-1.5">
+                      <p className="font-bold text-[10px] uppercase text-primary font-mono tracking-tighter">Budgeting</p>
+                      <p className="text-[10px] leading-tight text-muted-foreground font-medium">
+                        Manage a shared safety cap for AI costs across your entire department.
+                      </p>
+                    </div>
+                    <div className="space-y-1.5 border-l border-zinc-100 dark:border-zinc-800 pl-4">
+                      <p className="font-bold text-[10px] uppercase text-primary font-mono tracking-tighter">Waypoints</p>
+                      <p className="text-[10px] leading-tight text-muted-foreground font-medium">
+                        Upload assignments once; every teacher in the network can use them.
+                      </p>
+                    </div>
+                    <div className="col-span-2 pt-2 border-t border-zinc-50 dark:border-zinc-900">
+                       <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center opacity-40">Connected Collective</p>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </h1>
+            <p className="text-muted-foreground max-w-2xl text-lg font-medium">
+              Coordinate with your department, share curriculum resources, and build your local Scorpio Collective.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="hidden lg:flex flex-col items-end mr-2">
+              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Global Status</span>
+              <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
+                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                 All Systems Normal
+              </span>
+            </div>
+          </div>
         </div>
-      ) : !organization ? (
+
+        {!profile?.organizationId ? (
+          <div className="max-w-4xl mx-auto py-12">
+            <div className="text-center mb-10 space-y-2">
+              <h2 className="text-2xl font-bold">Get Started</h2>
+              <p className="text-muted-foreground">Choose how you want to connect with your colleagues.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+              <Card className="relative overflow-hidden group hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-primary/5">
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all">
+                   <Building2 className="h-24 w-24" />
+                </div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <PlusCircle className="h-6 w-6 text-primary" />
+                    Start a New Network
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Perfect for Department Leads. Create a private workspace for your team.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 relative z-10">
+                  <div className="space-y-2">
+                    <Label htmlFor="org-name" className="text-xs font-bold uppercase text-muted-foreground">Network/Department Name</Label>
+                    <Input 
+                      id="org-name" 
+                      placeholder="e.g. Scarsdale High Physics" 
+                      value={newOrgName} 
+                      onChange={(e) => setNewOrgName(e.target.value)}
+                      className="h-12 border-muted-foreground/20 focus:ring-primary/50"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={createOrganization} className="w-full h-12 cursor-pointer font-bold text-base bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    Initialize Collective
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="relative overflow-hidden group hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-primary/5">
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all">
+                   <Users className="h-24 w-24" />
+                </div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <UserPlus className="h-6 w-6 text-primary" />
+                    Join Existing Network
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Joining a team? Enter the ID provided by your department lead.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 relative z-10">
+                  <div className="space-y-2">
+                    <Label htmlFor="org-id" className="text-xs font-bold uppercase text-muted-foreground">Network Identifier (Org ID)</Label>
+                    <Input 
+                      id="org-id" 
+                      placeholder="Paste ID provided by lead..." 
+                      value={joiningOrgId} 
+                      onChange={(e) => setJoiningOrgId(e.target.value)}
+                      className="h-12 border-muted-foreground/20 focus:ring-primary/50"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={joinOrganization} variant="outline" className="w-full h-12 cursor-pointer font-bold text-base hover:bg-primary hover:text-primary-foreground transition-all">
+                    Link with Team
+                    <Link className="ml-2 h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+            
+            <div className="mt-12 p-6 bg-muted/30 border rounded-2xl flex flex-col items-center text-center gap-4 border-dashed max-w-2xl mx-auto">
+              <div className="p-3 bg-background border rounded-full">
+                <Info className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong>Why use a Network?</strong> Collective billing allows districts to manage AI costs from a single pool, while 
+                Teachers can share verified "Waypoints" (curriculum benchmarks) across the entire department instantly.
+              </p>
+            </div>
+          </div>
+        ) : !organization ? (
         <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Retrieving organization details...</p>
@@ -798,6 +901,34 @@ export default function NetworkPage() {
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Invite Colleagues
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[280px] p-4 space-y-2 border-primary/20 shadow-2xl rounded-2xl">
+                      <p className="font-bold text-xs flex items-center gap-2 text-primary">
+                        <Users className="h-3.5 w-3.5" />
+                        Building the Collective
+                      </p>
+                      <p className="text-[11px] leading-relaxed text-muted-foreground">
+                        When colleagues join your network:
+                      </p>
+                      <ul className="space-y-1.5 pt-1">
+                        <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
+                          <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+                          <span>Share <strong>Waypoints</strong> (curriculum resources) instantly.</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
+                          <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+                          <span>Pool <strong>Practice Units</strong> for your entire student body.</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
+                          <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+                          <span>View <strong>aggregated analytics</strong> on cost and mastery.</span>
+                        </li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
                 </CardTitle>
                 <CardDescription>
                   Share this link with your department to join the network.
@@ -856,14 +987,44 @@ export default function NetworkPage() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      AI Budgeting (Monthly)
+                      AI Budgeting
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-emerald-500" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-emerald-200/50 shadow-2xl rounded-2xl">
+                          <div className="bg-emerald-500 p-4 text-white">
+                            <div className="flex items-center gap-2 mb-1">
+                              <ShieldAlert className="h-4 w-4" />
+                              <p className="font-black text-xs uppercase tracking-widest">Safety Protocol</p>
+                            </div>
+                            <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
+                              The AI Safety Cap is a hard financial limit set in USD ($) to prevent runaway costs from high-frequency AI tutoring or math analysis.
+                            </p>
+                          </div>
+                          <div className="p-4 space-y-3 bg-white dark:bg-zinc-950">
+                            <div className="space-y-1">
+                              <p className="font-bold text-[10px] uppercase text-emerald-600 dark:text-emerald-400 font-mono tracking-tighter">Automatic Halt</p>
+                              <p className="text-[11px] leading-tight text-muted-foreground font-medium">
+                                Once your current bill reaches this cap, all AI-dependent features (Physics Tutor, Practice, Equation Solver) will temporarily pause for your entire network.
+                              </p>
+                            </div>
+                            <div className="pt-2 border-t border-emerald-100 dark:border-emerald-900/40">
+                              <p className="text-[10px] font-bold text-zinc-500 flex items-center gap-1.5 opacity-60">
+                                <Zap className="h-3 w-3 text-amber-500" />
+                                Tip: Start with a low cap ($1.00 - $5.00) for small classes.
+                              </p>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     </CardTitle>
                     <Badge variant="outline" className="text-[10px] font-mono border-emerald-200 text-emerald-700 bg-emerald-100/50">
-                      LIVE
+                      LIVE FEED
                     </Badge>
                   </div>
                   <CardDescription className="text-[11px]">
-                    Manage pay-as-you-go AI limits for your network.
+                    Monthly protective safety cap for AI services.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -871,14 +1032,14 @@ export default function NetworkPage() {
                     <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
                       <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Usage
+                        Current Bill
                       </p>
                       <p className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
                         ${((organization.aiUsageCurrent || 0) / 100).toFixed(4)}
                       </p>
                     </div>
                     <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Limit</p>
+                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Safety Cap</p>
                       <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
                         ${((organization.aiBudgetLimit || 0) / 100).toFixed(4)}
                       </p>
@@ -916,94 +1077,197 @@ export default function NetworkPage() {
               </Card>
             )}
 
-            <Card className="border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Boxes className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    Sandbox Capacity (Monthly)
-                  </CardTitle>
-                  <Badge variant="outline" className="text-[10px] font-mono border-indigo-200 text-indigo-700 bg-indigo-100/50">
-                    NETWORK LIMIT
-                  </Badge>
-                </div>
-                <CardDescription className="text-[11px]">
-                  Shared sandbox budget calculated as <strong>Total Students ({studentCount})</strong> × <strong>Allowance per Student</strong>.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
-                      <Boxes className="h-2.5 w-2.5 text-indigo-500" />
-                      Sandbox Usage
-                    </p>
-                    <p className="text-lg font-black font-mono text-indigo-600 dark:text-indigo-400">
-                      {organization.sandboxUsageCurrent || 0}
-                    </p>
+              <Card className="border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <BowArrow className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      Practice Capacity
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-indigo-500" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[420px] p-0 overflow-hidden border-indigo-200/50 shadow-2xl rounded-2xl">
+                          <div className="bg-indigo-600 p-5 text-white">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <BowArrow className="h-5 w-5" />
+                              <p className="font-black text-sm uppercase tracking-widest">Shared Simulation Pool</p>
+                            </div>
+                            <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
+                              Students consume units from this shared pool when generating new AI-powered physics scenarios in the Practice tab.
+                            </p>
+                          </div>
+                          <div className="relative aspect-video overflow-hidden border-b border-indigo-100 dark:border-indigo-900/40 group">
+                            <img 
+                              src="/network-previews/practice.png" 
+                              alt="Student Practice View Preview" 
+                              className="object-cover w-full h-full"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent pointer-events-none" />
+                            <div className="absolute bottom-3 left-4 right-4 text-white">
+                              <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-0.5">Student Perspective</p>
+                              <p className="text-xs font-bold leading-tight">Interactive sandbox where students experiment with physics variables in real-time.</p>
+                            </div>
+                          </div>
+                          <div className="p-5 space-y-4 bg-white dark:bg-zinc-950">
+                            <div className="space-y-2">
+                              <p className="font-bold text-[10px] uppercase text-indigo-600 dark:text-indigo-400 font-mono tracking-tighter">Network Dynamics</p>
+                              <p className="text-xs leading-relaxed text-muted-foreground font-medium">
+                                This screenshot shows the student dashboard. Every time a student clicks "Generate Scenario", it deducts from the global pool managed here. Setting a higher allowance expands the creative boundaries for your entire network.
+                              </p>
+                            </div>
+                            <div className="pt-3 border-t border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
+                              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-tight opacity-60">
+                                Collective Resource Scaling
+                              </p>
+                              <Badge variant="outline" className="text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 text-indigo-600">Auto-Scaling</Badge>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </CardTitle>
+                    <Badge variant="outline" className="text-[10px] font-mono border-indigo-200 text-indigo-700 bg-indigo-100/50">
+                      NETWORK LIMIT
+                    </Badge>
                   </div>
-                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Network Pool</p>
-                    <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
-                      {organization.sandboxLimit || 0}
-                    </p>
+                  <CardDescription className="text-[11px]">
+                    Shared practice budget calculated based on enrollment.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
+                        <BowArrow className="h-2.5 w-2.5 text-indigo-500" />
+                        Usage
+                      </p>
+                      <p className="text-lg font-black font-mono text-indigo-600 dark:text-indigo-400">
+                        {organization.practiceUsageCurrent || 0}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex justify-between">
+                        Pool
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-2.5 w-2.5 text-muted-foreground/30" />
+                          </TooltipTrigger>
+                          <TooltipContent className="text-[10px]">Total enrollment across all teachers in network.</TooltipContent>
+                        </Tooltip>
+                      </p>
+                      <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                        {organization.practiceLimit || 0}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {user?.uid === organization.ownerId && (
-                  <div className="space-y-3 pt-2">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="sandbox-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Allowance Per Student (Sandbox Only)</Label>
-                      <div className="flex gap-2">
-                        <Input 
-                          id="sandbox-limit" 
-                          type="number" 
-                          className="h-10 font-mono text-sm rounded-xl focus-visible:ring-indigo-500" 
-                          value={tempSandboxLimitPerStudent}
-                          onChange={(e) => setTempSandboxLimitPerStudent(e.target.value)}
-                        />
-                        <Button 
-                          className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
-                          onClick={handleUpdateSandboxLimit}
-                          disabled={updatingSandbox}
-                        >
-                          {updatingSandbox ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recalculate"}
-                        </Button>
+                  {user?.uid === organization.ownerId && (
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="practice-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider flex items-center gap-2">
+                          Allowance Per Student
+                          <Badge variant="secondary" className="text-[8px] font-black h-4 px-1 leading-none">AUTO-SCALING</Badge>
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            id="practice-limit" 
+                            type="number" 
+                            className="h-10 font-mono text-sm rounded-xl focus-visible:ring-indigo-500" 
+                            value={tempPracticeLimitPerStudent}
+                            onChange={(e) => setTempPracticeLimitPerStudent(e.target.value)}
+                          />
+                          <Button 
+                            className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                            onClick={handleUpdatePracticeLimit}
+                            disabled={updatingPractice}
+                          >
+                            {updatingPractice ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recalculate"}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 transition-all hover:bg-indigo-500/10">
+                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest flex justify-between items-center">
+                           <span>Pool Capacity</span>
+                           <span className="font-black text-xs font-mono">{parseInt(tempPracticeLimitPerStudent || "0") * studentCount} units</span>
+                        </p>
+                        <p className="text-[9px] text-muted-foreground mt-1 flex items-center gap-1">
+                          <ShieldCheck className="h-2 w-2 text-indigo-400" />
+                          Calculated from {studentCount} active student enrollments.
+                        </p>
                       </div>
                     </div>
-                    <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
-                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest flex justify-between">
-                         Current Capacity Estimate <span>{parseInt(tempSandboxLimitPerStudent || "0") * studentCount} Problems</span>
-                      </p>
-                      <p className="text-[9px] text-muted-foreground mt-1 text-right italic">
-                        Teachers are excluded from this pool. Only students are counted.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
 
             <Card className="border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/10">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <NotebookPen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    Notebook (Monthly)
+                    Notebook Capacity
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-blue-500" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[420px] p-0 overflow-hidden border-blue-200/50 shadow-2xl rounded-2xl">
+                          <div className="bg-blue-600 p-5 text-white">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <NotebookPen className="h-5 w-5" />
+                              <p className="font-black text-sm uppercase tracking-widest">Research Workspace</p>
+                            </div>
+                            <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
+                              Controls the individual research and AI inquiry capacity provisioned for every student in your network.
+                            </p>
+                          </div>
+                          <div className="relative aspect-video overflow-hidden border-b border-blue-100 dark:border-blue-900/40 group">
+                            <img 
+                              src="/network-previews/notebook.png" 
+                              alt="Student Notebook View Preview" 
+                              className="object-cover w-full h-full"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent pointer-events-none" />
+                            <div className="absolute bottom-3 left-4 right-4 text-white">
+                              <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-0.5">Student Perspective</p>
+                              <p className="text-xs font-bold leading-tight">A dedicated research portal where students store course insights and query the AI on specific topics.</p>
+                            </div>
+                          </div>
+                          <div className="p-5 space-y-4 bg-white dark:bg-zinc-950">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1 bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-xl border border-blue-100 dark:border-blue-800/40">
+                                <p className="font-black text-[9px] uppercase text-blue-600 dark:text-blue-400 font-mono tracking-tighter">Capacity</p>
+                                <p className="text-[10px] text-muted-foreground leading-tight font-medium">The total notebooks a student can maintain at once.</p>
+                              </div>
+                              <div className="space-y-1 bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-800/40">
+                                <p className="font-black text-[9px] uppercase text-purple-600 dark:text-purple-400 font-mono tracking-tighter">AI Depth</p>
+                                <p className="text-[10px] text-muted-foreground leading-tight font-medium">The monthly message quota for deep research sessions.</p>
+                              </div>
+                            </div>
+                            <p className="text-xs leading-relaxed text-muted-foreground font-medium px-1">
+                              This preview displays the student's personal library. Setting these limits ensures everyone has a baseline for exploration while maintaining network-wide usage hygiene.
+                            </p>
+                            <div className="pt-3 border-t border-blue-100 dark:border-blue-900/40">
+                              <p className="text-[10px] font-bold text-zinc-500 opacity-60 flex items-center gap-1.5 uppercase tracking-widest">
+                                Member-Specific Provisioning
+                              </p>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                    </Tooltip>
                   </CardTitle>
                   <Badge variant="outline" className="text-[10px] font-mono border-blue-200 text-blue-700 bg-blue-100/50">
-                    NETWORK LIMIT
+                    MEMBER LIMIT
                   </Badge>
                 </div>
                 <CardDescription className="text-[11px]">
-                  Shared digital notebook AI budget for research and note-taking.
+                  Research and note-taking capacity for individual members.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
                     <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-                      Notebook Count
+                      Notebook Limit
                     </p>
                     <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
                       {organization.notebookLimitPerStudent || 0}
@@ -1011,11 +1275,11 @@ export default function NetworkPage() {
                     <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">Per Student</p>
                   </div>
                   <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 text-blue-600 dark:text-blue-400">AI Monthly Rate</p>
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 text-blue-600 dark:text-blue-400">AI Chat Limit</p>
                     <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
                       {organization.aiNotebookLimitPerStudent || 0}
                     </p>
-                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">Chats/Member</p>
+                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">Per Month</p>
                   </div>
                 </div>
 
@@ -1071,5 +1335,6 @@ export default function NetworkPage() {
         </div>
       )}
     </div>
+  </TooltipProvider>
   );
 }

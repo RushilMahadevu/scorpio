@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, Target, BrainCircuit, Boxes } from "lucide-react";
+import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen,  BrainCircuit, BowArrow } from "lucide-react";
 import Link from "next/link";
 import { 
   PieChart, 
@@ -448,10 +448,10 @@ export default function StudentDashboard() {
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Assignments</span>
               </Button>
             </Link>
-            <Link href="/student/sandbox">
+            <Link href="/student/practice">
               <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-zinc-800 shadow-sm">
-                <Boxes className="h-5 w-5" />
-                <span className="text-[10px] font-bold uppercase tracking-tighter">Sandbox</span>
+                <BowArrow className="h-5 w-5" />
+                <span className="text-[10px] font-bold uppercase tracking-tighter">Practice</span>
               </Button>
             </Link>
             <Link href="/student/formula-hub">

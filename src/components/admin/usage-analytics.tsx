@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap,Component, Boxes, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles } from "lucide-react";
+import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap,Component, BowArrow, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles, HelpCircle } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -28,6 +28,11 @@ import {
   ChartTooltip, 
   ChartTooltipContent 
 } from "@/components/ui/chart";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   BarChart, 
   Bar, 
@@ -116,7 +121,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
         navigation: "#3b82f6", // blue-500
         tutor: "#a855f7",     // purple-500
         grading: "#10b981",   // emerald-500
-        sandbox: "#6366f1",   // indigo-500
+        practice: "#6366f1",   // indigo-500
         parsing: "#f59e0b",   // amber-500
         security: "#f43f5e",  // rose-500
         notebook: "#0ea5e9",   // sky-500
@@ -178,7 +183,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
       case "navigation": return <MessageCircle className="h-4 w-4 text-blue-500" />;
       case "tutor": return <Bot className="h-4 w-4 text-purple-500" />;
       case "grading": return <GraduationCap className="h-4 w-4 text-emerald-500" />;
-      case "sandbox": return <Boxes className="h-4 w-4 text-indigo-500" />;
+      case "practice": return <BowArrow className="h-4 w-4 text-indigo-500" />;
       case "parsing": return <FileText className="h-4 w-4 text-amber-500" />;
       case "security": return <ShieldAlert className="h-4 w-4 text-rose-500" />;
       case "notebook": return <Notebook className="h-4 w-4 text-sky-500" />;
@@ -287,6 +292,34 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-purple-400" />
                   Interactions & Cost Trend
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-purple-500" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-purple-200/50 shadow-2xl rounded-2xl">
+                      <div className="bg-purple-600 p-4 text-white">
+                        <div className="flex items-center gap-2 mb-1">
+                          <TrendingUp className="h-4 w-4" />
+                          <p className="font-black text-xs uppercase tracking-widest">Growth Analytics</p>
+                        </div>
+                        <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
+                          Track how your department's AI usage correlates with actual financial investment over time.
+                        </p>
+                      </div>
+                      <div className="p-4 space-y-3 bg-white dark:bg-zinc-950">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <p className="font-bold text-[9px] uppercase text-purple-600 dark:text-purple-400 font-mono tracking-tighter">Purple Line</p>
+                            <p className="text-[10px] leading-tight text-muted-foreground font-medium">Financial spend in USD ($).</p>
+                          </div>
+                          <div className="space-y-1 border-l border-zinc-100 dark:border-zinc-800 pl-3">
+                            <p className="font-bold text-[9px] uppercase text-blue-600 dark:text-blue-400 font-mono tracking-tighter">Blue Area</p>
+                            <p className="text-[10px] leading-tight text-muted-foreground font-medium">Volume of student interactions.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </UITooltip>
                 </CardTitle>
                 <CardDescription className="text-[10px]">
                   AI engagement grouped by calendar date.
@@ -365,6 +398,38 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Component className="h-4 w-4 text-emerald-400" />
                 Interactions by Type
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-emerald-500" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-emerald-200/50 shadow-2xl rounded-2xl">
+                    <div className="bg-emerald-600 p-4 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Component className="h-4 w-4" />
+                        <p className="font-black text-xs uppercase tracking-widest">Workload Breakdown</p>
+                      </div>
+                      <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
+                        See exactly where your AI usage is going across the department's active curriculum.
+                      </p>
+                    </div>
+                    <div className="p-4 space-y-3 bg-white dark:bg-zinc-950">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded-md">
+                          <p className="font-black text-[9px] uppercase text-purple-600 dark:text-purple-400 font-mono">TUTOR</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">Direct student questions.</p>
+                        </div>
+                        <div className="flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md">
+                          <p className="font-black text-[9px] uppercase text-indigo-600 dark:text-indigo-400 font-mono">PRACTICE</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">Simulations & problem generation.</p>
+                        </div>
+                        <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">
+                          <p className="font-black text-[9px] uppercase text-emerald-600 dark:text-emerald-400 font-mono">GRADING</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">Auto-feedback on student work.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </UITooltip>
               </CardTitle>
               <CardDescription className="text-[10px]">
                 Workload breakdown across services.

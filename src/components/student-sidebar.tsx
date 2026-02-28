@@ -8,7 +8,7 @@ import {
   Library,
   GraduationCap,
   PackageOpen,
-  Boxes,
+  BowArrow,
   NotebookPen
 } from "lucide-react";
 import { AppSidebar } from "./app-sidebar";
@@ -16,7 +16,7 @@ import { AppSidebar } from "./app-sidebar";
 const navItems = [
   { href: "/student", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/assignments", label: "Assignments", icon: FileText },
-  { href: "/student/sandbox", label: "Sandbox", icon: Boxes },
+  { href: "/student/practice", label: "Practice", icon: BowArrow },
   { href: "/student/notebook", label: "Notebook", icon: NotebookPen },
   { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },
   { href: "/student/tutor", label: "AI Tutor", icon: Bot },
