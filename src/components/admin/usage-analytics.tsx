@@ -444,7 +444,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                     <BarChart 
                       data={typeDistribution} 
                       layout="vertical"
-                      margin={{ left: 0, right: 40, top: 0, bottom: 60 }}
+                      margin={{ left: 0, right: 40, top: 0, bottom: 120 }}
                     >
                       <XAxis type="number" hide />
                       <YAxis 
