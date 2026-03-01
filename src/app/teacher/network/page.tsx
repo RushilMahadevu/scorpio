@@ -829,23 +829,17 @@ export default function NetworkPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className={cn(
               "border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-950/10 transition-all duration-500 relative overflow-hidden",
-              isFreePlan && "opacity-50 pointer-events-none grayscale-[0.5] select-none scale-[0.98]"
+              isFreePlan && "grayscale-[0.5] select-none scale-[0.98]"
             )}>
               {isFreePlan && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/60 backdrop-blur-[4px] p-6 text-center">
-                  <motion.div 
-                    initial={{ scale: 0.8, rotate: -10 }}
-                    animate={{ scale: 1, rotate: -12 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="p-4 bg-gradient-to-br from-amber-400 via-emerald-500 to-emerald-600 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.3)] mb-4 border-2 border-white/20"
-                  >
-                    <Lock className="h-8 w-8 text-white" />
-                  </motion.div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2">Standard Feature</p>
-                  <p className="text-[11px] text-zinc-200 font-bold max-w-[200px] leading-tight mb-6">AI Budgeting is reserved for active network licenses.</p>
-                  <Link href="/teacher/network/billing">
-                    <Button size="sm" className="bg-emerald-500 text-white hover:bg-emerald-600 font-black px-6 rounded-full text-[10px] uppercase tracking-widest shadow-xl border-none">
-                      Upgrade Now
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
+                  <div className="p-3 bg-zinc-900/80 rounded-full mb-3 border border-white/10 shadow-xl">
+                    <Lock className="h-5 w-5 text-zinc-400" />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/90 mb-4 px-4 py-1 bg-zinc-900/50 rounded-full border border-white/5">Network Feature</p>
+                  <Link href="/teacher/network/billing" className="z-40">
+                    <Button size="sm" variant="secondary" className="cursor-pointer h-8 text-[10px] font-bold uppercase tracking-widest px-6 rounded-full bg-white text-black hover:bg-zinc-200">
+                      Upgrade to Unlock
                     </Button>
                   </Link>
                 </div>
@@ -959,23 +953,17 @@ export default function NetworkPage() {
 
               <Card className={cn(
                 "border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10 relative overflow-hidden transition-all duration-500",
-                isFreePlan && "opacity-50 pointer-events-none grayscale-[0.5] select-none scale-[0.98]"
+                isFreePlan && "grayscale-[0.5] select-none scale-[0.98]"
               )}>
                 {isFreePlan && (
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/60 backdrop-blur-[4px] p-6 text-center">
-                    <motion.div 
-                      initial={{ scale: 0.8, rotate: 10 }}
-                      animate={{ scale: 1, rotate: 12 }}
-                      transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                      className="p-4 bg-gradient-to-br from-amber-400 via-indigo-500 to-indigo-600 rounded-2xl shadow-[0_0_50px_rgba(99,102,241,0.3)] mb-4 border-2 border-white/20"
-                    >
-                      <Lock className="h-8 w-8 text-white" />
-                    </motion.div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2">Standard Feature</p>
-                    <p className="text-[11px] text-zinc-200 font-bold max-w-[200px] leading-tight mb-6">Shared Student Pools are reserved for active network licenses.</p>
-                    <Link href="/teacher/network/billing">
-                      <Button size="sm" className="bg-indigo-500 text-white hover:bg-indigo-600 font-black px-6 rounded-full text-[10px] uppercase tracking-widest shadow-xl border-none">
-                        Upgrade Now
+                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
+                    <div className="p-3 bg-zinc-900/80 rounded-full mb-3 border border-white/10 shadow-xl">
+                      <Lock className="h-5 w-5 text-zinc-400" />
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/90 mb-4 px-4 py-1 bg-zinc-900/50 rounded-full border border-white/5">Network Feature</p>
+                    <Link href="/teacher/network/billing" className="z-40">
+                      <Button size="sm" variant="secondary" className="cursor-pointer h-8 text-[10px] font-bold uppercase tracking-widest px-6 rounded-full bg-white text-black hover:bg-zinc-200">
+                        Upgrade to Unlock
                       </Button>
                     </Link>
                   </div>
@@ -1104,23 +1092,17 @@ export default function NetworkPage() {
 
             <Card className={cn(
               "border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/10 relative overflow-hidden transition-all duration-500",
-              isFreePlan && "opacity-50 pointer-events-none grayscale-[0.5] select-none scale-[0.98]"
+              isFreePlan && "grayscale-[0.5] select-none scale-[0.98]"
             )}>
               {isFreePlan && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/60 backdrop-blur-[4px] p-6 text-center">
-                  <motion.div 
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="p-4 bg-gradient-to-br from-amber-400 via-blue-500 to-blue-600 rounded-2xl shadow-[0_0_50px_rgba(59,130,246,0.3)] mb-4 border-2 border-white/20"
-                  >
-                    <Lock className="h-8 w-8 text-white" />
-                  </motion.div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2">Standard Feature</p>
-                  <p className="text-[11px] text-zinc-200 font-bold max-w-[200px] leading-tight mb-6">Individual Resource Provisioning is reserved for active network licenses.</p>
-                  <Link href="/teacher/network/billing">
-                    <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600 font-black px-6 rounded-full text-[10px] uppercase tracking-widest shadow-xl border-none">
-                      Upgrade Now
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
+                  <div className="p-3 bg-zinc-900/80 rounded-full mb-3 border border-white/10 shadow-xl">
+                    <Lock className="h-5 w-5 text-zinc-400" />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/90 mb-4 px-4 py-1 bg-zinc-900/50 rounded-full border border-white/5">Network Feature</p>
+                  <Link href="/teacher/network/billing" className="z-40">
+                    <Button size="sm" variant="secondary" className="cursor-pointer h-8 text-[10px] font-bold uppercase tracking-widest px-6 rounded-full bg-white text-black hover:bg-zinc-200">
+                      Upgrade to Unlock
                     </Button>
                   </Link>
                 </div>

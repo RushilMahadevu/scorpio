@@ -279,36 +279,27 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
   }
 
   return (
-    <div className={cn("space-y-6 relative transition-all duration-700", isFree && "grayscale-[0.4] scale-[0.99] pointer-events-none select-none")}>
+    <div className={cn("space-y-6 relative transition-all duration-700", isFree && "grayscale-[0.5] scale-[0.99] select-none")}>
       {isFree && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/70 backdrop-blur-[6px] rounded-[2.5rem] p-12 text-center border border-white/10 shadow-2xl overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-emerald-500/10 opacity-50" />
-          
-          <div className="relative z-10 space-y-8 flex flex-col items-center">
-            <motion.div 
-              initial={{ scale: 0.8, rotate: -10 }}
-              animate={{ scale: 1, rotate: -6 }}
-              whileHover={{ scale: 1.1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="p-6 bg-gradient-to-br from-amber-400 via-emerald-500 to-emerald-600 rounded-[2.5rem] shadow-[0_0_50px_rgba(16,185,129,0.3)] border-2 border-white/20"
-            >
-               <Lock className="h-12 w-12 text-white" />
-            </motion.div>
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] rounded-[2.5rem] p-12 text-center border border-white/5 shadow-2xl overflow-hidden group">
+          <div className="relative z-10 space-y-6 flex flex-col items-center">
+            <div className="p-4 bg-zinc-900/90 rounded-full border border-white/10 shadow-2xl">
+               <Lock className="h-6 w-6 text-zinc-400" />
+            </div>
             
-            <div className="space-y-3 max-w-md">
-              <h3 className="text-4xl font-black tracking-tighter text-white drop-shadow-2xl">
-                Mastery Analytics
+            <div className="space-y-2 max-w-md">
+              <h3 className="text-2xl font-black tracking-tight text-white uppercase tracking-widest">
+                Network Analytics
               </h3>
-              <p className="text-sm font-bold text-zinc-300 leading-relaxed uppercase tracking-[0.15em]">
-                Usage tracking and live telemetry are reserved for active network licenses.
+              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">
+                Usage tracking is reserved for active networks.
               </p>
             </div>
 
-            <div className="flex flex-col items-center gap-4 w-full px-4">
-               <div className="h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-               <Link href="/teacher/network/billing" className="w-full max-w-[240px]">
-                 <Button className="w-full bg-emerald-500 text-white hover:bg-emerald-600 border-none font-black px-10 py-7 rounded-2xl text-sm uppercase tracking-widest shadow-2xl transition-all hover:scale-105 active:scale-95">
-                   Upgrade Network
+            <div className="flex flex-col items-center gap-4 w-full relative z-20">
+               <Link href="/teacher/network/billing" className="z-30">
+                 <Button className="cursor-pointer bg-white text-black hover:bg-zinc-200 border-none font-black px-10 h-10 rounded-full text-[10px] uppercase tracking-widest shadow-2xl transition-all">
+                   Upgrade to Unlock
                  </Button>
                </Link>
             </div>
