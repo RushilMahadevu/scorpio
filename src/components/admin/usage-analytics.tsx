@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +48,10 @@ import {
   Line,
   Cell
 } from "recharts";
+import { Lock } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface UsageEntry {
   id: string;
@@ -77,6 +82,18 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
   const [typeDistribution, setTypeDistribution] = useState<TypeDistribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFree, setIsFree] = useState(true);
+
+  useEffect(() => {
+    async function checkPlan() {
+      if (!organizationId) return;
+      const docSnap = await getDoc(doc(db, "organizations", organizationId));
+      if (docSnap.exists()) {
+        setIsFree(docSnap.data().planId === "free");
+      }
+    }
+    checkPlan();
+  }, [organizationId]);
 
   useEffect(() => {
     if (!organizationId) return;
@@ -262,7 +279,42 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
   }
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6 relative transition-all duration-700", isFree && "grayscale-[0.4] scale-[0.99] pointer-events-none select-none")}>
+      {isFree && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950/70 backdrop-blur-[6px] rounded-[2.5rem] p-12 text-center border border-white/10 shadow-2xl overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-emerald-500/10 opacity-50" />
+          
+          <div className="relative z-10 space-y-8 flex flex-col items-center">
+            <motion.div 
+              initial={{ scale: 0.8, rotate: -10 }}
+              animate={{ scale: 1, rotate: -6 }}
+              whileHover={{ scale: 1.1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="p-6 bg-gradient-to-br from-amber-400 via-emerald-500 to-emerald-600 rounded-[2.5rem] shadow-[0_0_50px_rgba(16,185,129,0.3)] border-2 border-white/20"
+            >
+               <Lock className="h-12 w-12 text-white" />
+            </motion.div>
+            
+            <div className="space-y-3 max-w-md">
+              <h3 className="text-4xl font-black tracking-tighter text-white drop-shadow-2xl">
+                Mastery Analytics
+              </h3>
+              <p className="text-sm font-bold text-zinc-300 leading-relaxed uppercase tracking-[0.15em]">
+                Usage tracking and live telemetry are reserved for active network licenses.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center gap-4 w-full px-4">
+               <div className="h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+               <Link href="/teacher/network/billing" className="w-full max-w-[240px]">
+                 <Button className="w-full bg-emerald-500 text-white hover:bg-emerald-600 border-none font-black px-10 py-7 rounded-2xl text-sm uppercase tracking-widest shadow-2xl transition-all hover:scale-105 active:scale-95">
+                   Upgrade Network
+                 </Button>
+               </Link>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: "Estimated Spend", val: `$${stats.totalCost}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
@@ -332,11 +384,11 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
           </CardHeader>
           <CardContent className="pt-4 pb-12">
             {dailyData.length > 0 ? (
-              <div className="h-[250px] w-full mt-4">
+              <div className="h-[300px] w-full mt-4">
                 <ChartContainer config={chartConfig}>
                   <AreaChart 
                     data={dailyData} 
-                    margin={{ top: 10, right: 30, left: 20, bottom: 75 }} // keep bottom as 75 for x-axis label padding
+                    margin={{ top: 10, right: 30, left: 20, bottom: 300 }} // keep bottom as 75 for x-axis label padding
                   >
                     <defs>
                       <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
@@ -439,12 +491,12 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
           <CardContent className="pt-4">
             {typeDistribution.length > 0 ? (
               <div className="space-y-6">
-                <div className="h-[200px] w-full">
+                <div className="h-[300px] w-full">
                   <ChartContainer config={typeConfig}>
                     <BarChart 
                       data={typeDistribution} 
                       layout="vertical"
-                      margin={{ left: 0, right: 40, top: 0, bottom: 120 }}
+                      margin={{ left: 0, right: 40, top: 0, bottom: 350 }}
                     >
                       <XAxis type="number" hide />
                       <YAxis 

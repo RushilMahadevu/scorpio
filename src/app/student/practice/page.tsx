@@ -74,6 +74,13 @@ export default function Practice() {
   const [currentHintIndex, setCurrentHintIndex] = useState(-1);
   const [practiceStatus, setPracticeStatus] = useState({ used: 0, limit: 0, remaining: 0, perMember: 0, connected: false });
   const [history, setHistory] = useState<any[]>([]);
+  const [stats, setStats] = useState({ 
+    accuracy: 0, 
+    totalSolves: 0, 
+    correctSolves: 0, 
+    streak: 0,
+    topicMastery: {} as Record<string, { correct: number, total: number }>
+  });
   const [isInSession, setIsInSession] = useState(false);
   const [problemsInCurrentSession, setProblemsInCurrentSession] = useState(0);
 
@@ -133,19 +140,57 @@ export default function Practice() {
         setPracticeStatus(prev => ({ ...prev, connected: false }));
       }
 
-      // Fetch Student History
+      // Fetch Student History & Calculate Stats
       const historySnap = await getDocs(
         query(
           collection(db, "practice_history"),
-          where("studentId", "==", user.uid),
-          orderBy("timestamp", "desc"),
-          limit(5)
+          where("studentId", "==", user.uid)
         )
       );
-      setHistory(historySnap.docs.map(d => d.data()));
+      
+      const historyData = historySnap.docs
+        .map(d => ({
+          id: d.id,
+          ...d.data()
+        }))
+        .sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+      
+      setHistory(historyData.slice(0, 5)); // Only show last 5 in UI list
+
+      // Calculate Practice Stats
+      if (historyData.length > 0) {
+        const total = historyData.length;
+        const correct = historyData.filter(h => h.correct === true).length;
+        
+        // Calculate Streak
+        let currentStreak = 0;
+        for (const entry of historyData) {
+          if (entry.correct === true) currentStreak++;
+          else if (currentStreak > 0) break; // Break on first failure if we already found a streak
+          // If the most recent one is false, streak is 0 and we continue checking (or break if newest is false)
+        }
+
+        // Calculate Topic Mastery
+        const mastery: Record<string, { correct: number, total: number }> = {};
+        historyData.forEach(h => {
+          if (!mastery[h.topic]) mastery[h.topic] = { correct: 0, total: 0 };
+          mastery[h.topic].total++;
+          if (h.correct === true) mastery[h.topic].correct++;
+        });
+
+        const calculatedAccuracy = Math.round((correct / total) * 100);
+
+        setStats({
+          accuracy: calculatedAccuracy,
+          totalSolves: total,
+          correctSolves: correct,
+          streak: currentStreak,
+          topicMastery: mastery
+        });
+      }
     }
     fetchData();
-  }, [user, profile?.organizationId, profile?.teacherId, profile?.courseId]);
+  }, [user, profile?.organizationId]);
 
   const generateProblem = async () => {
     const topicToUse = customTopic || selectedTopic;
@@ -174,40 +219,50 @@ export default function Practice() {
     setShowExplanation(false);
     setCurrentHintIndex(-1);
 
-    try {
-      const response = await fetch("/api/practice/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          topic: topicToUse,
-          difficulty: selectedDifficulty,
-          studentId: user?.uid,
-          courseId: profile?.courseId,
-          progress: problemsInCurrentSession
-        }),
-      });
+    let retryCount = 0;
+    const maxRetries = 2;
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Failed to generate problem.");
+    const performGeneration = async () => {
+      try {
+        const response = await fetch("/api/practice/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            topic: topicToUse,
+            difficulty: selectedDifficulty,
+            studentId: user?.uid,
+            courseId: profile?.courseId,
+            progress: problemsInCurrentSession
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          // If it's a structural "unstable result" error, allow retry
+          if (err.error?.includes("unstable result") && retryCount < maxRetries) {
+            retryCount++;
+            return performGeneration();
+          }
+          throw new Error(err.error || "Failed to generate problem.");
+        }
+
+        const parsed = await response.json();
+        setProblem({ ...parsed, id: Date.now().toString() });
+
+        setPracticeStatus(prev => ({ 
+          ...prev, 
+          used: prev.used + 1, 
+          remaining: Math.max(0, prev.remaining - 1) 
+        }));
+      } catch (error: any) {
+        console.error("Generation error:", error);
+        toast.error(error?.message || "Failed to calibrate the engine. Retrying...");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const parsed = await response.json();
-      
-      setProblem({ ...parsed, id: Date.now().toString() });
-
-      // Practice increment is now handled by the server (admin privileges)
-      setPracticeStatus(prev => ({ 
-        ...prev, 
-        used: prev.used + 1, 
-        remaining: Math.max(0, prev.remaining - 1) 
-      }));
-    } catch (error: any) {
-      console.error("Generation error:", error);
-      toast.error(error?.message || "Failed to calibrate the engine. Retrying...");
-    } finally {
-      setLoading(false);
-    }
+    await performGeneration();
   };
 
   const checkAnswer = async () => {
@@ -275,32 +330,50 @@ export default function Practice() {
           </p>
         </div>
 
-        <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border ring-1 ring-zinc-100 dark:ring-zinc-800 shadow-sm min-w-[300px]">
-           <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 underline decoration-dotted decoration-primary/30" title="Total problems remaining for your entire school network.">Network Fuel</span>
-              <span className="text-xs font-black font-mono text-primary flex items-center gap-2">
-                 {practiceStatus.connected && practiceStatus.limit > 0 ? (
-                   <>
-                     {practiceStatus.remaining} <span className="opacity-20">/</span> {practiceStatus.limit}
-                   </>
-                 ) : (
-                   <span className="text-zinc-500 italic text-[10px]">{!practiceStatus.connected ? "Network Disconnected" : "Limit Not Set"}</span>
-                 )}
-              </span>
-           </div>
-           
-           {practiceStatus.perMember > 0 && (
-             <div className="flex justify-between items-center mb-3">
-               <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Allowance per student</span>
-               <span className="text-[10px] font-black font-mono">{practiceStatus.perMember}</span>
-             </div>
-           )}
+        <div className="flex flex-col gap-4">
+          {/* Internal Analytics Pill */}
+          <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900/80 px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-800 shadow-sm self-end">
+            <div className="flex items-center gap-1.5 border-r border-zinc-200 dark:border-zinc-700 pr-3 mr-1">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-[10px] font-black font-mono">{stats.accuracy}%</span>
+            </div>
+            <div className="flex items-center gap-1.5 border-r border-zinc-200 dark:border-zinc-700 pr-3 mr-1">
+              <Trophy className="h-3.5 w-3.5 text-orange-500" />
+              <span className="text-[10px] font-black font-mono">{stats.streak}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <History className="h-3.5 w-3.5 text-blue-500" />
+              <span className="text-[10px] font-black font-mono">{stats.totalSolves}</span>
+            </div>
+          </div>
 
-           <Progress value={practiceStatus.limit > 0 ? (practiceStatus.remaining / practiceStatus.limit) * 100 : 0} className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-           <p className="text-[9px] text-muted-foreground mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
-              <span className={`h-1 w-1 rounded-full ${practiceStatus.connected ? "bg-emerald-500 animate-pulse" : "bg-zinc-500"}`} />
-              {practiceStatus.connected ? "Dynamic Network Capacity" : "Provisioning Status: Standby"}
-           </p>
+          <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border ring-1 ring-zinc-100 dark:ring-zinc-800 shadow-sm min-w-[300px]">
+             <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 underline decoration-dotted decoration-primary/30" title="Total problems remaining for your entire school network.">Network Fuel</span>
+                <span className="text-xs font-black font-mono text-primary flex items-center gap-2">
+                   {practiceStatus.connected && practiceStatus.limit > 0 ? (
+                     <>
+                       {practiceStatus.remaining} <span className="opacity-20">/</span> {practiceStatus.limit}
+                     </>
+                   ) : (
+                     <span className="text-zinc-500 italic text-[10px]">{!practiceStatus.connected ? "Network Disconnected" : "Limit Not Set"}</span>
+                   )}
+                </span>
+             </div>
+             
+             {practiceStatus.perMember > 0 && (
+               <div className="flex justify-between items-center mb-3">
+                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Allowance per student</span>
+                 <span className="text-[10px] font-black font-mono">{practiceStatus.perMember}</span>
+               </div>
+             )}
+
+             <Progress value={practiceStatus.limit > 0 ? (practiceStatus.remaining / practiceStatus.limit) * 100 : 0} className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+             <p className="text-[9px] text-muted-foreground mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
+                <span className={`h-1 w-1 rounded-full ${practiceStatus.connected ? "bg-emerald-500 animate-pulse" : "bg-zinc-500"}`} />
+                {practiceStatus.connected ? "Dynamic Network Capacity" : "Provisioning Status: Standby"}
+             </p>
+          </div>
         </div>
       </div>
 

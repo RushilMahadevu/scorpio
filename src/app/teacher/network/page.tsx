@@ -9,33 +9,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import framer from "framer-motion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
-  PlusCircle, 
-  Users, 
   Building2, 
-  UserPlus, 
-  LogOut, 
-  Loader2, 
-  Link, 
-  Crown, 
-  UserMinus, 
+  Users, 
   ShieldAlert, 
-  MoreHorizontal, 
+  Zap, 
+  Info, 
+  ArrowRight, 
+  PlusCircle, 
+  UserPlus, 
+  Link as LinkIcon, 
   Copy, 
-  Sparkles, 
-  NotebookPen,
-  CreditCard, 
-  CheckCircle2, 
-  Lock,
-  Calculator,
-  Zap,
-  Boxes,
-  HelpCircle,
-  Info,
-  ChevronRight,
-  ShieldCheck,
+  LogOut, 
+  ChevronRight, 
+  Loader2, 
+  ClipboardCheck, 
+  TrendingUp,
+  Sparkles,
+  School,
   BowArrow,
+  NotebookPen,
+  Calculator,
+  ShieldCheck,
+  CheckCircle2,
+  Trash2,
+  TrendingDown,
+  ChevronLeft,
+  Search,
+  History,
+  Trophy,
+  MoreHorizontal,
+  Crown,
+  UserMinus,
+  Lock,
+  CreditCard,
+  Notebook,
+  HelpCircle
 } from "lucide-react";
 import {
   Tooltip,
@@ -43,14 +54,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -59,12 +62,21 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Organization, UserProfile } from "@/lib/types";
-import { AICostCalculator } from "@/components/admin/ai-cost-calculator";
 import { UsageAnalytics } from "@/components/admin/usage-analytics";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export default function NetworkPage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -456,6 +468,8 @@ export default function NetworkPage() {
     );
   }
 
+  const isFreePlan = organization?.planId === "free";
+
   return (
     <TooltipProvider>
       <div className="container p-6 mx-auto space-y-8">
@@ -719,179 +733,11 @@ export default function NetworkPage() {
                     )}
                   </div>
                   
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full text-xs h-9 cursor-pointer">
-                        Manage Plan & Billing
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-3xl border-none bg-card p-0 overflow-hidden ring-1 ring-border shadow-2xl">                      
-                      <div className="p-8 space-y-8">
-                        <DialogHeader className="p-0">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 bg-primary/10 rounded-2xl">
-                              <Sparkles className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-left">
-                              <DialogTitle className="text-2xl font-bold tracking-tight">The Scorpio Network</DialogTitle>
-                              <DialogDescription className="text-sm">
-                                Elevate your department with classroom-grade AI and teacher-first tools.
-                              </DialogDescription>
-                            </div>
-                          </div>
-                        </DialogHeader>
-
-                        {/* Current Plan Overview (Compact) */}
-                        <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20 backdrop-blur-sm">
-                          <div className="flex items-center gap-4">
-                            <div className={cn(
-                              "h-2.5 w-2.5 rounded-full",
-                              organization.planId === "free" ? "bg-muted-foreground/30" : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"
-                            )} />
-                            <div>
-                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-0.5">Active Network License</p>
-                              <div className="flex items-center gap-2">
-                                <p className="text-base font-bold capitalize">
-                                  {organization.planId === "free" ? "Free" : "Standard"}
-                                </p>
-                                {organization.planId !== "free" && (
-                                  <Badge variant="outline" className="text-[9px] font-mono py-0 opacity-70">
-                                    {organization.planId.includes("yearly") ? "ANNUAL" : "MONTHLY"}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <Badge variant="secondary" className="bg-background/50 border-none font-medium text-[10px] flex items-center gap-1.5">
-                            Standard Capacity
-                          </Badge>
-                        </div>
-
-                        {organization.planId === "free" ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Monthly Plan */}
-                            <div className="group relative p-6 border border-border bg-card rounded-3xl flex flex-col justify-between hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5">
-                              <div className="space-y-6">
-                                <div>
-                                  <Badge variant="outline" className="mb-4 font-mono text-[9px] uppercase tracking-widest border-border/50">Standard Monthly</Badge>
-                                  <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-black tracking-tighter">$4.99</span>
-                                    <span className="text-muted-foreground text-sm font-medium">/mo</span>
-                                  </div>
-                                </div>
-                                
-                                <ul className="space-y-3">
-                                  {[
-                                    "Full Teacher AI Dashboard",
-                                    "Shared Network Waypoints",
-                                    "Real-time Mastery Views",
-                                    "Cancel anytime"
-                                  ].map((feature) => (
-                                    <li key={feature} className="flex items-center gap-3 text-xs text-muted-foreground">
-                                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                                      <span>{feature}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-
-                              <Button 
-                                className="cursor-pointer mt-8 w-full bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold py-6 text-sm rounded-2xl"
-                                onClick={() => handleUpgrade("standard_monthly")}
-                                disabled={upgrading}
-                              >
-                                {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Start Monthly Standard"}
-                              </Button>
-                            </div>
-
-                            {/* Yearly Plan - HIGH IMPACT */}
-                            <div className="relative p-7 border-2 border-primary bg-primary/[0.01] rounded-3xl flex flex-col justify-between shadow-2xl shadow-primary/10 overflow-hidden transition-transform hover:scale-[1.02] duration-300">
-                              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] px-4 py-1.5 font-black uppercase tracking-widest rounded-bl-2xl">
-                                50% OFF • RECOMMENDED
-                              </div>
-                              
-                              <div className="space-y-6">
-                                <div>
-                                  <Badge className="mb-4 bg-primary hover:bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest border-none">Standard Yearly</Badge>
-                                  <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-black tracking-tighter">$29.88</span>
-                                    <span className="text-muted-foreground text-sm font-medium">/year</span>
-                                  </div>
-                                  <p className="text-[11px] text-primary font-bold mt-1.5 flex items-center gap-1.5">
-                                    <Zap className="h-3 w-3" />
-                                    Just $2.49/mo (Save $30/yr)
-                                  </p>
-                                </div>
-                                
-                                <ul className="space-y-3">
-                                  {[
-                                    "Everything in Monthly",
-                                    "Priority Processing",
-                                    "Extended Usage History",
-                                    "Department-wide Discount"
-                                  ].map((feature) => (
-                                    <li key={feature} className="flex items-center gap-3 text-xs font-semibold">
-                                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                                      <span>{feature}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-
-                              <Button 
-                                className="cursor-pointer mt-8 w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 text-sm rounded-2xl shadow-lg shadow-primary/20"
-                                onClick={() => handleUpgrade("standard_yearly")}
-                                disabled={upgrading}
-                              >
-                                {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Claim Annual Standard"}
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 flex items-center gap-4">
-                              <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center">
-                                <CheckCircle2 className="h-6 w-6 text-white" />
-                              </div>
-                              <div>
-                                <h4 className="font-bold">Subscription Fully Active</h4>
-                                <p className="text-sm text-muted-foreground">Your department is powered by Scorpio AI.</p>
-                              </div>
-                            </div>
-                            <div className="p-4 bg-muted/30 rounded-xl text-xs text-center text-muted-foreground italic border border-border/50">
-                                Management & Billing is handled securely via Polar. 
-                                <a href="https://polar.sh/scorpio/portal" target="_blank" className="text-primary font-bold ml-1 hover:underline">Launch Portal</a>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Token Pricing Transparency Footer */}
-                        {organization.planId === "free" && (
-                          <div className="bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/50 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="p-2.5 bg-background border rounded-xl shadow-sm">
-                                <Sparkles className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Zero Markup Policy</p>
-                                <p className="text-sm font-medium">Pay exact raw Gemini 2.5 Flash token costs.</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-4">
-                              <div className="text-center px-4 border-l border-border/50">
-                                <p className="text-lg font-black font-mono leading-none">$0.15</p>
-                                <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1">1M Input</p>
-                              </div>
-                              <div className="text-center px-4 border-l border-border/50">
-                                <p className="text-lg font-black font-mono leading-none">$0.60</p>
-                                <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1">1M Output</p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Link href="/teacher/network/billing" className="w-full">
+                    <Button variant="outline" className="w-full text-xs h-9 cursor-pointer">
+                      Manage Plan & Billing
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}
@@ -981,103 +827,159 @@ export default function NetworkPage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {organization.planId !== "free" && (
-              <Card className="border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-950/10">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      AI Budgeting
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-emerald-500" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-emerald-200/50 shadow-2xl rounded-2xl">
-                          <div className="bg-emerald-500 p-4 text-white">
-                            <div className="flex items-center gap-2 mb-1">
-                              <ShieldAlert className="h-4 w-4" />
-                              <p className="font-black text-xs uppercase tracking-widest">Safety Protocol</p>
-                            </div>
-                            <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
-                              The AI Safety Cap is a hard financial limit set in USD ($) to prevent runaway costs from high-frequency AI tutoring or math analysis.
+            <Card className={cn(
+              "border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-950/10 transition-all duration-500 relative overflow-hidden",
+              isFreePlan && "opacity-50 pointer-events-none grayscale-[0.5] select-none scale-[0.98]"
+            )}>
+              {isFreePlan && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/60 backdrop-blur-[4px] p-6 text-center">
+                  <motion.div 
+                    initial={{ scale: 0.8, rotate: -10 }}
+                    animate={{ scale: 1, rotate: -12 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="p-4 bg-gradient-to-br from-amber-400 via-emerald-500 to-emerald-600 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.3)] mb-4 border-2 border-white/20"
+                  >
+                    <Lock className="h-8 w-8 text-white" />
+                  </motion.div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2">Standard Feature</p>
+                  <p className="text-[11px] text-zinc-200 font-bold max-w-[200px] leading-tight mb-6">AI Budgeting is reserved for active network licenses.</p>
+                  <Link href="/teacher/network/billing">
+                    <Button size="sm" className="bg-emerald-500 text-white hover:bg-emerald-600 font-black px-6 rounded-full text-[10px] uppercase tracking-widest shadow-xl border-none">
+                      Upgrade Now
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    AI Budgeting
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-emerald-500" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-emerald-200/50 shadow-2xl rounded-2xl">
+                        <div className="bg-emerald-500 p-4 text-white">
+                          <div className="flex items-center gap-2 mb-1">
+                            <ShieldAlert className="h-4 w-4" />
+                            <p className="font-black text-xs uppercase tracking-widest">Safety Protocol</p>
+                          </div>
+                          <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
+                            The AI Safety Cap is a hard financial limit set in USD ($) to prevent runaway costs from high-frequency AI tutoring or math analysis.
+                          </p>
+                        </div>
+                        <div className="p-4 space-y-3 bg-white dark:bg-zinc-950">
+                          <div className="space-y-1">
+                            <p className="font-bold text-[10px] uppercase text-emerald-600 dark:text-emerald-400 font-mono tracking-tighter">Automatic Halt</p>
+                            <p className="text-[11px] leading-tight text-muted-foreground font-medium">
+                              Once your current bill reaches this cap, all AI-dependent features will temporarily pause.
                             </p>
                           </div>
-                          <div className="p-4 space-y-3 bg-white dark:bg-zinc-950">
-                            <div className="space-y-1">
-                              <p className="font-bold text-[10px] uppercase text-emerald-600 dark:text-emerald-400 font-mono tracking-tighter">Automatic Halt</p>
-                              <p className="text-[11px] leading-tight text-muted-foreground font-medium">
-                                Once your current bill reaches this cap, all AI-dependent features (Physics Tutor, Practice, Equation Solver) will temporarily pause for your entire network.
-                              </p>
-                            </div>
-                            <div className="pt-2 border-t border-emerald-100 dark:border-emerald-900/40">
-                              <p className="text-[10px] font-bold text-zinc-500 flex items-center gap-1.5 opacity-60">
-                                <Zap className="h-3 w-3 text-amber-500" />
-                                Tip: Start with a low cap ($1.00 - $5.00) for small classes.
-                              </p>
-                            </div>
+                          <div className="pt-2 border-t border-emerald-100 dark:border-emerald-900/40 flex flex-col gap-2">
+                            <p className="text-[10px] font-bold text-zinc-500 flex items-center gap-1.5 opacity-60">
+                              <Zap className="h-3 w-3 text-amber-500" />
+                              Start with a low cap ($1.00 - $5.00) for small classes.
+                            </p>
+                            <Link href="/teacher/network/investment" className="block">
+                              <Button variant="secondary" size="sm" className="w-full text-[10px] h-7 font-black bg-zinc-900 text-white rounded-lg hover:bg-emerald-600 transition-colors gap-2">
+                                <TrendingUp className="h-3 w-3" />
+                                Open Investment Tracker
+                              </Button>
+                            </Link>
                           </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </CardTitle>
-                    <Badge variant="outline" className="text-[10px] font-mono border-emerald-200 text-emerald-700 bg-emerald-100/50">
-                      LIVE FEED
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-[11px]">
-                    Monthly protective safety cap for AI services.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Current Bill
-                      </p>
-                      <p className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
-                        ${((organization.aiUsageCurrent || 0) / 100).toFixed(4)}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
-                      <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Safety Cap</p>
-                      <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
-                        ${((organization.aiBudgetLimit || 0) / 100).toFixed(4)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {user?.uid === organization.ownerId && (
-                    <div className="space-y-3 pt-2">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="ai-budget" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Monthly AI Cap ($)</Label>
-                        <div className="flex gap-2">
-                          <Input 
-                            id="ai-budget" 
-                            type="number" 
-                            step="0.0001" 
-                            className="h-10 font-mono text-sm rounded-xl focus-visible:ring-emerald-500" 
-                            value={tempBudget}
-                            onChange={(e) => setTempBudget(e.target.value)}
-                          />
-                          <Button 
-                            className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
-                            onClick={handleUpdateBudget}
-                            disabled={updatingBudget}
-                          >
-                            {updatingBudget ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
-                          </Button>
                         </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardTitle>
+                  <Badge variant="outline" className="text-[10px] font-mono border-emerald-200 text-emerald-700 bg-emerald-100/50">
+                    LIVE FEED
+                  </Badge>
+                </div>
+                <CardDescription className="text-[11px]">
+                  Monthly protective safety cap for AI services.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Current Bill
+                    </p>
+                    <p className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      ${((organization.aiUsageCurrent || 0) / 100).toFixed(4)}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                    <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5">Safety Cap</p>
+                    <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                      ${((organization.aiBudgetLimit || 0) / 100).toFixed(4)}
+                    </p>
+                  </div>
+                </div>
+
+                {user?.uid === organization.ownerId && (
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ai-budget" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Monthly AI Cap ($)</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          id="ai-budget" 
+                          type="number" 
+                          step="0.0001" 
+                          className="h-10 font-mono text-sm rounded-xl focus-visible:ring-emerald-500" 
+                          value={tempBudget}
+                          onChange={(e) => setTempBudget(e.target.value)}
+                        />
+                        <Button 
+                          className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                          onClick={handleUpdateBudget}
+                          disabled={updatingBudget}
+                        >
+                          {updatingBudget ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
+                        </Button>
                       </div>
+                    </div>
+                    <div className="flex flex-col gap-2 pt-1">
+                      <Link href="/teacher/network/investment" className="block w-full">
+                        <Button variant="outline" size="sm" className="w-full text-[10px] h-8 font-black uppercase tracking-widest border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all gap-2 rounded-xl group">
+                            <TrendingUp className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
+                            ROI Projection Engine
+                        </Button>
+                      </Link>
                       <p className="text-[10px] text-muted-foreground leading-relaxed px-1">
                         AI services will halt automatically once this threshold is reached to prevent overages.
                       </p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-              <Card className="border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10">
+              <Card className={cn(
+                "border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/30 dark:bg-indigo-950/10 relative overflow-hidden transition-all duration-500",
+                isFreePlan && "opacity-50 pointer-events-none grayscale-[0.5] select-none scale-[0.98]"
+              )}>
+                {isFreePlan && (
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/60 backdrop-blur-[4px] p-6 text-center">
+                    <motion.div 
+                      initial={{ scale: 0.8, rotate: 10 }}
+                      animate={{ scale: 1, rotate: 12 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                      className="p-4 bg-gradient-to-br from-amber-400 via-indigo-500 to-indigo-600 rounded-2xl shadow-[0_0_50px_rgba(99,102,241,0.3)] mb-4 border-2 border-white/20"
+                    >
+                      <Lock className="h-8 w-8 text-white" />
+                    </motion.div>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2">Standard Feature</p>
+                    <p className="text-[11px] text-zinc-200 font-bold max-w-[200px] leading-tight mb-6">Shared Student Pools are reserved for active network licenses.</p>
+                    <Link href="/teacher/network/billing">
+                      <Button size="sm" className="bg-indigo-500 text-white hover:bg-indigo-600 font-black px-6 rounded-full text-[10px] uppercase tracking-widest shadow-xl border-none">
+                        Upgrade Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -1200,7 +1102,29 @@ export default function NetworkPage() {
                 </CardContent>
               </Card>
 
-            <Card className="border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/10">
+            <Card className={cn(
+              "border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/10 relative overflow-hidden transition-all duration-500",
+              isFreePlan && "opacity-50 pointer-events-none grayscale-[0.5] select-none scale-[0.98]"
+            )}>
+              {isFreePlan && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/60 backdrop-blur-[4px] p-6 text-center">
+                  <motion.div 
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="p-4 bg-gradient-to-br from-amber-400 via-blue-500 to-blue-600 rounded-2xl shadow-[0_0_50px_rgba(59,130,246,0.3)] mb-4 border-2 border-white/20"
+                  >
+                    <Lock className="h-8 w-8 text-white" />
+                  </motion.div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2">Standard Feature</p>
+                  <p className="text-[11px] text-zinc-200 font-bold max-w-[200px] leading-tight mb-6">Individual Resource Provisioning is reserved for active network licenses.</p>
+                  <Link href="/teacher/network/billing">
+                    <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600 font-black px-6 rounded-full text-[10px] uppercase tracking-widest shadow-xl border-none">
+                      Upgrade Now
+                    </Button>
+                  </Link>
+                </div>
+              )}
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -1325,12 +1249,9 @@ export default function NetworkPage() {
       )}
 
       {profile?.role === "teacher" && profile?.organizationId && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-border/50">
+        <div className="grid grid-cols-1 gap-8 pt-8 border-t border-border/50">
           <div className="space-y-4">
             <UsageAnalytics organizationId={profile.organizationId} />
-          </div>
-          <div className="space-y-4">
-            <AICostCalculator />
           </div>
         </div>
       )}

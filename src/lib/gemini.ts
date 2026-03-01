@@ -1553,7 +1553,25 @@ export async function generatePracticeProblem(
         maxOutputTokens: 2048,
         temperature: 0.8,
         responseMimeType: "application/json",
-      }
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_NONE",
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_NONE",
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_NONE",
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_NONE",
+        },
+      ],
     });
 
     const response = await result.response;
@@ -1579,29 +1597,30 @@ export async function generatePracticeProblem(
 
     const cleanJson = text.substring(startIdx, endIdx + 1).trim();
     
-    // Robust cleanup: protect valid escapes, then normalize solo backslashes
-    const sanitized = cleanJson
-      .replace(/\\n/g, '__NL__') // Protect real newlines if any
-      .replace(/\\(?!["\\])/g, '\\\\') // Double escape every backslash EXCEPT those protecting quotes or already doubled
-      .replace(/__NL__/g, '\\n') // Restore newlines
-      .replace(/,\s*([\}\]])/g, '$1') // Remove trailing commas
-      .trim();
-
     try {
-      const parsed = JSON.parse(sanitized);
+      // First attempt: raw parse should work with JSON mode
+      const rawParsed = JSON.parse(cleanJson);
       return {
-        problem: parsed,
+        problem: rawParsed,
         usage: {
           inputTokens: response.usageMetadata?.promptTokenCount || 0,
           outputTokens: response.usageMetadata?.candidatesTokenCount || 0
         }
       };
-    } catch (e) {
-      // Emergency attempt: just parse the raw substring if sanitization broke it
+    } catch (e1) {
+      // Robust backup: sanitize common AI JSON formatting errors
+      const sanitized = cleanJson
+        .replace(/\\n/g, '__NL__')
+        .replace(/\\(?!["\\\/bfnrtu])/g, '\\\\') // Double escape backslashes if not valid JSON escape sequences
+        .replace(/__NL__/g, '\\n')
+        .replace(/,\s*([\}\]])/g, '$1') // Remove trailing commas
+        .replace(/[\n\r]/g, ' ') // Flatten newlines
+        .trim();
+
       try {
-        const rawParsed = JSON.parse(cleanJson.replace(/[\n\r]/g, ' '));
+        const parsed = JSON.parse(sanitized);
         return {
-          problem: rawParsed,
+          problem: parsed,
           usage: {
             inputTokens: response.usageMetadata?.promptTokenCount || 0,
             outputTokens: response.usageMetadata?.candidatesTokenCount || 0
