@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "next-themes";
 import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
+import { SmoothScroll } from "@/components/smooth-scroll";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -112,7 +113,11 @@ export default function RootLayout({
           enableSystem
         >
           <SpaceEffectsProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <SmoothScroll>
+                {children}
+              </SmoothScroll>
+            </AuthProvider>
             <Toaster position="top-center" richColors />
           </SpaceEffectsProvider>
         </ThemeProvider>

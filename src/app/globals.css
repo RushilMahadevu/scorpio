@@ -20,6 +20,27 @@
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
 }
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
 @keyframes nebula-cw {
   0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.35; }
   25% { transform: translate(40px, -20px) rotate(90deg) scale(1.1); opacity: 0.45; }
