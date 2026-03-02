@@ -162,14 +162,14 @@ export function SettingsDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="cursor-pointer">
-          <SettingsIcon className="h-[1.2rem] w-[1.2rem] cursor-pointer" />
+          <SettingsIcon className="text-muted-foreground hover:text-foreground h-[1.2rem] w-[1.2rem] cursor-pointer" />
           <span className="sr-only">Settings</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <SettingsIcon className="h-6 w-6" />
+            <SettingsIcon className="h-6 w-6 text-foreground hover:text-foreground transition-colors" />
             <div className="space-y-1">
               <DialogTitle>Settings</DialogTitle>
               <DialogDescription>

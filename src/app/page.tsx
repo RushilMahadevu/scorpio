@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/
 import { Logo } from "@/components/ui/logo";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -47,7 +47,7 @@ interface LandingNavItem {
   id: string;
   label: string;
   href?: string;
-  dropdownItems?: { label: string; href: string; icon: any }[];
+  dropdownItems?: { label: string; href?: string; id?: string; icon: any; description?: string }[];
 }
 
 // Simple helper for relative time
@@ -69,6 +69,15 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleClose = useCallback(() => {
+    closeTimeoutRef.current = setTimeout(() => setHoveredNav(null), 180);
+  }, []);
+
+  const cancelClose = useCallback(() => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+  }, []);
   const [githubData, setGithubData] = useState<{ totalCommits: string; recentCommits: GitHubCommit[] } | null>(null);
   const [isLoadingGithub, setIsLoadingGithub] = useState(true);
 
@@ -135,32 +144,47 @@ export default function Home() {
   {/* Navigation - Centered (Modern Sliding Hover) */}
   <nav 
     className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center p-1 bg-background/20 backdrop-blur-lg rounded-full border border-border/30"
-    onMouseLeave={() => setHoveredNav(null)}
+    onMouseLeave={scheduleClose}
   >
     {([
-      { id: "home", label: "Home" },
-      { id: "mission-control", label: "Dashboard" },
-      { id: "demos", label: "Demos" },
-      { id: "workflow", label: "Workflow" },
-      { id: "efficacy", label: "Research" },
-      { id: "activity", label: "Activity" },
+      { id: "home", label: "Home", href: "/" },
+      { 
+        id: "platform", 
+        label: "Platform", 
+        dropdownItems: [
+          { id: "mission-control", label: "Mission Control", icon: ShieldUser, description: "Central dashboard for instructors and students." },
+          { id: "challenge", label: "The Challenge", icon: AlertTriangle, description: "Understanding the physics education gap." },
+          { id: "math-fidelity", label: "Math Fidelity", icon: SquareFunction, description: "Proprietary LaTeX engine for complex derivations." },
+          { id: "demos", label: "System Demos", icon: PlayCircle, description: "Interactive overview of AI tutoring capabilities." },
+          { id: "workflow", label: "Workflow", icon: Zap, description: "End-to-end assignment and feedback loop." },
+        ]
+      },
+      { 
+        id: "institutional", 
+        label: "Institutional", 
+        dropdownItems: [
+          { id: "efficacy", label: "Efficacy", icon: Brain, description: "Pedagogical methodology and learning outcomes." },
+          { id: "mission", label: "Philosophy", icon: Orbit, description: "The first principles behind constraint-led tutoring." },
+          { id: "activity", label: "Development", icon: Activity, description: "Live updates and platform evolution stats." },
+          { id: "pricing", label: "Cost & Scale", icon: ChartColumnIncreasing, description: "Institutional pricing and ROI analysis." },
+        ]
+      },
       { 
         id: "docs", 
         label: "Docs", 
         dropdownItems: [
-          { label: "About Scorpio", href: "/about", icon: Info },
-          { label: "Research & Methodology", href: "/research", icon: Brain },
-          { label: "Privacy Policy", href: "/privacy", icon: Shield },
-          { label: "Terms of Service", href: "/terms", icon: FileText },
-          { label: "Contact Us", href: "/contact", icon: Mail },
-
+          { label: "About Scorpio", href: "/about", icon: Info, description: "Our mission to revolutionize physics education." },
+          { label: "Research & Methodology", href: "/research", icon: Brain, description: "Deep dive into our 4-layer AI architecture." },
+          { label: "Contact Us", href: "/contact", icon: Mail, description: "Get help from our institutional success team." },
+          { label: "Privacy Policy", href: "/privacy", icon: Shield, description: "FERPA/GDPR compliant data infrastructure." },
+          { label: "Terms of Service", href: "/terms", icon: FileText, description: "Standard institutional and usage terms." },
         ]
       }
     ] as LandingNavItem[]).map((navItem) => (
       <div
         key={navItem.id}
         className="relative px-1 group/navitem"
-        onMouseEnter={() => setHoveredNav(navItem.id)}
+        onMouseEnter={() => { cancelClose(); setHoveredNav(navItem.id); }}
       >
         <AnimatePresence>
           {hoveredNav === navItem.id && (
@@ -186,7 +210,7 @@ export default function Home() {
             modal={false} 
             open={hoveredNav === navItem.id} 
             onOpenChange={(open) => {
-              if (!open) setHoveredNav(null);
+              if (!open) scheduleClose();
             }}
           >
             <DropdownMenuTrigger asChild>
@@ -211,23 +235,60 @@ export default function Home() {
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="center" 
-              className="w-56 bg-background/80 backdrop-blur-xl border-border/50 p-1.5 shadow-2xl rounded-2xl animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
-              onMouseEnter={() => setHoveredNav(navItem.id)}
-              onMouseLeave={() => setHoveredNav(null)}
-              sideOffset={8}
+              className="w-80 bg-background/80 backdrop-blur-xl border-border/50 p-2 pt-3 shadow-2xl rounded-2xl animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+              onMouseEnter={() => { cancelClose(); setHoveredNav(navItem.id); }}
+              onMouseLeave={scheduleClose}
+              sideOffset={2}
             >
               {navItem.dropdownItems.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 group/item">
-                    <div className="p-1.5 bg-primary/5 rounded-lg group-hover/item:bg-primary/20 transition-colors">
+                item.href ? (
+                  <Link key={item.href} href={item.href}>
+                    <DropdownMenuItem className="flex items-start gap-3 px-3 py-3 cursor-pointer rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 group/item">
+                      <div className="p-2 bg-primary/5 rounded-lg group-hover/item:bg-primary/20 transition-colors mt-0.5">
+                        <item.icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-xs tracking-tight">{item.label}</span>
+                        {item.description && <span className="text-[10px] text-muted-foreground leading-tight">{item.description}</span>}
+                      </div>
+                    </DropdownMenuItem>
+                  </Link>
+                ) : (
+                  <DropdownMenuItem 
+                    key={item.id} 
+                    className="flex items-start gap-3 px-3 py-3 cursor-pointer rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 group/item"
+                    onClick={() => {
+                      const el = document.getElementById(item.id!);
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                      setHoveredNav(null);
+                    }}
+                  >
+                    <div className="p-2 bg-primary/5 rounded-lg group-hover/item:bg-primary/20 transition-colors mt-0.5">
                       <item.icon className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="font-semibold text-[11px] tracking-tight">{item.label}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-bold text-xs tracking-tight">{item.label}</span>
+                      {item.description && <span className="text-[10px] text-muted-foreground leading-tight">{item.description}</span>}
+                    </div>
                   </DropdownMenuItem>
-                </Link>
+                )
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        ) : navItem.id === "home" ? (
+          <Button
+            variant="link"
+            type="button"
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              setHoveredNav(null);
+            }}
+            className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent ${
+              hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
+            }`}
+          >
+            {navItem.label}
+          </Button>
         ) : navItem.href ? (
           <Link href={navItem.href}>
             <Button
@@ -295,36 +356,69 @@ export default function Home() {
             </svg>
           </Button>
         </div>
-        <nav className="flex flex-col space-y-2 px-6 py-6 flex-1 overflow-y-auto">
-          {[
-            { id: "home", label: "Home" },
-            { id: "mission-control", label: "Dashboard" },
-            { id: "demos", label: "Demos" },
-            { id: "workflow", label: "Workflow" },
-            { id: "efficacy", label: "Research" },
-            { id: "activity", label: "Activity" }
-          ].map(({ id, label }) => (
-            <Button
-              key={id}
-              variant="ghost"
-              className="justify-start font-medium text-muted-foreground hover:text-foreground text-lg px-2 py-3 rounded-lg w-full text-left"
-              onClick={() => {
-                const el = document.getElementById(id);
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-                setMenuOpen(false);
-              }}
-            >
-              {label}
-            </Button>
-          ))}
-          <div className="pt-6 pb-2 border-t mt-4 space-y-1">
-             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-4 block">Resources & Docs</span>
+        <nav className="flex flex-col space-y-6 px-6 py-8 flex-1 overflow-y-auto">
+          <div className="space-y-1">
+             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Platform</span>
+             {[
+                { id: "mission-control", label: "Dashboard", icon: ShieldUser },
+                { id: "challenge", label: "The Challenge", icon: AlertTriangle },
+                { id: "math-fidelity", label: "Math Fidelity", icon: SquareFunction },
+                { id: "demos", label: "Demos", icon: PlayCircle },
+                { id: "workflow", label: "Workflow", icon: Zap },
+             ].map((item) => (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]"
+                  onClick={() => {
+                    const el = document.getElementById(item.id);
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setMenuOpen(false);
+                  }}
+                >
+                  <div className="p-2 bg-primary/5 rounded-lg">
+                    <item.icon className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  {item.label}
+                </Button>
+             ))}
+          </div>
+
+          <div className="space-y-1">
+             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
+             {[
+                { id: "efficacy", label: "Research", icon: Brain },
+                { id: "mission", label: "Philosophy", icon: Orbit },
+                { id: "activity", label: "Activity", icon: Activity },
+                { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
+             ].map((item) => (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]"
+                  onClick={() => {
+                    const el = document.getElementById(item.id);
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setMenuOpen(false);
+                  }}
+                >
+                  <div className="p-2 bg-primary/5 rounded-lg">
+                    <item.icon className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  {item.label}
+                </Button>
+             ))}
+          </div>
+
+          <div className="space-y-1">
+             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Documentation</span>
              {[
                { label: "About Scorpio", href: "/about", icon: Info },
                { label: "Research & Methodology", href: "/research", icon: Brain },
+               { label: "Research Admin", href: "/research/admin", icon: ShieldCheck },
+               { label: "Contact Support", href: "/contact", icon: Mail },
                { label: "Privacy Policy", href: "/privacy", icon: Shield },
                { label: "Terms of Service", href: "/terms", icon: FileText },
-                { label: "Contact Support", href: "/contact", icon: Mail }
              ].map((item) => (
                 <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
                   <Button
@@ -494,17 +588,19 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full bg-background/50 backdrop-blur-md border-white/10 hover:bg-white/10 cursor-pointer"
-                onClick={() => {
-                  const el = document.getElementById("features");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                Learn More
-              </Button>
+              <Link href="#challenge">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full bg-background/50 backdrop-blur-md border-white/10 hover:bg-white/10 cursor-pointer"
+                  onClick={() => {
+                    const el = document.getElementById("features");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  Learn More
+                </Button>
+              </Link>
             </motion.div>
 
             <motion.div
@@ -660,7 +756,7 @@ export default function Home() {
         {/* Features Grid section removed: now integrated into demonstration gallery as Core Capabilities */}
 
         {/* Featured: Mathematical Precision */}
-        <section className="container mx-auto px-6 py-32 relative">
+        <section id="math-fidelity" className="container mx-auto px-6 py-32 relative">
           <div className="max-w-6xl mx-auto rounded-[3rem] border border-border/60 bg-card/20 backdrop-blur-xl overflow-hidden flex flex-col lg:flex-row items-center gap-12 group">
             <div className="flex-1 p-12 lg:p-20 space-y-8">
               <motion.div 
