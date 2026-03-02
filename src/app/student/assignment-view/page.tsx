@@ -445,7 +445,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
     setSubmitting(true);
     try {
         // Fetch student name from profile or students collection
-        let studentName = profile?.displayName || profile?.name || user.displayName || "";
+        let studentName = profile?.displayName || user.displayName || "";
         if (!studentName) {
           try {
             const studentDoc = await getDoc(doc(db, "students", user.uid));
@@ -523,7 +523,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
       }));
 
       // Fetch student name from profile or students collection
-      let studentName = profile?.displayName || profile?.name || user.displayName || "";
+      let studentName = profile?.displayName || user.displayName || "";
       if (!studentName) {
         try {
           const studentDoc = await getDoc(doc(db, "students", user.uid));

@@ -126,7 +126,7 @@ export default function NetworkPage() {
   }, [organization]);
 
   useEffect(() => {
-    if (searchParams.get("success") === "true") {
+    if (searchParams?.get("success") === "true") {
       toast.success("Subscription updated! Accessing Pro features...");
       // Remove query param
       router.replace("/teacher/network");
@@ -595,7 +595,7 @@ export default function NetworkPage() {
                 <CardFooter>
                   <Button onClick={joinOrganization} variant="outline" className="w-full h-12 cursor-pointer font-bold text-base hover:bg-primary hover:text-primary-foreground transition-all">
                     Link with Team
-                    <Link className="ml-2 h-4 w-4" />
+                    <LinkIcon className="ml-2 h-4 w-4" />
                   </Button>
                 </CardFooter>
               </Card>

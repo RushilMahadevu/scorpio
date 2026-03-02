@@ -1,10 +1,12 @@
 import { Polar } from "@polar-sh/sdk";
 
 if (!process.env.POLAR_ACCESS_TOKEN) {
-  throw new Error("Missing POLAR_ACCESS_TOKEN environment variable");
+  console.error("[Polar] Missing POLAR_ACCESS_TOKEN — checkout and webhooks will fail.");
 }
 
-export const polar = new Polar({
-  accessToken: process.env.POLAR_ACCESS_TOKEN,
-  server: "production" // or "sandbox" if testing
+const polar = new Polar({
+  accessToken: process.env.POLAR_ACCESS_TOKEN ?? "",
+  server: process.env.POLAR_ENV === "sandbox" ? "sandbox" : "production",
 });
+
+export { polar };

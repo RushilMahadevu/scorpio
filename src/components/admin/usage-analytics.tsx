@@ -138,11 +138,10 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
         navigation: "#3b82f6", // blue-500
         tutor: "#a855f7",     // purple-500
         grading: "#10b981",   // emerald-500
-        practice: "#6366f1",   // indigo-500
+        practice: "#f97316",   // orange-500
         parsing: "#f59e0b",   // amber-500
         security: "#f43f5e",  // rose-500
         notebook: "#0ea5e9",   // sky-500
-        practice: "#f97316",   // orange-500
         generation: "#ec4899", // pink-500
         other: "#71717a"      // zinc-500
       };
@@ -379,7 +378,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                 <ChartContainer config={chartConfig}>
                   <AreaChart 
                     data={dailyData} 
-                    margin={{ top: 10, right: 30, left: 20, bottom: 300 }} // keep bottom as 75 for x-axis label padding
+                    margin={{ top: 10, right: 30, left: 20, bottom: 400 }} // keep bottom as 75 for x-axis label padding
                   >
                     <defs>
                       <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">

@@ -13,22 +13,14 @@ const RATES = {
   output: 0.000060,
 };
 
-// Estimated "buffer" usage in cents per request type (for pre-flight budget check)
-const ESTIMATED_BUFFER = {
-  navigation: 0.1,  // $0.001
-  tutor: 0.5,       // $0.005
-  grading: 1.0,     // $0.01
-  generation: 5.0,  // $0.05
-  practice: 0.2,    // $0.002
-  notebook: 0.3,   // $0.003
-};
-
 /**
- * Checks if an organization has enough budget to proceed with an AI request.
+ * Checks if an organization has an active (non-free) subscription.
+ * Budget enforcement is handled by Polar metered billing ($100 cap per meter).
  */
 export async function checkBudget(
   organizationId: string | undefined | null,
-  type: keyof typeof ESTIMATED_BUFFER = "navigation"
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _type?: string
 ): Promise<{ allowed: boolean; error?: string }> {
   if (!organizationId) {
     return { allowed: false, error: "AI Features require a Standard subscription." };
@@ -41,23 +33,13 @@ export async function checkBudget(
     if (!orgDoc.exists) return { allowed: false, error: "Scorpio Network not found." };
 
     const data = orgDoc.data();
-    
-    // Check if subscription allows for AI usage
+
     if (!data?.planId || data.planId === "free") {
       return { allowed: false, error: "AI Features require a Standard subscription." };
     }
 
-    // Use decimal currentUsage to prevent floating point inaccuracies accumulating too badly
-    const currentUsage = data?.aiUsageCurrent || 0;
-    const budgetLimit = data?.aiBudgetLimit || 50; // $0.50 baseline limit
-    const estimate = ESTIMATED_BUFFER[type];
-
-    if (currentUsage >= budgetLimit) {
-      return { allowed: false, error: "Monthly Scorpio AI Budget reached. Please contact your administrator to top up." };
-    }
-
-    if (currentUsage + estimate > budgetLimit) {
-      return { allowed: false, error: "Budget too low for this request. Top up required." };
+    if (data?.subscriptionStatus === "canceled" || data?.subscriptionStatus === "revoked") {
+      return { allowed: false, error: "Your subscription is no longer active." };
     }
 
     return { allowed: true };
@@ -81,12 +63,11 @@ export async function recordUsage(
 
   const costCents = (inputTokens * RATES.input) + (outputTokens * RATES.output);
   let polarCustomerId: string | null = null;
-  let isOverLimitAfterUpdate = false;
-  
+
   try {
     const orgRef = adminDb.collection("organizations").doc(organizationId);
     const usageLogRef = adminDb.collection("usage_analytics").doc();
-    
+
     await adminDb.runTransaction(async (transaction) => {
       const orgDoc = await transaction.get(orgRef);
       if (!orgDoc.exists) return;
@@ -94,20 +75,13 @@ export async function recordUsage(
       const data = orgDoc.data();
       polarCustomerId = data?.polarCustomerId || null;
       const currentUsage = data?.aiUsageCurrent || 0;
-      const limit = data?.aiBudgetLimit || 50;
-      
-      const newUsage = currentUsage + costCents;
-      if (newUsage >= limit) {
-        isOverLimitAfterUpdate = true;
-      }
 
-      // Update running organization balance
-      transaction.update(orgRef, {
-        aiUsageCurrent: newUsage,
+      // Track usage in Firestore for analytics (billing cap is enforced by Polar's $100 meter limit)
+      transaction.set(orgRef, {
+        aiUsageCurrent: currentUsage + costCents,
         lastAiUsageAt: new Date(),
-        // Keep a lifetime total count for business metrics
         aiUsageTotalCents: (data?.aiUsageTotalCents || 0) + costCents
-      });
+      }, { merge: true });
 
       // Log the granular interaction for analytics
       transaction.set(usageLogRef, {
@@ -121,12 +95,40 @@ export async function recordUsage(
     });
 
     // Report to Polar for metered billing
+    console.log("[Polar] polarCustomerId:", polarCustomerId, "| costCents:", costCents);
     if (polarCustomerId) {
-       // ... existing reporting logic ...
+      try {
+        await polar.events.ingest({
+          events: [{
+            customerId: polarCustomerId,
+            name: "ai_usage",
+            timestamp: new Date(),
+            metadata: {
+              // Polar meter aggregation expects these exact property paths:
+              // "Input Tokens" meter: sum of llm.input_tokens
+              // "Output Tokens" meter: sum of llm.output_tokens
+              "llm.input_tokens": inputTokens,
+              "llm.output_tokens": outputTokens,
+              // Extra context fields
+              vendor: "google",
+              model: "gemini-2.5-flash",
+              costCents: parseFloat(costCents.toFixed(6)),
+              type: String(type),
+              organizationId: String(organizationId),
+            }
+          }]
+        });
+        console.log("[Polar] Ingested ai_usage event for", polarCustomerId);
+      } catch (polarErr) {
+        console.error("[Polar] Failed to ingest usage event:", polarErr);
+      }
+    } else {
+      console.warn("[Polar] Skipping metering — no polarCustomerId on org", organizationId);
     }
 
-    return { success: true, overLimit: isOverLimitAfterUpdate };
+    return { success: true };
   } catch (err) {
+    console.error("[recordUsage] Error:", err);
     return { success: false };
   }
 }
@@ -134,7 +136,7 @@ export async function recordUsage(
 // Legacy export (keeping for backwards compatibility during migration)
 export async function checkAndIncrementUsage(
   organizationId: string | undefined | null,
-  type: keyof typeof ESTIMATED_BUFFER
+  type?: string
 ): Promise<{ allowed: boolean; error?: string }> {
   return checkBudget(organizationId, type);
 }

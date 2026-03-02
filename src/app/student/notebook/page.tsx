@@ -145,7 +145,7 @@ export default function NotebookPage() {
     // 1. Fetch Organization Data first for limits
     async function fetchOrgSettings() {
       try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userDoc = await getDoc(doc(db, "users", user!.uid));
         const userData = userDoc.data();
         const orgId = userData?.organizationId;
         
@@ -399,7 +399,7 @@ export default function NotebookPage() {
       }
 
       setMessages(prev => {
-        const updatedMessages = [...prev, { role: 'assistant', content: data.content }];
+        const updatedMessages = [...prev, { role: 'assistant' as const, content: data.content }];
         // Persist messages to the notebook document
         if (activeNotebookId) {
           const notebookRef = doc(db, "notebooks", activeNotebookId);

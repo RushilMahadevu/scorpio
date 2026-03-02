@@ -708,11 +708,11 @@ export async function runComprehensiveStudy(
         const response = question.type === 'declarative' 
           ? await explainPhysicsConcept(question.question, [], level)
           : await helpSolveProblem(question.question, [], level);
-        const metrics = analyzeResponse(response, question, level);
+        const metrics = analyzeResponse(response.text, question, level);
         results.push({
           question,
           constraintLevel: level,
-          response,
+          response: response.text,
           metrics,
           timestamp: new Date().toISOString()
         });
@@ -734,11 +734,11 @@ export async function runComprehensiveStudy(
             const response = question.type === 'declarative' 
               ? await explainPhysicsConcept(question.question, [], level)
               : await helpSolveProblem(question.question, [], level);
-            const metrics = analyzeResponse(response, question, level);
+            const metrics = analyzeResponse(response.text, question, level);
             results.push({
               question,
               constraintLevel: level,
-              response,
+              response: response.text,
               metrics,
               timestamp: new Date().toISOString()
             });
@@ -983,7 +983,7 @@ export async function helpSolveProblem(
   constraintLevel: ConstraintLevel = "FULL",
   assignmentContext?: string,
   studentNames: string[] = []
-): Promise<{ text: string, usage?: { promptTokenCount: number, candidatesTokenCount: number } }> {
+): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
     const historyContext = chatHistory.length > 0 
@@ -1256,7 +1256,7 @@ export async function runAblationStudy(): Promise<AblationResult[]> {
         results.push({
           question,
           constraintLevel: level,
-          response,
+          response: response.text,
         });
       } catch (error) {
         console.error(`Error in ablation study for question "${question}" at level ${level}:`, error);

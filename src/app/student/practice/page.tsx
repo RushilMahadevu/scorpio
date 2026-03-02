@@ -148,7 +148,7 @@ export default function Practice() {
         )
       );
       
-      const historyData = historySnap.docs
+      const historyData: any[] = historySnap.docs
         .map(d => ({
           id: d.id,
           ...d.data()

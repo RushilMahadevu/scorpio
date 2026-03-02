@@ -128,7 +128,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
       // Only set content if it's genuinely different to avoid cursor jumps or reset marks
       if (content !== currentHtml) {
         const { from, to } = editor.state.selection;
-        editor.commands.setContent(content, false);
+        editor.commands.setContent(content);
         try {
           editor.commands.setTextSelection({ from, to });
         } catch (e) {

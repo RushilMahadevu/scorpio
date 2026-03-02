@@ -219,7 +219,7 @@ export default function StudentDashboard() {
         courseId: newCourseId,
         schoolId: newSchoolId, // Auto-migrate the student to the teacher's school
         email: user.email,     // Ensure student email is saved for teacher view
-        name: profile?.displayName || profile?.name || user.displayName || user.email?.split("@")[0], // Ensure name is saved
+        name: profile?.displayName || user.displayName || user.email?.split("@")[0], // Ensure name is saved
         updatedAt: new Date()
       };
 

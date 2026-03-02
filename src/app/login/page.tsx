@@ -117,7 +117,7 @@ export default function LoginPage() {
       }
 
       // Force session refresh
-      const idToken = await user.getIdToken();
+      const idToken = await currentUser.getIdToken();
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

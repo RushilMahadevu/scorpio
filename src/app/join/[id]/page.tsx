@@ -14,7 +14,7 @@ import { Organization } from "@/lib/types";
 export default function JoinNetworkPage() {
   const router = useRouter();
   const params = useParams();
-  const orgId = params.id as string;
+  const orgId = params?.id as string;
   const { user, profile, loading: authLoading } = useAuth();
   
   const [loading, setLoading] = useState(true);

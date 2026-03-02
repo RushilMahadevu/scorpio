@@ -133,7 +133,7 @@ export default function BillingPage() {
             </div>
             <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-tight text-foreground">
               AI-powered physics<br />
-              <span className="text-primary">for less than a textbook.</span>
+              <span className="text-primary italic">for less than a textbook.</span>
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-lg">
               One flat subscription. Unlimited students. Zero markup on AI. 

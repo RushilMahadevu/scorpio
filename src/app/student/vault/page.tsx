@@ -493,7 +493,7 @@ export default function Vault() {
                   <CardTitle className="text-xl font-black">Class Data Stream</CardTitle>
                 </div>
                 <CardDescription className="text-base font-medium">
-                  Centralized reference for {profile?.courseName || "General Physics"} (V1.2)
+                  Centralized reference for {"General Physics"} (V1.2)
                 </CardDescription>
              </CardHeader>
              <CardContent>

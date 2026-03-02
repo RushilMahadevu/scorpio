@@ -38,7 +38,7 @@ function ChartContainer({
 function ChartTooltip({
   className,
   ...props
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip>) {
+}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> & { className?: string }) {
   return (
     <RechartsPrimitive.Tooltip
       cursor={false}
@@ -48,15 +48,35 @@ function ChartTooltip({
   )
 }
 
+type TooltipValueType = number | string | ReadonlyArray<number | string>
+type TooltipNameType = number | string
+
+interface ChartTooltipContentProps {
+  active?: boolean
+  payload?: Array<{
+    name?: TooltipNameType
+    value?: TooltipValueType
+    dataKey?: string | number
+    color?: string
+    fill?: string
+    payload?: Record<string, unknown>
+  }>
+  label?: TooltipNameType
+  labelFormatter?: (label: TooltipNameType, payload: ChartTooltipContentProps["payload"]) => React.ReactNode
+  formatter?: (value: TooltipValueType, name: TooltipNameType) => React.ReactNode
+  hideLabel?: boolean
+  hideIndicator?: boolean
+  indicator?: "line" | "dot" | "dashed"
+  nameKey?: string
+  labelKey?: string
+  className?: string
+  labelClassName?: string
+  color?: string
+}
+
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> & {
-    hideLabel?: boolean
-    hideIndicator?: boolean
-    indicator?: "line" | "dot" | "dashed"
-    nameKey?: string
-    labelKey?: string
-  }
+  ChartTooltipContentProps
 >(
   (
     {
@@ -116,7 +136,7 @@ const ChartTooltipContent = React.forwardRef<
                     )}
                     style={
                       {
-                        "--color-bg": itemConfig?.color || item.payload.fill || item.color,
+                        "--color-bg": itemConfig?.color || item.payload?.fill || item.color,
                       } as React.CSSProperties
                     }
                   />

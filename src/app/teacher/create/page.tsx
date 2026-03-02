@@ -67,7 +67,7 @@ export default function CreateAssignmentPage() {
 function CreateAssignmentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const forkId = searchParams.get("fork");
+  const forkId = searchParams?.get("fork");
   const { user, profile, loading: authLoading } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);

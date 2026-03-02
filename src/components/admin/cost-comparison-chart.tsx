@@ -47,7 +47,7 @@ const tableData = STUDENTS.map((n, i) => {
 const fmtAxis = (v: number) =>
   v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`;
 
-const fmtLabel = (v: number) =>
+const fmtLabel = (v: any) =>
   v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`;
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────

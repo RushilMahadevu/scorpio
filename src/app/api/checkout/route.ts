@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Verify organization exists and user is the owner
-    const orgDoc = await adminDb.collection("organizations").doc(organizationId).get();
+    const orgDoc = await adminDb!.collection("organizations").doc(organizationId).get();
     if (!orgDoc.exists) {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
@@ -50,11 +50,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Polar SDK not initialized" }, { status: 500 });
       }
 
-      // In @polar-sh/sdk v0.44.0, you must use the `products` array with Price IDs
-      // Ensure POLAR_PRODUCT_ID in .env.local is a Price ID (starts with pri_)
+      const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       const checkoutOptions: any = {
-        products: [productId], 
-        successUrl: `${req.headers.get("origin")}/teacher/network?success=true`,
+        products: [productId],
+        successUrl: `${origin}/teacher/network?success=true`,
         includeConfirmationEmail: true,
         metadata: {
           organizationId: String(organizationId),

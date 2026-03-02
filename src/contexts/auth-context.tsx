@@ -54,8 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: firebaseUser.email || "",
                 displayName: firebaseUser.displayName || teacherData.name || "Unknown Teacher",
                 role: "teacher",
-                createdAt: teacherData.createdAt || serverTimestamp(),
-                lastLoginAt: serverTimestamp(),
+                createdAt: (teacherData.createdAt || serverTimestamp()) as Date,
+                lastLoginAt: serverTimestamp() as unknown as Date,
                 classIds: [],
               };
               
@@ -76,8 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   teacherId: studentData.teacherId || null,
                   courseId: studentData.courseId || null,
                   schoolId: studentData.schoolId || null,
-                  createdAt: studentData.createdAt || serverTimestamp(),
-                  lastLoginAt: serverTimestamp(),
+                  createdAt: (studentData.createdAt || serverTimestamp()) as unknown as Date,
+                  lastLoginAt: serverTimestamp() as unknown as Date,
                 };
                 
                 await setDoc(doc(db, "users", firebaseUser.uid), newProfile, { merge: true });
