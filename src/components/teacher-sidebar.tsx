@@ -16,12 +16,12 @@ import { AppSidebar } from "./app-sidebar";
 const navItems = [
   { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
   { href: "/teacher/network", label: "Network", icon: Building2 },
-  { href: "/teacher/waypoints", label: "Waypoints", icon: Waypoints },
-  { href: "/teacher/assignments", label: "My Assignments", icon: FileText },
-  { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
-  { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },
   { href: "/teacher/students", label: "Students", icon: Users },
   { href: "/teacher/grades", label: "Gradebook", icon: GraduationCap },
+  { href: "/teacher/assignments", label: "My Assignments", icon: FileText },
+  { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
+  { href: "/teacher/waypoints", label: "Waypoints", icon: Waypoints },
+  { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },
 ];
 
 export function TeacherSidebar({
