@@ -42,6 +42,7 @@ export interface Organization {
   notebookLimitPerStudent?: number; // Max notebooks a student can create
   aiNotebookLimitPerStudent?: number; // Max AI interactions per student per month
   notebookLimit?: number; // Total network usage limit for interactions
+  aiTutorLimitPerStudent?: number; // Max AI tutor messages per student per month
   baseMonthlyFee: number; // Flat fee for storage/base features
 }
 

@@ -1692,3 +1692,96 @@ export async function getNotebookAssistantResponse(
     throw error;
   }
 }
+
+/**
+ * Network Limits Assistant — answers teacher questions about their org's AI limits,
+ * budgets, and capacities using real-time org data as context.
+ */
+export interface NetworkLimitsContext {
+  orgName: string;
+  planId: string;
+  aiBudgetLimit: number;       // in cents
+  aiUsageCurrent: number;      // in cents
+  practiceLimit: number;       // total pool
+  practiceUsageCurrent: number;
+  practiceLimitPerStudent: number;
+  notebookLimitPerStudent: number;
+  aiNotebookLimitPerStudent: number;
+  aiTutorLimitPerStudent: number;
+  studentCount: number;
+}
+
+export async function getNetworkLimitsHelp(
+  message: string,
+  chatHistory: { role: "user" | "assistant"; content: string }[],
+  ctx: NetworkLimitsContext
+): Promise<{ text: string; usage?: { inputTokens: number; outputTokens: number } }> {
+  try {
+    const budgetUsedPercent = ctx.aiBudgetLimit > 0
+      ? ((ctx.aiUsageCurrent / ctx.aiBudgetLimit) * 100).toFixed(1)
+      : "0";
+    const practiceUsedPercent = ctx.practiceLimit > 0
+      ? ((ctx.practiceUsageCurrent / ctx.practiceLimit) * 100).toFixed(1)
+      : "0";
+
+    const systemPrompt = `You are **Scorpio AI**, an expert assistant for physics teachers managing their Scorpio Network.
+Your job is to answer questions about limits, budgets, and capacities — clearly, concisely, and in plain English.
+
+=== CURRENT NETWORK SNAPSHOT ===
+Network: ${ctx.orgName}
+Plan: ${ctx.planId === "free" ? "Free (upgrade required for most features)" : ctx.planId}
+
+💰 AI BUDGET (Safety Cap)
+  • Monthly cap: $${(ctx.aiBudgetLimit / 100).toFixed(4)}
+  • Used this period: $${(ctx.aiUsageCurrent / 100).toFixed(4)} (${budgetUsedPercent}%)
+  • Remaining headroom: $${Math.max(0, (ctx.aiBudgetLimit - ctx.aiUsageCurrent) / 100).toFixed(4)}
+  • Effect: When current bill hits the cap, ALL AI features pause for the billing period.
+
+🏹 PRACTICE CAPACITY (Physics Scenario Generator)
+  • Per-student allowance: ${ctx.practiceLimitPerStudent} scenarios/month
+  • Total network pool: ${ctx.practiceLimit} scenarios (${ctx.studentCount} students × allowance)
+  • Used this period: ${ctx.practiceUsageCurrent} (${practiceUsedPercent}%)
+  • Effect: Students cannot generate new practice scenarios once the pool is exhausted.
+
+📒 NOTEBOOK CAPACITY (Research Workspace)
+  • Max notebooks per student: ${ctx.notebookLimitPerStudent}
+  • AI chat messages per student/month: ${ctx.aiNotebookLimitPerStudent}
+  • Effect: Students are blocked from creating more notebooks or sending AI messages once their individual limits are hit.
+
+🤖 AI TUTOR CAPACITY (Physics Tutor Chat)
+  • AI tutor messages per student/month: ${ctx.aiTutorLimitPerStudent}
+  • Effect: Students cannot send new tutor messages once this individual monthly limit is reached.
+
+👥 ENROLLMENT
+  • Active students: ${ctx.studentCount}
+================================
+
+RESPONSE GUIDELINES:
+- Be concise and friendly. Use bullet points when listing options.
+- Recommend realistic values based on class size when asked (e.g., "For ${ctx.studentCount} students I'd suggest…").
+- If the teacher asks how to change a setting, explain it's in the "Capacities & Limits" section above.
+- Do NOT mention internal field names like "aiNotebookLimitPerStudent". Use plain labels instead.
+- If the plan is free, gently mention that most limits require a Standard subscription.
+- Always end with a short actionable tip if relevant.`;
+
+    const chatHistoryContext = chatHistory.length > 0 
+      ? `Previous conversation history:\n${chatHistory.map(m => `${m.role === "user" ? "Teacher" : "Scorpio AI"}: ${m.content}`).join("\n")}\n\n`
+      : "";
+
+    const fullPrompt = `${systemPrompt}\n\n${chatHistoryContext}Teacher Question: ${message}`;
+
+    const result = await model.generateContent(fullPrompt);
+    const response = await result.response;
+
+    return {
+      text: response.text(),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+      }
+    };
+  } catch (error) {
+    console.error("Network limits assistant error:", error);
+    throw error;
+  }
+}

@@ -46,7 +46,12 @@ import {
   Lock,
   CreditCard,
   Notebook,
-  HelpCircle
+  HelpCircle,
+  Bot,
+  MessageSquare,
+  Send,
+  Sparkle,
+  GraduationCap
 } from "lucide-react";
 import {
   Tooltip,
@@ -73,10 +78,12 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 import { Organization, UserProfile } from "@/lib/types";
 import { UsageAnalytics } from "@/components/admin/usage-analytics";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 export default function NetworkPage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -97,7 +104,16 @@ export default function NetworkPage() {
   const [updatingNotebook, setUpdatingNotebook] = useState(false);
   const [tempNotebookLimitPerStudent, setTempNotebookLimitPerStudent] = useState<string>("");
   const [tempAiNotebookLimitPerStudent, setTempAiNotebookLimitPerStudent] = useState<string>("");
+  const [updatingTutor, setUpdatingTutor] = useState(false);
+  const [tempTutorLimitPerStudent, setTempTutorLimitPerStudent] = useState<string>("");
   const [studentCount, setStudentCount] = useState<number>(0);
+  // Limits Assistant
+  const [limitsOpen, setLimitsOpen] = useState(false);
+  const [limitsMessages, setLimitsMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
+    { role: "assistant", content: "Hi! I'm **Scorpio AI**. Ask me anything about your network's limits, budgets, or capacities — I'll explain what each setting does and suggest optimal values for your class size. 🎯" }
+  ]);
+  const [limitsInput, setLimitsInput] = useState("");
+  const [limitsLoading, setLimitsLoading] = useState(false);
 
   useEffect(() => {
     if (organization?.aiBudgetLimit !== undefined) {
@@ -123,6 +139,12 @@ export default function NetworkPage() {
     } else {
       setTempAiNotebookLimitPerStudent("50");
     }
+
+    if (organization?.aiTutorLimitPerStudent !== undefined) {
+      setTempTutorLimitPerStudent(organization.aiTutorLimitPerStudent.toString());
+    } else {
+      setTempTutorLimitPerStudent("30");
+    }
   }, [organization]);
 
   useEffect(() => {
@@ -132,6 +154,56 @@ export default function NetworkPage() {
       router.replace("/teacher/network");
     }
   }, [searchParams, router]);
+
+  const handleUpdateTutorLimit = async () => {
+    if (!user || !organization || user.uid !== organization.ownerId) return;
+    const perMember = parseInt(tempTutorLimitPerStudent);
+    if (isNaN(perMember) || perMember < 0) {
+      toast.error("Please enter a valid allowance.");
+      return;
+    }
+    setUpdatingTutor(true);
+    try {
+      await updateDoc(doc(db, "organizations", organization.id), {
+        aiTutorLimitPerStudent: perMember
+      });
+      toast.success(`AI Tutor limit updated to ${perMember} messages/month per student.`);
+      setOrganization(prev => prev ? { ...prev, aiTutorLimitPerStudent: perMember } : null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update tutor limit.");
+    } finally {
+      setUpdatingTutor(false);
+    }
+  };
+
+  const sendLimitsMessage = async () => {
+    if (!limitsInput.trim() || !user || limitsLoading) return;
+    const userMsg = { role: "user" as const, content: limitsInput.trim() };
+    setLimitsMessages(prev => [...prev, userMsg]);
+    setLimitsInput("");
+    setLimitsLoading(true);
+    try {
+      const res = await fetch("/api/chat/limits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userMsg.content,
+          chatHistory: limitsMessages.slice(-8),
+          userId: user.uid
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to get response");
+      setLimitsMessages(prev => [...prev, { role: "assistant", content: data.text }]);
+    } catch (e: any) {
+      setLimitsMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't process that right now. Please try again." }]);
+    } finally {
+      setLimitsLoading(false);
+    }
+  };
+
+
 
   const handleUpdatePracticeLimit = async () => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
@@ -821,12 +893,23 @@ export default function NetworkPage() {
 
       {organization && (
         <div className="space-y-6 pt-8 border-t border-border/50">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-bold tracking-tight">Capacities & Limits</h2>
-            <p className="text-sm text-muted-foreground">Manage pay-as-you-go AI limits and shared resources for your network.</p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-xl font-bold tracking-tight">Capacities & Limits</h2>
+              <p className="text-sm text-muted-foreground">Manage pay-as-you-go AI limits and shared resources for your network.</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-[10px] font-black uppercase tracking-widest gap-2 cursor-pointer border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10 rounded-full px-5 self-start sm:self-auto"
+              onClick={() => setLimitsOpen(true)}
+            >
+              <Bot className="h-3.5 w-3.5" />
+              Ask Scorpio AI
+            </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className={cn(
               "border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-950/10 transition-all duration-500 relative overflow-hidden",
               isFreePlan && "grayscale-[0.5] select-none scale-[0.98]"
@@ -1226,9 +1309,162 @@ export default function NetworkPage() {
                 )}
               </CardContent>
             </Card>
+
+            <Card className={cn(
+              "border-purple-100 dark:border-purple-900/30 bg-purple-50/30 dark:bg-purple-950/10 relative overflow-hidden transition-all duration-500",
+              isFreePlan && "grayscale-[0.5] select-none scale-[0.98]"
+            )}>
+              {isFreePlan && (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
+                  <div className="p-3 bg-zinc-900/80 rounded-full mb-3 border border-white/10 shadow-xl">
+                    <Lock className="h-5 w-5 text-zinc-400" />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/90 mb-4 px-4 py-1 bg-zinc-900/50 rounded-full border border-white/5">Network Feature</p>
+                  <Link href="/teacher/network/billing" className="z-40">
+                    <Button size="sm" variant="secondary" className="cursor-pointer h-8 text-[10px] font-bold uppercase tracking-widest px-6 rounded-full bg-white text-black hover:bg-zinc-200">
+                      Upgrade to Unlock
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    AI Tutor Capacity
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-purple-500" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-purple-200/50 shadow-2xl rounded-2xl">
+                          <div className="bg-purple-600 p-5 text-white">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <Bot className="h-5 w-5" />
+                              <p className="font-black text-sm uppercase tracking-widest">Personal Tutor</p>
+                            </div>
+                            <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
+                              Sets the monthly message limit for the dedicated AI Physics Tutor available to students.
+                            </p>
+                          </div>
+                          <div className="p-5 space-y-3 bg-white dark:bg-zinc-950">
+                            <p className="text-xs leading-relaxed text-muted-foreground font-medium">
+                              This corresponds to the main "Tutor" tab. Once a student reaches this limit, they can still view past chats but cannot send new messages until the next billing cycle.
+                            </p>
+                          </div>
+                        </TooltipContent>
+                    </Tooltip>
+                  </CardTitle>
+                </div>
+                <CardDescription className="text-[11px]">
+                  Monthly message quota for student tutoring sessions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm">
+                  <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+                     Message Allowance
+                  </p>
+                  <p className="text-lg font-black font-mono text-zinc-900 dark:text-zinc-100">
+                    {organization.aiTutorLimitPerStudent || 0}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">Per Student / Month</p>
+                </div>
+
+                {user?.uid === organization.ownerId && (
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="tutor-limit" className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Messages per student</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          id="tutor-limit" 
+                          type="number" 
+                          className="h-10 font-mono text-sm rounded-xl focus-visible:ring-purple-500" 
+                          value={tempTutorLimitPerStudent}
+                          onChange={(e) => setTempTutorLimitPerStudent(e.target.value)}
+                        />
+                        <Button 
+                          className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                          onClick={handleUpdateTutorLimit}
+                          disabled={updatingTutor}
+                        >
+                          {updatingTutor ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
+
+      {/* Limits Assistant Dialog */}
+      <Dialog open={limitsOpen} onOpenChange={setLimitsOpen}>
+        <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col p-0 gap-0 overflow-hidden border-zinc-200 dark:border-zinc-800 rounded-3xl">
+          <DialogHeader className="p-6 bg-zinc-50 dark:bg-zinc-900/50 border-b border-border/50">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-500/10 rounded-xl">
+                <Bot className="h-5 w-5 text-purple-500" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-black tracking-tight">Limits Assistant</DialogTitle>
+                <DialogDescription className="text-xs">Context-aware help for your network capacities.</DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {limitsMessages.map((msg, i) => (
+              <div key={i} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                <div className={cn(
+                  "max-w-[85%] rounded-2xl p-4 text-sm shadow-sm",
+                  msg.role === "user" 
+                    ? "bg-zinc-100 text-zinc-200 dark:bg-zinc-900 dark:text-zinc-900 rounded-tr-none" 
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-tl-none border border-border/50"
+                )}>
+                  <MarkdownRenderer>{msg.content}</MarkdownRenderer>
+                </div>
+              </div>
+            ))}
+            {limitsLoading && (
+              <div className="flex justify-start">
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-none p-4 border border-border/50">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 bg-background border-t border-border/50">
+            <div className="flex gap-2 relative">
+              <Textarea 
+                placeholder="Ask Scorpio about your limits..." 
+                className="min-h-[44px] h-[44px] resize-none pr-12 rounded-2xl border-zinc-200 focus-visible:ring-purple-500"
+                value={limitsInput}
+                onChange={(e) => setLimitsInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendLimitsMessage();
+                  }
+                }}
+              />
+              <Button 
+                size="icon" 
+                className="absolute right-1.5 top-1.5 h-7 w-7 rounded-xl bg-purple-500 hover:bg-purple-600 text-white"
+                onClick={sendLimitsMessage}
+                disabled={limitsLoading || !limitsInput.trim()}
+              >
+                <Send className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <p className="text-[9px] text-muted-foreground mt-2 text-center font-medium opacity-60">
+              Scorpio AI has full access to your network snapshot.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {profile?.role === "teacher" && profile?.organizationId && (
         <div className="grid grid-cols-1 gap-8 pt-8 border-t border-border/50">
