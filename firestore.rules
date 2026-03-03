@@ -121,7 +121,12 @@ service cloud.firestore {
 
     // Tutor Sessions (persisted per student)
     match /tutor_sessions/{sessionId} {
-      allow read, write: if request.auth != null && sessionId == request.auth.uid;
+      // Allow user to access their own session document OR any session where they are the studentId
+      allow read, write: if request.auth != null && (
+        sessionId == request.auth.uid || 
+        (resource != null && resource.data.studentId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.studentId == request.auth.uid)
+      );
     }
 
     // Organizations / Networks
