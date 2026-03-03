@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, ChevronRight, Trash2, Download } from "lucide-react";
+import { User, ChevronRight, Trash2, Download, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { GradeExportButton } from "@/components/grade-export-button";
+import { GradeDistributionChart } from "@/components/admin/grade-distribution-chart";
 
 interface Student {
   id: string;
@@ -284,65 +285,77 @@ export default function TeacherGradesPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Students</CardTitle>
-          <CardDescription>Select a student to view detailed grades.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {students.length === 0 ? (
-            <p className="text-muted-foreground">No students found.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Submissions</TableHead>
-                  <TableHead>Average Score</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {students.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{student.name}</p>
-                          <p className="text-xs text-muted-foreground">{student.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{student.submissionCount}</TableCell>
-                    <TableCell>{student.averageScore}%</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/teacher/grades/student?studentId=${student.id}`}>
-                          <Button variant="ghost" size="sm" className="cursor-pointer">
-                            View Details
-                            <ChevronRight className="h-4 w-4 ml-2" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="cursor-pointer"
-                          onClick={() => deleteStudent(student.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Students</CardTitle>
+              <CardDescription>Select a student to view detailed grades.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {students.length === 0 ? (
+                <p className="text-muted-foreground">No students found.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Submissions</TableHead>
+                      <TableHead>Average Score</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {students.map((student) => (
+                      <TableRow key={student.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{student.name}</p>
+                              <p className="text-xs text-muted-foreground">{student.email}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{student.submissionCount}</TableCell>
+                        <TableCell>{student.averageScore}%</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Link href={`/teacher/grades/student?studentId=${student.id}`}>
+                              <Button variant="ghost" size="sm" className="cursor-pointer">
+                                View Details
+                                <ChevronRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="cursor-pointer"
+                              onClick={() => deleteStudent(student.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        <div>
+          <GradeDistributionChart 
+            submissions={students.map(s => ({ score: s.averageScore }))}
+            title={selectedAssignmentId !== "all" 
+              ? assignments.find(a => a.id === selectedAssignmentId)?.title 
+              : "Average Performance"}
+          />
+        </div>
+      </div>
     </div>
   );
 }
