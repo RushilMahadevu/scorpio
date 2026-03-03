@@ -424,7 +424,7 @@ export default function TutorPage() {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 rounded-md hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="cursor-pointer h-7 w-7 rounded-md hover:bg-primary/10 hover:text-primary transition-colors"
                   onClick={createNewSession}
                   title="New chat"
                 >
@@ -433,7 +433,7 @@ export default function TutorPage() {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 rounded-md hover:bg-muted"
+                  className="cursor-pointer h-7 w-7 rounded-md hover:bg-muted"
                   onClick={() => setSidebarOpen(false)}
                   title="Close sidebar"
                 >
@@ -466,10 +466,10 @@ export default function TutorPage() {
                             autoFocus
                             maxLength={50}
                           />
-                          <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-green-600 hover:bg-green-50" onClick={() => handleRename(session.id, editingTitleText)}>
+                          <Button size="icon" variant="ghost" className="cursor-pointer h-7 w-7 shrink-0 text-green-600 hover:bg-green-50" onClick={() => handleRename(session.id, editingTitleText)}>
                             <Check className="h-4 w-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 hover:bg-muted" onClick={() => setEditingTitleId(null)}>
+                          <Button size="icon" variant="ghost" className="cursor-pointer h-7 w-7 shrink-0 hover:bg-muted" onClick={() => setEditingTitleId(null)}>
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
@@ -503,7 +503,7 @@ export default function TutorPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 shrink-0 rounded-md opacity-40 group-hover:opacity-100 hover:opacity-100 transition-opacity hover:bg-muted"
+                                className="cursor-pointer h-7 w-7 shrink-0 rounded-md opacity-40 group-hover:opacity-100 hover:opacity-100 transition-opacity hover:bg-muted"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <MoreHorizontal className="h-4 w-4" />
@@ -560,7 +560,7 @@ export default function TutorPage() {
                 <Button
                   size="icon"
                   variant="outline"
-                  className="h-9 w-9 shrink-0"
+                  className="cursor-pointer h-9 w-9 shrink-0"
                   onClick={() => setSidebarOpen(true)}
                   title="Open Chat History"
                 >
@@ -570,7 +570,7 @@ export default function TutorPage() {
               <Button
                 variant={mode === "concept" ? "default" : "outline"}
                 onClick={() => setMode("concept")}
-                className="flex items-center gap-2 cursor-pointer hover:bg-primary/90 transition-colors"
+                className="cursor-pointer flex items-center gap-2 hover:bg-primary/90 transition-colors"
               >
                 <Lightbulb className="h-4 w-4" />
                 Explain Concept
@@ -578,7 +578,7 @@ export default function TutorPage() {
               <Button
                 variant={mode === "problem" ? "default" : "outline"}
                 onClick={() => setMode("problem")}
-                className="flex items-center gap-2 cursor-pointer hover:bg-primary/90 transition-colors"
+                className="cursor-pointer flex items-center gap-2 hover:bg-primary/90 transition-colors"
               >
                 <Calculator className="h-4 w-4" />
                 Solve Problem
