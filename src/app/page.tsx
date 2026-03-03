@@ -585,12 +585,12 @@ export default function Home() {
             </motion.h1>
 
             <motion.p
-              className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-foreground/80 italic leading-tight"
+              className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-foreground/80 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.8 }}
             >
-              The World&apos;s Only AI Physics LMS
+              The World's Only AI Physics LMS
             </motion.p>
 
             <motion.p
@@ -1567,7 +1567,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
             >
-              <div className="p-6 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm space-y-4">
+              <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 backdrop-blur-sm space-y-4">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" />
                   <h4 className="font-black text-sm">What You Unlock</h4>
@@ -1605,17 +1605,17 @@ export default function Home() {
                 </div>
                 <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Google DeepMind Gemini 2.5 Flash rates</p>
               </div>
-              <div className="p-6 bg-zinc-900 rounded-2xl text-white space-y-4 overflow-hidden relative group">
+              <div className="p-6 bg-zinc-100/50 dark:bg-zinc-900/50 rounded-2xl text-white space-y-4 overflow-hidden relative group">
                 <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative z-10 space-y-3">
                   <div className="flex items-center gap-2">
                     <Lock className="h-4 w-4 text-amber-500" />
-                    <h4 className="font-black text-sm">Scaling Beyond One School?</h4>
+                    <h4 className="font-black text-foreground text-sm">Scaling Beyond One School?</h4>
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
                   <Link href="/contact">
                     <Button variant="outline" className="cursor-pointer w-full bg-transparent border-white/20 text-white hover:bg-white hover:text-black font-black uppercase tracking-widest text-[10px] py-4 rounded-xl mt-2">
-                      Talk to Education Sales
+                      Contact Us
                     </Button>
                   </Link>
                 </div>

@@ -299,7 +299,7 @@ export default function BillingPage() {
       <div className="max-w-7xl mx-auto px-6 mt-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Why Upgrade */}
-          <div className="p-6 rounded-2xl border border-border/50 bg-card space-y-4">
+          <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
               <h4 className="font-black text-sm">What You Unlock</h4>
@@ -341,16 +341,16 @@ export default function BillingPage() {
           </div>
 
           {/* Enterprise */}
-          <div className="p-6 bg-zinc-900 rounded-2xl text-white space-y-4 overflow-hidden relative group">
+          <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
             <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative z-10 space-y-3">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-amber-500" />
-                <h4 className="font-black text-sm">Scaling Beyond One School?</h4>
+                <h4 className="font-black text-foreground text-sm">Scaling Beyond One School?</h4>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
-              <Button variant="outline" className="w-full bg-transparent border-white/20 text-white hover:bg-white hover:text-black font-black uppercase tracking-widest text-[10px] py-4 rounded-xl">
-                Talk to Education Sales
+              <p className="text-xs text-muted-foreground leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
+              <Button variant="outline" className="w-full bg-transparent border-white/20 text-foreground hover:bg-white hover:text-foreground font-black uppercase tracking-widest text-[10px] py-4 rounded-xl">
+                Contact Us
               </Button>
             </div>
           </div>
