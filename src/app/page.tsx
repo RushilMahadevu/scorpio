@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, Waypoints, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, Cloud, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, Activity, ShieldCheck, FileDown, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe
+  Brain, Calculator, KeyRound, Waypoints, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, Cloud, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, Activity, ShieldCheck, FileDown, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -478,17 +478,21 @@ export default function Home() {
 
           {/* Atmospheric background — floating equations, does not affect layout */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
-            {/* Central glow */}
+            {/* Primary central glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/10 blur-[120px] rounded-full" />
+            {/* Secondary offset glows for depth */}
+            <div className="absolute top-[20%] left-[10%] w-[300px] h-[200px] bg-primary/5 blur-[90px] rounded-full" />
+            <div className="absolute bottom-[15%] right-[8%] w-[350px] h-[220px] bg-primary/5 blur-[100px] rounded-full" />
 
+            {/* Floating equations — primary layer */}
             {[
-              { eq: "F = ma",       x: "8%",  y: "20%", delay: 0,   dur: 8  },
-              { eq: "E = mc²",      x: "80%", y: "15%", delay: 1.5, dur: 10 },
-              { eq: "∇ × B = μ₀J", x: "12%", y: "72%", delay: 0.8, dur: 9  },
-              { eq: "ΔS ≥ 0",      x: "75%", y: "68%", delay: 2,   dur: 11 },
-              { eq: "p = ℏk",      x: "50%", y: "82%", delay: 1.2, dur: 7  },
-              { eq: "∮ E·dA = Q/ε₀", x: "88%", y: "44%", delay: 3, dur: 12 },
-              { eq: "λ = h/mv",    x: "3%",  y: "46%", delay: 2.5, dur: 9  },
+              { eq: "F = ma",         x: "8%",  y: "20%", delay: 0,   dur: 8  },
+              { eq: "E = mc²",        x: "80%", y: "15%", delay: 1.5, dur: 10 },
+              { eq: "∇ × B = μ₀J",   x: "12%", y: "72%", delay: 0.8, dur: 9  },
+              { eq: "ΔS ≥ 0",         x: "75%", y: "68%", delay: 2,   dur: 11 },
+              { eq: "p = ℏk",         x: "50%", y: "82%", delay: 1.2, dur: 7  },
+              { eq: "∮ E·dA = Q/ε₀",  x: "88%", y: "44%", delay: 3,  dur: 12 },
+              { eq: "λ = h/mv",       x: "3%",  y: "46%", delay: 2.5, dur: 9  },
             ].map((p, i) => (
               <motion.span
                 key={i}
@@ -502,6 +506,32 @@ export default function Home() {
                   repeat: Infinity,
                   ease: "easeInOut",
                   times: [0, 0.2, 0.8, 1]
+                }}
+              >
+                {p.eq}
+              </motion.span>
+            ))}
+
+            {/* Floating equations — secondary faint layer (staggered offsets) */}
+            {[
+              { eq: "∇²φ = ρ/ε₀",    x: "62%", y: "8%",  delay: 4,   dur: 13 },
+              { eq: "v = fλ",          x: "27%", y: "11%", delay: 5.5, dur: 8  },
+              { eq: "τ = Iα",          x: "91%", y: "78%", delay: 2.2, dur: 10 },
+              { eq: "KE = ½mv²",       x: "38%", y: "90%", delay: 6,   dur: 11 },
+              { eq: "L = Iω",          x: "1%",  y: "88%", delay: 3.8, dur: 9  },
+            ].map((p, i) => (
+              <motion.span
+                key={`s${i}`}
+                className="absolute text-xs font-medium text-primary/15 dark:text-primary/20 whitespace-nowrap"
+                style={{ left: p.x, top: p.y, fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: [0, 0.4, 0.4, 0], y: [6, -20] }}
+                transition={{
+                  duration: p.dur,
+                  delay: p.delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.25, 0.75, 1]
                 }}
               >
                 {p.eq}
@@ -555,12 +585,12 @@ export default function Home() {
             </motion.h1>
 
             <motion.p
-              className="text-2xl md:text-3xl font-medium mb-8 max-w-2xl mx-auto text-foreground/90 leading-tight"
+              className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-foreground/80 italic leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.8 }}
             >
-              The World&apos;s <span className="text-primary">Only AI Physics LMS.</span>
+              The World&apos;s Only AI Physics LMS
             </motion.p>
 
             <motion.p
@@ -569,8 +599,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
               whileHover={{ 
-                textShadow: "0 0 20px rgba(255,255,255,0.1), 0 0 40px rgba(255,255,255,0.2)",
-                scale: 1.005,
+                textShadow: "0 0 20px rgba(var(--primary),0.2)",
                 transition: { duration: 0.3 }
               }}
             >
@@ -618,8 +647,8 @@ export default function Home() {
             >
               <Link href="/signup">
                 <Button size="lg" className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary),0.5)] transition-all cursor-pointer">
+                  <KeyRound className="h-4 w-4" />
                   Get Faculty Access
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <button
@@ -633,7 +662,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="pt-16 animate-bounce"
+              className=" animate-bounce"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.2, duration: 0.6 }}
@@ -657,19 +686,19 @@ export default function Home() {
         </section>
 
         {/* Container Scroll Section */}
-        <div id="mission-control" className="flex flex-col">
+        <div id="mission-control" className="flex flex-col pt-0 md:pt-10">
           <ContainerScroll
             titleComponent={
-              <div className="flex flex-col items-center justify-center mb-10">
+              <div className="flex flex-col items-center justify-center mb-0 md:mb-10">
                  <Link href="/signup" className="mb-4">
                     <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
                        <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
                        <span className="text-primary font-medium">Faculty Command Center</span>
                     </Badge>
                   </Link>
-                <h1 className="text-4xl md:text-6xl font-black text-center text-foreground pb-4 leading-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-center text-foreground pb-4 leading-tight">
                   Your Faculty <br />
-                  <span className="text-5xl md:text-[6rem] font-bold mt-1 leading-none text-foreground">
+                  <span className="text-5xl md:text-7xl lg:text-[6rem] font-bold mt-1 leading-none text-foreground">
                     Mission Control.
                   </span>
                 </h1>
@@ -690,6 +719,26 @@ export default function Home() {
         {/* Challenge Section */}
         <section id="challenge" className="container mx-auto px-6 py-32 relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/2 rounded-full blur-[120px] pointer-events-none -z-10" />
+          {/* Faint background equations — atmosphere only */}
+          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
+            {[
+              { eq: "ΔE · Δt ≥ ℏ/2", x: "2%",  y: "12%", delay: 1,   dur: 14 },
+              { eq: "F = -kx",         x: "85%", y: "20%", delay: 3,   dur: 11 },
+              { eq: "∇ · E = ρ/ε₀",   x: "78%", y: "75%", delay: 0.5, dur: 13 },
+              { eq: "pV = nRT",         x: "5%",  y: "80%", delay: 2.5, dur: 10 },
+            ].map((p, i) => (
+              <motion.span
+                key={i}
+                className="absolute text-xs text-primary/10 dark:text-primary/15 whitespace-nowrap"
+                style={{ left: p.x, top: p.y, fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.5, 0.5, 0], y: [0, -18] }}
+                transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut", times: [0, 0.2, 0.8, 1] }}
+              >
+                {p.eq}
+              </motion.span>
+            ))}
+          </div>
           
           <motion.div
             className="max-w-5xl mx-auto"
@@ -1132,6 +1181,26 @@ export default function Home() {
         {/* Institutional Efficacy Section */}
         <section id="efficacy" className="container mx-auto px-6 py-32 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+          {/* Ambient equations */}
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
+            {[
+              { eq: "S = k ln Ω",        x: "1%",  y: "18%", delay: 0,   dur: 12 },
+              { eq: "H = U + pV",         x: "88%", y: "10%", delay: 2,   dur: 10 },
+              { eq: "c = 1/√(μ₀ε₀)",     x: "82%", y: "82%", delay: 1.5, dur: 13 },
+              { eq: "σ = F/A",            x: "4%",  y: "72%", delay: 3.5, dur: 9  },
+            ].map((p, i) => (
+              <motion.span
+                key={i}
+                className="absolute text-xs text-primary/10 dark:text-primary/15 whitespace-nowrap"
+                style={{ left: p.x, top: p.y, fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.45, 0.45, 0], y: [0, -16] }}
+                transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut", times: [0, 0.2, 0.8, 1] }}
+              >
+                {p.eq}
+              </motion.span>
+            ))}
+          </div>
           
           <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
             <motion.div 
