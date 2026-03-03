@@ -87,7 +87,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       text: result.text,
-      remainingRequests: maxRequests - usage.count
+      remainingRequests: maxRequests - usage.count,
+      suggestedPrompts: userRole === 'teacher' 
+        ? (chatbotConfig as any).teacherSuggestedPrompts 
+        : (chatbotConfig as any).studentSuggestedPrompts
     });
 
   } catch (error: any) {
