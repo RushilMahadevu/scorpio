@@ -95,7 +95,7 @@ export default function TermsPage() {
         </div>
         <div className="mt-10 pt-8 border-t border-primary/10 text-center">
             <p className="text-xs text-muted-foreground italic">
-               Questions about our terms? Contact us <a href="mailto:rushil.mahadevu@gmail.com" className="text-primary hover:underline">here</a>
+               Questions about our terms? Contact us <a href="mailto:rushil@scorpioedu.org" className="text-primary hover:underline">here</a>
             </p>
         </div>
       </section>
@@ -150,7 +150,7 @@ export default function TermsPage() {
          <Card className="bg-card/50">
             <CardContent className="pt-6">
                <p className="text-muted-foreground leading-relaxed">
-                  If you have any questions about these Terms, please contact us at <a href="mailto:rushil.mahadevu@gmail.com" className="text-primary hover:underline">rushil.mahadevu@gmail.com</a>.
+                  If you have any questions about these Terms, please contact us at <a href="mailto:rushil@scorpioedu.org" className="text-primary hover:underline">rushil@scorpioedu.org</a>.
                </p>
             </CardContent>
          </Card>

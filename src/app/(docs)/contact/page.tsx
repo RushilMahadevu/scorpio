@@ -16,9 +16,9 @@ export default function ContactPage() {
       icon: Mail,
       title: "Technical Support",
       description: "For platform bugs, account issues, or deployment questions.",
-      value: "rushil.mahadevu@gmail.com",
+      value: "rushil@scorpioedu.org",
       action: "Send Email",
-      href: "mailto:rushil.mahadevu@gmail.com"
+      href: "mailto:rushil@scorpioedu.org"
     },
     {
       icon: Github,

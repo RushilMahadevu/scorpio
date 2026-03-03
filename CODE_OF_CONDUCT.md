@@ -35,5 +35,5 @@ Project maintainers are responsible for clarifying the standards of acceptable b
 This Code of Conduct applies both within project spaces and in public spaces when an individual is representing the project or its community.
 
 ## Enforcement
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at **rushil.mahadevu@gmail.com**. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at **rushil@scorpioedu.org**. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances.
 

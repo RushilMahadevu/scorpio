@@ -7,7 +7,7 @@ We currently support the following versions:
 | **0.1.0** | ✅ Supported |
 
 ## Reporting a Vulnerability
-We take security seriously! If you discover a security vulnerability within Scorpio, please send an e-mail to **rushil.mahadevu@gmail.com**. All security vulnerabilities will be promptly addressed.
+We take security seriously! If you discover a security vulnerability within Scorpio, please send an e-mail to **rushil@scorpioedu.org**. All security vulnerabilities will be promptly addressed.
 
 Please include:
 *   Description of the vulnerability.

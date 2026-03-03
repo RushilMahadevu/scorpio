@@ -89,10 +89,10 @@ export default function PrivacyPage() {
             Under various global regulations, you have the right to access, export, or request the deletion of your personal information. Users can manage their profiles directly or contact school administrators for platform-wide data audits.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <a href="mailto:rushil.mahadevu@gmail.com" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold transition hover:opacity-90">
+            <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold transition hover:opacity-90">
                Request Data Export
             </a>
-            <a href="mailto:rushil.mahadevu@gmail.com" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-border bg-background hover:bg-muted transition font-semibold">
+            <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-border bg-background hover:bg-muted transition font-semibold">
                Privacy Inquiry
             </a>
           </div>
