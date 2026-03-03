@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, Cloud, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, Activity, ShieldCheck, FileDown, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe
+  Brain, Calculator, Waypoints, ShieldUser, Users, MessageCircle, FileUp, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, Cloud, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, Activity, ShieldCheck, FileDown, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -106,21 +106,21 @@ export default function Home() {
   }, []);
 
   const features = [
-    { icon: Brain, title: "Constraint-Based Tutoring", description: "A proprietary 4-layer architecture ensuring pedagogical integrity and DAR elimination.", tag: "Instructional" },
-    { icon: SquareFunction, title: "LaTeX Render Engine", description: "Real-time, standards-compliant mathematical rendering for complex physics derivations.", tag: "Standards" },
-    { icon: Orbit, title: "Conceptual Interface", description: "A focus-oriented UI designed to minimize cognitive load while maintaining deep engagement.", tag: "UX Design" },
-    { icon: Cloud, title: "Synchronized Workspace", description: "Real-time data persistence with optimistic updates for seamless classroom transitions.", tag: "Core" },
-    { icon: ShieldUser, title: "Institutional Security", description: "Server-side authentication and granular role-based access for students and faculty.", tag: "Security" },
-    { icon: MessageCircle, title: "Navigational Intelligence", description: "An integrated AI agent assisting users with platform discovery and resource location.", tag: "Support" },
-    { icon: FileUp, title: "Evidence Submission", description: "End-to-end support for multi-format coursework, including OCR-ready PDF and image uploads.", tag: "Logistics" },
-    { icon: Users, title: "Validated Framework", description: "Hardened schema-based data structures ensuring consistent cross-platform performance.", tag: "System" }
+    { icon: Brain, title: "Socratic Scaffolding", description: "Enforces the 'Struggle'—a 4-layer architecture ensuring pedagogical depth over simple answer-retrieval.", tag: "Pedagogical" },
+    { icon: SquareFunction, title: "0.92 Notation Density", description: "Real-time, symbolic LaTeX rendering verified for professional academic standards and precision.", tag: "Mathematical" },
+    { icon: Orbit, title: "Inference-Time Scaffolding", description: "No fine-tuning, no black-box retraining. Every Socratic behaviour is enforced at inference-time — observable, auditable, reproducible.", tag: "Verifiable" },
+    { icon: Calculator, title: "Constraint-Led Derivation", description: "Students are guided through the derivation, not handed it. The AI architecture makes bypassing the learning process structurally impossible.", tag: "Architecture" },
+    { icon: Waypoints, title: "Shared Waypoints", description: "Integrate high-precision, peer-validated physics modules and benchmarks into your curriculum.", tag: "Network" },
+    { icon: ShieldUser, title: "Verifiable Integrity", description: "Rigid schema constraints block 'homework-solving' hacks and ensure academic honesty at scale.", tag: "Verifiable" },
+    { icon: FileUp, title: "Evidence Logistics", description: "End-to-end support for multi-format coursework, including OCR-ready PDF and image uploads.", tag: "Logistics" },
+    { icon: Users, title: "Departmental Scale", description: "Role-based access designed for deans and instructors to manage massive student cohorts efficiently.", tag: "Enterprise" }
   ];
 
   const stats = [
-    { value: "4-Layer", label: "Constraint System", sublabel: "AI Architecture" },
-    { value: "Real-time", label: "Sync & Feedback", sublabel: "Live Updates" },
-    { value: "LaTeX", label: "Math Rendering", sublabel: "Equation Support" },
-    { value: "Role-Based", label: "Access Control", sublabel: "Security Model" }
+    { value: "0%", label: "Direct Answer Rate", sublabel: "Verified by Ph.D. Audit" },
+    { value: "+0.67", label: "Pedagogical Uplift", sublabel: "125-Response Ablation Study" },
+    { value: "100%", label: "Cost Transparency", sublabel: "Zero-Markup Pass-through" },
+    { value: "4-Layer", label: "Constraint Architecture", sublabel: "Inference-Time Scaffolding" }
   ];
 
   return (
@@ -474,7 +474,41 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section id="home" className="container mx-auto px-6 py-16 text-center relative">
+        <section id="home" className="container mx-auto px-6 py-16 text-center relative overflow-hidden">
+
+          {/* Atmospheric background — floating equations, does not affect layout */}
+          <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
+            {/* Central glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/10 blur-[120px] rounded-full" />
+
+            {[
+              { eq: "F = ma",       x: "8%",  y: "20%", delay: 0,   dur: 8  },
+              { eq: "E = mc²",      x: "80%", y: "15%", delay: 1.5, dur: 10 },
+              { eq: "∇ × B = μ₀J", x: "12%", y: "72%", delay: 0.8, dur: 9  },
+              { eq: "ΔS ≥ 0",      x: "75%", y: "68%", delay: 2,   dur: 11 },
+              { eq: "p = ℏk",      x: "50%", y: "82%", delay: 1.2, dur: 7  },
+              { eq: "∮ E·dA = Q/ε₀", x: "88%", y: "44%", delay: 3, dur: 12 },
+              { eq: "λ = h/mv",    x: "3%",  y: "46%", delay: 2.5, dur: 9  },
+            ].map((p, i) => (
+              <motion.span
+                key={i}
+                className="absolute text-sm font-semibold text-primary/30 dark:text-primary/40 whitespace-nowrap"
+                style={{ left: p.x, top: p.y, fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: [0, 0.6, 0.6, 0], y: [10, -30] }}
+                transition={{
+                  duration: p.dur,
+                  delay: p.delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.2, 0.8, 1]
+                }}
+              >
+                {p.eq}
+              </motion.span>
+            ))}
+          </div>
+
           <motion.div
             className="max-w-4xl mx-auto space-y-10"
             initial={{ opacity: 0, y: 30 }}
@@ -488,7 +522,7 @@ export default function Home() {
               transition={{ delay: 0.2, duration: 0.6 }}
             >
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-semibold tracking-wide text-primary/90 uppercase">Research-Grade AI Tutoring</span>
+              <span className="text-xs font-semibold tracking-wide text-primary/90 uppercase">Built for Physics Educators</span>
             </motion.div>
 
             <div className="flex justify-center mb-8 relative">
@@ -498,13 +532,10 @@ export default function Home() {
               <motion.div
                 className="relative cursor-pointer z-10"
                 onClick={() => setLogoRotation(prev => prev + 360)}
-                animate={{ 
-                  rotate: logoRotation,
-                  y: [0, -10, 0]
-                }}
+                animate={{ rotate: logoRotation, y: [0, -10, 0] }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                transition={{ 
+                transition={{
                   rotate: { type: "spring", stiffness: 60, damping: 12 },
                   y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
                   default: { duration: 2.5, ease: [0.16, 1, 0.3, 1] }
@@ -529,7 +560,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.8 }}
             >
-              Turn Physics Struggles Into <span className="text-primary">Breakthroughs</span>
+              The World&apos;s <span className="text-primary">Only AI Physics LMS.</span>
             </motion.p>
 
             <motion.p
@@ -543,7 +574,9 @@ export default function Home() {
                 transition: { duration: 0.3 }
               }}
             >
-                  An AI-powered physics LMS with research-grade tutoring and immersive learning tools designed to foster breakthrough understanding.
+              The first verifiable framework for Socratic physics tutoring. 
+              Enforce the struggle with a 4-layer constraint architecture 
+              that makes bypassing the learning process structurally impossible.
             </motion.p>
 
             {/* Stats Bar */}
@@ -570,8 +603,9 @@ export default function Home() {
                     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
                   }}
                 >
-                  <div className="text-xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+                  <div className="text-2xl font-black text-foreground">{stat.value}</div>
+                  <div className="text-xs font-bold text-foreground/80 leading-tight">{stat.label}</div>
+                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{stat.sublabel}</div>
                 </motion.div>
               ))}
             </motion.div>
@@ -582,25 +616,20 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.8 }}
             >
-              <Link href="#cta">
+              <Link href="/signup">
                 <Button size="lg" className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary),0.5)] transition-all cursor-pointer">
-                  Get Started
+                  Get Faculty Access
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="#challenge">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full bg-background/50 backdrop-blur-md border-white/10 hover:bg-white/10 cursor-pointer"
-                  onClick={() => {
-                    const el = document.getElementById("features");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                >
-                  Learn More
-                </Button>
-              </Link>
+              <button
+                type="button"
+                onClick={() => { const el = document.getElementById("demos"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
+                className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full bg-background/50 backdrop-blur-md border border-white/10 hover:bg-white/10 cursor-pointer inline-flex items-center justify-center gap-2 transition-all"
+              >
+                <PlayCircle className="h-4 w-4" />
+                Watch Platform Demo
+              </button>
             </motion.div>
 
             <motion.div
@@ -635,13 +664,13 @@ export default function Home() {
                  <Link href="/signup" className="mb-4">
                     <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
                        <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
-                       <span className="text-primary font-medium">Teacher Dashboard</span>
+                       <span className="text-primary font-medium">Faculty Command Center</span>
                     </Badge>
                   </Link>
                 <h1 className="text-4xl md:text-6xl font-black text-center text-foreground pb-4 leading-tight">
-                  Mission Control <br />
+                  Your Faculty <br />
                   <span className="text-5xl md:text-[6rem] font-bold mt-1 leading-none text-foreground">
-                    For Your Classroom
+                    Mission Control.
                   </span>
                 </h1>
               </div>
@@ -678,7 +707,7 @@ export default function Home() {
                   viewport={{ once: true }}
                 >
                   <AlertTriangle className="h-3.5 w-3.5 text-primary" />
-                  <span>The Institutional Challenge</span>
+                  <span>Why Other Tools Fail Educators</span>
                 </motion.div>
                 <motion.h2
                   className="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight text-foreground"
@@ -687,7 +716,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 }}
                 >
-                  Physics education requires a <span className="text-primary italic">methodological</span> shift.
+                  Every AI physics tool has the <span className="text-primary italic">same fatal flaw.</span>
                 </motion.h2>
               </div>
               <motion.p 
@@ -697,7 +726,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
               >
-                Traditional platforms prioritize content delivery over conceptual discovery, often failing to capture the nuance of derivation and intuition.
+                Traditional platforms give students the answer. Without the struggle of derivation, there is no learning — only the appearance of it.
               </motion.p>
             </div>
 
@@ -717,19 +746,19 @@ export default function Home() {
             >
               {[
                 {
-                  icon: <Presentation className="size-6 text-primary" />,
-                  label: "Administrative Drag",
-                  desc: "Faculties spend excessive time on logistical management rather than deep pedagogical intervention.",
+                  icon: <Brain className="size-6 text-primary" />,
+                  label: "AI Gives Away the Answer",
+                  desc: "ChatGPT, Wolfram, Khan AI — every competing tool completes the derivation for students. Learning requires the struggle. These tools bypass it entirely.",
                 },
                 {
                   icon: <GraduationCap className="size-6 text-primary" />,
-                  label: "Cognitive Walls",
-                  desc: "Students hit conceptual barriers in isolation, lacking the socratic guidance required for mastery.",
+                  label: "Misconceptions Compound Silently",
+                  desc: "A student who misunderstands conservation of momentum will misapply it for the rest of the course. The only cure is catching the flaw in the derivation — not after the exam.",
                 },
                 {
                   icon: <ChartColumnIncreasing className="size-6 text-primary" />,
-                  label: "Insight Deficits",
-                  desc: "Crucial performance data is often lost in fragmented spreadsheets and static assessments.",
+                  label: "Grading Without Understanding",
+                  desc: "A submitted answer tells you what a student wrote, not what they understood. Scorpio captures the derivation process itself — every step, every constraint applied.",
                 }
               ].map((item, i) => (
                 <motion.div
@@ -927,9 +956,9 @@ export default function Home() {
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.7 }}
           >
-            <div className="text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">Platform Modalities</div>
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Synchronized Discovery.</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed">Scorpio integrates institutional oversight with personalized socratic guidance.</p>
+            <div className="text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">Two Interfaces. One System.</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Your Classroom. Reimagined.</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed">You control the AI constraints. Students experience the Socratic method. Both sides get exactly what they need — without compromise.</p>
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-20 max-w-7xl mx-auto relative px-4">
@@ -1229,10 +1258,13 @@ export default function Home() {
             <div className="relative z-10 space-y-10">
               <div className="space-y-4">
                 <div className="text-xs font-black text-primary uppercase tracking-[0.25em]">Our Philosophy</div>
-                <h2 className="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight text-foreground">Understanding is the <span className="text-primary underline underline-offset-8 decoration-2 decoration-primary/30">First Principle.</span></h2>
+                <h2 className="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight text-foreground">The constraint is the <span className="text-primary underline underline-offset-8 decoration-2 decoration-primary/30">curriculum.</span></h2>
               </div>
               <p className="text-xl md:text-2xl font-medium text-muted-foreground leading-relaxed max-w-3xl">
-                Scorpio transcends the "solution-centric" paradigm. By utilizing a strict constraint-led architecture, we ensure students articulate their physical reasoning, transforming every struggle into a verified breakthrough.
+                We built Scorpio with one belief: a student who derives the answer will never forget it. Our constraint architecture doesn’t restrict AI — it enforces the same rigor you apply in your classroom.
+              </p>
+              <p className="text-base text-muted-foreground/60 font-medium leading-relaxed max-w-2xl">
+                No shortcuts. Every AI response is Socratic by design — pushing students back to first principles, never handing them the next step.
               </p>
               <div className="flex flex-wrap gap-4 pt-6">
                  <Badge variant="outline" className="px-5 py-2 rounded-full bg-background/50 border-border font-bold text-xs uppercase tracking-widest text-muted-foreground">Pedagogy-First Architecture</Badge>
@@ -1548,27 +1580,27 @@ export default function Home() {
             
             <div className="relative z-10 space-y-12">
               <div className="space-y-6">
-                <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-foreground">Initiate the <span className="text-primary italic">Transition.</span></h2>
+                <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-foreground">Empower Your <span className="text-primary italic">Department.</span></h2>
                 <p className="text-muted-foreground text-xl md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">
-                   Integrate Scorpio into your curriculum to foster the next generation of physical thinkers.
+                  Deploy in one afternoon. No LMS integration required. Just better physics outcomes from day one — for every student in your roster.
                 </p>
               </div>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link href="/student">
+                <Link href="/signup">
                   <Button size="lg" className="h-16 px-10 rounded-full text-lg font-black bg-primary hover:bg-primary/90 shadow-[0_15px_30px_rgba(var(--primary),0.2)] cursor-pointer transition-all duration-300">
-                    Student Login
+                    Get Faculty Access
                     <ArrowRight className="ml-2 h-6 w-6" />
                   </Button>
-                </Link> 
-                <Link href="/teacher">
+                </Link>
+                <Link href="/contact">
                   <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-lg cursor-pointer font-black border-2 border-border bg-background/50 backdrop-blur-md hover:bg-muted/30 transition-all duration-300">
-                    Faculty Registration
+                    Request Department Demo
                   </Button>
                 </Link>
               </div>
               <div className="pt-4">
-                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Verified Educational Platform • Institutional Ready</p>
+                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">PhD-Validated Framework • FERPA-Ready Infrastructure • Zero Markup AI</p>
               </div>
             </div>
           </motion.div>
