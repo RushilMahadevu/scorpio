@@ -24,30 +24,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent 
-} from "@/components/ui/chart";
 import {
   Tooltip as UITooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  ResponsiveContainer, 
-  Tooltip, 
-  AreaChart, 
-  Area, 
-  LineChart, 
-  Line,
-  Cell
-} from "recharts";
 import { Lock } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
@@ -83,6 +64,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFree, setIsFree] = useState(true);
+  const [hoveredTrendIdx, setHoveredTrendIdx] = useState<number | null>(null);
 
   useEffect(() => {
     async function checkPlan() {
@@ -245,25 +227,6 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
     document.body.removeChild(link);
   };
 
-  const chartConfig = {
-    totalCost: {
-      label: "Cost (USD)",
-      color: "#a855f7", // purple-500
-    },
-    queries: {
-      label: "Interactions",
-      color: "#3b82f6", // blue-500
-    }
-  };
-
-  const typeConfig: any = {};
-  typeDistribution.forEach(item => {
-    typeConfig[item.name] = {
-      label: item.name.charAt(0).toUpperCase() + item.name.slice(1),
-      color: item.color
-    };
-  });
-
   if (loading) {
     return (
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -331,8 +294,8 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-purple-400" />
+                <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                  <TrendingUp className="h-3.5 w-3.5 text-purple-400" />
                   Interactions & Cost Trend
                   <UITooltip>
                     <TooltipTrigger asChild>
@@ -342,9 +305,9 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                       <div className="bg-purple-600 p-4 text-white">
                         <div className="flex items-center gap-2 mb-1">
                           <TrendingUp className="h-4 w-4" />
-                          <p className="font-black text-xs uppercase tracking-widest">Growth Analytics</p>
+                          <p className="font-black text-[10px] uppercase tracking-widest">Growth Analytics</p>
                         </div>
-                        <p className="text-[11px] leading-relaxed opacity-90 font-medium font-sans">
+                        <p className="text-[10px] leading-relaxed opacity-90 font-medium font-sans">
                           Track how your department's AI usage correlates with actual financial investment over time.
                         </p>
                       </div>
@@ -367,67 +330,181 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                   AI engagement grouped by calendar date.
                 </CardDescription>
               </div>
-              <Badge variant="outline" className="text-[9px] px-2 py-0 border-purple-500/30 text-purple-400 bg-purple-500/5">
+              <Badge variant="outline" className="text-[9px] px-2 py-0 border-purple-500/30 text-purple-400 bg-purple-500/5 uppercase font-bold tracking-tight">
                 Live
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-4 pb-12">
-            {dailyData.length > 0 ? (
-              <div className="h-[300px] w-full mt-4">
-                <ChartContainer config={chartConfig}>
-                  <AreaChart 
-                    data={dailyData} 
-                    margin={{ top: 10, right: 30, left: 20, bottom: 400 }} // keep bottom as 75 for x-axis label padding
+          <CardContent className="pt-4 pb-6">
+            {dailyData.length > 0 ? (() => {
+              const n = dailyData.length;
+              const W = 1000, H = 260;
+              const PAD = { top: 36, right: 16, bottom: 44, left: 44 };
+              const cW = W - PAD.left - PAD.right;
+              const cH = H - PAD.top - PAD.bottom;
+
+              const maxQ = Math.max(...dailyData.map(d => d.queries), 1);
+              const maxC = Math.max(...dailyData.map(d => d.totalCost), 0.000001);
+
+              const xAt = (i: number) => PAD.left + (n > 1 ? (i / (n - 1)) * cW : cW / 2);
+              const yQ  = (v: number) => PAD.top + (1 - v / maxQ) * cH;
+              const yC  = (v: number) => PAD.top + (1 - v / maxC) * cH;
+
+              const qPts = dailyData.map((d, i) => `${xAt(i).toFixed(1)},${yQ(d.queries).toFixed(1)}`);
+              const cPts = dailyData.map((d, i) => `${xAt(i).toFixed(1)},${yC(d.totalCost).toFixed(1)}`);
+
+              const joinL = (pts: string[]) => `M ${pts.join(' L ')}`;
+              const areaD = (pts: string[], bot: number) =>
+                n === 1
+                  ? `M ${xAt(0).toFixed(1)},${bot.toFixed(1)} L ${xAt(0).toFixed(1)},${bot.toFixed(1)}`
+                  : `${joinL(pts)} L ${xAt(n-1).toFixed(1)},${bot.toFixed(1)} L ${xAt(0).toFixed(1)},${bot.toFixed(1)} Z`;
+
+              const botY = PAD.top + cH;
+              const yTicks = [0, 0.25, 0.5, 0.75, 1].map(t => ({
+                v: Math.round(maxQ * t),
+                y: yQ(maxQ * t),
+              }));
+              const hi = hoveredTrendIdx;
+              const hiDay = hi !== null ? dailyData[hi] : null;
+
+              return (
+                <div className="space-y-3">
+                  {/* Compact stat row */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-blue-500/60">Peak</span>
+                      <span className="text-xs font-black text-blue-500 tabular-nums">{Math.max(...dailyData.map(d => d.queries))}</span>
+                      <span className="text-[9px] text-muted-foreground">interactions</span>
+                    </div>
+                    <div className="w-px h-3 bg-border/50" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-purple-500/60">Spend</span>
+                      <span className="text-xs font-black text-purple-500 tabular-nums">${dailyData.reduce((s, d) => s + d.totalCost, 0).toFixed(4)}</span>
+                      <span className="text-[9px] text-muted-foreground">USD</span>
+                    </div>
+                  </div>
+
+                  {/* SVG line chart */}
+                  <svg
+                    viewBox={`0 0 ${W} ${H}`}
+                    className="w-full block"
+                    style={{ overflow: 'visible' }}
+                    onMouseLeave={() => setHoveredTrendIdx(null)}
                   >
                     <defs>
-                      <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                      <linearGradient id="gQ" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.18" />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.01" />
                       </linearGradient>
-                      <linearGradient id="colorQueries" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a855f7" stopOpacity="0.12" />
+                        <stop offset="100%" stopColor="#a855f7" stopOpacity="0.01" />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted/30" stroke="#888888" />
-                    <XAxis 
-                      dataKey="date" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: "#888888", fontSize: 10 }}
-                      minTickGap={20}
-                      padding={{ left: 10, right: 10 }}
-                    />
-                    <YAxis 
-                      hide 
-                    />
-                    <ChartTooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="totalCost" 
-                      stroke="#a855f7" 
-                      strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorCost)" 
-                      name="totalCost"
-                      animationDuration={1000}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="queries" 
-                      stroke="#3b82f6" 
-                      strokeWidth={1}
-                      fillOpacity={1} 
-                      fill="url(#colorQueries)" 
-                      name="queries"
-                      animationDuration={1500}
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </div>
-            ) : (
-              <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
+
+                    {/* Gridlines */}
+                    {yTicks.map((tk, i) => (
+                      <line key={i} x1={PAD.left} y1={tk.y} x2={PAD.left + cW} y2={tk.y}
+                        stroke="currentColor" strokeOpacity="0.06" strokeWidth="1"
+                        className="text-foreground" />
+                    ))}
+
+                    {/* Left Y-axis labels */}
+                    {yTicks.map((tk, i) => (
+                      <text key={i} x={PAD.left - 8} y={tk.y + 4}
+                        textAnchor="end" fontSize="12" fontWeight="500"
+                        fill="currentColor" fillOpacity="0.25" className="text-foreground">
+                        {tk.v}
+                      </text>
+                    ))}
+
+                    {/* Area fills */}
+                    <path d={areaD(cPts, botY)} fill="url(#gC)" />
+                    <path d={areaD(qPts, botY)} fill="url(#gQ)" />
+
+                    {/* Cost line — dashed purple */}
+                    <path d={joinL(cPts)} fill="none" stroke="#a855f7" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round" strokeDasharray="7 4" />
+
+                    {/* Interactions line — solid blue, dominant */}
+                    <path d={joinL(qPts)} fill="none" stroke="#3b82f6" strokeWidth="4"
+                      strokeLinecap="round" strokeLinejoin="round" />
+
+                    {/* Hover vertical rule */}
+                    {hi !== null && (
+                      <line x1={xAt(hi)} y1={PAD.top} x2={xAt(hi)} y2={botY}
+                        stroke="currentColor" strokeOpacity="0.1" strokeWidth="1"
+                        className="text-foreground" />
+                    )}
+
+                    {/* Data dots */}
+                    {dailyData.map((d, i) => (
+                      <g key={i}>
+                        <circle cx={xAt(i)} cy={yQ(d.queries)} r={hi === i ? 7 : 4}
+                          fill="#3b82f6" stroke="white" strokeWidth="2" />
+                        <circle cx={xAt(i)} cy={yC(d.totalCost)} r={hi === i ? 5 : 3}
+                          fill="#a855f7" stroke="white" strokeWidth="1.5" />
+                      </g>
+                    ))}
+
+                    {/* Hover tooltip (SVG) */}
+                    {hi !== null && hiDay && (() => {
+                      const tx = xAt(hi);
+                      const TW = 160, TH = 64;
+                      const TX = Math.min(Math.max(tx - TW / 2, PAD.left), PAD.left + cW - TW);
+                      const TY = PAD.top - TH - 8;
+                      return (
+                        <g>
+                          <rect x={TX} y={TY} width={TW} height={TH} rx="8" ry="8" fill="#18181b" opacity="0.95" />
+                          <text x={TX + 12} y={TY + 16} fontSize="12" fontWeight="600" fill="white" fillOpacity="0.4">{hiDay.date}</text>
+                          <text x={TX + 12} y={TY + 36} fontSize="15" fontWeight="800" fill="#60a5fa">{hiDay.queries} interactions</text>
+                          <text x={TX + 12} y={TY + 52} fontSize="13" fontWeight="600" fill="#c084fc">${hiDay.totalCost.toFixed(4)} USD</text>
+                        </g>
+                      );
+                    })()}
+
+                    {/* Invisible hit-area columns */}
+                    {dailyData.map((d, i) => {
+                      const colW = n > 1 ? cW / (n - 1) : cW;
+                      return (
+                        <rect key={i}
+                          x={xAt(i) - colW / 2} y={PAD.top}
+                          width={colW} height={cH}
+                          fill="transparent"
+                          onMouseEnter={() => setHoveredTrendIdx(i)}
+                        />
+                      );
+                    })}
+
+                    {/* X-axis date labels */}
+                    {dailyData.map((d, i) => {
+                      const step = Math.max(1, Math.ceil(n / 10));
+                      if (i % step !== 0 && i !== n - 1) return null;
+                      return (
+                        <text key={i} x={xAt(i)} y={botY + 28}
+                          textAnchor="middle" fontSize="11" fontWeight="500" fill="currentColor" fillOpacity="0.28"
+                          className="text-foreground">
+                          {d.date}
+                        </text>
+                      );
+                    })}
+                  </svg>
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 px-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <svg width="16" height="3" viewBox="0 0 16 3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" /></svg>
+                      <span className="text-[10px] text-muted-foreground/60 font-medium">Interactions</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <svg width="16" height="3" viewBox="0 0 16 3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 2.5" /></svg>
+                      <span className="text-[10px] text-muted-foreground/60 font-medium">Cost (independent scale)</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
                 No recent usage history recorded.
               </div>
             )}
@@ -437,8 +514,8 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader className="pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Component className="h-4 w-4 text-emerald-400" />
+              <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                <Component className="h-3.5 w-3.5 text-emerald-400" />
                 Interactions by Type
                 <UITooltip>
                   <TooltipTrigger asChild>
@@ -479,63 +556,42 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
             </div>
           </CardHeader>
           <CardContent className="pt-4">
-            {typeDistribution.length > 0 ? (
-              <div className="space-y-6">
-                <div className="h-[300px] w-full">
-                  <ChartContainer config={typeConfig}>
-                    <BarChart 
-                      data={typeDistribution} 
-                      layout="vertical"
-                      margin={{ left: 0, right: 40, top: 0, bottom: 350 }}
-                    >
-                      <XAxis type="number" hide />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        tickLine={false} 
-                        axisLine={false}
-                        hide
-                      />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar 
-                        dataKey="value" 
-                        radius={[ 16, 16, 16, 16]} 
-                        barSize={24}
-                      >
-                        {typeDistribution.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={entry.color} 
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ChartContainer>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {typeDistribution.map((item) => (
-                    <div 
-                      key={item.name} 
-                      className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/40 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="p-1 rounded-md bg-background border shadow-sm">
-                          {getTypeIcon(item.name)}
+            {typeDistribution.length > 0 ? (() => {
+              const total = typeDistribution.reduce((sum, d) => sum + d.value, 0);
+              return (
+                <div className="space-y-3">
+                  {typeDistribution.map((item, idx) => {
+                    const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
+                    return (
+                      <div key={item.name} className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1 rounded-md bg-muted/50 border border-border/40 shrink-0">
+                              {getTypeIcon(item.name)}
+                            </div>
+                            <span className="text-[11px] font-bold capitalize">{item.name}</span>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-[10px] text-muted-foreground font-mono tabular-nums">{item.value.toLocaleString()}</span>
+                            <span className="text-[10px] font-black tabular-nums font-mono w-9 text-right">{pct}%</span>
+                          </div>
                         </div>
-                        <span className="text-[11px] font-bold capitalize truncate">
-                          {item.name}
-                        </span>
+                        <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: item.color }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.7, ease: 'easeOut', delay: idx * 0.06 }}
+                          />
+                        </div>
                       </div>
-                      <div className="text-[10px] font-mono font-black bg-background border px-2 py-0.5 rounded-full">
-                        {item.value}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-              </div>
-            ) : (
-              <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
+              );
+            })() : (
+              <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
                 No data available.
               </div>
             )}
@@ -547,8 +603,8 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Activity className="h-4 w-4 text-purple-500" />
+              <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                <Activity className="h-3.5 w-3.5 text-purple-500" />
                 AI Interaction Detail
               </CardTitle>
               <CardDescription className="text-[10px]">
@@ -616,23 +672,23 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                           <TableCell>
                             <div className="flex items-center gap-3">
                               {getTypeIcon(entry.type)}
-                              <span className="text-xs font-semibold capitalize">
+                              <span className="text-[10px] font-semibold capitalize">
                                 {entry.type}
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-center text-[11px] font-mono text-muted-foreground whitespace-nowrap">
+                          <TableCell className="text-center text-[10px] font-mono text-muted-foreground whitespace-nowrap">
                             {entry.inputTokens.toLocaleString()} tx
                           </TableCell>
-                          <TableCell className="text-center text-[11px] font-mono text-muted-foreground whitespace-nowrap">
+                          <TableCell className="text-center text-[10px] font-mono text-muted-foreground whitespace-nowrap">
                             {entry.outputTokens.toLocaleString()} tx
                           </TableCell>
                           <TableCell>
-                            <span className="text-[11px] font-mono font-black text-emerald-500">
+                            <span className="text-[10px] font-mono font-black text-emerald-500">
                               ${(entry.costCents / 100).toFixed(6)}
                             </span>
                           </TableCell>
-                          <TableCell className="text-right text-[10px] font-medium text-muted-foreground">
+                          <TableCell className="text-right text-[9px] font-medium text-muted-foreground">
                             {entry.timestamp.toLocaleDateString()} at {entry.timestamp.toLocaleTimeString()}
                           </TableCell>
                         </TableRow>
@@ -663,23 +719,23 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                     <TableCell className="py-2">
                       <div className="flex items-center gap-2">
                         {getTypeIcon(entry.type)}
-                        <span className="text-[11px] font-medium capitalize">
+                        <span className="text-[10px] font-medium capitalize">
                           {entry.type}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="py-2">
-                      <div className="text-[10px] font-mono text-muted-foreground">
+                      <div className="text-[9px] font-mono text-muted-foreground">
                         {((entry.inputTokens + entry.outputTokens) / 1000).toFixed(1)}k
                       </div>
                     </TableCell>
                     <TableCell className="py-2">
-                      <span className="text-[10px] font-mono font-bold text-emerald-400">
+                      <span className="text-[9px] font-mono font-bold text-emerald-400">
                         ${(entry.costCents / 100).toFixed(6)}
                       </span>
                     </TableCell>
                     <TableCell className="text-right py-2">
-                      <span className="text-[10px] text-muted-foreground font-medium">
+                      <span className="text-[9px] text-muted-foreground font-medium">
                         {entry.timestamp.toLocaleDateString([], { month: 'short', day: 'numeric' })} at {entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </TableCell>
