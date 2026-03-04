@@ -135,7 +135,7 @@ export default function Home() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         onMouseLeave={() => setHoveredNav(null)}
       >
-        <div className="flex items-center justify-between px-6 py-3.5">
+        <div className="flex items-center justify-between px-6 py-3.5 max-w-[1400px] mx-auto w-full">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
             <Logo size={20} className="text-foreground" />
@@ -143,7 +143,7 @@ export default function Home() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
             <button
               onMouseEnter={() => setHoveredNav("home")}
               onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setHoveredNav(null); }}
