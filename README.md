@@ -6,7 +6,7 @@
 [![Firebase](https://img.shields.io/badge/Firebase-11-FFCA28?style=flat&logo=firebase)](https://firebase.google.com/)
 [![Gemini 2.5](https://img.shields.io/badge/Gemini_2.5_Flash-AI-8E75B2?style=flat&logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 
-![Scorpio Header](./public/og-image-dark.png)
+![Scorpio Header](./public/og-image-pink.png)
 
 > **Transforming Physics Education through AI-Driven Socratic Tutoring.**
 
