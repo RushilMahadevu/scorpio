@@ -90,6 +90,13 @@ export default function TutorPage() {
   const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const [isFreePlan, setIsFreePlan] = useState(false);
   const [planLoading, setPlanLoading] = useState(true);
+  const [orgData, setOrgData] = useState<Organization | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // --- AUTO-SCROLL TO BOTTOM ---
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   // --- LOAD ALL SESSIONS (List Only) ---
   useEffect(() => {
@@ -231,6 +238,7 @@ export default function TutorPage() {
         const orgSnap = await getDoc(doc(db, "organizations", organizationId));
         if (orgSnap.exists()) {
           const data = orgSnap.data() as Organization;
+          setOrgData(data);
           setIsFreePlan(!data.planId || data.planId === "free");
         }
       } catch (e) {
@@ -241,12 +249,6 @@ export default function TutorPage() {
     }
     if (profile) checkPlan();
   }, [profile]);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -379,11 +381,38 @@ export default function TutorPage() {
 
   return (
     <div className="h-[calc(100vh-6rem)] flex flex-col">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">AI Physics Tutor</h1>
-          <p className="text-muted-foreground">Ask questions about physics concepts or get help solving problems</p>
+          <p className="text-muted-foreground text-sm">Ask questions about physics concepts or get help solving problems</p>
         </div>
+
+        {/* --- Desktop AI Tutor Meter --- */}
+        {!isFreePlan && orgData && (orgData.aiTutorLimitPerStudent ?? 0) > 0 && (
+          <div className="hidden md:flex items-center gap-4 bg-card/60 border border-border/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl shadow-sm">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-black uppercase text-primary/70 tracking-[0.15em] leading-none mb-1">Tutor Messages</span>
+              <span className="text-xs font-black tracking-tight flex items-center gap-1.5">
+                {(profile as any)?.tutorUsageCurrent || 0} 
+                <span className="text-muted-foreground/30 font-medium">/</span> 
+                {orgData.aiTutorLimitPerStudent}
+              </span>
+            </div>
+            <div className="w-16 h-8 relative flex items-center justify-center">
+              <div className="absolute inset-0 bg-muted/30 rounded-full" />
+              <div 
+                className={cn(
+                  "absolute left-0 top-0 bottom-0 transition-all duration-700 rounded-full",
+                  ((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent! > 0.8 ? "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]" : "bg-primary shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                )}
+                style={{ width: `${Math.min(100, (((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent!) * 100)}%` }}
+              />
+              <div className="relative z-10 text-[9px] font-black text-white mix-blend-difference">
+                {Math.round((((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent!) * 100)}%
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {isFreePlan ? (
@@ -406,7 +435,37 @@ export default function TutorPage() {
           </Card>
         </div>
       ) : (
-        <div className="flex gap-4 flex-1 min-h-0">
+        <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
+          
+          {/* --- AI Tutor Meter (Mobile/Desktop Header) --- */}
+          {orgData && (orgData.aiTutorLimitPerStudent ?? 0) > 0 && (
+            <div className="md:hidden shrink-0">
+              <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border-primary/20 shadow-sm overflow-hidden">
+                <CardContent className="p-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Bot className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary/70 mb-0.5">Tutor Messages</p>
+                      <p className="text-sm font-bold tracking-tight">
+                        {(profile as any)?.tutorUsageCurrent || 0} <span className="text-muted-foreground/60 font-medium">/ {orgData.aiTutorLimitPerStudent}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-1 max-w-[100px] h-1.5 bg-muted rounded-full overflow-hidden border border-border/10">
+                    <div 
+                      className={cn(
+                        "h-full transition-all duration-500 rounded-full",
+                        ((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent! > 0.8 ? "bg-orange-500" : "bg-primary"
+                      )}
+                      style={{ width: `${Math.min(100, (((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent!) * 100)}%` }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* --- Chat History Sidebar --- */}
           <div
@@ -554,7 +613,7 @@ export default function TutorPage() {
           </div>
 
           {/* --- Main Chat Area --- */}
-          <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300">
             <div className="flex gap-2 mb-4 items-center">
               {!sidebarOpen && (
                 <Button
@@ -597,8 +656,8 @@ export default function TutorPage() {
                     : "Describe your problem and I'll help you solve it step by step"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-                <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+              <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={scrollRef}>
                   {messages.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
                       <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -626,23 +685,28 @@ export default function TutorPage() {
                         return (
                           <div
                             key={message.id}
-                            className={`flex gap-3 ${message.role === "assistant" ? "flex-row" : "flex-row-reverse"}`}
+                            className={cn(
+                              "flex gap-3",
+                              message.role === "assistant" ? "flex-row" : "flex-row-reverse self-end"
+                            )}
                           >
                             <div
-                              className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full ${
+                              className={cn(
+                                "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full mt-1",
                                 message.role === "assistant"
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted"
-                              }`}
+                              )}
                             >
                               {message.role === "assistant" ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
                             </div>
                             <div
-                              className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                              className={cn(
+                                "rounded-2xl px-4 py-2.5 max-w-[85%] shadow-sm overflow-hidden",
                                 message.role === "assistant"
-                                  ? "bg-muted"
+                                  ? "bg-muted/60 text-foreground"
                                   : "bg-primary text-primary-foreground"
-                              }`}
+                              )}
                             >
                               {message.role === "assistant" ? (
                                 isLastAssistant ? (
@@ -651,25 +715,30 @@ export default function TutorPage() {
                                   <MarkdownRenderer>{message.content}</MarkdownRenderer>
                                 )
                               ) : (
-                                <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                                <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{message.content}</p>
                               )}
                             </div>
                           </div>
                         );
                       })}
                       {loading && (
-                        <div className="flex gap-3">
-                          <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <div className="flex gap-3 animate-pulse">
+                          <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary/20 text-primary">
                             <Bot className="h-4 w-4" />
                           </div>
-                          <div className="rounded-lg px-4 py-2 bg-muted">
-                            <p className="text-sm">Thinking...</p>
+                          <div className="rounded-2xl px-4 py-2 bg-muted/40 border border-muted-foreground/10">
+                            <div className="flex gap-1 items-center h-5">
+                              <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                              <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                              <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce" />
+                            </div>
                           </div>
                         </div>
                       )}
+                      <div ref={messagesEndRef} />
                     </div>
                   )}
-                </ScrollArea>
+                </div>
 
                 {rateLimitError && (
                   <div className="p-4 text-red-600 text-sm font-semibold border-b bg-red-50 rounded">

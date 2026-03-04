@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
       console.error("Error resolving student names for scrubbing:", e);
     }
 
-    // 2. Check Budget for Organization
-    const budgetCheck = await checkBudget(organizationId, "tutor");
+    // 2. Check Budget for Organization AND Student specific limits
+    const budgetCheck = await checkBudget(organizationId, "tutor", userId);
     if (!budgetCheck.allowed) {
       return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
         organizationId, 
         "tutor", 
         result.usage.inputTokens, 
-        result.usage.outputTokens
+        result.usage.outputTokens,
+        userId
       );
     }
 

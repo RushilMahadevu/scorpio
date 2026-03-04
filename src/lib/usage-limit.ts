@@ -19,8 +19,8 @@ const RATES = {
  */
 export async function checkBudget(
   organizationId: string | undefined | null,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _type?: string
+  type?: string,
+  userId?: string
 ): Promise<{ allowed: boolean; error?: string }> {
   if (!organizationId) {
     return { allowed: false, error: "AI Features require a Standard subscription." };
@@ -34,12 +34,40 @@ export async function checkBudget(
 
     const data = orgDoc.data();
 
+    // 1. Basic Subscription Checks
     if (!data?.planId || data.planId === "free") {
       return { allowed: false, error: "AI Features require a Standard subscription." };
     }
 
     if (data?.subscriptionStatus === "canceled" || data?.subscriptionStatus === "revoked") {
       return { allowed: false, error: "Your subscription is no longer active." };
+    }
+
+    // 2. Network-wide Budget Enforcement (Hard Cap in cents)
+    const budgetLimit = data?.aiBudgetLimit || 0;
+    const currentUsage = data?.aiUsageCurrent || 0;
+
+    if (budgetLimit > 0 && currentUsage >= budgetLimit) {
+      return { 
+        allowed: false, 
+        error: `Monthly AI budget ($${(budgetLimit / 100).toFixed(2)}) reached. Please increase your limit in Network settings.` 
+      };
+    }
+
+    // 3. Per-Student Tutor Limit Enforcement
+    if (type === "tutor" && userId) {
+      const userDoc = await adminDb.collection("users").doc(userId).get();
+      const userData = userDoc.data();
+      
+      const teacherAllowance = data?.aiTutorLimitPerStudent || 0;
+      const studentUsage = userData?.tutorUsageCurrent || 0;
+
+      if (teacherAllowance > 0 && studentUsage >= teacherAllowance) {
+        return { 
+          allowed: false, 
+          error: `You have used all ${teacherAllowance} of your AI Tutor messages for this period. Contact your teacher to increase your allowance.` 
+        };
+      }
     }
 
     return { allowed: true };
@@ -57,7 +85,8 @@ export async function recordUsage(
   organizationId: string | undefined | null,
   type: string,
   inputTokens: number,
-  outputTokens: number
+  outputTokens: number,
+  userId?: string
 ): Promise<{ success: boolean; overLimit?: boolean }> {
   if (!organizationId || !adminDb) return { success: false };
 
@@ -66,6 +95,7 @@ export async function recordUsage(
 
   try {
     const orgRef = adminDb.collection("organizations").doc(organizationId);
+    const userRef = userId ? adminDb.collection("users").doc(userId) : null;
     const usageLogRef = adminDb.collection("usage_analytics").doc();
 
     await adminDb.runTransaction(async (transaction) => {
@@ -76,16 +106,25 @@ export async function recordUsage(
       polarCustomerId = data?.polarCustomerId || null;
       const currentUsage = data?.aiUsageCurrent || 0;
 
-      // Track usage in Firestore for analytics (billing cap is enforced by Polar's $100 meter limit)
+      // 1. Update Network Budget
       transaction.set(orgRef, {
         aiUsageCurrent: currentUsage + costCents,
         lastAiUsageAt: new Date(),
         aiUsageTotalCents: (data?.aiUsageTotalCents || 0) + costCents
       }, { merge: true });
 
-      // Log the granular interaction for analytics
+      // 2. Update Student Specific Message Count
+      if (type === "tutor" && userRef) {
+        transaction.update(userRef, {
+          tutorUsageCurrent: (data?.tutorUsageCurrent || 0) + 1,
+          lastTutorUsageAt: new Date()
+        });
+      }
+
+      // 3. Log into analytics
       transaction.set(usageLogRef, {
         organizationId,
+        userId: userId || null,
         type,
         inputTokens,
         outputTokens,
