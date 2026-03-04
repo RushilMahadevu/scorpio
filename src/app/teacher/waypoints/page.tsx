@@ -91,7 +91,7 @@ export default function WaypointsPage() {
         id: d.id, 
         ...d.data(),
         createdAt: d.data().createdAt?.toDate() || new Date(),
-        forkCount: Math.floor(Math.random() * 20) // Simulated for visual interest
+        forkCount: d.data().forkCount || 0
       })) as Waypoint[];
       
       setWaypoints(docs);
@@ -231,11 +231,13 @@ export default function WaypointsPage() {
             <SelectItem value="all">All Topics</SelectItem>
             <SelectItem value="kinematics">Kinematics</SelectItem>
             <SelectItem value="dynamics">Dynamics</SelectItem>
-            <SelectItem value="energy">Energy & Momentum</SelectItem>
-            <SelectItem value="thermo">Thermodynamics</SelectItem>
+            <SelectItem value="rotation">Rotational Physics</SelectItem>
+            <SelectItem value="thermodynamics">Thermodynamics</SelectItem>
             <SelectItem value="em">Electromagnetism</SelectItem>
             <SelectItem value="waves">Waves & Optics</SelectItem>
             <SelectItem value="modern">Modern Physics</SelectItem>
+            <SelectItem value="fluids">Fluid Mechanics</SelectItem>
+            <SelectItem value="oscillations">Oscillations</SelectItem>
           </SelectContent>
         </Select>
       </div>
