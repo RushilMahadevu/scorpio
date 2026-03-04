@@ -373,14 +373,14 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[9px] uppercase font-bold tracking-widest text-blue-500/60">Peak</span>
-                      <span className="text-xs font-black text-blue-500 tabular-nums">{Math.max(...dailyData.map(d => d.queries))}</span>
-                      <span className="text-[9px] text-muted-foreground">interactions</span>
+                      <span className="text-xs font-black font-mono text-blue-500 tabular-nums">{Math.max(...dailyData.map(d => d.queries))}</span>
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-blue-500/60">interactions</span>
                     </div>
                     <div className="w-px h-3 bg-border/50" />
                     <div className="flex items-center gap-1.5">
                       <span className="text-[9px] uppercase font-bold tracking-widest text-purple-500/60">Spend</span>
-                      <span className="text-xs font-black text-purple-500 tabular-nums">${dailyData.reduce((s, d) => s + d.totalCost, 0).toFixed(4)}</span>
-                      <span className="text-[9px] text-muted-foreground">USD</span>
+                      <span className="text-xs font-black font-mono text-purple-500 tabular-nums">${dailyData.reduce((s, d) => s + d.totalCost, 0).toFixed(4)}</span>
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-purple-500/60">USD</span>
                     </div>
                   </div>
 
@@ -457,8 +457,8 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                         <g>
                           <rect x={TX} y={TY} width={TW} height={TH} rx="8" ry="8" fill="#18181b" opacity="0.95" />
                           <text x={TX + 12} y={TY + 16} fontSize="12" fontWeight="600" fill="white" fillOpacity="0.4">{hiDay.date}</text>
-                          <text x={TX + 12} y={TY + 36} fontSize="15" fontWeight="800" fill="#60a5fa">{hiDay.queries} interactions</text>
-                          <text x={TX + 12} y={TY + 52} fontSize="13" fontWeight="600" fill="#c084fc">${hiDay.totalCost.toFixed(4)} USD</text>
+                          <text x={TX + 12} y={TY + 36} fontSize="12" fontFamily="monospace" fontWeight="800" fill="#60a5fa">{hiDay.queries} interactions</text>
+                          <text x={TX + 12} y={TY + 52} fontSize="12" fontFamily="monospace" fontWeight="600" fill="#c084fc">${hiDay.totalCost.toFixed(4)} USD</text>
                         </g>
                       );
                     })()}
