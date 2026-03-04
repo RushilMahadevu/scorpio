@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useSpring, useMotionValueEvent } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: number }) {
+  const spring = useSpring(value, { stiffness: 80, damping: 18 });
+  const [display, setDisplay] = useState(value.toFixed(decimals));
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  useMotionValueEvent(spring, "change", (v) => {
+    setDisplay(v.toFixed(decimals));
+  });
+
+  return <span>{display}</span>;
+}
 
 export function AICostCalculator() {
   const [students, setStudents] = useState<number>(150);
@@ -103,7 +118,7 @@ export function AICostCalculator() {
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                ${results.totalCost.toFixed(2)}<span className="text-[10px] font-normal text-zinc-500">/mo</span>
+                $<AnimatedNumber value={results.totalCost} /><span className="text-[10px] font-normal text-zinc-500">/mo</span>
               </span>
               <span className="text-[10px] text-zinc-400 font-medium">Est. Total</span>
             </div>
@@ -234,7 +249,7 @@ export function AICostCalculator() {
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Monthly</p>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-loose">
-                  ${results.totalCost.toFixed(2)}
+                  $<AnimatedNumber value={results.totalCost} />
                 </span>
               </div>
             </div>
@@ -247,11 +262,11 @@ export function AICostCalculator() {
               <div className="space-y-1.5">
                   <div className="flex justify-between items-center text-[11px]">
                       <span className="text-zinc-500">Platform License</span>
-                      <span className="font-mono font-semibold">${BASE_FEE.toFixed(2)}</span>
+                      <span className="font-mono font-semibold">$<AnimatedNumber value={BASE_FEE} /></span>
                   </div>
                   <div className="flex justify-between items-center text-[11px]">
                       <span className="text-zinc-500">AI Tokens (Estimated)</span>
-                      <span className="font-mono font-semibold">${results.aiUsageCost.toFixed(2)}</span>
+                      <span className="font-mono font-semibold">$<AnimatedNumber value={results.aiUsageCost} /></span>
                   </div>
               </div>
             </div>
@@ -260,7 +275,7 @@ export function AICostCalculator() {
               <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg border border-emerald-500/20">
                 <p className="text-[9px] font-bold uppercase tracking-widest opacity-80">Effective Rate</p>
                 <p className="text-xl font-black font-mono tracking-tighter">
-                  ${results.costPerStudent.toFixed(2)}
+                  $<AnimatedNumber value={results.costPerStudent} />
                   <span className="text-[10px] font-normal lowercase ml-1">/student</span>
                 </p>
               </div>
