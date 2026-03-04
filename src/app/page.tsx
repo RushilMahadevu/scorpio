@@ -128,349 +128,252 @@ export default function Home() {
       <SpaceBackground />
 
       {/* Sticky Blurred Header */}
-<motion.header
-  className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 bg-background/70 backdrop-blur-md border-b border-border/50 shadow-sm"
-  initial={{ opacity: 0, y: -40 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.7, ease: "easeOut" }}
->
-  {/* Logo */}
-  <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-    <Logo size={20} className="text-foreground" />
-    <span className="text-sm font-extrabold">Scorpio</span>
-  </Link>
-
-
-  {/* Navigation - Centered (Modern Sliding Hover) */}
-  <nav 
-    className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center p-1 bg-background/20 backdrop-blur-lg rounded-full border border-border/30"
-    onMouseLeave={scheduleClose}
-  >
-    {([
-      { id: "home", label: "Home", href: "/" },
-      { 
-        id: "platform", 
-        label: "Platform", 
-        dropdownItems: [
-          { id: "mission-control", label: "Mission Control", icon: ShieldUser, description: "Central dashboard for instructors and students." },
-          { id: "challenge", label: "The Challenge", icon: AlertTriangle, description: "Understanding the physics education gap." },
-          { id: "math-fidelity", label: "Math Fidelity", icon: SquareFunction, description: "Proprietary LaTeX engine for complex derivations." },
-          { id: "demos", label: "System Demos", icon: PlayCircle, description: "Interactive overview of AI tutoring capabilities." },
-          { id: "workflow", label: "Workflow", icon: Zap, description: "End-to-end assignment and feedback loop." },
-        ]
-      },
-      { 
-        id: "institutional", 
-        label: "Institutional", 
-        dropdownItems: [
-          { id: "efficacy", label: "Efficacy", icon: Brain, description: "Pedagogical methodology and learning outcomes." },
-          { id: "mission", label: "Philosophy", icon: Orbit, description: "The first principles behind constraint-led tutoring." },
-          { id: "activity", label: "Development", icon: Activity, description: "Live updates and platform evolution stats." },
-          { id: "pricing", label: "Cost & Scale", icon: ChartColumnIncreasing, description: "Institutional pricing and ROI analysis." },
-        ]
-      },
-      { 
-        id: "docs", 
-        label: "Docs", 
-        dropdownItems: [
-          { label: "About Scorpio", href: "/about", icon: Info, description: "Our mission to revolutionize physics education." },
-          { label: "Research & Methodology", href: "/research", icon: Brain, description: "Deep dive into our 4-layer AI architecture." },
-          { label: "Contact Us", href: "/contact", icon: Mail, description: "Get help from our institutional success team." },
-          { label: "Privacy Policy", href: "/privacy", icon: Shield, description: "FERPA/GDPR compliant data infrastructure." },
-          { label: "Terms of Service", href: "/terms", icon: FileText, description: "Standard institutional and usage terms." },
-        ]
-      }
-    ] as LandingNavItem[]).map((navItem) => (
-      <div
-        key={navItem.id}
-        className="relative px-1 group/navitem"
-        onMouseEnter={() => { cancelClose(); setHoveredNav(navItem.id); }}
+      <motion.header
+        className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
+        initial={{ opacity: 0, y: -40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        onMouseLeave={() => setHoveredNav(null)}
       >
-        <AnimatePresence>
-          {hoveredNav === navItem.id && (
-            <motion.div
-              layoutId="navbar-highlight"
-              className="absolute inset-0 bg-primary/5 rounded-full z-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 150, 
-                damping: 25, 
-                mass: 1.2,
-                duration: 0.8 
-              }}
-            />
-          )}
-        </AnimatePresence>
-        
-        {navItem.dropdownItems ? (
-          <DropdownMenu 
-            modal={false} 
-            open={hoveredNav === navItem.id} 
-            onOpenChange={(open) => {
-              if (!open) scheduleClose();
-            }}
-          >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="link"
-                className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent flex items-center gap-1.5 ${
-                  hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
+        <div className="flex items-center justify-between px-6 py-3.5">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
+            <Logo size={20} className="text-foreground" />
+            <span className="text-sm font-extrabold">Scorpio</span>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-0.5">
+            <button
+              onMouseEnter={() => setHoveredNav("home")}
+              onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setHoveredNav(null); }}
+              className="h-8 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-colors cursor-pointer"
+            >
+              Home
+            </button>
+            {(["platform", "institutional", "docs"] as const).map((id) => (
+              <button
+                key={id}
+                onMouseEnter={() => setHoveredNav(id)}
+                className={`h-8 px-4 text-sm font-semibold rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  hoveredNav === id
+                    ? "text-foreground bg-muted/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
-                {navItem.label}
-                <motion.div
-                  animate={{ 
-                    rotate: hoveredNav === navItem.id ? 180 : 0,
-                    color: hoveredNav === navItem.id ? "var(--primary)" : "var(--muted-foreground)"
-                  }}
-                  transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
-                  className="flex items-center justify-center opacity-60"
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </motion.div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="center" 
-              className="w-80 bg-background/80 backdrop-blur-xl border-border/50 p-2 pt-3 shadow-2xl rounded-2xl animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
-              onMouseEnter={() => { cancelClose(); setHoveredNav(navItem.id); }}
-              onMouseLeave={scheduleClose}
-              sideOffset={2}
-            >
-              {navItem.dropdownItems.map((item) => (
-                item.href ? (
-                  <Link key={item.href} href={item.href}>
-                    <DropdownMenuItem className="flex items-start gap-3 px-3 py-3 cursor-pointer rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 group/item">
-                      <div className="p-2 bg-primary/5 rounded-lg group-hover/item:bg-primary/20 transition-colors mt-0.5">
-                        <item.icon className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-xs tracking-tight">{item.label}</span>
-                        {item.description && <span className="text-[10px] text-muted-foreground leading-tight">{item.description}</span>}
-                      </div>
-                    </DropdownMenuItem>
-                  </Link>
-                ) : (
-                  <DropdownMenuItem 
-                    key={item.id} 
-                    className="flex items-start gap-3 px-3 py-3 cursor-pointer rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 group/item"
-                    onClick={() => {
-                      const el = document.getElementById(item.id!);
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                      setHoveredNav(null);
-                    }}
-                  >
-                    <div className="p-2 bg-primary/5 rounded-lg group-hover/item:bg-primary/20 transition-colors mt-0.5">
-                      <item.icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-bold text-xs tracking-tight">{item.label}</span>
-                      {item.description && <span className="text-[10px] text-muted-foreground leading-tight">{item.description}</span>}
-                    </div>
-                  </DropdownMenuItem>
-                )
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : navItem.id === "home" ? (
-          <Button
-            variant="link"
-            type="button"
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              setHoveredNav(null);
-            }}
-            className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent ${
-              hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
-            }`}
-          >
-            {navItem.label}
-          </Button>
-        ) : navItem.href ? (
-          <Link href={navItem.href}>
-            <Button
-              variant="link"
-              className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent ${
-                hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
-              }`}
-            >
-              {navItem.label}
-            </Button>
-          </Link>
-        ) : (
-          <Button
-            variant="link"
-            type="button"
-            onClick={() => {
-              const el = document.getElementById(navItem.id);
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-            className={`relative z-10 h-8 px-3.5 text-sm font-semibold transition-all duration-500 cursor-pointer no-underline hover:no-underline !bg-transparent ${
-              hoveredNav === navItem.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
-            }`}
-          >
-            {navItem.label}
-          </Button>
-        )}
-      </div>
-    ))}
-  </nav>
+                {{ platform: "Platform", institutional: "Institutional", docs: "Docs" }[id]}
+                <ChevronDown className={`h-3 w-3 opacity-50 transition-transform duration-200 ${hoveredNav === id ? "rotate-180" : ""}`} />
+              </button>
+            ))}
+          </nav>
 
-  {/* Actions */}
-  <div className="flex items-center space-x-3">
-    <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="lg:hidden" aria-label="Open menu">
-          <Menu className="h-5 w-5" />
-        </Button>
-      </SheetTrigger>
-      {/* Backdrop for mobile menu */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity lg:hidden"
-          aria-hidden="true"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-      <SheetContent
-        side="right"
-        className="w-full max-w-xs sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden"
-        style={{ top: 0, bottom: 0, right: 0, left: 'auto' }}
-        hideClose
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <span className="font-extrabold text-lg">Menu</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Close menu"
-            onClick={() => setMenuOpen(false)}
-            className="rounded-full hover:bg-accent"
-          >
-            <span className="sr-only">Close menu</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Button>
-        </div>
-        <nav className="flex flex-col space-y-6 px-6 py-8 flex-1 overflow-y-auto">
-          <div className="space-y-1">
-             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Platform</span>
-             {[
-                { id: "mission-control", label: "Dashboard", icon: ShieldUser },
-                { id: "challenge", label: "The Challenge", icon: AlertTriangle },
-                { id: "math-fidelity", label: "Math Fidelity", icon: SquareFunction },
-                { id: "demos", label: "Demos", icon: PlayCircle },
-                { id: "workflow", label: "Workflow", icon: Zap },
-             ].map((item) => (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]"
-                  onClick={() => {
-                    const el = document.getElementById(item.id);
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                    setMenuOpen(false);
-                  }}
-                >
-                  <div className="p-2 bg-primary/5 rounded-lg">
-                    <item.icon className="h-4.5 w-4.5 text-primary" />
-                  </div>
-                  {item.label}
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="lg:hidden" aria-label="Open menu">
+                  <Menu className="h-5 w-5" />
                 </Button>
-             ))}
-          </div>
-
-          <div className="space-y-1">
-             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
-             {[
-                { id: "efficacy", label: "Research", icon: Brain },
-                { id: "mission", label: "Philosophy", icon: Orbit },
-                { id: "activity", label: "Activity", icon: Activity },
-                { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
-             ].map((item) => (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]"
-                  onClick={() => {
-                    const el = document.getElementById(item.id);
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                    setMenuOpen(false);
-                  }}
-                >
-                  <div className="p-2 bg-primary/5 rounded-lg">
-                    <item.icon className="h-4.5 w-4.5 text-primary" />
-                  </div>
-                  {item.label}
-                </Button>
-             ))}
-          </div>
-
-          <div className="space-y-1">
-             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Documentation</span>
-             {[
-               { label: "About Scorpio", href: "/about", icon: Info },
-               { label: "Research & Methodology", href: "/research", icon: Brain },
-               { label: "Research Admin", href: "/research/admin", icon: ShieldCheck },
-               { label: "Contact Support", href: "/contact", icon: Mail },
-               { label: "Privacy Policy", href: "/privacy", icon: Shield },
-               { label: "Terms of Service", href: "/terms", icon: FileText },
-             ].map((item) => (
-                <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]"
-                  >
-                    <div className="p-2 bg-primary/5 rounded-lg">
-                      <item.icon className="h-4.5 w-4.5 text-primary" />
-                    </div>
-                    {item.label}
+              </SheetTrigger>
+              {menuOpen && (
+                <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity lg:hidden" aria-hidden="true" onClick={() => setMenuOpen(false)} />
+              )}
+              <SheetContent side="right" className="w-full max-w-xs sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden" style={{ top: 0, bottom: 0, right: 0, left: "auto" }} hideClose>
+                <div className="flex items-center justify-between px-6 py-4 border-b">
+                  <span className="font-extrabold text-lg">Menu</span>
+                  <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} className="rounded-full hover:bg-accent">
+                    <span className="sr-only">Close menu</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </Button>
-                </Link>
-             ))}
-          </div>
-        </nav>
-        <div className="px-6 pb-6 pt-4 border-t bg-muted/5">
-          <div className="flex flex-col gap-2">
-            <Link href="/login">
-              <Button variant="outline" size="lg" className="w-full font-medium cursor-pointer">
-                Login 
+                </div>
+                <nav className="flex flex-col space-y-6 px-6 py-8 flex-1 overflow-y-auto">
+                  <div className="space-y-1">
+                    <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Platform</span>
+                    {[
+                      { id: "mission-control", label: "Dashboard", icon: ShieldUser },
+                      { id: "challenge", label: "The Challenge", icon: AlertTriangle },
+                      { id: "comparison", label: "vs. Other Tools", icon: ChartColumnIncreasing },
+                      { id: "math-fidelity", label: "Math Fidelity", icon: SquareFunction },
+                      { id: "demos", label: "Demos", icon: PlayCircle },
+                      { id: "workflow", label: "Workflow", icon: Zap },
+                      { id: "waypoints", label: "Waypoints Network", icon: Waypoints },
+                    ].map((item) => (
+                      <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); }}>
+                        <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
+                    {[
+                      { id: "efficacy", label: "Research & Efficacy", icon: Brain },
+                      { id: "mission", label: "Philosophy", icon: Orbit },
+                      { id: "activity", label: "Activity", icon: Activity },
+                      { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
+                    ].map((item) => (
+                      <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); }}>
+                        <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Documentation</span>
+                    {[
+                      { label: "About Scorpio", href: "/about", icon: Info },
+                      { label: "Research & Methodology", href: "/research", icon: Brain },
+                      { label: "Contact Support", href: "/contact", icon: Mail },
+                      { label: "Privacy Policy", href: "/privacy", icon: Shield },
+                      { label: "Terms of Service", href: "/terms", icon: FileText },
+                    ].map((item) => (
+                      <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+                        <Button variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]">
+                          <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
+                          {item.label}
+                        </Button>
+                      </Link>
+                    ))}
+                  </div>
+                </nav>
+                <div className="px-6 pb-6 pt-4 border-t bg-muted/5">
+                  <div className="flex flex-col gap-2">
+                    <Link href="/login"><Button variant="outline" size="lg" className="w-full font-medium cursor-pointer">Login</Button></Link>
+                    <Link href="/signup"><Button size="lg" className="w-full font-medium cursor-pointer">Sign up</Button></Link>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+            <ModeToggle />
+            <div className="h-5 w-px bg-border/40 hidden lg:block" />
+            <Link href="/login" className="hidden lg:block">
+              <Button variant="ghost" size="sm" className="font-medium text-muted-foreground hover:text-foreground hover:bg-transparent transition-colors cursor-pointer">
+                Login
               </Button>
             </Link>
             <Link href="/signup">
-              <Button size="lg" className="w-full font-medium cursor-pointer">
+              <Button size="sm" className="font-semibold px-5 rounded-full cursor-pointer shadow-none hover:opacity-90 transition-opacity">
                 Sign up
               </Button>
             </Link>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
-    <ModeToggle />
-    <div className="h-6 w-px bg-border/40 mx-2"></div>
-    <div className="flex items-center gap-2">
-      <Link href="/login">
-        <Button variant="ghost" size="sm" className="font-medium text-muted-foreground hover:text-primary hover:bg-transparent transition-colors cursor-pointer">
-          Login
-        </Button>
-      </Link>
-      <Link href="/signup">
-        <Button size="sm" className="font-semibold px-5 rounded-full cursor-pointer shadow-none hover:opacity-90 transition-opacity">
-          Sign up
-        </Button>
-      </Link>
-    </div>
-  </div>
-  {/* Subtle Scroll Progress Bar */}
-  <motion.div
-    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-primary/40 origin-left z-50"
-    style={{ scaleX }}
-  />
-</motion.header>
+
+        {/* Mega Menu Panel — lives inside header so no mouse-gap issues */}
+        <AnimatePresence>
+          {hoveredNav && hoveredNav !== "home" && (
+            <motion.div
+              key={hoveredNav}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.12, ease: "easeOut" }}
+              className="absolute top-full left-0 right-0 border-b border-border/40 bg-background/98 backdrop-blur-2xl shadow-2xl"
+            >
+              <div className="container mx-auto px-8 py-8 max-w-6xl">
+
+                {/* Platform */}
+                {hoveredNav === "platform" && (
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-5">Platform</p>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                      {[
+                        { id: "mission-control", label: "Mission Control", desc: "Central dashboard for instructors and students.", icon: ShieldUser },
+                        { id: "challenge", label: "The Challenge", desc: "Understanding the physics education gap.", icon: AlertTriangle },
+                        { id: "comparison", label: "vs. Other Tools", desc: "Research-backed comparison against ChatGPT and Khanmigo.", icon: ChartColumnIncreasing },
+                        { id: "math-fidelity", label: "Math Fidelity", desc: "Proprietary LaTeX engine for complex derivations.", icon: SquareFunction },
+                        { id: "demos", label: "System Demos", desc: "Interactive overview of AI tutoring capabilities.", icon: PlayCircle },
+                        { id: "workflow", label: "Workflow", desc: "End-to-end assignment and feedback loop.", icon: Zap },
+                        { id: "waypoints", label: "Waypoints Network", desc: "Peer-validated physics modules shared across institutions.", icon: Waypoints },
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setHoveredNav(null); }}
+                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors text-left group cursor-pointer"
+                        >
+                          <div className="h-8 w-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors mt-0.5">
+                            <item.icon className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors leading-tight">{item.label}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{item.desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Institutional */}
+                {hoveredNav === "institutional" && (
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-5">Institutional</p>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                      {[
+                        { id: "efficacy", label: "Efficacy", desc: "Pedagogical methodology and learning outcomes.", icon: Brain },
+                        { id: "mission", label: "Philosophy", desc: "The first principles behind constraint-led tutoring.", icon: Orbit },
+                        { id: "activity", label: "Development", desc: "Live updates and platform evolution stats.", icon: Activity },
+                        { id: "pricing", label: "Cost & Scale", desc: "Institutional pricing and ROI analysis.", icon: ChartColumnIncreasing },
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setHoveredNav(null); }}
+                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors text-left group cursor-pointer"
+                        >
+                          <div className="h-8 w-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors mt-0.5">
+                            <item.icon className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors leading-tight">{item.label}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{item.desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Docs */}
+                {hoveredNav === "docs" && (
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-5">Documentation</p>
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                      {[
+                        { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
+                        { href: "/research", label: "Research & Methodology", desc: "Deep dive into our 4-layer AI architecture.", icon: Brain },
+                        { href: "/contact", label: "Contact Us", desc: "Get help from our institutional success team.", icon: Mail },
+                        { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant data infrastructure.", icon: Shield },
+                        { href: "/terms", label: "Terms of Service", desc: "Standard institutional and usage terms.", icon: FileText },
+                      ].map((item) => (
+                        <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>
+                          <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer">
+                            <div className="h-8 w-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors mt-0.5">
+                              <item.icon className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors leading-tight">{item.label}</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{item.desc}</p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Scroll Progress Bar */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-primary/40 origin-left z-50"
+          style={{ scaleX }}
+        />
+      </motion.header>
 
       <main className="relative z-10">
         {/* Hero Section */}
@@ -828,6 +731,155 @@ export default function Home() {
                 </motion.div>
               ))}
             </motion.div>
+          </motion.div>
+        </section>
+
+        {/* Comparison Table */}
+        <section id="comparison" className="container mx-auto px-6 py-32 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-primary/4 rounded-full blur-[120px] pointer-events-none -z-10" />
+          <motion.div
+            className="max-w-6xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="text-center space-y-4 mb-16">
+              <div className="text-xs font-black text-primary uppercase tracking-[0.25em]">Independent Research · 125-Response Ablation Study</div>
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Not another AI chatbot wrapper.</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed">
+                Every metric below is sourced from our published ablation study — blinded scoring by an independent Ph.D. auditor across 25 physics problems.
+              </p>
+              <div className="flex justify-center pt-2">
+                <Link href="/research">
+                  <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/30 text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary/5 transition-colors cursor-pointer">
+                    Read the full methodology →
+                  </Badge>
+                </Link>
+              </div>
+            </div>
+
+            {/* Table */}
+            <motion.div
+              className="rounded-3xl border border-border/50 overflow-hidden bg-card/30 backdrop-blur-xl shadow-xl"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.15, duration: 0.6 }}
+            >
+              {/* Table header */}
+              <div className="grid grid-cols-5 bg-muted/30 border-b border-border/50 px-6 py-4">
+                <div className="col-span-1 text-xs font-black uppercase tracking-[0.15em] text-muted-foreground">Capability</div>
+                <div className="col-span-1 text-center">
+                  <div className="inline-flex flex-col items-center gap-1">
+                    <span className="text-xs font-black uppercase tracking-widest text-foreground">Scorpio</span>
+                    <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Full Stack</span>
+                  </div>
+                </div>
+                <div className="col-span-1 text-center">
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">ChatGPT / Gemini</span>
+                </div>
+                <div className="col-span-1 text-center">
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">Khanmigo</span>
+                </div>
+                <div className="col-span-1 text-center">
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">Human Tutor</span>
+                </div>
+              </div>
+
+              {/* Rows */}
+              {[
+                {
+                  capability: "Direct Answer Rate",
+                  footnote: "Ablation study, 25 procedural physics problems",
+                  scorpio: { val: "0%", good: true },
+                  chatgpt: { val: "~100%", good: false },
+                  khan: { val: "~40%", good: false },
+                  human: { val: "Varies", good: null },
+                },
+                {
+                  capability: "Pedagogical Quality Score",
+                  footnote: "Ph.D. blinded holistic audit, 5-point scale",
+                  scorpio: { val: "4.62 / 5", good: true },
+                  chatgpt: { val: "4.38 / 5¹", good: false },
+                  khan: { val: "No data", good: null },
+                  human: { val: "~4.5 / 5", good: null },
+                },
+                {
+                  capability: "LaTeX Notation Density",
+                  footnote: "Per 100 words, ablation study",
+                  scorpio: { val: "0.92", good: true },
+                  chatgpt: { val: "0.22¹", good: false },
+                  khan: { val: "Limited", good: false },
+                  human: { val: "Whiteboard", good: null },
+                },
+                {
+                  capability: "Socratic Questions / Response",
+                  footnote: "Avg. across 125-response study",
+                  scorpio: { val: "1.25", good: true },
+                  chatgpt: { val: "1.00¹", good: false },
+                  khan: { val: "~0.8", good: false },
+                  human: { val: "~1.5", good: null },
+                },
+                {
+                  capability: "Constraint Architecture",
+                  footnote: "Inference-time, no fine-tuning required",
+                  scorpio: { val: "4-Layer Enforced", good: true },
+                  chatgpt: { val: "None", good: false },
+                  khan: { val: "Prompt-only", good: false },
+                  human: { val: "Implicit", good: null },
+                },
+                {
+                  capability: "Cost Transparency",
+                  footnote: "Per-student, per-request visibility",
+                  scorpio: { val: "100% — zero markup", good: true },
+                  chatgpt: { val: "Fixed subscription", good: false },
+                  khan: { val: "Fixed subscription", good: false },
+                  human: { val: "$40–120 / hr", good: false },
+                },
+                {
+                  capability: "Verifiable / Auditable",
+                  footnote: "Published methodology, reproducible results",
+                  scorpio: { val: "Yes — open study", good: true },
+                  chatgpt: { val: "No", good: false },
+                  khan: { val: "No", good: false },
+                  human: { val: "Subjective", good: null },
+                },
+              ].map((row, i) => (
+                <motion.div
+                  key={i}
+                  className={`grid grid-cols-5 px-6 py-4 border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors ${i % 2 === 0 ? "" : "bg-muted/5"}`}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.05 * i, duration: 0.4 }}
+                >
+                  <div className="col-span-1 pr-4">
+                    <p className="text-sm font-bold text-foreground">{row.capability}</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">{row.footnote}</p>
+                  </div>
+                  <div className="col-span-1 flex items-center justify-center">
+                    <span className="text-sm font-black text-primary bg-primary/8 px-3 py-1 rounded-full">{row.scorpio.val}</span>
+                  </div>
+                  <div className="col-span-1 flex items-center justify-center">
+                    <span className={`text-sm font-semibold ${row.chatgpt.good === false ? "text-muted-foreground/50" : "text-foreground"}`}>{row.chatgpt.val}</span>
+                  </div>
+                  <div className="col-span-1 flex items-center justify-center">
+                    <span className={`text-sm font-semibold ${row.khan.good === false ? "text-muted-foreground/50" : "text-foreground"}`}>{row.khan.val}</span>
+                  </div>
+                  <div className="col-span-1 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-muted-foreground/70">{row.human.val}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Footnotes */}
+            <div className="mt-6 space-y-1 px-2">
+              <p className="text-[10px] text-muted-foreground/50 font-medium">¹ Baseline Gemini 2.5 Flash (NONE constraint level) from Scorpio ablation study — used as proxy for unconstrained LLM performance. ChatGPT results are directionally comparable.</p>
+              <p className="text-[10px] text-muted-foreground/50 font-medium">Khanmigo and human tutor figures are estimates based on published third-party educational research. Scorpio figures are from our 125-response expert-validated internal study.</p>
+              <p className="text-[10px] text-muted-foreground/50 font-medium">Full methodology, raw data, and blinded scoring rubric available at <Link href="/research" className="text-primary/70 hover:text-primary underline underline-offset-2">scorpio/research</Link>.</p>
+            </div>
           </motion.div>
         </section>
 
@@ -1306,6 +1358,158 @@ export default function Home() {
                </div>
             </motion.div>
           </div>
+        </section>
+
+        {/* Waypoints Network Section */}
+        <section id="waypoints" className="container mx-auto px-6 py-32 relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/4 rounded-full blur-[130px] pointer-events-none -z-10" />
+          <motion.div
+            className="max-w-6xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7 }}
+          >
+            {/* Header */}
+            <div className="text-center space-y-4 mb-20">
+              <div className="text-xs font-black text-primary uppercase tracking-[0.25em]">Collaborative Infrastructure</div>
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">The Waypoints Network</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed">
+                High-precision, peer-validated physics modules built by instructors — shared across institutions. Drop them straight into your curriculum.
+              </p>
+            </div>
+
+            {/* Main split layout */}
+            <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+              {/* Left: concept */}
+              <motion.div
+                className="space-y-8"
+                initial={{ opacity: 0, x: -24 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="space-y-6">
+                  {[
+                    {
+                      icon: Globe,
+                      title: "Shared by real instructors",
+                      body: "Every Waypoint is authored by a verified Scorpio teacher — not generated. You know exactly where the pedagogy comes from.",
+                      color: "text-blue-500",
+                      bg: "bg-blue-500/8",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "Peer-validated before publish",
+                      body: "Modules go through a structured review before they enter the network. Mathematical notation, Socratic depth, and accuracy are checked.",
+                      color: "text-emerald-500",
+                      bg: "bg-emerald-500/8",
+                    },
+                    {
+                      icon: Zap,
+                      title: "Drop into any assignment",
+                      body: "Browse, preview, and attach Waypoints to your assignments in seconds. No reformatting, no copy-paste — structurally compatible out of the box.",
+                      color: "text-violet-500",
+                      bg: "bg-violet-500/8",
+                    },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex gap-4 p-5 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm hover:border-border/70 transition-colors"
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1, duration: 0.5 }}
+                    >
+                      <div className={`h-10 w-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <item.icon className={`h-5 w-5 ${item.color}`} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-foreground mb-1">{item.title}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{item.body}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Right: mock Waypoints browser card */}
+              <motion.div
+                className="relative"
+                initial={{ opacity: 0, x: 24 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="rounded-3xl border border-border/50 bg-card/40 backdrop-blur-xl overflow-hidden shadow-xl">
+                  {/* Card header */}
+                  <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between bg-muted/20">
+                    <div className="flex items-center gap-2">
+                      <Waypoints className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-black tracking-tight">Waypoint Browser</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest border-primary/30 text-primary">Network</Badge>
+                  </div>
+                  {/* Waypoint entries */}
+                  <div className="p-4 space-y-3">
+                    {[
+                      { title: "Rotational Dynamics — Torque & Inertia", tag: "Mechanics", author: "Dr. A. Patel", badge: "Verified", badgeColor: "bg-emerald-500/10 text-emerald-500" },
+                      { title: "Maxwell's Equations — Integral Form", tag: "E&M", author: "Prof. R. Chen", badge: "Verified", badgeColor: "bg-emerald-500/10 text-emerald-500" },
+                      { title: "Quantum Tunneling — WKB Approximation", tag: "Quantum", author: "Dr. S. Okafor", badge: "Under Review", badgeColor: "bg-amber-500/10 text-amber-500" },
+                      { title: "Thermodynamic Cycles — Carnot Engine", tag: "Thermo", author: "Prof. L. Torres", badge: "Verified", badgeColor: "bg-emerald-500/10 text-emerald-500" },
+                    ].map((w, i) => (
+                      <motion.div
+                        key={i}
+                        className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-border/30 bg-background/50 hover:border-border/60 hover:bg-background/80 transition-all group cursor-default"
+                        initial={{ opacity: 0, y: 8 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.15 + i * 0.08, duration: 0.4 }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">{w.title}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{w.tag} · {w.author}</p>
+                        </div>
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full shrink-0 ${w.badgeColor}`}>{w.badge}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="px-6 py-3 border-t border-border/30 flex items-center justify-between bg-muted/10">
+                    <span className="text-[10px] text-muted-foreground font-semibold">Example modules — network launching with early access</span>
+                    <span className="text-[10px] text-primary font-bold cursor-default">Coming soon →</span>
+                  </div>
+                </div>
+                {/* Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/8 rounded-full blur-[80px] -z-10" />
+              </motion.div>
+            </div>
+
+            {/* Bottom stats strip */}
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+            >
+              {[
+                { value: "Early", label: "Access Now Open", sub: "Be first to shape the network" },
+                { value: "100%", label: "Instructor-Authored", sub: "No AI-generated content" },
+                { value: "Zero", label: "Reformatting Required", sub: "Drop-in compatible by design" },
+                { value: "Growing", label: "Module Library", sub: "Expanding with every school" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={i}
+                  className="rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm p-5 text-center hover:border-border/70 transition-colors"
+                  variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+                >
+                  <p className="text-2xl font-black text-foreground">{stat.value}</p>
+                  <p className="text-xs font-bold text-foreground/80 mt-1">{stat.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Mission Section */}
