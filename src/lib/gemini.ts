@@ -1519,6 +1519,26 @@ If suggesting navigation, wrap the path in parentheses like this: (/student/grad
   }
 }
 
+export async function getLandingChatbotResponse(
+  message: string,
+  systemPrompt: string
+): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
+  try {
+    const result = await model.generateContent(`${systemPrompt}\n\nVisitor question: ${message}`);
+    const response = await result.response;
+    return {
+      text: response.text(),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0,
+      }
+    };
+  } catch (error) {
+    console.error("Error getting landing chatbot response:", error);
+    return { text: "I'm having trouble processing your request right now. Please try again." };
+  }
+}
+
 export async function generatePracticeProblem(
   topic: string,
   difficulty: string,

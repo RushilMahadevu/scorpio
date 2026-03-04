@@ -17,6 +17,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { LandingChatbot } from "@/components/landing-chatbot";
 
 import {
   DropdownMenu,
@@ -146,7 +147,7 @@ export default function Home() {
           <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
             <button
               onMouseEnter={() => setHoveredNav("home")}
-              onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setHoveredNav(null); }}
+            onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setHoveredNav(null); }}
               className="h-8 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-colors cursor-pointer"
             >
               Home
@@ -1949,6 +1950,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Landing AI Chatbot — visitor-scoped, 10 msg limit, billed to developer account */}
+      <LandingChatbot />
     </div>
   );
 }
