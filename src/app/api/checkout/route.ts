@@ -10,6 +10,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (!adminDb) {
+      return NextResponse.json({ error: "Server configuration error: database unavailable" }, { status: 500 });
+    }
+
     // 1. Verify organization exists and user is the owner
     const orgDoc = await adminDb.collection("organizations").doc(organizationId).get();
     if (!orgDoc.exists) {

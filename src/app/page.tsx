@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LandingChatbot } from "@/components/landing-chatbot";
+import { LandingFAQ } from "@/components/landing-faq";
 
 import {
   DropdownMenu,
@@ -166,6 +167,20 @@ export default function Home() {
                 <ChevronDown className={`h-3 w-3 opacity-50 transition-transform duration-200 ${hoveredNav === id ? "rotate-180" : ""}`} />
               </button>
             ))}
+            <button
+              onClick={() => {
+                const element = document.getElementById("faq");
+                if (element) {
+                  const yOffset = -80;
+                  const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                  window.scrollTo({ top: y, behavior: "smooth" });
+                }
+                setHoveredNav(null);
+              }}
+              className="h-8 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-colors cursor-pointer"
+            >
+              FAQ
+            </button>
           </nav>
 
           {/* Actions */}
@@ -214,6 +229,7 @@ export default function Home() {
                       { id: "mission", label: "Philosophy", icon: Orbit },
                       { id: "activity", label: "Activity", icon: Activity },
                       { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
+                      { id: "faq", label: "FAQ", icon: MessageCircle },
                     ].map((item) => (
                       <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); }}>
                         <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
@@ -1879,6 +1895,9 @@ export default function Home() {
             </div>
           </motion.div>
         </section>
+
+        {/* FAQ */}
+        <LandingFAQ />
       </main>
 
       <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
