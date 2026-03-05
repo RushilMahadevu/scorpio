@@ -353,11 +353,42 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
               const qPts = dailyData.map((d, i) => `${xAt(i).toFixed(1)},${yQ(d.queries).toFixed(1)}`);
               const cPts = dailyData.map((d, i) => `${xAt(i).toFixed(1)},${yC(d.totalCost).toFixed(1)}`);
 
-              const joinL = (pts: string[]) => `M ${pts.join(' L ')}`;
+              // Monotone cubic (Fritsch-Carlson) — curves never overshoot data range
+              const smoothCurve = (pts: string[]) => {
+                if (pts.length === 1) return `M ${pts[0]}`;
+                const points = pts.map(p => { const [x, y] = p.split(',').map(Number); return { x, y }; });
+                const np = points.length;
+                if (np === 2) return `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)} L ${points[1].x.toFixed(1)},${points[1].y.toFixed(1)}`;
+                const h: number[] = [], delta: number[] = [];
+                for (let i = 0; i < np - 1; i++) {
+                  h[i] = points[i+1].x - points[i].x;
+                  delta[i] = (points[i+1].y - points[i].y) / h[i];
+                }
+                const m: number[] = new Array(np);
+                m[0] = delta[0];
+                m[np - 1] = delta[np - 2];
+                for (let i = 1; i < np - 1; i++) {
+                  m[i] = delta[i-1] * delta[i] <= 0 ? 0 : (delta[i-1] + delta[i]) / 2;
+                }
+                for (let i = 0; i < np - 1; i++) {
+                  if (delta[i] === 0) { m[i] = 0; m[i+1] = 0; continue; }
+                  const alpha = m[i] / delta[i], beta = m[i+1] / delta[i];
+                  const s = alpha * alpha + beta * beta;
+                  if (s > 9) { const t = 3 / Math.sqrt(s); m[i] = t * alpha * delta[i]; m[i+1] = t * beta * delta[i]; }
+                }
+                let d = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+                for (let i = 0; i < np - 1; i++) {
+                  const p1 = points[i], p2 = points[i+1];
+                  const cp1x = p1.x + h[i] / 3, cp1y = p1.y + m[i] * h[i] / 3;
+                  const cp2x = p2.x - h[i] / 3, cp2y = p2.y - m[i+1] * h[i] / 3;
+                  d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+                }
+                return d;
+              };
               const areaD = (pts: string[], bot: number) =>
                 n === 1
                   ? `M ${xAt(0).toFixed(1)},${bot.toFixed(1)} L ${xAt(0).toFixed(1)},${bot.toFixed(1)}`
-                  : `${joinL(pts)} L ${xAt(n-1).toFixed(1)},${bot.toFixed(1)} L ${xAt(0).toFixed(1)},${bot.toFixed(1)} Z`;
+                  : `${smoothCurve(pts)} L ${xAt(n-1).toFixed(1)},${bot.toFixed(1)} L ${xAt(0).toFixed(1)},${bot.toFixed(1)} Z`;
 
               const botY = PAD.top + cH;
               const yTicks = [0, 0.25, 0.5, 0.75, 1].map(t => ({
@@ -388,7 +419,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                   <svg
                     viewBox={`0 0 ${W} ${H}`}
                     className="w-full block"
-                    style={{ overflow: 'visible' }}
+                    style={{ overflow: 'visible', cursor: 'crosshair' }}
                     onMouseLeave={() => setHoveredTrendIdx(null)}
                   >
                     <defs>
@@ -423,11 +454,11 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                     <path d={areaD(qPts, botY)} fill="url(#gQ)" />
 
                     {/* Cost line — dashed purple */}
-                    <path d={joinL(cPts)} fill="none" stroke="#a855f7" strokeWidth="2.5"
+                    <path d={smoothCurve(cPts)} fill="none" stroke="#a855f7" strokeWidth="2.5"
                       strokeLinecap="round" strokeLinejoin="round" strokeDasharray="7 4" />
 
                     {/* Interactions line — solid blue, dominant */}
-                    <path d={joinL(qPts)} fill="none" stroke="#3b82f6" strokeWidth="4"
+                    <path d={smoothCurve(qPts)} fill="none" stroke="#3b82f6" strokeWidth="4"
                       strokeLinecap="round" strokeLinejoin="round" />
 
                     {/* Hover vertical rule */}
