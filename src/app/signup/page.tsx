@@ -47,26 +47,79 @@ export default function SignupPage() {
       return;
     }
 
-    // Validate teacher access code
-    if (role === "teacher" && accessCode !== process.env.NEXT_PUBLIC_TEACHER_ACCESS_CODE) {
-      setError("Invalid Teacher Access Code");
-      return;
-    }
-    // No class code required for student signup; will be needed to join a class later
+    let codeOrganizationId: string | null = null;
 
-    setLoading(true);
-    setError("");
+    // Validate teacher invite code server-side before creating the account
+    if (role === "teacher") {
+      if (!accessCode.trim()) {
+        setError("A Teacher Invite Code is required");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      try {
+        const validateRes = await fetch('/api/auth/teacher-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'validate', code: accessCode.trim() }),
+        });
+        const validateData = await validateRes.json();
+        if (!validateData.valid) {
+          const messages: Record<string, string> = {
+            'Code already used': 'This invite code has already been used.',
+            'Code expired': 'This invite code has expired.',
+          };
+          setError(messages[validateData.reason] ?? 'Invalid Teacher Invite Code');
+          setLoading(false);
+          return;
+        }
+        // Capture the organization ID if the code is pre-linked
+        codeOrganizationId = validateData.organizationId || null;
+      } catch {
+        setError("Could not verify invite code. Please try again.");
+        setLoading(false);
+        return;
+      }
+    } else {
+      setLoading(true);
+      setError("");
+    }
 
     try {
       const userCredential = await register(email, password, role, name, role === "student" ? accessCode.trim() : undefined);
       const idToken = await userCredential.user.getIdToken();
 
-      // Set session cookie
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, role }),
-      });
+      // If this code was linked to an organization, update the user doc
+      if (role === "teacher" && codeOrganizationId) {
+        // We'll update both the user doc and the session to include the organizationId
+        // This ensures they are immediately part of your network
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, role, organizationId: codeOrganizationId }),
+        });
+      } else {
+        // Set standard session cookie
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, role }),
+        });
+      }
+
+      // Mark the invite code as used (atomic transaction on the server)
+      if (role === "teacher") {
+        await fetch('/api/auth/teacher-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'markUsed',
+            code: accessCode.trim(),
+            usedBy: userCredential.user.uid,
+            usedByEmail: email,
+          }),
+        });
+      }
 
       router.refresh();
       router.push(role === "teacher" ? "/teacher" : "/student");
