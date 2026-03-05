@@ -24,15 +24,11 @@ export async function POST(req: NextRequest) {
     const userData = userDoc.data();
     let organizationId = userData?.organizationId;
 
-    // Fallback: If student doesn't have an organization, inherit from teacher
-    if (!organizationId && userData?.role === "student" && userData?.teacherId) {
-      const teacherDoc = await adminDb.collection("users").doc(userData.teacherId).get();
-      if (teacherDoc.exists) {
-        organizationId = teacherDoc.data()?.organizationId;
-      }
+    if (!organizationId) {
+      return NextResponse.json({ error: "You must be enrolled in an active Scorpio Network to use AI features." }, { status: 403 });
     }
 
-    console.log(`[NavAI] Message from ${userId} (${userRole}), Org: ${organizationId || 'NONE'}`);
+    console.log(`[NavAI] Message from ${userId} (${userRole}), Org: ${organizationId}`);
 
     // 2. Check Budget for Organization
     const budgetCheck = await checkBudget(organizationId, "navigation");

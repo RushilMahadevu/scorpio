@@ -23,16 +23,8 @@ export async function POST(req: NextRequest) {
     const userData = userDoc.data();
     let organizationId = userData?.organizationId;
 
-    // Fallback: If student doesn't have an org, check their teacher's org
-    if (!organizationId && userData?.role === "student" && userData?.teacherId) {
-      const teacherDoc = await adminDb.collection("users").doc(userData.teacherId).get();
-      if (teacherDoc.exists) {
-        organizationId = teacherDoc.data()?.organizationId;
-      }
-    }
-
     if (!organizationId) {
-      return NextResponse.json({ error: "No organization found for user" }, { status: 403 });
+      return NextResponse.json({ error: "You must be enrolled in an active Scorpio Network to use the AI Tutor." }, { status: 403 });
     }
 
     // 2.5 Resolve Student Names for PII Scrubbing

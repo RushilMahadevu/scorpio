@@ -23,15 +23,8 @@ export async function POST(req: NextRequest) {
     const studentData = studentDoc.data();
     let organizationId = studentData?.organizationId;
 
-    if (!organizationId && studentData?.teacherId) {
-        const teacherDoc = await adminDb.collection("users").doc(studentData.teacherId).get();
-        if (teacherDoc.exists) {
-            organizationId = teacherDoc.data()?.organizationId;
-        }
-    }
-
     if (!organizationId) {
-        return NextResponse.json({ error: "No organization found. Please join a Scorpio Network." }, { status: 403 });
+        return NextResponse.json({ error: "You must be enrolled in an active Scorpio Network to use notebook AI features." }, { status: 403 });
     }
 
     // 2. Check Notebook Budget
