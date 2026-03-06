@@ -4,7 +4,7 @@ import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const { idToken, role } = await req.json();
+    const { idToken, role, organizationId: bodyOrgId } = await req.json();
 
     if (!idToken) {
       return NextResponse.json({ error: 'Missing ID token' }, { status: 400 });
@@ -34,9 +34,18 @@ export async function POST(req: NextRequest) {
     
     if (userDoc.exists) {
       const userData = userDoc.data();
+      const resolvedOrgId = bodyOrgId || userData?.organizationId || null;
+
+      // If an organizationId was passed in (e.g. from invite-code signup) and is not yet on
+      // the user doc, persist it now so all AI-feature routes can find it.
+      if (bodyOrgId && !userData?.organizationId) {
+        await userDocRef.update({ organizationId: bodyOrgId });
+        console.log(`Wrote organizationId ${bodyOrgId} to user doc for ${userId}`);
+      }
+
       const currentClaims = {
         role: userData?.role || role || "student",
-        organizationId: userData?.organizationId || null,
+        organizationId: resolvedOrgId,
       };
 
       // Only re-set if token claims are missing or out of sync
@@ -46,7 +55,7 @@ export async function POST(req: NextRequest) {
       }
     } else if (role) {
       // First time sign-up logic (if doc doesn't exist yet but role is provided)
-      await adminAuth.setCustomUserClaims(userId, { role, organizationId: null });
+      await adminAuth.setCustomUserClaims(userId, { role, organizationId: bodyOrgId || null });
     }
 
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });

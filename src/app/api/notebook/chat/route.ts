@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
     const studentData = studentDoc.data();
     let organizationId = studentData?.organizationId;
 
+    // Fallback: students may not have organizationId directly — inherit from teacher
+    if (!organizationId && studentData?.teacherId) {
+      const teacherDoc = await adminDb.collection("users").doc(studentData.teacherId).get();
+      organizationId = teacherDoc.data()?.organizationId;
+    }
+
     if (!organizationId) {
         return NextResponse.json({ error: "You must be enrolled in an active Scorpio Network to use notebook AI features." }, { status: 403 });
     }

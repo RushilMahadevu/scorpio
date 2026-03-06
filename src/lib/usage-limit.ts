@@ -99,10 +99,14 @@ export async function recordUsage(
     const usageLogRef = adminDb.collection("usage_analytics").doc();
 
     await adminDb.runTransaction(async (transaction) => {
+      // ALL reads must come before any writes in a Firestore transaction
       const orgDoc = await transaction.get(orgRef);
+      const userDoc = (type === "tutor" && userRef) ? await transaction.get(userRef) : null;
+
       if (!orgDoc.exists) return;
 
       const data = orgDoc.data();
+      const userData = userDoc?.data();
       polarCustomerId = data?.polarCustomerId || null;
       const currentUsage = data?.aiUsageCurrent || 0;
 
@@ -115,10 +119,10 @@ export async function recordUsage(
 
       // 2. Update Student Specific Message Count
       if (type === "tutor" && userRef) {
-        transaction.update(userRef, {
-          tutorUsageCurrent: (data?.tutorUsageCurrent || 0) + 1,
+        transaction.set(userRef, {
+          tutorUsageCurrent: (userData?.tutorUsageCurrent || 0) + 1,
           lastTutorUsageAt: new Date()
-        });
+        }, { merge: true });
       }
 
       // 3. Log into analytics
