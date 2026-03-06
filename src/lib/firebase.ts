@@ -2,6 +2,7 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch, deleteDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage";
+import { getAI, GoogleAIBackend } from "firebase/ai";
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -17,15 +18,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
-// getAI uses the Firebase client SDK and must only run in the browser.
-// Importing it at module level crashes server-side (Cloud Run / API routes).
-const genAI = typeof window !== 'undefined'
-  ? (() => {
-      const { getAI, GoogleAIBackend } = require('firebase/ai');
-      return getAI(app, { backend: new GoogleAIBackend() });
-    })()
-  : null;
+const genAI = getAI(app, { backend: new GoogleAIBackend() });
 
 // --- File Upload Helpers ---
 export type WorkFile = {
