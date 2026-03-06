@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { adminDb, adminFieldWithValue as FieldValue } from '@/lib/firebase-admin';
 import { randomBytes } from 'crypto';
 
 function generateCode(): string {
@@ -9,8 +8,10 @@ function generateCode(): string {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   if (!adminDb) {
-    return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
+    console.error('[teacher-code] adminDb is null — Firebase Admin SDK not initialized. Check FIREBASE_* env vars on Cloud Run.');
+    return NextResponse.json({ error: 'Service unavailable: Firebase Admin not initialized' }, { status: 500 });
   }
 
   const body = await req.json();
@@ -150,4 +151,8 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  } catch (err: any) {
+    console.error('[teacher-code] Unhandled error:', err);
+    return NextResponse.json({ error: err?.message ?? 'Internal error', stack: process.env.NODE_ENV !== 'production' ? err?.stack : undefined }, { status: 500 });
+  }
 }
