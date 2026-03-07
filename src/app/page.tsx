@@ -396,15 +396,14 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section id="home" className="container mx-auto px-6 py-16 text-center relative overflow-hidden">
+        <section id="home" className="container mx-auto px-6 pt-2 pb-12 text-center relative overflow-hidden min-h-[92vh] flex flex-col items-center justify-center">
 
-          {/* Atmospheric background — floating equations, does not affect layout */}
+          {/* Atmospheric background */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
             {/* Primary central glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/10 blur-[120px] rounded-full" />
-            {/* Secondary offset glows for depth */}
-            <div className="absolute top-[20%] left-[10%] w-[300px] h-[200px] bg-primary/5 blur-[90px] rounded-full" />
-            <div className="absolute bottom-[15%] right-[8%] w-[350px] h-[220px] bg-primary/5 blur-[100px] rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-primary/8 blur-[140px] rounded-full" />
+            <div className="absolute top-[20%] left-[10%] w-[300px] h-[200px] bg-primary/4 blur-[90px] rounded-full" />
+            <div className="absolute bottom-[15%] right-[8%] w-[350px] h-[220px] bg-primary/4 blur-[100px] rounded-full" />
 
             {/* Floating equations — primary layer */}
             {[
@@ -422,19 +421,13 @@ export default function Home() {
                 style={{ left: p.x, top: p.y, fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: [0, 0.6, 0.6, 0], y: [10, -30] }}
-                transition={{
-                  duration: p.dur,
-                  delay: p.delay,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  times: [0, 0.2, 0.8, 1]
-                }}
+                transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut", times: [0, 0.2, 0.8, 1] }}
               >
                 {p.eq}
               </motion.span>
             ))}
 
-            {/* Floating equations — secondary faint layer (staggered offsets) */}
+            {/* Floating equations — secondary faint layer */}
             {[
               { eq: "∇²φ = ρ/ε₀",    x: "62%", y: "8%",  delay: 4,   dur: 13 },
               { eq: "v = fλ",          x: "27%", y: "11%", delay: 5.5, dur: 8  },
@@ -448,161 +441,148 @@ export default function Home() {
                 style={{ left: p.x, top: p.y, fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: [0, 0.4, 0.4, 0], y: [6, -20] }}
-                transition={{
-                  duration: p.dur,
-                  delay: p.delay,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  times: [0, 0.25, 0.75, 1]
-                }}
+                transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut", times: [0, 0.25, 0.75, 1] }}
               >
                 {p.eq}
               </motion.span>
             ))}
           </div>
 
-          <motion.div
-            className="max-w-4xl mx-auto space-y-10"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
+          <div className="max-w-4xl mx-auto w-full flex flex-col items-center gap-8">
+
+            {/* Badge */}
             <motion.div
-              className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md mb-8"
-              initial={{ opacity: 0, y: -20 }}
+              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md"
+              initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              transition={{ delay: 0.15, duration: 0.5 }}
             >
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-semibold tracking-wide text-primary/90 uppercase">Built for Physics Educators</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              <span className="text-xs font-bold tracking-widest text-primary/90 uppercase">Built for Physics Educators</span>
             </motion.div>
 
-            <div className="flex justify-center mb-8 relative">
-              <div className="absolute inset-x-0 inset-y-0 flex items-center justify-center pointer-events-none z-0">
-                <div className="w-20 h-20 bg-primary/20 blur-3xl rounded-full scale-150 opacity-60" />
+            {/* Logo */}
+            <div className="flex justify-center relative">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-24 h-24 bg-primary/15 blur-3xl rounded-full" />
               </div>
               <motion.div
-                className="relative cursor-pointer z-10"
+                className="relative cursor-pointer"
                 onClick={() => setLogoRotation(prev => prev + 360)}
-                animate={{ rotate: logoRotation, y: [0, -10, 0] }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                animate={{ rotate: logoRotation, y: [0, -8, 0] }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.94 }}
                 transition={{
                   rotate: { type: "spring", stiffness: 60, damping: 12 },
                   y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
                   default: { duration: 2.5, ease: [0.16, 1, 0.3, 1] }
                 }}
               >
-                <Logo size={80} className="text-foreground drop-shadow-[0_0_25px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] transition-all duration-300" />
+                <Logo size={72} className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300" />
               </motion.div>
             </div>
 
-            <motion.h1
-              className="text-6xl md:text-8xl font-black mb-6 text-foreground pb-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-            >
-              Scorpio
-            </motion.h1>
-
-            <motion.p
-              className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-foreground/80 leading-tight"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.65, duration: 0.8 }}
-            >
-              The World's Only AI Physics LMS
-            </motion.p>
-
-            <motion.p
-              className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.8 }}
-              whileHover={{ 
-                textShadow: "0 0 20px rgba(var(--primary),0.2)",
-                transition: { duration: 0.3 }
-              }}
-            >
-              The first verifiable framework for Socratic physics tutoring. 
-              Enforce the struggle with a 4-layer constraint architecture 
-              that makes bypassing the learning process structurally impossible.
-            </motion.p>
-
-            {/* Stats Bar */}
+            {/* Headline */}
             <motion.div
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: {
-                  transition: {
-                    staggerChildren: 0.1,
-                    delayChildren: 1.0
-                  }
-                }
-              }}
+              className="space-y-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.7 }}
             >
-              {stats.map((stat, i) => (
-                <motion.div
-                  key={i}
-                  className="space-y-1 p-4 rounded-2xl bg-background/5 backdrop-blur-sm border border-white/5 hover:bg-white/2.5 transition-colors"
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-                  }}
-                >
-                  <div className="text-2xl font-black text-foreground">{stat.value}</div>
-                  <div className="text-xs font-bold text-foreground/80 leading-tight">{stat.label}</div>
-                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{stat.sublabel}</div>
-                </motion.div>
-              ))}
+              <h1 className="text-4xl md:text-7xl font-black tracking-tight text-foreground leading-[1.05]">
+                The World&apos;s Only
+              </h1>
+              <h1 className="text-4xl md:text-7xl font-black tracking-tight leading-[1.05]">
+                <span className="relative inline-block">
+                  <span className="relative z-10 bg-gradient-to-r from-foreground via-foreground/80 to-foreground bg-clip-text">AI Physics LMS</span>
+                  <span className="absolute inset-x-0 bottom-1 h-[3px] bg-primary/40 rounded-full" />
+                </span>
+              </h1>
             </motion.div>
 
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center pt-1 py-4"
-              initial={{ opacity: 0, y: 20 }}
+            {/* Description */}
+            <motion.p
+              className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 0.8 }}
+              transition={{ delay: 0.6, duration: 0.7 }}
+            >
+              The first verifiable framework for Socratic physics tutoring.
+              Enforce the struggle with a 4-layer constraint architecture
+              that makes bypassing the learning process{" "}
+              <span className="text-foreground font-semibold">structurally impossible.</span>
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-3 justify-center"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.7 }}
             >
               <Link href="/signup">
-                <Button size="lg" className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary),0.5)] transition-all cursor-pointer">
+                <Button size="lg" className="w-full sm:w-auto font-bold text-sm px-7 h-11 rounded-full shadow-[0_0_24px_rgba(var(--primary),0.25)] hover:shadow-[0_0_36px_rgba(var(--primary),0.45)] transition-all cursor-pointer gap-2">
                   <KeyRound className="h-4 w-4" />
                   Get Faculty Access
+                  <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
                 </Button>
               </Link>
               <button
                 type="button"
                 onClick={() => { const el = document.getElementById("demos"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                className="w-full sm:w-auto font-bold text-base px-8 h-12 rounded-full bg-background/50 backdrop-blur-md border border-white/10 hover:bg-white/10 cursor-pointer inline-flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto font-semibold text-sm px-7 h-11 rounded-full border border-border/60 bg-background/40 backdrop-blur-md hover:bg-muted/40 cursor-pointer inline-flex items-center justify-center gap-2 transition-all text-foreground/80 hover:text-foreground"
               >
                 <PlayCircle className="h-4 w-4" />
-                Watch Platform Demo
+                Watch Demo
               </button>
             </motion.div>
 
+            {/* Stats strip */}
             <motion.div
-              className=" animate-bounce"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2.2, duration: 0.6 }}
+              className="w-full grid grid-cols-2 md:grid-cols-4 gap-px bg-border/40 rounded-2xl overflow-hidden border border-border/40 mt-4"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.08, delayChildren: 1.1 } }
+              }}
             >
-              <button
-                aria-label="Scroll to Mission Control"
-                onClick={() => {
-                  const el = document.getElementById("mission-control");
-                  if (el) {
-                    el.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
-                className="focus:outline-none"
-                type="button"
-              >
-                <ChevronDown className="h-6 w-6 text-muted-foreground mx-auto cursor-pointer hover:text-foreground transition-colors" />
-              </button>
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={i}
+                  className="flex flex-col items-center justify-center gap-1 py-5 px-4 bg-background/70 backdrop-blur-sm hover:bg-muted/30 transition-colors group"
+                  variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45 } } }}
+                >
+                  <span className="text-2xl font-black text-foreground tabular-nums">{stat.value}</span>
+                  <span className="text-[11px] font-bold text-foreground/75 leading-tight text-center">{stat.label}</span>
+                  <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest text-center">{stat.sublabel}</span>
+                </motion.div>
+              ))}
             </motion.div>
+
+          </div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.0, duration: 0.6 }}
+          >
+            <button
+              aria-label="Scroll down"
+              onClick={() => { const el = document.getElementById("mission-control"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
+              className="flex flex-col items-center gap-1.5 group focus:outline-none"
+              type="button"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">Scroll</span>
+              <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
+                <ChevronDown className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+              </motion.div>
+            </button>
           </motion.div>
 
         </section>
