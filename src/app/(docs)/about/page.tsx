@@ -4,6 +4,8 @@ import { Info, Brain, SquareFunction, Orbit, ShieldCheck, Target, Users, Code, A
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
+import { GitHubActivity } from "./github-activity";
 
 export const metadata: Metadata = {
   title: "About Scorpio | AI-Powered Physics Tutoring Vision",
@@ -131,6 +133,45 @@ export default function AboutPage() {
            </Card>
         </div>
       </section>
+
+      {/* Mission / Philosophy */}
+      <section id="philosophy" className="relative overflow-hidden rounded-[2rem] p-10 md:p-16 border border-primary/20 bg-primary/5 backdrop-blur-xl shadow-lg">
+        <div className="absolute -top-16 -right-16 opacity-[0.03]" style={{ animation: "spin 30s linear infinite" }}>
+          <Logo size={320} className="text-primary" />
+        </div>
+        <div className="relative z-10 space-y-8">
+          <div className="space-y-3">
+            <div className="text-xs font-black text-primary uppercase tracking-[0.25em]">Our Philosophy</div>
+            <h2 className="text-3xl md:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+              The constraint is the{" "}
+              <span className="text-primary underline underline-offset-8 decoration-2 decoration-primary/30">curriculum.</span>
+            </h2>
+          </div>
+          <p className="text-lg md:text-xl font-medium text-muted-foreground leading-relaxed max-w-3xl">
+            We built Scorpio with one belief: a student who derives the answer will never forget it. Our constraint architecture doesn&apos;t restrict AI — it enforces the same rigor you apply in your classroom.
+          </p>
+          <p className="text-base text-muted-foreground/60 font-medium leading-relaxed max-w-2xl">
+            No shortcuts. Every AI response is Socratic by design — pushing students back to first principles, never handing them the next step.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Badge variant="outline" className="px-4 py-1.5 rounded-full bg-background/50 border-border font-bold text-xs uppercase tracking-widest text-muted-foreground">
+              Pedagogy-First Architecture
+            </Badge>
+            <Badge variant="outline" className="px-4 py-1.5 rounded-full bg-background/50 border-border font-bold text-xs uppercase tracking-widest text-muted-foreground">
+              Institutional Integrity
+            </Badge>
+            <Badge variant="outline" className="px-4 py-1.5 rounded-full bg-background/50 border-border font-bold text-xs uppercase tracking-widest text-muted-foreground">
+              Research-Driven
+            </Badge>
+          </div>
+        </div>
+      </section>
+
+      <hr className="border-border/40" />
+
+      <GitHubActivity />
+
+      <hr className="border-border/40" />
 
       {/* GitHub/Links CTA */}
       <section className="pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-6">

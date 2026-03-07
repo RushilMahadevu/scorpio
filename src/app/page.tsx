@@ -17,6 +17,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { LoadingScreen } from "@/components/loading-screen";
 import { LandingChatbot } from "@/components/landing-chatbot";
 import { LandingFAQ } from "@/components/landing-faq";
 
@@ -127,6 +128,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative font-medium scroll-smooth">
+      <LoadingScreen />
       <SpaceBackground />
 
       {/* Sticky Blurred Header */}
