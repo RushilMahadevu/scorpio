@@ -1,7 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { getLandingChatbotResponse } from '@/lib/gemini';
 import { recordUsage } from '@/lib/usage-limit';
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_REST_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+async function callGeminiDirect(
+  prompt: string
+): Promise<{ text: string; usage?: { inputTokens: number; outputTokens: number } }> {
+  if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not configured');
+
+  const res = await fetch(GEMINI_REST_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(`Gemini API ${res.status}: ${JSON.stringify(errBody)}`);
+  }
+
+  const data = await res.json();
+  const text: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  return {
+    text,
+    usage: {
+      inputTokens:  data.usageMetadata?.promptTokenCount    ?? 0,
+      outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
+    },
+  };
+}
 
 const LANDING_LIMIT = 10;
 
@@ -76,8 +114,8 @@ export async function POST(req: NextRequest) {
       ...(currentCount === 0 ? { firstMessageAt: new Date() } : {}),
     }, { merge: true });
 
-    // Generate AI response
-    const result = await getLandingChatbotResponse(message, LANDING_SYSTEM_PROMPT);
+    // Generate AI response (server-side direct REST call — avoids firebase/ai client SDK in Cloud Run)
+    const result = await callGeminiDirect(`${LANDING_SYSTEM_PROMPT}\n\nVisitor question: ${message}`);
 
     // Bill to developer's own org via Firestore + Polar metered billing
     if (result.usage && LANDING_ORG_ID) {
