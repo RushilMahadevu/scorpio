@@ -244,6 +244,7 @@ export default function Home() {
                     {[
                       { label: "About Scorpio", href: "/about", icon: Info },
                       { label: "Research & Methodology", href: "/research", icon: Brain },
+                      { label: "Request Access", href: "/request-access", icon: KeyRound },
                       { label: "Contact Support", href: "/contact", icon: Mail },
                       { label: "Privacy Policy", href: "/privacy", icon: Shield },
                       { label: "Terms of Service", href: "/terms", icon: FileText },
@@ -362,6 +363,7 @@ export default function Home() {
                       {[
                         { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
                         { href: "/research", label: "Research & Methodology", desc: "Deep dive into our 4-layer AI architecture.", icon: Brain },
+                        { href: "/request-access", label: "Request Access", desc: "Apply for an organization invite code to get started.", icon: KeyRound },
                         { href: "/contact", label: "Contact Us", desc: "Get help from our institutional success team.", icon: Mail },
                         { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant data infrastructure.", icon: Shield },
                         { href: "/terms", label: "Terms of Service", desc: "Standard institutional and usage terms.", icon: FileText },
@@ -523,10 +525,10 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.7 }}
             >
-              <Link href="/signup">
+              <Link href="/request-access">
                 <Button size="lg" className="w-full sm:w-auto font-bold text-sm px-7 h-11 rounded-full shadow-[0_0_24px_rgba(var(--primary),0.25)] hover:shadow-[0_0_36px_rgba(var(--primary),0.45)] transition-all cursor-pointer gap-2">
                   <KeyRound className="h-4 w-4" />
-                  Get Faculty Access
+                  Request Access
                   <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
                 </Button>
               </Link>
@@ -1929,6 +1931,13 @@ export default function Home() {
               >
                 <FileText className="h-5 w-5" />
                 <span className="text-sm font-medium">Terms</span>
+              </Link>
+              <Link
+                href="/request-access"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <KeyRound className="h-5 w-5" />
+                <span className="text-sm font-medium">Request Access</span>
               </Link>
               <Link
                 href="/contact"

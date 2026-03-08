@@ -409,16 +409,21 @@ export default function SignupPage() {
                   transition={{ delay: 0.25 }}
                   className="space-y-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="teacher-code">Access Code</Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">Enter the special code provided to teachers.</p>
-                      </TooltipContent>
-                    </Tooltip>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="teacher-code">Access Code</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">Enter the invite code sent to you. Don&apos;t have one? Request access below.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Link href="/request-access" className="text-[11px] text-primary hover:underline font-medium shrink-0">
+                      Request a code →
+                    </Link>
                   </div>
                   <div className="relative">
                     <Input
@@ -440,6 +445,13 @@ export default function SignupPage() {
                       {showAccessCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Don&apos;t have a code?{" "}
+                    <Link href="/request-access" className="text-primary hover:underline font-medium">
+                      Request organization access
+                    </Link>{" "}
+                    — we&apos;ll review and send one within 1–2 business days.
+                  </p>
                 </motion.div>
                 {error && (
                   <motion.p 
