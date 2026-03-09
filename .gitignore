@@ -64,3 +64,4 @@ yarn-error.log*
 .cache/
 DEMO.md
 /scripts/
+src/app/admin/

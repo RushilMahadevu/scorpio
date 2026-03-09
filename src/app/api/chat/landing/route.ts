@@ -2,17 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { recordUsage } from '@/lib/usage-limit';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_REST_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+/** Resolve Gemini API key: explicit env var → Firebase web key baked into __FIREBASE_DEFAULTS__ */
+function resolveApiKey(): string {
+  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+  try {
+    const defaults = process.env.__FIREBASE_DEFAULTS__;
+    if (defaults) {
+      const key = JSON.parse(defaults)?.config?.apiKey;
+      if (key) return key;
+    }
+  } catch {}
+  throw new Error('Gemini API key is not configured (set GEMINI_API_KEY or __FIREBASE_DEFAULTS__)');
+}
 
 async function callGeminiDirect(
   prompt: string
 ): Promise<{ text: string; usage?: { inputTokens: number; outputTokens: number } }> {
-  if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not configured');
+  const apiKey = resolveApiKey();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-  const res = await fetch(GEMINI_REST_URL, {
+  const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // Include the production domain as Referer so requests pass any
+      // HTTP-referrer restrictions configured on the Firebase/Gemini API key.
+      'Referer': process.env.NEXT_PUBLIC_APP_URL ?? 'https://scorpioedu.org',
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
