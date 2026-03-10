@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Link as LinkIcon, ExternalLink, Plus, Upload, FileText, Video, Link } from "lucide-react";
+import { Trash2, Link as LinkIcon, ExternalLink, Plus, Upload, FileText, Video, Link, Search } from "lucide-react";
 
 interface Resource {
   id: string;
@@ -32,6 +32,7 @@ export default function ResourcesPage() {
   const [file, setFile] = useState<File | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
   const [filterCourseId, setFilterCourseId] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
@@ -135,70 +136,73 @@ export default function ResourcesPage() {
         <p className="text-muted-foreground">Manage external learning resources for your students</p>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="shadow-sm">
+        <CardHeader className="border-b bg-muted/30">
           <CardTitle>Add New Resource</CardTitle>
           <CardDescription>Upload a file or add a link to a document, video, or website</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAddResource} className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid w-full gap-1.5">
-                <Label htmlFor="title">Resource Title</Label>
+        <CardContent className="pt-6">
+          <form onSubmit={handleAddResource} className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid w-full gap-2">
+                <Label htmlFor="title" className="text-sm font-semibold">Resource Title</Label>
                 <Input
                   id="title"
                   placeholder="e.g., Chapter 1 Notes"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  className="bg-background-secondary border-none ring-1 ring-input focus-visible:ring-primary shadow-none"
                   required
                 />
               </div>
-              <div className="grid w-full gap-1.5">
-                <Label>Class / Course (Optional)</Label>
+              <div className="grid w-full gap-2">
+                <Label className="text-sm font-semibold">Assign to Class</Label>
                 <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                  <SelectTrigger className="cursor-pointer">
+                  <SelectTrigger className="cursor-pointer bg-background-secondary border-none ring-1 ring-input focus-visible:ring-primary shadow-none">
                     <SelectValue placeholder="All Classes" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
+                    <SelectItem value="all" className="cursor-pointer">All Classes (General)</SelectItem>
                     {courses.map(c => (
                       <SelectItem key={c.id} value={c.id} className="cursor-pointer">{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid w-full gap-1.5">
-                <Label>Resource Type</Label>
+              <div className="grid w-full gap-2">
+                <Label className="text-sm font-semibold">Resource Type</Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger className="cursor-pointer">
+                  <SelectTrigger className="cursor-pointer bg-background-secondary border-none ring-1 ring-input focus-visible:ring-primary shadow-none">
                     <SelectValue placeholder="Select Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="link" className="cursor-pointer">Link / Website</SelectItem>
-                    <SelectItem value="document" className="cursor-pointer">Document (PDF, Doc)</SelectItem>
-                    <SelectItem value="video" className="cursor-pointer">Video (YouTube, Vimeo)</SelectItem>
+                    <SelectItem value="link" className="cursor-pointer">External Website</SelectItem>
+                    <SelectItem value="document" className="cursor-pointer">Document (PDF/Word)</SelectItem>
+                    <SelectItem value="video" className="cursor-pointer">Video (YouTube/Direct)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div className="grid w-full gap-1.5">
-                 <Label htmlFor="resource-input">{file ? "File Selected" : "URL or File"}</Label>
-                 <div className="flex gap-2">
-                    <Input
-                      id="url"
-                      placeholder="https://..."
-                      value={url}
-                      onChange={(e) => {
-                        setUrl(e.target.value);
-                        if (e.target.value) setFile(null);
-                      }}
-                      disabled={!!file}
-                      className="flex-1"
-                    />
-                    <div className="relative">
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div className="grid w-full gap-2">
+                 <Label htmlFor="resource-input" className="text-sm font-semibold">{file ? "File Selected" : "Upload File or Enter URL"}</Label>
+                 <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1">
+                      <Input
+                        id="url"
+                        placeholder="https://..."
+                        value={url}
+                        onChange={(e) => {
+                          setUrl(e.target.value);
+                          if (e.target.value) setFile(null);
+                        }}
+                        disabled={!!file}
+                        className="bg-background-secondary border-none ring-1 ring-input focus-visible:ring-primary shadow-sm"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded bg-muted uppercase tracking-wider">or</span>
                       <Input
                         type="file"
                         className="hidden"
@@ -208,7 +212,8 @@ export default function ResourcesPage() {
                           if (f) {
                             setFile(f);
                             setUrl("");
-                            setTitle(prev => prev || f.name.replace(/\.[^/.]+$/, ""));
+                            // Only set title if blank
+                            if (!title) setTitle(f.name.replace(/\.[^/.]+$/, ""));
                           }
                         }}
                       />
@@ -216,50 +221,74 @@ export default function ResourcesPage() {
                         type="button" 
                         variant="outline" 
                         onClick={() => document.getElementById("file-upload")?.click()}
-                        className="cursor-pointer"
+                        className="cursor-pointer whitespace-nowrap min-w-[120px]"
                       >
-                        <Upload className="h-4 w-4" />
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose File
                       </Button>
                     </div>
                  </div>
                  {file && (
-                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                     Selected: {file.name} 
-                     <Button variant="ghost" size="sm" onClick={() => setFile(null)} className="h-auto p-0 text-destructive">Remove</Button>
-                   </p>
+                   <div className="mt-2 p-3 bg-secondary/30 rounded-lg flex items-center justify-between animate-in slide-in-from-top-1 duration-200">
+                     <div className="flex items-center gap-2 overflow-hidden">
+                       <FileText className="h-4 w-4 shrink-0 text-primary" />
+                       <span className="text-sm font-medium truncate">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                     </div>
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       onClick={() => setFile(null)} 
+                       className="h-7 px-2 text-destructive hover:bg-destructive/10"
+                     >
+                       Cancel
+                     </Button>
+                   </div>
                  )}
               </div>
             </div>
 
             {adding && file && uploadProgress > 0 && (
-              <div className="w-full bg-secondary h-2 rounded-full overflow-hidden mt-2">
+              <div className="w-full bg-secondary h-3 rounded-full overflow-hidden mt-4 shadow-inner">
                 <div 
-                  className="bg-primary h-full transition-all duration-300" 
+                  className="bg-primary h-full transition-all duration-300 relative" 
                   style={{ width: `${uploadProgress}%` }}
-                />
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
               </div>
             )}
 
-            <Button type="submit" disabled={adding || (!url && !file)} className="w-full md:w-auto self-end cursor-pointer">
-              {adding ? (
-                 <>{uploadProgress > 0 && uploadProgress < 100 ? `Uploading (${Math.round(uploadProgress)}%)...` : "Adding..."}</>
-              ) : (
-                 <><Plus className="mr-2 h-4 w-4" /> Add Resource</>
-              )}
-            </Button>
+            <div className="flex justify-end pt-2">
+              <Button type="submit" disabled={adding || (!url && !file)} className="w-full sm:w-auto px-10 cursor-pointer text-base py-6">
+                {adding ? (
+                   <>{uploadProgress > 0 && uploadProgress < 100 ? `Uploading (${Math.round(uploadProgress)}%)...` : "Adding..."}</>
+                ) : (
+                   <><Plus className="mr-2 h-5 w-5" /> Add Resource</>
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 pb-4">
           <div>
             <CardTitle>Resource Archive</CardTitle>
             <CardDescription>{resources.length} resources available</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search archive..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <Select value={filterCourseId} onValueChange={setFilterCourseId}>
-              <SelectTrigger className="w-[180px] cursor-pointer">
+              <SelectTrigger className="w-full sm:w-[180px] cursor-pointer">
                 <SelectValue placeholder="All Classes" />
               </SelectTrigger>
               <SelectContent>
@@ -275,49 +304,65 @@ export default function ResourcesPage() {
           {loading ? (
             <p className="text-muted-foreground">Loading...</p>
           ) : resources.length === 0 ? (
-            <p className="text-muted-foreground">No resources added yet.</p>
+            <p className="text-muted-foreground text-center py-8">No resources added yet.</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>URL</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {resources
-                  .filter(r => filterCourseId === "all" || r.courseId === filterCourseId)
-                  .map((resource) => (
-                  <TableRow key={resource.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        {resource.type === "video" ? (
-                          <Video className="h-4 w-4 text-blue-500" />
-                        ) : resource.type === "document" ? (
-                          <FileText className="h-4 w-4 text-orange-500" />
-                        ) : (
-                          <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        {resource.title}
+                  <TableHead className="w-[100px]">Type</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Link / File</TableHead>
+              <TableHead>Class</TableHead>
+              <TableHead>Date Added</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {resources
+              .filter(r => (filterCourseId === "all" || r.courseId === filterCourseId) && 
+                (r.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                 r.url.toLowerCase().includes(searchQuery.toLowerCase())))
+              .map((resource) => (
+              <TableRow key={resource.id} className="group">
+                <TableCell>
+                  <div className="flex items-center">
+                    {resource.type === "video" ? (
+                      <div className="p-2 rounded-md bg-blue-50 text-blue-500">
+                        <Video className="h-4 w-4" />
                       </div>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate text-muted-foreground mr-2">
-                       <a href={resource.url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
-                          {resource.url} <ExternalLink className="h-3 w-3" />
-                       </a>
-                    </TableCell>
-                    <TableCell>
-                        {resource.courseId ? (
-                            <span className="text-xs border px-2 py-1 rounded-full bg-secondary">
-                                {courses.find(c => c.id === resource.courseId)?.name || "Unknown Class"}
-                            </span>
-                        ) : (
-                            <span className="text-xs text-muted-foreground italic">All Classes</span>
-                        )}
-                    </TableCell>
-                    <TableCell className="text-right">
+                    ) : resource.type === "document" ? (
+                      <div className="p-2 rounded-md bg-orange-50 text-orange-500">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                    ) : (
+                      <div className="p-2 rounded-md bg-slate-50 text-slate-500">
+                        <LinkIcon className="h-4 w-4" />
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="font-medium">
+                  {resource.title}
+                </TableCell>
+                <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                   <a href={resource.url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1.5 transition-colors">
+                      {resource.url.length > 30 ? resource.url.substring(0, 30) + "..." : resource.url} 
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                   </a>
+                </TableCell>
+                <TableCell>
+                    {resource.courseId ? (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            {courses.find(c => c.id === resource.courseId)?.name || "Unknown Class"}
+                        </span>
+                    ) : (
+                        <span className="text-xs text-muted-foreground italic bg-muted px-2 py-0.5 rounded-full">All Classes</span>
+                    )}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                  {resource.createdAt?.toDate ? resource.createdAt.toDate().toLocaleDateString() : 'Recently'}
+                </TableCell>
+                <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"

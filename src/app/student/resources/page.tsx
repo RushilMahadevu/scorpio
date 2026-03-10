@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, FileText, Search, Video, File } from "lucide-react";
+import { ExternalLink, FileText, Search, Video, File, Globe } from "lucide-react";
 import Link from "next/link";
 
 interface Resource {
@@ -129,6 +129,7 @@ export default function StudentResourcesPage() {
             <SelectItem value="all" className="cursor-pointer">All Types</SelectItem>
             <SelectItem value="video" className="cursor-pointer">Videos</SelectItem>
             <SelectItem value="document" className="cursor-pointer">Documents</SelectItem>
+            <SelectItem value="link" className="cursor-pointer">Websites</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -153,25 +154,35 @@ export default function StudentResourcesPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredResources.map((resource) => (
-            <Card key={resource.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
+            <Card key={resource.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20 hover:border-l-primary group">
+              <CardHeader className="pb-3">
                 <div className="flex justify-between items-start gap-2">
-                  <CardTitle className="line-clamp-2 text-lg">{resource.title}</CardTitle>
-                  {resource.type === 'video' || resource.url.includes('youtube') ? (
-                    <Video className="h-5 w-5 text-muted-foreground shrink-0" />
-                  ) : (
-                    <File className="h-5 w-5 text-muted-foreground shrink-0" />
-                  )}
+                  <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                    {resource.type === 'video' || resource.url.includes('youtube') || resource.url.includes('vimeo') ? (
+                      <Video className="h-5 w-5 text-blue-500" />
+                    ) : resource.type === 'document' || resource.url.includes('.pdf') || resource.url.includes('.doc') ? (
+                      <FileText className="h-5 w-5 text-orange-500" />
+                    ) : (
+                      <Globe className="h-5 w-5 text-emerald-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="line-clamp-2 text-lg leading-tight group-hover:text-primary transition-colors">
+                      {resource.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1 flex items-center gap-1.5">
+                      <span className="capitalize">{resource.type || 'Link'}</span>
+                      <span className="text-[10px] opacity-30">•</span>
+                      <span>{resource.createdAt?.toDate ? resource.createdAt.toDate().toLocaleDateString() : 'Recently'}</span>
+                    </CardDescription>
+                  </div>
                 </div>
-                <CardDescription>
-                  Added {resource.createdAt?.toDate ? resource.createdAt.toDate().toLocaleDateString() : 'Recently'}
-                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild className="w-full cursor-pointer" variant="outline">
+                <Button asChild className="w-full cursor-pointer mt-2" variant="outline">
                   <Link href={resource.url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="mr-2 h-4 w-4" />
-                    Open Resource
+                    Launch Resource
                   </Link>
                 </Button>
               </CardContent>
