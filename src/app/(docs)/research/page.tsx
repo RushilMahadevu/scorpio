@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, TrendingUp, Target, Download, Eye, LayoutDashboard, ShieldCheck, Microscope, Layers, ChevronDown } from "lucide-react";
+import { BookOpen, TrendingUp, Target, Download, Eye, LayoutDashboard, ShieldCheck, Microscope, Layers, ChevronDown, SquareFunction, Globe, Shield, Lock, Activity } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import CostComparisonChart from "@/components/admin/cost-comparison-chart";
+import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "Research & Methodology | Scorpio Verifiable AI Framework",
@@ -41,6 +43,8 @@ export default function ResearchPage() {
       significance: "Medium"
     }
   ];
+
+  /* ... rest of existing research logic ... */
 
   const constraintLevels = [
     {
@@ -155,6 +159,80 @@ export default function ResearchPage() {
                   </div>
                 </section>
 
+                {/* Mathematical Precision Section (Relocated) */}
+                <section className="space-y-6 pt-8 border-t border-border/40">
+                  <h2 className="flex items-center gap-2 text-2xl font-bold">
+                    <SquareFunction className="h-6 w-6 text-primary" />
+                    Mathematical Fidelity & Notation
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Scorpio uses a custom-built LaTeX engine designed for physics pedagogy. From complex integrals to 4-vector notation, our interface ensures symbols are rendered with publication-grade precision.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="bg-card/30 border-border/50">
+                      <CardContent className="pt-6 space-y-4">
+                        <h4 className="font-bold text-sm uppercase tracking-wider text-primary">Key Features</h4>
+                        <ul className="space-y-2 text-sm text-muted-foreground">
+                          <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-primary" /> Intuitive Math Builder UI</li>
+                          <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-primary" /> Real-time KaTeX Syntax Validation</li>
+                          <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-primary" /> Waypoints Reference System</li>
+                          <li className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-primary" /> Dynamic Preview & Correction</li>
+                        </ul>
+                      </CardContent>
+                    </Card>
+                    <div className="rounded-xl border border-border/50 bg-muted/20 flex items-center justify-center p-8">
+                       <SquareFunction className="h-20 w-20 text-primary/20" />
+                    </div>
+                  </div>
+                </section>
+
+                {/* Cost Transparency & Scale (Relocated) */}
+                <section className="space-y-8 pt-8 border-t border-border/40">
+                  <div className="space-y-2">
+                    <h2 className="flex items-center gap-2 text-2xl font-bold">
+                      <Globe className="h-6 w-6 text-primary" />
+                      Cost Transparency & Scaling
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                      We charge zero markup on AI costs. Most EdTech companies mark up API costs 300–500%. We charge you exactly what Google charges us.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+                      <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
+                        <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                        Infrastructure
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Always-on AI Tutor, Department Waypoints, and Mastery Analytics come standard with every organizational license.
+                      </p>
+                    </div>
+                    <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+                      <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
+                        <Globe className="h-4 w-4 text-primary" />
+                        Zero Markup
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        $0.15/1M input and $0.60/1M output tokens — fixed at Google DeepMind Gemini 2.5 Flash rates.
+                      </p>
+                    </div>
+                    <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+                      <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
+                        <Lock className="h-4 w-4 text-amber-500" />
+                        Enterprise Scale
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        District-wide deployment with custom SSO, dedicated infrastructure, and tiered volume pricing.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <CostComparisonChart />
+                  </div>
+                </section>
+
                 {/* Key Findings */}
                 <section className="space-y-4">
                     <h2 className="flex items-center gap-2 text-2xl font-bold">
@@ -168,8 +246,13 @@ export default function ResearchPage() {
                             <div className="flex items-start justify-between mb-3">
                                 <h3 className="font-semibold text-base">{item.metric}</h3>
                                 <Badge 
-                                  variant={item.significance === 'Critical' ? 'destructive' : (item.significance === 'High' ? 'default' : 'secondary')} 
-                                  className="text-xs"
+                                  variant={item.significance === 'Critical' ? 'default' : (item.significance === 'High' ? 'default' : 'secondary')} 
+                                  className={cn(
+                                    "text-xs",
+                                    item.significance === 'Critical' && "bg-orange-500 hover:bg-orange-600 border-none text-white",
+                                    item.significance === 'High' && "bg-primary text-primary-foreground",
+                                    item.significance === 'Medium' && "bg-secondary text-secondary-foreground"
+                                  )}
                                 >
                                 {item.significance}
                                 </Badge>

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import { Info, Brain, SquareFunction, Orbit, ShieldCheck, Target, Users, Code, ArrowRight, Github } from "lucide-react";
+import { Info, Brain, SquareFunction, Orbit, ShieldCheck, Target, Users, Code, ArrowRight, Github, Activity, Globe, Zap, Waypoints } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { GitHubActivity } from "./github-activity";
+import { motion } from "framer-motion";
 
 export const metadata: Metadata = {
   title: "About Scorpio | AI-Powered Physics Tutoring Vision",
@@ -41,46 +42,50 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="max-w-4xl w-full space-y-12 pb-20">
+    <div className="max-w-4xl w-full space-y-16 pb-24">
       {/* Hero Section */}
-      <section className="space-y-6">
+      <section className="space-y-8 relative">
+        <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="flex items-center gap-4 mb-2">
-          <Badge variant="outline" className="px-3 py-1 bg-primary/5 text-primary border-primary/20">
-            Our Mission
+          <Badge variant="outline" className="px-4 py-1.5 bg-primary/5 text-primary border-primary/20 rounded-full font-mono text-[10px] uppercase tracking-widest">
+            Protocol Status: Active
           </Badge>
         </div>
-        <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tight leading-tight">
-          Transforming Physics Education through <span className="text-primary">AI-Driven Socratic Tutoring</span>.
+        <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tightest leading-[0.9] uppercase italic">
+          Redefining <span className="text-primary drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">Cognition</span> in Physics.
         </h1>
-        <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl">
-          Scorpio is a research-driven educational platform engineered to bridge the gap between traditional LMS frustration and the dynamic cognitive requirements of physics understanding.
+        <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-2xl font-medium tracking-tight">
+          Scorpio is an advanced pedagogical framework engineered to eliminate systemic friction in STEM education through precision Socratic guidance.
         </p>
       </section>
 
-      <hr className="border-border/40" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-border/50 to-transparent" />
 
       {/* Core Capabilities */}
-      <section className="space-y-8">
-        <div className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold tracking-tight">Core Capabilities</h2>
+      <section className="space-y-10">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Target className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-2xl font-black tracking-tighter uppercase italic">Mission Parameters</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {capabilities.map((item, i) => (
-            <Card key={i} className="bg-card/40 border-border/50 hover:border-primary/30 transition-colors group">
-              <CardHeader className="pb-3">
+            <Card key={i} className="bg-background/20 backdrop-blur-sm border-border/40 hover:border-primary/50 transition-all duration-500 group relative overflow-hidden rounded-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardHeader className="pb-4 relative z-10">
                 <div className="flex justify-between items-start">
-                  <div className="p-2.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                  <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
                     <item.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="text-[10px] font-mono uppercase bg-muted/50">
+                  <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter bg-muted/30 text-muted-foreground border-none px-2 rounded-md">
                     {item.tag}
                   </Badge>
                 </div>
-                <CardTitle className="text-lg mt-4">{item.title}</CardTitle>
+                <CardTitle className="text-xl mt-6 font-bold tracking-tight">{item.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+              <CardContent className="relative z-10">
+                <p className="text-muted-foreground/90 leading-relaxed font-medium">
                   {item.description}
                 </p>
               </CardContent>
@@ -88,6 +93,44 @@ export default function AboutPage() {
           ))}
         </div>
       </section>
+
+      {/* Waypoints Network Section (Relocated) */}
+      <section id="waypoints" className="space-y-8 pt-8">
+        <div className="flex items-center gap-2">
+          <Globe className="h-5 w-5 text-primary" />
+          <h2 className="text-2xl font-bold tracking-tight">The Waypoints Network</h2>
+        </div>
+        <p className="text-muted-foreground leading-relaxed">
+          High-precision, peer-validated physics modules built by instructors — shared across institutions. Drop them straight into your curriculum.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              icon: Globe,
+              title: "Instructor Shared",
+              body: "Every Waypoint is authored by a verified Scorpio teacher — not AI-generated.",
+            },
+            {
+              icon: ShieldCheck,
+              title: "Peer-Validated",
+              body: "Modules go through a structured review process before they enter the network.",
+            },
+            {
+              icon: Zap,
+              title: "Drop-in Ready",
+              body: "Browse, preview, and attach Waypoints to your assignments in seconds.",
+            },
+          ].map((item, i) => (
+            <div key={i} className="p-5 rounded-xl border border-border/40 bg-card/30 backdrop-blur-sm">
+              <item.icon className="h-5 w-5 text-primary mb-3" />
+              <p className="font-bold text-sm text-foreground mb-1">{item.title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <hr className="border-border/40" />
 
       {/* The Vision Section */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center bg-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
