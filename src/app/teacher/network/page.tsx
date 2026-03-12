@@ -15,7 +15,7 @@ import {
   Building2, 
   Users, 
   ShieldAlert, 
-  Zap, 
+  HandCoins, 
   Info, 
   ArrowRight, 
   PlusCircle, 
@@ -84,6 +84,7 @@ import { UsageAnalytics } from "@/components/admin/usage-analytics";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { NetworkTutorial } from "@/components/network-tutorial";
 
 export default function NetworkPage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -114,6 +115,7 @@ export default function NetworkPage() {
   ]);
   const [limitsInput, setLimitsInput] = useState("");
   const [limitsLoading, setLimitsLoading] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   useEffect(() => {
     if (organization?.aiBudgetLimit !== undefined) {
@@ -589,6 +591,15 @@ export default function NetworkPage() {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer h-9 text-[10px] font-black uppercase tracking-widest gap-2 border-primary/20 hover:bg-primary/5 rounded-full px-5"
+              onClick={() => setTutorialOpen(true)}
+            >
+              <Info className="h-3.5 w-3.5" />
+              How it works
+            </Button>
             <div className="hidden lg:flex flex-col items-end mr-2">
               <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Global Status</span>
               <span className="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
@@ -598,6 +609,8 @@ export default function NetworkPage() {
             </div>
           </div>
         </div>
+
+        <NetworkTutorial open={tutorialOpen} onOpenChange={setTutorialOpen} />
 
         {!profile?.organizationId ? (
           <div className="max-w-4xl mx-auto py-12">
@@ -930,7 +943,7 @@ export default function NetworkPage() {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <HandCoins className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     AI Budget Cap
                     <Tooltip>
                       <TooltipTrigger asChild>
