@@ -65,7 +65,7 @@ export async function POST(req: Request) {
             subscriptionId: sub.id,
             subscriptionStatus: sub.status === "active" ? "active" : "none",
             planId: planId || "standard_monthly",
-            aiBudgetLimit: 200,
+            aiBudgetLimit: 10000,
             ...(type === "subscription.created" || type === "subscription.active" ? { aiUsageCurrent: 0 } : {}),
             baseMonthlyFee,
           }, { merge: true });
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
               polarCustomerId: order.customerId ?? order.customer_id ?? null,
               subscriptionStatus: "active",
               planId: orderPlanId,
-              aiBudgetLimit: 200,
+              aiBudgetLimit: 10000,
               aiUsageCurrent: 0,
               baseMonthlyFee: planFees[orderPlanId] || 499,
               lastRenewalAt: new Date(),

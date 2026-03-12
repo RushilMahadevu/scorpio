@@ -1151,12 +1151,12 @@ export async function gradeResponse(
  * Synthesize a highly precise scoring guide for a specific question.
  * Used during assignment creation to help teachers build better rubrics.
  */
-export async function synthesizeRubric(questionText: string, topic: string) {
+export async function synthesizeRubric(questionText: string, topic: string): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const prompt = `
       You are an academic curriculum assistant.
       Your task is to create a detailed Scoring Guide for a question about "${topic}".
-      
+
       QUESTION: "${questionText}"
 
       Please provide:
@@ -1170,10 +1170,16 @@ export async function synthesizeRubric(questionText: string, topic: string) {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    return {
+      text: response.text(),
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0,
+      }
+    };
   } catch (error) {
     console.error("Error synthesizing rubric:", error);
-    return "Failed to synthesize rubric. Please provide manual guidelines.";
+    return { text: "Failed to synthesize rubric. Please provide manual guidelines." };
   }
 }
 

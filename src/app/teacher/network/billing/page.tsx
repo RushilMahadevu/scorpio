@@ -73,7 +73,7 @@ export default function BillingPage() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to start checkout.");
+      if (!response.ok) throw new Error(data.message || data.error || "Failed to start checkout.");
       
       if (data.url) {
         window.location.href = data.url;
@@ -109,7 +109,7 @@ export default function BillingPage() {
     );
   }
 
-  const isOwner = user?.uid === organization.ownerId;
+  const isOwner = user?.uid === organization.ownerId || (profile?.role as string) === "school_admin";
 
   return (
     <div className="min-h-screen bg-transparent text-foreground pb-20 relative">
@@ -258,11 +258,11 @@ export default function BillingPage() {
                 <h4 className="text-lg font-black tracking-tight">Subscription Active</h4>
                 <p className="text-muted-foreground text-sm mt-0.5">All network features are unlocked for your department.</p>
               </div>
-              <Link href="https://polar.sh/scorpio/portal" target="_blank" className="w-full sm:w-auto shrink-0">
-                <Button className="w-full sm:w-auto px-6 py-5 rounded-xl bg-zinc-900 text-white hover:bg-black font-bold shadow-lg text-sm">
+              <Button asChild className="cursor-pointer w-full sm:w-auto px-6 py-5 rounded-xl bg-zinc-900 text-white hover:bg-black font-bold shadow-lg text-sm">
+                <Link href="https://polar.sh/scorpio/portal" target="_blank">
                   Polar Portal
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-5 bg-muted/30 border border-border/50 rounded-xl space-y-1.5">
@@ -341,8 +341,8 @@ export default function BillingPage() {
           </div>
 
           {/* Enterprise */}
-          <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
-            <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+            <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             <div className="relative z-10 space-y-3">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-amber-500" />
@@ -350,7 +350,9 @@ export default function BillingPage() {
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
               <Button variant="outline" className="w-full bg-transparent border-white/20 text-foreground hover:bg-white hover:text-foreground font-black uppercase tracking-widest text-[10px] py-4 rounded-xl">
+              <Link href={"/contact"} className="flex items-center gap-2 justify-center">
                 Contact Us
+              </Link>
               </Button>
             </div>
           </div>

@@ -34,12 +34,16 @@ export async function POST(req: NextRequest) {
     }
 
     const rubric = await synthesizeRubric(questionText, topic || "General Scientific Query");
-    
-    // Rubric synthesis doesn't currently return usage in gemini.ts, 
-    // but we should probably add it or record a flat fee.
-    // For now, let's just record a small flat usage or none if not available.
-    
-    return NextResponse.json({ rubric });
+
+    if (rubric.usage) {
+      try {
+        await recordUsage(organizationId, "generation", rubric.usage.inputTokens, rubric.usage.outputTokens);
+      } catch (usageError) {
+        console.error("Failed to record usage:", usageError);
+      }
+    }
+
+    return NextResponse.json({ rubric: rubric.text });
   } catch (error: any) {
     console.error("Rubric synthesis API error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

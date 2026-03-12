@@ -147,15 +147,14 @@ export async function recordUsage(
             name: "ai_usage",
             timestamp: new Date(),
             metadata: {
-              // Polar meter aggregation expects these exact property paths:
-              // "Input Tokens" meter: sum of llm.input_tokens
-              // "Output Tokens" meter: sum of llm.output_tokens
-              "llm.input_tokens": inputTokens,
-              "llm.output_tokens": outputTokens,
+              // Polar meter filter: Metadata | event_name | equals | ai_usage
+              event_name: "ai_usage",
+              input_tokens: inputTokens,
+              output_tokens: outputTokens,
               // Extra context fields
               vendor: "google",
               model: "gemini-2.5-flash",
-              costCents: parseFloat(costCents.toFixed(6)),
+              costUSD: parseFloat((costCents / 100).toFixed(8)),
               type: String(type),
               organizationId: String(organizationId),
             }
