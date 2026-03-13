@@ -51,8 +51,8 @@ export default function AboutPage() {
             Protocol Status: Active
           </Badge>
         </div>
-        <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tightest leading-[0.9] uppercase italic">
-          Redefining <span className="text-primary drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">Cognition</span> in Physics.
+        <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tightest leading-[0.9]">
+          About <span className="text-primary underline underline-offset-8 decoration-2 decoration-primary/30">Scorpio</span>
         </h1>
         <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed max-w-2xl font-medium tracking-tight">
           Scorpio is an advanced pedagogical framework engineered to eliminate systemic friction in STEM education through precision Socratic guidance.

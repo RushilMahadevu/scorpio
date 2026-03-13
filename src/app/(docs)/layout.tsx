@@ -18,7 +18,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
              <div className="flex items-center gap-3 p-8 border-b border-border/10">
                 <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-all hover:scale-105 active:scale-95">
                     <Logo size={28} className="text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />
-                    <span className="font-black text-xl tracking-tighter uppercase italic">Scorpio</span>
+                    <span className="font-black text-xl tracking-tigther">Scorpio</span>
                 </Link>
              </div>
              

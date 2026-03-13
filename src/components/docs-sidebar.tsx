@@ -26,7 +26,7 @@ export function DocsSidebar() {
               className={cn(
                 "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 relative z-10",
                 isActive 
-                  ? "text-primary bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
+                  ? "text-primary bg-primary/5 scale-95" 
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
