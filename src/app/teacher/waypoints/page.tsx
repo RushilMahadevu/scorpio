@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Copy, Globe, Users, Lock, Loader2, Sparkles, Waypoints, Filter, ArrowUpRight, Clock, Star, MapPinned } from "lucide-react";
+import { Search, Copy, Globe, Users, Lock, Loader2, Sparkles, Waypoints, Filter, ArrowUpRight, Clock, Star, MapPinned, Bookmark, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -221,23 +221,23 @@ export default function WaypointsPage() {
         </Tabs>
 
         <Select value={topicFilter} onValueChange={setTopicFilter}>
-          <SelectTrigger className="w-full md:w-[180px] h-12 bg-white dark:bg-neutral-900 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white">
-            <div className="cursor-pointer flex items-center gap-2">
+          <SelectTrigger className="cursor-pointer w-full md:w-[180px] h-12 bg-white dark:bg-neutral-900 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white">
+            <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
               <SelectValue placeholder="All Topics" />
             </div>
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-neutral-900 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white">
-            <SelectItem value="all">All Topics</SelectItem>
-            <SelectItem value="kinematics">Kinematics</SelectItem>
-            <SelectItem value="dynamics">Dynamics</SelectItem>
-            <SelectItem value="rotation">Rotational Physics</SelectItem>
-            <SelectItem value="thermodynamics">Thermodynamics</SelectItem>
-            <SelectItem value="em">Electromagnetism</SelectItem>
-            <SelectItem value="waves">Waves & Optics</SelectItem>
-            <SelectItem value="modern">Modern Physics</SelectItem>
-            <SelectItem value="fluids">Fluid Mechanics</SelectItem>
-            <SelectItem value="oscillations">Oscillations</SelectItem>
+            <SelectItem value="all" className="cursor-pointer">All Topics</SelectItem>
+            <SelectItem value="kinematics" className="cursor-pointer">Kinematics</SelectItem>
+            <SelectItem value="dynamics" className="cursor-pointer">Dynamics</SelectItem>
+            <SelectItem value="rotation" className="cursor-pointer">Rotational Physics</SelectItem>
+            <SelectItem value="thermodynamics" className="cursor-pointer">Thermodynamics</SelectItem>
+            <SelectItem value="em" className="cursor-pointer">Electromagnetism</SelectItem>
+            <SelectItem value="waves" className="cursor-pointer">Waves & Optics</SelectItem>
+            <SelectItem value="modern" className="cursor-pointer">Modern Physics</SelectItem>
+            <SelectItem value="fluids" className="cursor-pointer">Fluid Mechanics</SelectItem>
+            <SelectItem value="oscillations" className="cursor-pointer">Oscillations</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -277,7 +277,7 @@ export default function WaypointsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, delay: idx * 0.05 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
                 >
                   <Card className="group relative h-full flex flex-col overflow-hidden bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-white/5 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md">
                     <div className="absolute top-0 right-0 h-24 w-24 bg-primary/5 rounded-bl-full blur-2xl group-hover:bg-primary/10 transition-colors" />
@@ -317,7 +317,7 @@ export default function WaypointsPage() {
                       <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-neutral-500 bg-zinc-100 dark:bg-white/5 px-3 py-2 rounded-xl">
                         <span className="flex items-center gap-2">
                            <Star className="h-3 w-3 text-primary" />
-                           {waypoint.forkCount} Active Fork{waypoint.forkCount !== 1 ? 's' : ''}
+                           {waypoint.forkCount || 0} Active Fork{(waypoint.forkCount || 0) !== 1 ? 's' : ''}
                         </span>
                         <span>v1.2.0</span>
                       </div>

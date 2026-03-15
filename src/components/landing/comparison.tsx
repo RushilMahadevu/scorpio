@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export function Comparison() {
   return (
-    <section id="comparison" className="container mx-auto px-6 py-32 relative">
+    <section id="comparison" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-primary/4 rounded-full blur-[120px] pointer-events-none -z-10" />
       <motion.div
         className="max-w-6xl mx-auto"
@@ -38,8 +38,9 @@ export function Comparison() {
           viewport={{ once: true }}
           transition={{ delay: 0.15, duration: 0.6 }}
         >
+          <div className="overflow-x-auto">
           {/* Table header */}
-          <div className="grid grid-cols-5 bg-muted/30 border-b border-border/50 px-6 py-4">
+          <div className="grid grid-cols-5 bg-muted/30 border-b border-border/50 px-6 py-4 min-w-[600px]">
             <div className="col-span-1 text-xs font-black uppercase tracking-[0.15em] text-muted-foreground">Capability</div>
             <div className="col-span-1 text-center">
               <div className="inline-flex flex-col items-center gap-1">
@@ -119,7 +120,7 @@ export function Comparison() {
           ].map((row, i) => (
             <motion.div
               key={i}
-              className={`grid grid-cols-5 px-6 py-4 border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors ${i % 2 === 0 ? "" : "bg-muted/5"}`}
+              className={`grid grid-cols-5 px-6 py-4 border-b border-border/30 last:border-0 hover:bg-muted/10 transition-colors min-w-[600px] ${i % 2 === 0 ? "" : "bg-muted/5"}`}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -143,6 +144,7 @@ export function Comparison() {
               </div>
             </motion.div>
           ))}
+          </div>{/* end overflow-x-auto */}
         </motion.div>
 
         {/* Footnotes */}

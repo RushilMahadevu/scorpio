@@ -12,6 +12,7 @@ import {
   LabelList,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -90,6 +91,13 @@ function CustomTooltip({ active, payload, label }: any) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CostComparisonChart() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   return (
     <section className="space-y-14">
       {/* Title block */}
@@ -107,12 +115,12 @@ export default function CostComparisonChart() {
       </div>
 
       {/* ── Bar Chart ──────────────────────────────────────────────────────── */}
-      <div className="w-full rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-md p-8 overflow-hidden">
-        <div className="h-[420px] w-full">
+      <div className="w-full rounded-[2.5rem] border border-border/40 bg-card/30 backdrop-blur-md p-4 sm:p-8 overflow-hidden">
+        <div className="h-[280px] sm:h-[420px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 36, right: 24, left: 16, bottom: 8 }}
+              margin={{ top: isMobile ? 8 : 36, right: isMobile ? 8 : 24, left: isMobile ? 0 : 16, bottom: 8 }}
               barGap={3}
               barCategoryGap="32%"
             >
@@ -123,16 +131,16 @@ export default function CostComparisonChart() {
               />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 11, fontWeight: 700 }}
+                tick={{ fontSize: isMobile ? 9 : 11, fontWeight: 700 }}
                 axisLine={{ stroke: "rgba(128,128,128,0.15)" }}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={fmtAxis}
-                tick={{ fontSize: 10, fontFamily: "monospace" }}
+                tick={{ fontSize: isMobile ? 9 : 10, fontFamily: "monospace" }}
                 axisLine={false}
                 tickLine={false}
-                width={52}
+                width={isMobile ? 40 : 52}
               />
               <Tooltip
                 content={<CustomTooltip />}
@@ -154,13 +162,13 @@ export default function CostComparisonChart() {
                 wrapperStyle={{ paddingTop: "20px" }}
               />
 
-              {/* Our Total — emerald */}
               <Bar
                 dataKey="ourTotal"
                 name="Scorpio"
                 fill="#10b981"
                 radius={[6, 6, 0, 0]}
               >
+                {!isMobile && (
                 <LabelList
                   dataKey="ourTotal"
                   position="top"
@@ -172,6 +180,7 @@ export default function CostComparisonChart() {
                     fontFamily: "monospace",
                   }}
                 />
+                )}
               </Bar>
 
               {/* Industry Low — amber */}
@@ -181,6 +190,7 @@ export default function CostComparisonChart() {
                 fill="#f59e0b"
                 radius={[6, 6, 0, 0]}
               >
+                {!isMobile && (
                 <LabelList
                   dataKey="industryLow"
                   position="top"
@@ -192,6 +202,7 @@ export default function CostComparisonChart() {
                     fontFamily: "monospace",
                   }}
                 />
+                )}
               </Bar>
 
               {/* Industry High — red */}
@@ -201,6 +212,7 @@ export default function CostComparisonChart() {
                 fill="#ef4444"
                 radius={[6, 6, 0, 0]}
               >
+                {!isMobile && (
                 <LabelList
                   dataKey="industryHigh"
                   position="top"
@@ -212,6 +224,7 @@ export default function CostComparisonChart() {
                     fontFamily: "monospace",
                   }}
                 />
+                )}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

@@ -77,7 +77,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen relative font-medium scroll-smooth">
+    <div className="min-h-screen relative font-medium scroll-smooth overflow-x-hidden">
       <LoadingScreen />
       <SpaceBackground />
 
@@ -297,7 +297,7 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section id="home" className="container mx-auto px-6 pt-2 pb-12 text-center relative overflow-hidden min-h-[92vh] flex flex-col items-center justify-center">
+        <section id="home" className="container mx-auto px-4 sm:px-6 pt-2 pb-12 text-center relative overflow-hidden min-h-[92vh] flex flex-col items-center justify-center">
 
           {/* Atmospheric background */}
           <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
@@ -457,9 +457,9 @@ export default function Home() {
                        <span className="text-primary font-medium">Faculty Command Center</span>
                     </Badge>
                   </Link>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-center text-foreground pb-4 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-center text-foreground pb-4 leading-tight">
                   Your Faculty <br />
-                  <span className="text-5xl md:text-7xl lg:text-[6rem] font-bold mt-1 leading-none text-foreground">
+                  <span className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-bold mt-1 leading-none text-foreground">
                     Mission Control.
                   </span>
                 </h1>
@@ -480,7 +480,7 @@ export default function Home() {
 
 
         {/* Problem Section */}
-        <section id="problem" className="container mx-auto px-6 py-32 relative overflow-hidden">
+        <section id="problem" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
           
           <div className="max-w-5xl mx-auto space-y-16">
@@ -571,7 +571,7 @@ export default function Home() {
         </section>
 
         {/* See It Work Section (Merged Demo + Dashboard) */}
-        <section id="demos" className="container mx-auto px-6 py-32 relative">
+        <section id="demos" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[140px] pointer-events-none -z-10" />
           
           <div className="max-w-6xl mx-auto space-y-16">
@@ -588,7 +588,7 @@ export default function Home() {
                <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">Verify mastery through real-time observability and pedagogical scaffolding.</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               <motion.div 
                 className="relative rounded-3xl overflow-hidden border border-border/60 bg-black/40 shadow-2xl"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -628,7 +628,7 @@ export default function Home() {
 
 
         {/* Pricing Section */}
-        <section id="pricing" className="container mx-auto px-6 py-32 relative">
+        <section id="pricing" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/3 rounded-full blur-[150px] pointer-events-none -z-10" />
           <div className="max-w-6xl mx-auto space-y-20">
 
@@ -809,9 +809,9 @@ export default function Home() {
         </section>
 
         {/* CTA */}
-        <section id="cta" className="container mx-auto px-6 py-40">
+        <section id="cta" className="container mx-auto px-4 sm:px-6 py-20 md:py-40">
           <motion.div
-            className="max-w-5xl mx-auto rounded-[3.5rem] p-12 md:p-24 border border-border/60 bg-gradient-to-br from-card/30 to-background/50 backdrop-blur-xl relative overflow-hidden text-center shadow-xl"
+            className="max-w-5xl mx-auto rounded-[2rem] sm:rounded-[3.5rem] p-8 sm:p-12 md:p-24 border border-border/60 bg-gradient-to-br from-card/30 to-background/50 backdrop-blur-xl relative overflow-hidden text-center shadow-xl"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -820,10 +820,10 @@ export default function Home() {
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
             
-            <div className="relative z-10 space-y-12">
+            <div className="relative z-10 space-y-8 md:space-y-12">
               <div className="space-y-6">
-                <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-foreground">Empower Your <span className="text-primary italic">Department.</span></h2>
-                <p className="text-muted-foreground text-xl md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">
+                <h2 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-foreground">Empower Your <span className="text-primary italic">Department.</span></h2>
+                <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">
                   Deploy in one afternoon. No LMS integration required. Just better physics outcomes from day one — for every student in your roster.
                 </p>
               </div>
