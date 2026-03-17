@@ -454,13 +454,13 @@ export default function Home() {
                  <Link href="/signup" className="mb-4">
                     <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
                        <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
-                       <span className="text-primary font-medium">Faculty Command Center</span>
+                       <span className="text-primary font-medium">Precise AI Tracking</span>
                     </Badge>
                   </Link>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-center text-foreground pb-4 leading-tight">
-                  Your Faculty <br />
-                  <span className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-bold mt-1 leading-none text-foreground">
-                    Mission Control.
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-foreground/90 pb-4 leading-tight">
+                  Your Network <br />
+                  <span className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-black mt-1 leading-none text-primary">
+                    Granular Analytics
                   </span>
                 </h1>
               </div>
@@ -486,7 +486,7 @@ export default function Home() {
           <div className="max-w-5xl mx-auto space-y-16">
             <div className="text-center space-y-4">
               <motion.div 
-                className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-orange-500/20 bg-orange-500/5 text-[10px] font-black tracking-[0.2em] uppercase text-orange-600 dark:text-orange-400"
+                className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-red-500/20 bg-red-500/5 text-[10px] font-black tracking-[0.2em] uppercase text-red-600 dark:text-red-400"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -500,7 +500,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                Physics is being <span className="text-orange-600 dark:text-orange-500 italic">erased</span><br />
+                Physics is being <span className="text-red-500 dark:text-red-400 italic">erased</span><br />
                 by "Answer Engines."
               </motion.h2>
               <motion.p 
@@ -520,30 +520,30 @@ export default function Home() {
                   title: "Solution Leakage", 
                   desc: "ChatGPT and Gemini prioritize the 'Final Answer,' effectively making homework a game of copy-paste instead of derivation.", 
                   icon: AlertTriangle,
-                  color: "orange"
+                  color: "red"
                 },
                 { 
                   title: "The 'Black Box' Student", 
                   desc: "When students rely on unconstrained AI, instructors lose all insight into the actual learning gaps and misconceptions.", 
                   icon: Brain,
-                  color: "orange"
+                  color: "red"
                 },
                 { 
                   title: "Institutional Rot", 
                   desc: "Degrees lose value when procedural mastery can be faked. Scorpio restores the integrity of the physics curriculum.", 
                   icon: Shield,
-                  color: "orange"
+                  color: "red"
                 },
               ].map((item, i) => (
                 <motion.div 
                   key={i} 
-                  className="p-8 rounded-[2rem] border border-border/50 bg-card/30 backdrop-blur-xl hover:border-orange-500/30 transition-all text-left space-y-5 group relative overflow-hidden"
+                  className="p-8 rounded-[2rem] border border-border/50 bg-card/30 backdrop-blur-xl hover:border-red-500/30 transition-all text-left space-y-5 group relative overflow-hidden"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
+                  <div className="h-12 w-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 dark:text-red-400 group-hover:bg-red-900 group-hover:text-white transition-all duration-300">
                     <item.icon className="h-6 w-6" />
                   </div>
                   <div className="space-y-2">
@@ -562,7 +562,7 @@ export default function Home() {
               transition={{ delay: 0.4 }}
             >
               <Link href="/about">
-                <Button variant="ghost" className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-orange-500 transition-colors">
+                <Button variant="ghost" className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-red-500 transition-colors">
                   Read our full mission statement <ArrowRight className="ml-2 h-3 w-3" />
                 </Button>
               </Link>
@@ -588,7 +588,7 @@ export default function Home() {
                <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">Verify mastery through real-time observability and pedagogical scaffolding.</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
+            <div className="grid lg:grid-cols-1 gap-6 lg:gap-12 items-center">
               <motion.div 
                 className="relative rounded-3xl overflow-hidden border border-border/60 bg-black/40 shadow-2xl"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -600,21 +600,6 @@ export default function Home() {
                    controls 
                    className="w-full h-auto aspect-video cursor-pointer"
                  />
-              </motion.div>
-              <motion.div
-                className="rounded-3xl overflow-hidden border border-border/60 bg-zinc-900 shadow-2xl h-full"
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-              >
-                 <Image
-                    src="/mission-control.png"
-                    alt="Scorpio Teacher Dashboard"
-                    height={1280}
-                    width={2650}
-                    className="object-cover h-full w-full"
-                    draggable={false}
-                  />
               </motion.div>
             </div>
           </div>
