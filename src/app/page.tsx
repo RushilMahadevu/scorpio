@@ -18,6 +18,7 @@ import { LoadingScreen } from "@/components/loading-screen";
 import { LandingChatbot } from "@/components/landing-chatbot";
 import { LandingFAQ } from "@/components/landing-faq";
 import { Comparison } from "@/components/landing/comparison";
+import { SystemAccordion } from "@/components/system-accordion";
 
 import { ContainerScroll} from "@/components/ui/container-scroll-animation";
 
@@ -600,6 +601,19 @@ export default function Home() {
                    controls 
                    className="w-full h-auto aspect-video cursor-pointer"
                  />
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="text-center space-y-4 mb-8">
+                   <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Scan Our Features.</h3>
+                   <p className="text-muted-foreground text-base max-w-xl mx-auto font-medium">Explore the unified ecosystem of features designed for physics education.</p>
+                </div>
+                <SystemAccordion />
               </motion.div>
             </div>
           </div>
