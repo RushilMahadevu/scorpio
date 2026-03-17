@@ -261,7 +261,7 @@ export default function TeacherDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's an overview of your class.</p>
+        <p className="text-muted-foreground">Welcome back <span className="font-semibold">{user?.displayName || "Teacher"}</span>! Here's an overview of your class.</p>
       </div>
 
 

@@ -55,28 +55,51 @@ export function ModeToggle() {
           System
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={toggleSpaceEffects}>
+        <DropdownMenuItem onClick={toggleSpaceEffects} onSelect={(e) => e.preventDefault()}>
           <Sparkles className="mr-2 h-4 w-4" />
           Space Effects: {spaceEffectsEnabled ? "On" : "Off"}
         </DropdownMenuItem>
         {spaceEffectsEnabled && (
-          <div className="px-4 py-2">
-            <div className="mb-2 text-xs font-semibold">Spacy Level</div>
-            <RadioGroup value={String(spacyLevel)} onValueChange={v => setSpacyLevel(Number(v))} className="grid grid-cols-5 gap-2">
-              {[0, 10, 25, 40, 50].map(level => (
-                <RadioGroupItem key={level} value={String(level)} />
+          <div className="px-4 py-2 border-t mt-2" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Spacy Level</div>
+            <div className="grid grid-cols-5 gap-1.5 mb-4">
+              {[0, 5, 12, 25, 40].map((level) => (
+                <button
+                  key={level}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSpacyLevel(level);
+                  }}
+                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${
+                    spacyLevel === level 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-background hover:bg-muted border-border"
+                  }`}
+                >
+                  {level}
+                </button>
               ))}
-            </RadioGroup>
-            <div className="mt-4 mb-2 text-xs font-semibold">Nebula Brightness</div>
-            <input
-              type="range"
-              min={0}
-              max={25}
-              value={nebulaBrightness}
-              onChange={e => setNebulaBrightness(Number(e.target.value))}
-              className="w-full"
-            />
-            <div className="text-xs text-muted-foreground">{nebulaBrightness}</div>
+            </div>
+            
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nebula Intensity</div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[0, 10, 20, 35].map((level) => (
+                <button
+                  key={level}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setNebulaBrightness(level);
+                  }}
+                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${
+                    nebulaBrightness === level 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-background hover:bg-muted border-border"
+                  }`}
+                >
+                  {level === 0 ? "Off" : level === 10 ? "Dim" : level === 20 ? "Mid" : "High"}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </DropdownMenuContent>

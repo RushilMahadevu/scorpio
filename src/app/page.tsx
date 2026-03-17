@@ -77,7 +77,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen relative font-medium scroll-smooth overflow-x-hidden">
+    <div className="min-h-screen relative font-medium scroll-smooth">
       <LoadingScreen />
       <SpaceBackground />
 

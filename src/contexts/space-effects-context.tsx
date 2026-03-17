@@ -15,8 +15,8 @@ const SpaceEffectsContext = React.createContext<SpaceEffectsContextType | undefi
 
 export function SpaceEffectsProvider({ children }: { children: React.ReactNode }) {
   const [spaceEffectsEnabled, setSpaceEffectsEnabled] = React.useState(true);
-  const [spacyLevel, setSpacyLevelState] = React.useState(12); // default value changed to 12
-  const [nebulaBrightness, setNebulaBrightnessState] = React.useState(12); // default value changed to 12
+  const [spacyLevel, setSpacyLevelState] = React.useState(5); // default value changed to 5
+  const [nebulaBrightness, setNebulaBrightnessState] = React.useState(0); // default value changed to 0
 
   React.useEffect(() => {
     const stored = localStorage.getItem("spaceEffectsEnabled");

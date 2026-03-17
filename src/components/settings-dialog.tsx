@@ -378,23 +378,24 @@ export function SettingsDialog() {
                         </RadioGroup>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">Nebula Brightness</Label>
-                        <p className="text-xs text-muted-foreground">Background glow intensity</p>
-                        <div className="space-y-2">
-                          <input
-                            type="range"
-                            min={0}
-                            max={25}
-                            value={nebulaBrightness}
-                            onChange={e => setNebulaBrightness(Number(e.target.value))}
-                            className="w-full cursor-pointer"
-                          />
-                          <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Subtle</span>
-                            <span>{nebulaBrightness}</span>
-                            <span>Bright</span>
-                          </div>
+                      <div className="space-y-4 pt-2">
+                        <Label className="text-sm font-medium">Nebula Intensity</Label>
+                        <p className="text-xs text-muted-foreground -mt-2">Enable or adjust cosmic glow</p>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[0, 10, 20, 35].map((level) => (
+                            <div key={level} className="flex flex-col items-center">
+                              <button
+                                onClick={() => setNebulaBrightness(level)}
+                                className={`w-full py-2 px-1 text-[10px] font-medium rounded-md border transition-all ${
+                                  nebulaBrightness === level
+                                    ? "bg-primary text-primary-foreground border-primary"
+                                    : "bg-background hover:bg-muted border-border"
+                                }`}
+                              >
+                                {level === 0 ? "Off" : level === 10 ? "Dim" : level === 20 ? "Mid" : "High"}
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>

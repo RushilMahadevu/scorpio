@@ -8,13 +8,14 @@
   to { transform: translate(660px, 200px); }
 }
 @keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
+  0%, 100% { opacity: 0.25; transform: scale(0.95); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 @keyframes shootingStar {
-  0% { transform: translate(0, 0) rotate(-45deg); opacity: 0; }
+  0% { transform: translate(0, 0) rotate(-45deg) scaleX(1); opacity: 0; }
   10% { opacity: 1; }
-  100% { transform: translate(120vw, 60vh) rotate(-45deg); opacity: 0; }
+  90% { opacity: 1; }
+  100% { transform: translate(130vw, 65vh) rotate(-45deg) scaleX(1.5); opacity: 0; }
 }
 @keyframes pulse {
   0%, 100% { opacity: 0.4; }

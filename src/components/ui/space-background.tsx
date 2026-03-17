@@ -27,20 +27,10 @@ export function SpaceBackground() {
               radial-gradient(1.5px 1.5px at 200px 50px, currentColor, transparent),
               radial-gradient(1px 1px at 220px 140px, currentColor, transparent),
               radial-gradient(1px 1px at 260px 90px, currentColor, transparent),
-              radial-gradient(1.5px 1.5px at 300px 170px, currentColor, transparent),
-              radial-gradient(1px 1px at 340px 30px, currentColor, transparent),
-              radial-gradient(1px 1px at 380px 100px, currentColor, transparent),
-              radial-gradient(1px 1px at 420px 60px, currentColor, transparent),
-              radial-gradient(1.5px 1.5px at 460px 150px, currentColor, transparent),
-              radial-gradient(1px 1px at 500px 20px, currentColor, transparent),
-              radial-gradient(1px 1px at 540px 110px, currentColor, transparent),
-              radial-gradient(1px 1px at 580px 70px, currentColor, transparent),
-              radial-gradient(1.5px 1.5px at 620px 180px, currentColor, transparent),
-              radial-gradient(1px 1px at 660px 45px, currentColor, transparent),
-              radial-gradient(1px 1px at 700px 130px, currentColor, transparent)
+              radial-gradient(1.5px 1.5px at 300px 170px, currentColor, transparent)
             `,
             backgroundSize: `${720 + spacyLevel * 4}px 200px`,
-            opacity: 0.5 + spacyLevel / 100,
+            opacity: 0.3 + spacyLevel / 150,
           }}
         />
         
@@ -101,7 +91,7 @@ export function SpaceBackground() {
 
         {/* EFFECT: Variable Star Sizes - adds depth with larger stars */}
         <div 
-          className="absolute inset-0 opacity-40 animate-[drift_80s_linear_infinite]"
+          className="absolute inset-0 opacity-20 animate-[drift_80s_linear_infinite]"
           style={{
             backgroundImage: `
               radial-gradient(3px 3px at 150px 50px, currentColor, transparent),
@@ -139,24 +129,28 @@ export function SpaceBackground() {
         />
 
         {/* EFFECT: Nebula Clouds - responsive, follow viewport size */}
-        <div
-          className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle 22vw at 18vw 32vh, currentColor, transparent)
-            `,
-            filter: `blur(2vw) brightness(${nebulaBrightness / 100 + 0.25})`,
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle 32vw at 82vw 68vh, currentColor, transparent)
-            `,
-            filter: `blur(2vw) brightness(${nebulaBrightness / 100 + 0.25})`,
-          }}
-        />
+        {nebulaBrightness > 0 && (
+          <>
+            <div
+              className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
+              style={{
+                backgroundImage: `
+                  radial-gradient(circle 22vw at 18vw 32vh, currentColor, transparent)
+                `,
+                filter: `blur(2.5vw) brightness(${nebulaBrightness / 100})`,
+              }}
+            />
+            <div
+              className="absolute inset-0 opacity-[0.10] animate-[nebula-cw_36s_linear_infinite]"
+              style={{
+                backgroundImage: `
+                  radial-gradient(circle 32vw at 82vw 68vh, currentColor, transparent)
+                `,
+                filter: `blur(2vw) brightness(${nebulaBrightness / 100})`,
+              }}
+            />
+          </>
+        )}
 
         {/* EFFECT: Slow Rotation - very subtle rotation of entire starfield */}
         <div 
