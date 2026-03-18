@@ -17,20 +17,19 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorpio | AI-Powered Physics LMS",
+    default: "Scorpio | The Verifiable AI Physics LMS",
     template: "%s | Scorpio",
   },
-  description: "Scorpio is an AI-powered Learning Management System (LMS) utilizing advanced Large Language Models (LLMs) to transform physics education. Features research-grade AI tutoring, real-time LaTeX rendering, and immersive learning tools.",
+  description: "The only AI Physics LMS that prevents cheating. Our 4-layer constraint architecture enforces step-by-step derivation and genuine student understanding.",
   keywords: [
-    "AI Powered LLM",
     "Physics LMS",
-    "AI Tutor",
-    "Large Language Model",
-    "Education Technology",
-    "Physics Education",
+    "Anti-Cheating Physics Platform",
+    "Verifiable AI",
+    "Academic Integrity Software",
+    "Physics Education Technology",
+    "Step-by-Step Derivation Tool",
     "Scorpio Education",
-    "LMS",
-    "AI Learning Platform"
+    "AI Physics Teacher Tools"
   ],
   icons: [
     { rel: "icon", url: "/favicon.ico" },
@@ -41,16 +40,16 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
-    title: "Scorpio | AI-Powered Physics LMS",
-    description: "Turn Physics Struggles Into Breakthroughs with Scorpio's research-grade AI tutoring and immersive learning platform.",
+    title: "Scorpio | The Verifiable AI Physics LMS",
+    description: "Enforce the struggle with the only LMS that prevents AI cheating. Research-grade constraint architecture for genuine physics mastery.",
     url: "https://scorpioedu.org",
     siteName: "Scorpio",
     images: [
       {
-        url: "/og-image-light.png",
+        url: "/og-image-pink.png",
         width: 1200,
         height: 630,
-        alt: "Scorpio Open Graph Image (Light)",
+        alt: "Scorpio - The Verifiable AI Physics LMS",
       },
     ],
     locale: "en_US",
