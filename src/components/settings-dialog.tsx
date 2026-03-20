@@ -38,6 +38,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
+import { useAppearance, FontOption } from "@/contexts/appearance-context"
 import { useAuth } from "@/contexts/auth-context"
 import { logout, resetPassword, changeEmail, deleteFullAccount } from "@/lib/firebase"
 import { Input } from "@/components/ui/input"
@@ -53,6 +54,7 @@ export function SettingsDialog() {
     nebulaBrightness,
     setNebulaBrightness
   } = useSpaceEffects()
+  const { font, setFont } = useAppearance()
   const { user, role } = useAuth()
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
@@ -402,7 +404,83 @@ export function SettingsDialog() {
                   )}
                 </div>
               </div>
-            </div>
+              <Separator />
+
+              {/* Font Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-4 w-4" />
+                  <h4 className="text-sm font-medium">Typography</h4>
+                </div>
+                <div className="space-y-3">
+                  <RadioGroup 
+                    value={font} 
+                    onValueChange={(v) => setFont(v as FontOption)} 
+                    className="grid grid-cols-1 gap-2"
+                  >
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("inter")}
+                    >
+                      <RadioGroupItem value="inter" id="font-inter" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'var(--font-inter)' }}>
+                          <Label htmlFor="font-inter" className="font-medium">Inter (Default)</Label>
+                          <p className="text-xs text-muted-foreground">Standard, modern, and highly readable</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("ibm-plex-sans")}
+                    >
+                      <RadioGroupItem value="ibm-plex-sans" id="font-ibm-plex-sans" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'var(--font-ibm-plex-sans)' }}>
+                          <Label htmlFor="font-ibm-plex-sans" className="font-medium">IBM Plex Sans</Label>
+                          <p className="text-xs text-muted-foreground">Technical, precise, and professional</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("verdana")}
+                    >
+                      <RadioGroupItem value="verdana" id="font-verdana" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'Verdana, sans-serif' }}>
+                          <Label htmlFor="font-verdana" className="font-medium">Verdana</Label>
+                          <p className="text-xs text-muted-foreground">Highly legible, wide-set sans-serif</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("roboto-mono")}
+                    >
+                      <RadioGroupItem value="roboto-mono" id="font-roboto-mono" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'var(--font-roboto-mono)' }}>
+                          <Label htmlFor="font-roboto-mono" className="font-medium">Roboto Mono</Label>
+                          <p className="text-xs text-muted-foreground">Clear monospace for scientific clarity</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("opendyslexic")}
+                    >
+                      <RadioGroupItem value="opendyslexic" id="font-opendyslexic" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'OpenDyslexic, sans-serif' }}>
+                          <Label htmlFor="font-opendyslexic" className="font-medium">OpenDyslexic</Label>
+                          <p className="text-xs text-muted-foreground">Designed for readability</p>
+                        </div>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>            </div>
           </TabsContent>
 
           <TabsContent value="learn-more" className="space-y-4 mt-4">

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sparkles } from "lucide-react"
+import { Moon, Sun, Sparkles, Palette } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useAppearance, FontOption } from "@/contexts/appearance-context"
 
 export function ModeToggle() {
   const { setTheme, theme } = useTheme()
@@ -25,6 +25,7 @@ export function ModeToggle() {
     nebulaBrightness,
     setNebulaBrightness
   } = useSpaceEffects()
+  const { font, setFont } = useAppearance()
   const [showNote, setShowNote] = React.useState(false)
 
   const handleThemeChange = (newTheme: string) => {
@@ -97,6 +98,39 @@ export function ModeToggle() {
                   }`}
                 >
                   {level === 0 ? "Off" : level === 10 ? "Dim" : level === 20 ? "Mid" : "High"}
+                </button>
+              ))}
+            </div>
+
+            <div className="my-3 h-px bg-border/50" />
+            
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Palette className="h-3 w-3" />
+              Typography
+            </div>
+            <div className="flex flex-col gap-1">
+              {[
+                { id: "inter", label: "Inter (Default)", font: "var(--font-inter)" },
+                { id: "ibm-plex-sans", label: "IBM Plex", font: "var(--font-ibm-plex-sans)" },
+                { id: "verdana", label: "Verdana", font: "Verdana, sans-serif" },
+                { id: "roboto-mono", label: "Roboto Mono", font: "var(--font-roboto-mono)" },
+                { id: "opendyslexic", label: "OpenDyslexic", font: "OpenDyslexic, sans-serif" }
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFont(f.id as FontOption);
+                  }}
+                  style={{ fontFamily: f.font }}
+                  className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors cursor-pointer flex items-center justify-between ${
+                    font === f.id 
+                      ? "bg-primary/10 text-primary font-bold" 
+                      : "hover:bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {f.label}
+                  {font === f.id && <div className="h-1 w-1 rounded-full bg-primary" />}
                 </button>
               ))}
             </div>

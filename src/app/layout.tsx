@@ -1,18 +1,34 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, IBM_Plex_Sans, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "next-themes";
 import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
+import { AppearanceProvider } from "@/contexts/appearance-context";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { Toaster } from "sonner";
 
 const inter = Inter({
-  variable: "--font-sans",
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
   preload: false,
   fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+});
+
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-ibm-plex-sans",
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
+const robotoMono = Roboto_Mono({
+  variable: "--font-roboto-mono",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -107,20 +123,22 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${ibmPlexSans.variable} ${robotoMono.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
         >
-          <SpaceEffectsProvider>
-            <AuthProvider>
-              <SmoothScroll>
-                {children}
-              </SmoothScroll>
-            </AuthProvider>
-            <Toaster position="top-center" richColors />
-          </SpaceEffectsProvider>
+          <AppearanceProvider>
+            <SpaceEffectsProvider>
+              <AuthProvider>
+                <SmoothScroll>
+                  {children}
+                </SmoothScroll>
+              </AuthProvider>
+              <Toaster position="top-center" richColors />
+            </SpaceEffectsProvider>
+          </AppearanceProvider>
         </ThemeProvider>
       </body>
     </html>
