@@ -7,13 +7,16 @@ import { Logo } from "@/components/ui/logo";
 const SWEEP_EASE = [0.76, 0, 0.24, 1] as const;
 const CHARS = "Scorpio".split("");
 
-export function LoadingScreen() {
+export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1600);
+    const timer = setTimeout(() => {
+      setLoading(false);
+      onFinish?.();
+    }, 1800);
     return () => clearTimeout(timer);
-  }, []);
+  }, [onFinish]);
 
   return (
     <AnimatePresence>
@@ -22,8 +25,12 @@ export function LoadingScreen() {
         <motion.div
           key="loader-bg"
           className="fixed inset-0 z-[100] bg-background overflow-hidden"
-          exit={{ x: "100%" }}
-          transition={{ duration: 0.7, ease: SWEEP_EASE, delay: 0.1 }}
+          exit={{ 
+            opacity: 0,
+            filter: "blur(20px)",
+            scale: 1.1,
+            transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
+          }}
         >
           {/* Dot grid */}
           <div

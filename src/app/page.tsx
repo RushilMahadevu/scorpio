@@ -35,6 +35,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const CostComparisonChart = dynamic(() => import("@/components/admin/cost-comparison-chart"), {
@@ -79,17 +80,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative font-medium scroll-smooth">
-      <LoadingScreen />
+      <LoadingScreen onFinish={() => setIsLoaded(true)} />
       <SpaceBackground />
 
-      {/* Sticky Blurred Header */}
-      <motion.header
-        className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
-        initial={{ opacity: 0, y: -40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        onMouseLeave={() => setHoveredNav(null)}
-      >
+      <AnimatePresence>
+        {isLoaded && (
+          <motion.div
+            initial={{ opacity: 0, filter: "blur(20px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Sticky Blurred Header */}
+            <motion.header
+              className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
+              initial={{ opacity: 0, y: -40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              onMouseLeave={() => setHoveredNav(null)}
+            >
         <div className="flex items-center justify-between px-6 py-3.5 max-w-[1400px] mx-auto w-full">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
@@ -930,6 +938,9 @@ export default function Home() {
 
       {/* Landing AI Chatbot — visitor-scoped, 10 msg limit, billed to developer account */}
       <LandingChatbot />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

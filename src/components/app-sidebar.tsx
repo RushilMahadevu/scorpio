@@ -101,25 +101,35 @@ function SidebarContent({
             const isActive = pathname === item.href;
             return (
               <Link key={item.href} href={item.href} onClick={onNavigate}>
-                <motion.span
-                  whileHover={!isCollapsed ? { x: 4 } : {}}
-                  transition={{ type: "tween", duration: 0.15 }}
+                <motion.div
+                  initial={false}
+                  animate={isActive ? { x: 4 } : { x: 0 }}
+                  whileHover={!isCollapsed ? { x: 8, backgroundColor: "rgba(var(--muted), 0.8)" } : { scale: 1.1 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors",
+                    "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors group",
                     isActive
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                      ? "bg-muted text-primary shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                     isCollapsed ? "justify-center w-10 mx-auto px-0" : "w-full"
                   )}
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <item.icon className={cn(
+                    "h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
+                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                  )} />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap">{item.label}</span>
                   )}
                   {isActive && !isCollapsed && (
-                    <span className="absolute left-0 w-0.5 h-4 bg-primary rounded-full" />
+                    <motion.span 
+                      layoutId="active-pill"
+                      className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" 
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
                   )}
-                </motion.span>
+                </motion.div>
               </Link>
             );
           })}
