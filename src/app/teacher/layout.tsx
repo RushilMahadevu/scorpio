@@ -8,6 +8,7 @@ import { PanelLeft } from "lucide-react";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
+import { PageTransition } from "./client-template";
 
 export default function TeacherLayout({
   children,
@@ -25,7 +26,9 @@ export default function TeacherLayout({
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <main className="flex-1 overflow-auto bg-background/50">
-          <div className="p-8 max-w-7xl mx-auto w-full">{children}</div>
+          <div className="p-8 max-w-7xl mx-auto w-full">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
         <NavigationChatbot userRole="teacher" />
       </div>

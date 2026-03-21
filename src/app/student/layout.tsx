@@ -7,6 +7,7 @@ import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { usePathname } from "next/navigation";
+import { PageTransition } from "./client-template";
 
 export default function StudentLayout({
   children,
@@ -27,7 +28,9 @@ export default function StudentLayout({
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <main className="flex-1 overflow-auto bg-background/50">
-          <div className="p-8 max-w-7xl mx-auto w-full">{children}</div>
+          <div className="p-8 max-w-7xl mx-auto w-full">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
         {!isAssignmentView && <NavigationChatbot userRole="student" />}
       </div>

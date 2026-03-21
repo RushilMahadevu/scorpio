@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   /* config options here */
   reactCompiler: true,
   images: {
@@ -13,7 +12,6 @@ const nextConfig: NextConfig = {
   // create separate module instances that don't share the same app registry.
   serverExternalPackages: [
     "firebase",
-    "firebase/ai",
     "firebase-admin",
   ],
 };

@@ -31,7 +31,8 @@ export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
     }
   }, [user, role, loading, router, allowedRole]);
 
-  if (loading) {
+  // If loading, only show skeleton if we don't have enough data to render or redirect
+  if (loading && (!user || (allowedRole && !role))) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 w-full max-w-md">

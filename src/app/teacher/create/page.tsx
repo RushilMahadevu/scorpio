@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { PlusCircle, Trash2, Sparkles, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -425,11 +425,11 @@ function CreateAssignmentForm() {
                   onClick={(e) => {
                     if (isFreePlan) {
                       e.preventDefault();
-                      toast.error("AI Generation requires a Standard subscription.");
+                      toast.error("AI Generation requires a Standard subscripztion.");
                     }
                   }}
                 >
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <ListFilterPlus className="h-4 w-4 mr-2" />
                   Generate with AI
                   {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
                 </Button>
@@ -437,7 +437,7 @@ function CreateAssignmentForm() {
               <DialogContent className="max-w-3xl">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
+                    <ListFilterPlus className="h-5 w-5 text-primary" />
                     AI Question Generator
                   </DialogTitle>
                   <DialogDescription>

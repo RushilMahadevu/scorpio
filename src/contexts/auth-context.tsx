@@ -35,7 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(firebaseUser);
         
         if (firebaseUser) {
-          setRole("checking");
+          // Only set to "checking" if we don't already have a role
+          if (!role || role === "checking") {
+            setRole("checking");
+          }
           
           // 1. Check unified User Collection (Strategic Target - Phase 2.1)
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));

@@ -958,7 +958,13 @@ export async function explainPhysicsConcept(
     
     const prompt = `${constraints}\n\n${historyContext}Explain the physics concept: "${scrubPII(concept, studentNames)}" in simple terms suitable for a high school student. Keep it concise. If this relates to our previous conversation, build on that context.`;
     
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.7,
+      }
+    });
     const response = await result.response;
     console.log("Explain concept response:", response);
     return {
@@ -1001,7 +1007,13 @@ export async function helpSolveProblem(
     
     Help the student think through the problem step-by-step using the Socratic method. Do not just give the answer.`;
     
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.7,
+      }
+    });
     const response = await result.response;
     return {
       text: response.text(),
@@ -1066,7 +1078,14 @@ export async function gradeResponse(
       "misconceptions": string[]
     }`;
     
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.1,
+        responseMimeType: "application/json",
+      }
+    });
     const response = await result.response;
     
     let text = "";
@@ -1168,7 +1187,13 @@ export async function synthesizeRubric(questionText: string, topic: string): Pro
       Use clear Markdown. Be professional and constructive.
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.7,
+      }
+    });
     const response = await result.response;
     return {
       text: response.text(),
@@ -1319,12 +1344,16 @@ export async function generateAssignmentQuestions(
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
       }
     });
     const response = await result.response;
-    let text = response.text()?.trim() || "[]";
+    let text = response.text()?.trim() || "";
+    
+    // Check if the response was truncated by the model
+    const finReason = response.candidates?.[0]?.finishReason;
+    const isTruncated = finReason === 'MAX_TOKENS' || text.endsWith('...');
     
     // Safety check for empty or blocked response
     if (!text || text.length < 2) {
@@ -1361,14 +1390,49 @@ export async function generateAssignmentQuestions(
     } catch (parseError) {
         console.error("Error parsing AI JSON:", cleanJson);
         try {
-            // Attempt common fixes
-            const recovery = cleanJson
+            // Very aggressive recovery for truncated JSON
+            let recovery = cleanJson
               .replace(/,\s*\]/g, ']') 
               .replace(/,\s*\}/g, '}') 
               .replace(/[\n\r]/g, ' '); 
+            
+            // If it's still failing and looks truncated, try to close it
+            if (!recovery.endsWith('}') && !recovery.endsWith(']')) {
+                // Heuristic: determine if we are inside a string or array
+                let openBrackets = (recovery.match(/\[/g) || []).length;
+                let closeBrackets = (recovery.match(/\]/g) || []).length;
+                let openCurly = (recovery.match(/\{/g) || []).length;
+                let closeCurly = (recovery.match(/\}/g) || []).length;
+                
+                // If we're inside a string (odd number of unescaped quotes)
+                const quotes = (recovery.match(/(^|[^\\])\"/g) || []).length;
+                if (quotes % 2 !== 0) {
+                  // If ends with a partial escape, strip it
+                  if (recovery.endsWith('\\')) recovery = recovery.slice(0, -1);
+                  recovery += '\"';
+                }
+
+                // Balance the brackets and braces
+                while (openCurly > closeCurly) {
+                  recovery += '}';
+                  closeCurly++;
+                }
+                while (openBrackets > closeBrackets) {
+                  recovery += ']';
+                  closeBrackets++;
+                }
+            }
+            
             parsedData = JSON.parse(recovery);
         } catch (e) {
-            const err = new Error("AI generated an invalid question format. Try simplifying the topic context.");
+            // Check if truncate reason was tokens
+            const isTruncated = (response as any).candidates?.[0]?.finishReason === 'MAX_TOKENS';
+            
+            const err = new Error(
+              isTruncated 
+                ? "The assignment was too long for the AI to finish. Try generating fewer questions or a less complex topic."
+                : "AI generated an incomplete or invalid question format. This usually happens with very complex topics; try a more specific topic."
+            );
             (err as any).rawText = text;
             throw err;
         }
@@ -1507,7 +1571,13 @@ User question: ${message}
 
 If suggesting navigation, wrap the path in parentheses like this: (/student/grades)`;
 
-    const result = await model.generateContent(fullPrompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.1,
+      }
+    });
     const response = await result.response;
     
     return {
@@ -1530,7 +1600,13 @@ export async function getLandingChatbotResponse(
   systemPrompt: string
 ): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
-    const result = await model.generateContent(`${systemPrompt}\n\nVisitor question: ${message}`);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nVisitor question: ${message}` }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.7,
+      }
+    });
     const response = await result.response;
     return {
       text: response.text(),
@@ -1796,7 +1872,13 @@ RESPONSE GUIDELINES:
 
     const fullPrompt = `${systemPrompt}\n\n${chatHistoryContext}Teacher Question: ${message}`;
 
-    const result = await model.generateContent(fullPrompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.1,
+      }
+    });
     const response = await result.response;
 
     return {
