@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
-import { useAppearance, FontOption } from "@/contexts/appearance-context"
+import { useAppearance, FontOption, ThemeColor } from "@/contexts/appearance-context"
 
 export function ModeToggle() {
   const { setTheme, theme } = useTheme()
@@ -25,7 +25,7 @@ export function ModeToggle() {
     nebulaBrightness,
     setNebulaBrightness
   } = useSpaceEffects()
-  const { font, setFont } = useAppearance()
+  const { font, setFont, themeColor, setThemeColor } = useAppearance()
   const [showNote, setShowNote] = React.useState(false)
 
   const handleThemeChange = (newTheme: string) => {
@@ -131,6 +131,38 @@ export function ModeToggle() {
                 >
                   {f.label}
                   {font === f.id && <div className="h-1 w-1 rounded-full bg-primary" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="my-3 h-px bg-border/50" />
+            
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Palette className="h-3 w-3" />
+              Accent Color
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+              {[
+                { name: "Default", value: "default", color: "bg-foreground" },
+                { name: "Ocean", value: "ocean", color: "bg-sky-500" },
+                { name: "Violet", value: "violet", color: "bg-violet-500" },
+                { name: "Rose", value: "rose", color: "bg-rose-500" },
+                { name: "Amber", value: "amber", color: "bg-amber-500" },
+                { name: "Emerald", value: "emerald", color: "bg-emerald-500" },
+                { name: "Midnight", value: "midnight", color: "bg-slate-950" },
+              ].map((t) => (
+                <button
+                  key={t.value}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setThemeColor(t.value as ThemeColor);
+                  }}
+                  title={t.name}
+                  className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${
+                    themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
+                  }`}
+                >
+                  <div className={`h-4 w-4 rounded-full ${t.color} shadow-xs group-hover:scale-110 transition-transform`} />
                 </button>
               ))}
             </div>

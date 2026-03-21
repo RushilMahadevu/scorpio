@@ -23,7 +23,7 @@ export function GradeExportButton({ data, filename = "scorpio-grades.csv" }: Gra
 
     // CSV Headers
     const headers = ["Student Name", "Email", "Assignment", "Score", "Total Points", "Percentage", "Date"];
-    
+
     // CSV Rows
     const rows = data.map(item => [
       `"${item.studentName}"`,
@@ -52,10 +52,10 @@ export function GradeExportButton({ data, filename = "scorpio-grades.csv" }: Gra
   };
 
   return (
-    <Button 
-      variant="outline" 
-      size="sm" 
-      onClick={exportToCsv} 
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={exportToCsv}
       disabled={data.length === 0}
       className="gap-2"
     >

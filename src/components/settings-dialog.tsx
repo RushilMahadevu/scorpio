@@ -38,7 +38,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
-import { useAppearance, FontOption } from "@/contexts/appearance-context"
+import { useAppearance, FontOption, ThemeColor } from "@/contexts/appearance-context"
 import { useAuth } from "@/contexts/auth-context"
 import { logout, resetPassword, changeEmail, deleteFullAccount } from "@/lib/firebase"
 import { Input } from "@/components/ui/input"
@@ -54,7 +54,7 @@ export function SettingsDialog() {
     nebulaBrightness,
     setNebulaBrightness
   } = useSpaceEffects()
-  const { font, setFont } = useAppearance()
+  const { font, setFont, themeColor, setThemeColor } = useAppearance()
   const { user, role } = useAuth()
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
@@ -324,6 +324,39 @@ export function SettingsDialog() {
                       </div>
                     </div>
                   </RadioGroup>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Theme Color Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-4 w-4" />
+                  <h4 className="text-sm font-medium">Accent Color</h4>
+                </div>
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                  {[
+                    { name: "Default", value: "default", color: "bg-foreground" },
+                    { name: "Ocean", value: "ocean", color: "bg-sky-500" },
+                    { name: "Violet", value: "violet", color: "bg-violet-500" },
+                    { name: "Rose", value: "rose", color: "bg-rose-500" },
+                    { name: "Amber", value: "amber", color: "bg-amber-500" },
+                    { name: "Emerald", value: "emerald", color: "bg-emerald-500" },
+                    { name: "Midnight", value: "midnight", color: "bg-slate-950" },
+                  ].map((t) => (
+                    <button
+                      key={t.value}
+                      onClick={() => setThemeColor(t.value as ThemeColor)}
+                      className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${
+                        themeColor === t.value ? "border-primary bg-primary/5" : "border-transparent"
+                      }`}
+                      title={t.name}
+                    >
+                      <div className={`h-6 w-6 rounded-full ${t.color} shadow-sm group-hover:scale-110 transition-transform`} />
+                      <span className="text-[10px] font-medium truncate w-full text-center">{t.name}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
