@@ -5,7 +5,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: "standalone",
   // Keep firebase packages external so they are never bundled into server chunks.
   // IMPORTANT: Only list the main 'firebase-admin' entry point here, NOT the
   // subpaths (firebase-admin/app, etc). Listing subpaths causes Turbopack to

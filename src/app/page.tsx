@@ -12,6 +12,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { LoadingScreen } from "@/components/loading-screen";
@@ -37,6 +39,19 @@ export default function Home() {
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { user, role, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (role === 'teacher') {
+        router.push('/teacher');
+      } else if (role === 'student') {
+        router.push('/student');
+      }
+    }
+  }, [user, role, authLoading, router]);
 
   const CostComparisonChart = dynamic(() => import("@/components/admin/cost-comparison-chart"), {
   ssr: false,
@@ -320,16 +335,17 @@ export default function Home() {
 
             {/* Badge */}
             <motion.div
-              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md"
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.5 }}
+              className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors cursor-pointer"
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.15, duration: 0.6, type: "spring", bounce: 0.3 }}
+              whileHover={{ scale: 1.02 }}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-              </span>
-              <span className="text-xs font-bold tracking-widest text-primary/90 uppercase">Built for Physics Educators</span>
+              <div className="relative flex h-2.5 w-2.5 items-center justify-center">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+              </div>
+              <span className="text-[11px] font-black tracking-[0.25em] text-foreground/90 uppercase">Built for Physics Educators</span>
             </motion.div>
 
             {/* Logo */}
@@ -355,55 +371,61 @@ export default function Home() {
 
             {/* Headline */}
             <motion.div
-              className="space-y-2"
-              initial={{ opacity: 0, y: 20 }}
+              className="space-y-4 relative z-10"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.7 }}
+              transition={{ delay: 0.3, duration: 0.8, type: "spring", bounce: 0.3 }}
             >
-              <h1 className="text-4xl md:text-7xl font-black tracking-tight text-foreground leading-[1.05]">
+              <h1 className="text-5xl md:text-[5.5rem] lg:text-[6.5rem] font-black tracking-tighter text-foreground leading-[1] drop-shadow-xl">
                 The World&apos;s Only
               </h1>
-              <h1 className="text-4xl md:text-7xl font-black tracking-tight leading-[1.05]">
-                <span className="relative inline-block">
-                  <span className="relative z-10 bg-gradient-to-r from-foreground via-foreground/80 to-foreground bg-clip-text">AI Physics LMS</span>
-                  <span className="absolute inset-x-0 bottom-1 h-[3px] bg-primary/40 rounded-full" />
+              <h1 className="text-5xl md:text-[5.5rem] lg:text-[6.5rem] font-black tracking-tighter leading-[1]">
+                <span className="relative inline-block pb-2">
+                  <span className="relative z-10 px-2 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">AI Physics LMS</span>
+                  <motion.span 
+                    className="absolute inset-x-0 bottom-0 h-[4px] bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 rounded-full" 
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    animate={{ scaleX: 1, opacity: 1 }}
+                    transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
+                  />
                 </span>
               </h1>
             </motion.div>
 
             {/* Description */}
             <motion.p
-              className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 16 }}
+              className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.7 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
             >
               The first verifiable framework for Socratic physics tutoring.
-              Enforce the struggle with a 4-layer constraint architecture
+              <br className="hidden md:block" /> Enforce the struggle with a 4-layer constraint architecture
               that makes bypassing the learning process{" "}
-              <span className="text-foreground font-semibold">structurally impossible.</span>
+              <span className="text-foreground font-bold">structurally impossible.</span>
             </motion.p>
 
             {/* CTAs */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-3 justify-center"
-              initial={{ opacity: 0, y: 16 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative pt-4"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.7 }}
+              transition={{ delay: 0.7, duration: 0.7 }}
             >
-              <Link href="/request-access">
-                <Button size="lg" className="w-full sm:w-auto font-bold text-sm px-7 h-11 rounded-full shadow-[0_0_24px_rgba(var(--primary),0.25)] hover:shadow-[0_0_36px_rgba(var(--primary),0.45)] transition-all cursor-pointer gap-2">
-                  <KeyRound className="h-4 w-4" />
-                  Request Access
-                  <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
+              <Link href="/request-access" className="w-full sm:w-auto flex-1 group">
+                <Button size="lg" className="w-full font-black text-sm px-8 h-12 rounded-full shadow-[0_0_40px_rgba(var(--primary),0.2)] hover:shadow-[0_0_60px_rgba(var(--primary),0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer gap-2 relative overflow-hidden">
+                  <KeyRound className="h-4 w-4 relative z-10" />
+                  <span className="relative z-10">Request Access</span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-0.5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
               <button
                 type="button"
                 onClick={() => { const el = document.getElementById("demos"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                className="w-full sm:w-auto font-semibold text-sm px-7 h-11 rounded-full border border-border/60 bg-background/40 backdrop-blur-md hover:bg-muted/40 cursor-pointer inline-flex items-center justify-center gap-2 transition-all text-foreground/80 hover:text-foreground"
+                className="flex-1 w-full sm:w-auto font-bold text-sm px-8 h-12 rounded-full border border-border/60 bg-background/50 backdrop-blur-xl hover:bg-muted/50 cursor-pointer inline-flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] text-foreground/80 hover:text-foreground group"
               >
-                <PlayCircle className="h-4 w-4" />
+                <PlayCircle className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 Watch Demo
               </button>
             </motion.div>

@@ -14,16 +14,10 @@ function requireAdmin(req: NextRequest): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!adminDb) {
-      console.error('[request-access] adminDb is null — Firebase Admin SDK not initialized.');
-      return NextResponse.json(
-        { error: 'Service unavailable. Please try again later.' },
-        { status: 500 }
-      );
-    }
-
     const body = await req.json();
     const { action } = body;
+    // Note: adminDb is a Proxy — getApp() is called lazily on first property access.
+    // Any Firebase Admin init errors will be caught by the outer try/catch below.
 
     // ─── LIST (admin only) ────────────────────────────────────────────────────
     if (action === 'list') {

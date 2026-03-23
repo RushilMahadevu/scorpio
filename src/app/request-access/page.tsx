@@ -57,23 +57,33 @@ export default function RequestAccessPage() {
     setLoading(true);
     setError("");
 
+    let res: Response;
     try {
-      const res = await fetch("/api/auth/request-access", {
+      res = await fetch("/api/auth/request-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, institution, role, message }),
       });
+    } catch {
+      setError("Unable to reach the server. Please check your internet connection and try again.");
+      setLoading(false);
+      return;
+    }
 
+    try {
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || "Something went wrong. Please try again.");
         return;
       }
-
       setSubmitted(true);
     } catch {
-      setError("Network error. Please check your connection and try again.");
+      // Server returned a non-JSON response (e.g. a crash page)
+      setError(
+        res.ok
+          ? "Unexpected server response. Please try again."
+          : `Server error (${res.status}). Please try again later.`
+      );
     } finally {
       setLoading(false);
     }
