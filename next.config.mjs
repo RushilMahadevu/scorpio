@@ -1,17 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   reactCompiler: true,
   images: {
     unoptimized: true,
   },
-  // Keep firebase packages external so they are never bundled into server chunks.
-  // IMPORTANT: Only list the main 'firebase-admin' entry point here, NOT the
-  // subpaths (firebase-admin/app, etc). Listing subpaths causes Turbopack to
-  // create separate module instances that don't share the same app registry.
+  // Since we use eval('require') for Firebase Admin (to bypass Turbopack's
+  // hashing bug in Next.js 16), we don't need to specify it as external here.
   serverExternalPackages: [
-    "firebase",
-    "firebase-admin",
+    "react-icons",
+    "@polar-sh/sdk",
   ],
 };
 

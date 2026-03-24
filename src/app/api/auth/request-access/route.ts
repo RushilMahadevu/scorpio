@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         .limit(200)
         .get();
 
-      const requests = snapshot.docs.map((d) => {
+      const requests = snapshot.docs.map((d: any) => {
         const data = d.data();
         return {
           id: d.id,

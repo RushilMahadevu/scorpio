@@ -63,20 +63,43 @@ export default function SignupPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'validate', code: accessCode.trim() }),
         });
-        const validateData = await validateRes.json();
-        if (!validateData.valid) {
-          const messages: Record<string, string> = {
-            'Code already used': 'This invite code has already been used.',
-            'Code expired': 'This invite code has expired.',
-          };
-          setError(messages[validateData.reason] ?? 'Invalid Teacher Invite Code');
+
+        // 1. Explicitly check for non-2xx HTTP responses
+        if (!validateRes.ok) {
+          // Attempt to parse JSON error message if the server provided one
+          let serverErrorMsg = `Server error: ${validateRes.statusText}`;
+          try {
+            const errData = await validateRes.json();
+            if (errData.error) serverErrorMsg = errData.error;
+          } catch {
+            // If it returns an HTML Error Page (common in Next.js 500s)
+            serverErrorMsg = "Server encountered an error parsing your request. Please try again.";
+          }
+          setError(serverErrorMsg);
           setLoading(false);
           return;
         }
+
+        const validateData = await validateRes.json();
+        
+        // 2. Safely check if the request was valid
+        if (validateData.valid === false) {
+          const messages: Record<string, string> = {
+            'Code already used': 'This invite code has already been used.',
+            'Code expired': 'This invite code has expired.',
+            'Invalid code': 'Invalid Teacher Invite Code. Please check for typos.',
+          };
+          setError(messages[validateData.reason] ?? validateData.reason ?? 'Invalid Teacher Invite Code.');
+          setLoading(false);
+          return;
+        }
+
         // Capture the organization ID if the code is pre-linked
         codeOrganizationId = validateData.organizationId || null;
-      } catch {
-        setError("Could not verify invite code. Please try again.");
+      } catch (err: any) {
+        // 3. Catch actual network failures (e.g. ERR_CONNECTION_REFUSED)
+        console.error("Invite code verification failed:", err);
+        setError("Network error: Could not reach the verification server. Please ensure your connection is stable.");
         setLoading(false);
         return;
       }

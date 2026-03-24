@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       .limit(100)
       .get();
 
-    const codes = snapshot.docs.map((doc) => {
+    const codes = snapshot.docs.map((doc: any) => {
       const d = doc.data();
       return {
         code: d.code,
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     const docRef = adminDb.collection('teacherInviteCodes').doc(normalized);
 
     try {
-      await adminDb.runTransaction(async (t) => {
+      await adminDb.runTransaction(async (t: any) => {
         const doc = await t.get(docRef);
         if (!doc.exists) throw new Error('Code not found');
         if (doc.data()!.isUsed) throw new Error('Code already used');
