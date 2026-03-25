@@ -58,23 +58,36 @@ export async function POST(req: NextRequest) {
       await adminAuth.setCustomUserClaims(userId, { role, organizationId: bodyOrgId || null });
     }
 
+    console.log(`[SessionRoute] Creating session for ${userId} with role ${role}`);
     const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
 
     const cookieStore = await cookies();
-    cookieStore.set('session', sessionCookie, {
+    const isProd = process.env.NODE_ENV === 'production';
+    
+    // Detailed options to ensure custom domain compatibility
+    const cookieOptions: any = {
       maxAge: expiresIn,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProd,
+      sameSite: 'lax',
       path: '/',
-    });
+    };
 
-    if (role) {
-      cookieStore.set('user-role', role, {
-        maxAge: expiresIn,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
+    try {
+      // FIREBASE HOSTING LIMITATION FIX:
+      // Firebase Hosting strips ALL cookies from requests/responses EXCEPT a cookie named exactly "__session".
+      // Since we need both the session token and the user's role, we must pack them into this single cookie.
+      const packedSession = JSON.stringify({
+        token: sessionCookie,
+        role: role || null
       });
+
+      console.log(`[SessionRoute] Setting __session cookie. Role: ${role}, Prod: ${isProd}`);
+      cookieStore.set('__session', packedSession, cookieOptions);
+      
+      console.log(`[SessionRoute] __session cookie successfully queued for ${userId}`);
+    } catch (cookieError) {
+      console.error(`[SessionRoute] Fatal cookie error for user ${userId}:`, cookieError);
     }
 
     return NextResponse.json({ status: 'success' });
@@ -86,6 +99,8 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE() {
   const cookieStore = await cookies();
+  cookieStore.delete('__session');
+  // Also clean up legacy cookies just in case
   cookieStore.delete('session');
   cookieStore.delete('user-role');
   return NextResponse.json({ status: 'success' });

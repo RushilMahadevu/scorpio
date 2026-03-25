@@ -43,20 +43,13 @@ export default function Home() {
   const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      if (role === 'teacher') {
-        router.push('/teacher');
-      } else if (role === 'student') {
-        router.push('/student');
-      }
-    }
-  }, [user, role, authLoading, router]);
+  // Logged-in users should be able to view the landing page freely.
+  // We removed the auto-redirect here so you don't get locked out of the main site.
 
   const CostComparisonChart = dynamic(() => import("@/components/admin/cost-comparison-chart"), {
-  ssr: false,
-  loading: () => <div className="h-96 w-full flex items-center justify-center bg-muted/10 rounded-2xl animate-pulse" />
-});
+    ssr: false,
+    loading: () => <div className="h-96 w-full flex items-center justify-center bg-muted/10 rounded-2xl animate-pulse" />
+  });
 
 
   const scheduleClose = useCallback(() => {

@@ -35,32 +35,40 @@ export default function LoginPage() {
     }
   }, [user, recoveryEmail]);
 
-  useEffect(() => {
-    if (!authLoading && user && role && role !== "checking") {
-      router.push(role === "teacher" ? "/teacher" : "/student");
-    }
-  }, [user, role, authLoading, router]);
-
   const handleLogin = async (role: "teacher" | "student") => {
+    console.log(`[Login] Starting login for role: ${role}`);
     setLoading(true);
     setError("");
 
     try {
+      console.log(`[Login] Attempting Firebase Auth sign-in...`);
       const userCredential = await login(email, password);
+      console.log(`[Login] Firebase Auth success. Fetching ID token...`);
       const idToken = await userCredential.user.getIdToken();
       
+      console.log(`[Login] ID Token received. Calling session API...`);
       // Set session cookie
-      await fetch('/api/auth/session', {
+      const response = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken, role }),
       });
 
-      // Force redirect immediately instead of waiting for useEffect
-      router.refresh(); // Update server components
-      router.push(role === "teacher" ? "/teacher" : "/student");
-    } catch (err) {
-      setError("Invalid email or password");
+      console.log(`[Login] Session API response status: ${response.status}`);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to create session");
+      }
+
+      console.log(`[Login] Redirecting to: ${role === "teacher" ? "/teacher" : "/student"}`);
+      // Hard redirect is safer for ensuring middleware catches the new session
+      const target = role === "teacher" ? "/teacher" : "/student";
+      window.location.href = target;
+    } catch (err: any) {
+      console.error("[Login] Detailed Error:", err);
+      setError(err?.message === "Failed to create session" 
+        ? "Session creation failed. Please try again." 
+        : "Invalid email or password");
       setLoading(false);
     }
   };
