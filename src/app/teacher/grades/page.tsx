@@ -13,6 +13,7 @@ import { User, ChevronRight, Trash2, Download, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { GradeExportButton } from "@/components/grade-export-button";
 import { GradeDistributionChart } from "@/components/admin/grade-distribution-chart";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Student {
   id: string;
@@ -218,7 +219,7 @@ export default function TeacherGradesPage() {
   };
 
   if (loading && assignments.length === 0) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner fullPage />;
   }
 
   return (

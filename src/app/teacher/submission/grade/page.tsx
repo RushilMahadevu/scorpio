@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, FileText, Image as ImageIcon, Download, Brain, Sparkles, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -227,7 +228,7 @@ export default function GradeSubmissionPage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner fullPage />;
   }
 
   if (!id) {
@@ -247,7 +248,7 @@ export default function GradeSubmissionPage() {
   }
 
   if (!submission) {
-    return <div>Submission not found</div>;
+    return <div className="flex items-center justify-center min-h-[50vh] w-full text-muted-foreground">Submission not found</div>;
   }
 
   // Calculate current total score for display

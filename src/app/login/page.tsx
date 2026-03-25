@@ -15,6 +15,7 @@ import Link from "next/link";
 import { ArrowLeft, GraduationCap, Presentation, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/ui/logo";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -143,7 +144,7 @@ export default function LoginPage() {
   };
 
   if (authLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <LoadingSpinner fullPage />;
   }
 
   if (user && role === null) {

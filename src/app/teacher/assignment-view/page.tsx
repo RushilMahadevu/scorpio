@@ -13,6 +13,7 @@ import { ArrowLeft, FileText, Download, User, Calendar, CheckCircle, Clock, Chev
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import { downloadCSV } from "@/lib/utils";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Assignment {
   id: string;
@@ -96,14 +97,7 @@ function AssignmentDetailsContent() {
   }, [assignmentId, user]);
 
   if (loading) {
-    return (
-      <div className="flex h-[450px] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground animate-pulse">Loading assignment details...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullPage />;
   }
 
   if (!assignment) {
@@ -291,7 +285,7 @@ function AssignmentDetailsContent() {
 
 export default function AssignmentDetailsPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingSpinner fullPage />}>
       <AssignmentDetailsContent />
     </Suspense>
   );

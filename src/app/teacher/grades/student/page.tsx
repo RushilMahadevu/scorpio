@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileText, Download } from "lucide-react";
 import Link from "next/link";
 import { GradeExportButton } from "@/components/grade-export-button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Submission {
   id: string;
@@ -106,7 +107,7 @@ export default function StudentDetailsPage() {
   }, [studentId, user]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner fullPage />;
   }
 
   if (!studentId) {

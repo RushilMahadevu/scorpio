@@ -38,6 +38,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Question {
   id: string;
@@ -587,11 +588,11 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
   };
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading...</p>;
+    return <LoadingSpinner fullPage />;
   }
 
   if (!assignment) {
-    return <p className="text-destructive">Assignment not found</p>;
+    return <div className="flex items-center justify-center min-h-[60vh] w-full text-destructive font-bold">Assignment not found</div>;
   }
 
   if (!hasStarted && !submitted) {
@@ -1225,7 +1226,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
 
 export default function AssignmentDetailPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingSpinner fullPage />}>
       <AssignmentDetailContent />
     </Suspense>
   );

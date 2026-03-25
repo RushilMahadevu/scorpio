@@ -93,7 +93,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </header>
 
             {/* Main Content Area */}
-            <main className="flex-1 container max-w-4xl mx-auto py-12 md:py-20 px-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <main className="flex-1 container max-w-4xl mx-auto py-12 md:py-20 px-6">
                 {children}
             </main>
         </div>
