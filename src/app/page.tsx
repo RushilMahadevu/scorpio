@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe
+  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -22,6 +22,7 @@ import { LandingFAQ } from "@/components/landing-faq";
 import { Comparison } from "@/components/landing/comparison";
 import { SystemAccordion } from "@/components/system-accordion";
 import { FloatingPrompts } from "@/components/ui/floating-prompts";
+import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 
@@ -120,6 +121,7 @@ export default function Home() {
                   {[
                     { id: "home", label: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
                     { id: "problem", label: "Problem", target: "problem" },
+                    { id: "solution", label: "Solution", target: "solution" },
                     { id: "demos", label: "Demos", target: "demos" },
                     { id: "efficacy", label: "Research", target: "efficacy" },
                     { id: "pricing", label: "Pricing", target: "pricing" },
@@ -200,6 +202,7 @@ export default function Home() {
                           <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Platform</span>
                           {[
                             { id: "problem", label: "Problem", icon: AlertTriangle },
+                            { id: "solution", label: "Solution", icon: Layers },
                             { id: "demo", label: "Product", icon: PlayCircle },
                             { id: "how-it-works", label: "System", icon: Zap },
                           ].map((item) => (
@@ -598,6 +601,9 @@ export default function Home() {
                   </motion.div>
                 </div>
               </section>
+
+              {/* Solution Flowchart Section */}
+              <SolutionFlowchart />
 
               {/* See It Work Section (Merged Demo + Dashboard) */}
               <section id="demos" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
