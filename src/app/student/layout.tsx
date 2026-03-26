@@ -27,8 +27,8 @@ export default function StudentLayout({
           isCollapsed={isCollapsed}
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
-        <main className="flex-1 overflow-auto bg-background/50">
-          <div className="p-8 max-w-7xl mx-auto w-full">
+        <main className={`flex-1 bg-background/50 ${isAssignmentView ? "overflow-hidden" : "overflow-auto"}`}>
+          <div className={isAssignmentView ? "h-full w-full" : "p-8 max-w-7xl mx-auto w-full"}>
             {children}
           </div>
         </main>

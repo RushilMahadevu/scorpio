@@ -152,28 +152,28 @@ export default function AboutPage() {
           </div>
         </div>
         <div className="space-y-4">
-           <Card className="bg-background/50 border-border/40">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Users className="h-5 w-5 text-primary" />
-                  <span className="font-bold">Student Success</span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Reduces homework anxiety and "stuck" time by providing 24/7 expert-level Socratic assistance that adapts to their specific level.
-                </p>
-              </CardContent>
-           </Card>
-           <Card className="bg-background/50 border-border/40">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Code className="h-5 w-5 text-primary" />
-                  <span className="font-bold">Teacher Empowered</span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Advanced dashboards allow educators to see where students are struggling conceptually, transforming classrooms into data-driven learning labs.
-                </p>
-              </CardContent>
-           </Card>
+          <Card className="bg-background/50 border-border/40">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Users className="h-5 w-5 text-primary" />
+                <span className="font-bold">Student Success</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Reduces homework anxiety and "stuck" time by providing 24/7 expert-level Socratic assistance that adapts to their specific level.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-background/50 border-border/40">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Code className="h-5 w-5 text-primary" />
+                <span className="font-bold">Teacher Empowered</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Advanced dashboards allow educators to see where students are struggling conceptually, transforming classrooms into data-driven learning labs.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -220,7 +220,7 @@ export default function AboutPage() {
       <section className="pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-primary/20 bg-background flex items-center justify-center p-2">
-             <Info className="h-full w-full text-primary" />
+            <Info className="h-full w-full text-primary" />
           </div>
           <div>
             <p className="text-sm font-bold">Project Details</p>
@@ -235,10 +235,10 @@ export default function AboutPage() {
             </a>
           </Button>
           <Button className="gap-2" asChild>
-             <Link href="/research">
+            <Link href="/research">
               Read the Paper
               <ArrowRight className="h-4 w-4" />
-             </Link>
+            </Link>
           </Button>
         </div>
       </section>

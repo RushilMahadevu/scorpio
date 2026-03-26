@@ -96,14 +96,10 @@ export default function Home() {
 
       <AnimatePresence>
         {isLoaded && (
-          <motion.div
-            initial={{ opacity: 0, filter: "blur(20px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <>
             {/* Sticky Blurred Header */}
             <motion.header
-              className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
+              className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
               initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
@@ -177,17 +173,24 @@ export default function Home() {
                 </nav>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex items-center">
+                    <ModeToggle />
+                  </div>
+                  
+                  <Link href="/signup">
+                    <Button size="sm" className="h-8 font-semibold px-4 rounded-full cursor-pointer shadow-none hover:opacity-90 transition-opacity text-[10px] sm:text-xs">
+                      Sign up
+                    </Button>
+                  </Link>
+                  
                   <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="sm" className="lg:hidden" aria-label="Open menu">
+                      <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8 hover:bg-muted/50 rounded-full" aria-label="Open menu">
                         <Menu className="h-5 w-5" />
                       </Button>
                     </SheetTrigger>
-                    {menuOpen && (
-                      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity lg:hidden" aria-hidden="true" onClick={() => setMenuOpen(false)} />
-                    )}
-                    <SheetContent side="right" className="w-full max-w-xs sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden" style={{ top: 0, bottom: 0, right: 0, left: "auto" }} hideClose>
+                    <SheetContent side="right" className="w-full max-w-[280px] sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden border-l border-border/40" hideClose>
                       <div className="flex items-center justify-between px-6 py-4 border-b">
                         <span className="font-extrabold text-lg">Menu</span>
                         <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} className="rounded-full hover:bg-accent">
@@ -201,12 +204,13 @@ export default function Home() {
                         <div className="space-y-1">
                           <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Platform</span>
                           {[
+                            { id: "home", label: "Home", icon: Globe, action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
                             { id: "problem", label: "Problem", icon: AlertTriangle },
                             { id: "solution", label: "Solution", icon: Layers },
-                            { id: "demo", label: "Product", icon: PlayCircle },
-                            { id: "how-it-works", label: "System", icon: Zap },
+                            { id: "demos", label: "Demos", icon: PlayCircle },
+                            { id: "how-it-works", label: "Systems", icon: Zap },
                           ].map((item) => (
-                            <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); }}>
+                            <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { if (item.action) { item.action(); } else { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); } setMenuOpen(false); }}>
                               <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
                               {item.label}
                             </Button>
@@ -252,16 +256,12 @@ export default function Home() {
                       </div>
                     </SheetContent>
                   </Sheet>
-                  <ModeToggle />
-                  <div className="h-5 w-px bg-border/40 hidden lg:block" />
-                  <Link href="/login" className="hidden lg:block">
-                    <Button variant="ghost" size="sm" className="font-medium text-muted-foreground hover:text-foreground hover:bg-transparent transition-colors cursor-pointer">
+                  
+                  <div className="h-4 w-px bg-border/40 hidden lg:block mx-1" />
+                  
+                  <Link href="/login" className="hidden sm:block">
+                    <Button variant="ghost" size="sm" className="font-medium text-muted-foreground hover:text-foreground hover:bg-transparent transition-colors cursor-pointer text-sm">
                       Login
-                    </Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button size="sm" className="font-semibold px-5 rounded-full cursor-pointer shadow-none hover:opacity-90 transition-opacity">
-                      Sign up
                     </Button>
                   </Link>
                 </div>
@@ -315,6 +315,13 @@ export default function Home() {
                 style={{ scaleX }}
               />
             </motion.header>
+
+            {/* Page wrapper with animation - filter removed to prevent fixed positioning issues */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
 
             <main className="relative z-10">
               {/* Hero Section */}
@@ -961,9 +968,9 @@ export default function Home() {
                 </div>
               </div>
             </footer>
-
           </motion.div>
-        )}
+        </>
+      )}
       </AnimatePresence>
       </div>
       {isLoaded && <LandingChatbot />}
