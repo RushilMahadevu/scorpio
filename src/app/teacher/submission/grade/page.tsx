@@ -13,11 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, FileText, Image as ImageIcon, Download, Brain, Sparkles, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { toast } from "sonner";
 
 interface Question {
@@ -390,9 +387,9 @@ export default function GradeSubmissionPage() {
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase font-bold text-muted-foreground">Original Question</Label>
                           <div className="prose prose-zinc dark:prose-invert max-w-none text-sm">
-                            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            <MarkdownRenderer noProse>
                               {ans.questionText}
-                            </ReactMarkdown>
+                            </MarkdownRenderer>
                           </div>
                         </div>
 
@@ -402,9 +399,9 @@ export default function GradeSubmissionPage() {
                             <Label className="text-[10px] uppercase font-bold text-muted-foreground">Student Answer</Label>
                             <div className="prose prose-sm dark:prose-invert max-w-none min-h-[40px]">
                               {ans.answer ? (
-                                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                <MarkdownRenderer noProse>
                                   {ans.answer}
-                                </ReactMarkdown>
+                                </MarkdownRenderer>
                               ) : (
                                 <span className="text-muted-foreground italic text-xs">No response provided.</span>
                               )}
@@ -419,9 +416,9 @@ export default function GradeSubmissionPage() {
                                 Correct Answer Reference
                               </Label>
                               <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/80">
-                                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                <MarkdownRenderer noProse>
                                   {question.correctAnswer}
-                                </ReactMarkdown>
+                                </MarkdownRenderer>
                               </div>
                             </div>
                           )}

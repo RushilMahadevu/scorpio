@@ -34,9 +34,6 @@ import Link from "next/link";
 import { MathInputField } from "@/components/math-input";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { helpSolveProblem } from "@/lib/gemini";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
