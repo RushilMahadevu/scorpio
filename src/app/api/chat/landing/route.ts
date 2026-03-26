@@ -5,6 +5,7 @@ import { recordUsage } from '@/lib/usage-limit';
 /** Resolve Gemini API key: explicit env var → Firebase web key baked into __FIREBASE_DEFAULTS__ */
 function resolveApiKey(): string {
   if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+  if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) return process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
   try {
     const defaults = process.env.__FIREBASE_DEFAULTS__;
     if (defaults) {
@@ -12,7 +13,7 @@ function resolveApiKey(): string {
       if (key) return key;
     }
   } catch {}
-  throw new Error('Gemini API key is not configured (set GEMINI_API_KEY or __FIREBASE_DEFAULTS__)');
+  throw new Error('Gemini API key is not configured (set GEMINI_API_KEY, NEXT_PUBLIC_FIREBASE_API_KEY, or __FIREBASE_DEFAULTS__)');
 }
 
 async function callGeminiDirect(

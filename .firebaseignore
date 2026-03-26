@@ -1,5 +1,6 @@
 firebase-debug.log
 .next/cache
+.next/dev
 node_modules
 .git
 *.log

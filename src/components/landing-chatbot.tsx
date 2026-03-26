@@ -219,139 +219,139 @@ export function LandingChatbot() {
               </div>
             </div>
 
-          {/* Quick section links */}
-          <div className="shrink-0 px-4 pt-3 pb-2 border-b border-border/30">
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-2">Jump To</p>
-            <div className="grid grid-cols-6 gap-1">
-              {quickLinks.map((link) => (
-                <button
-                  key={link.id}
-                  onClick={() => scrollToSection(link.id)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-accent transition-colors cursor-pointer group"
-                >
-                  <link.icon className="h-3.5 w-3.5 text-primary transition-transform group-hover:scale-110" />
-                  <span className="text-[8px] font-semibold text-muted-foreground group-hover:text-foreground transition-colors text-center leading-tight">{link.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div
-            data-lenis-prevent
-            onWheel={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 overscroll-contain"
-          >
-            {messages.map((message, i) => (
-              <div key={i} className={cn('flex gap-2.5', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                {message.role === 'assistant' && (
-                  <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
-                  </div>
-                )}
-                <div className={cn(
-                  'max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-sm',
-                  message.role === 'user'
-                    ? 'bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-sm'
-                    : 'bg-zinc-100 dark:bg-zinc-800/80 text-foreground rounded-tl-sm border border-border/30',
-                  message.isWelcome && 'border-l-2 border-l-emerald-400'
-                )}>
-                  {message.role === 'user' ? (
-                    <p className="text-sm leading-relaxed">{message.content}</p>
-                  ) : (
-                    <MarkdownRenderer className="text-sm prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-p:my-0 prose-ul:my-1 prose-li:my-0 max-w-none">
-                      {message.content}
-                    </MarkdownRenderer>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* Suggested prompts on fresh conversation */}
-            {!isLoading && messages.length <= 2 && !limitReached && (
-              <div className="space-y-1.5 ml-8">
-                {suggestedPrompts.map((prompt, i) => (
+            {/* Quick section links */}
+            <div className="shrink-0 px-4 pt-3 pb-2 border-b border-border/30">
+              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-2">Jump To</p>
+              <div className="grid grid-cols-6 gap-1">
+                {quickLinks.map((link) => (
                   <button
-                    key={i}
-                    onClick={() => sendMessage(prompt)}
-                    className="flex items-center gap-2 w-full text-left text-[11px] font-medium text-muted-foreground hover:text-foreground bg-zinc-100 dark:bg-zinc-800/60 hover:bg-accent px-3 py-2 rounded-xl transition-colors cursor-pointer border border-border/30 hover:border-border"
+                    key={link.id}
+                    onClick={() => scrollToSection(link.id)}
+                    className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-accent transition-colors cursor-pointer group"
                   >
-                    <Sparkles className="h-3 w-3 text-purple-400 shrink-0" />
-                    {prompt}
+                    <link.icon className="h-3.5 w-3.5 text-primary transition-transform group-hover:scale-110" />
+                    <span className="text-[8px] font-semibold text-muted-foreground group-hover:text-foreground transition-colors text-center leading-tight">{link.label}</span>
                   </button>
                 ))}
               </div>
-            )}
+            </div>
 
-            {isLoading && (
-              <div className="flex gap-2.5">
-                <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
-                  <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
-                </div>
-                <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
-                  <div className="flex gap-1 items-center h-4">
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '120ms' }} />
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '240ms' }} />
+            {/* Messages */}
+            <div
+              data-lenis-prevent
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+              className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 overscroll-contain"
+            >
+              {messages.map((message, i) => (
+                <div key={i} className={cn('flex gap-2.5', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  {message.role === 'assistant' && (
+                    <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
+                    </div>
+                  )}
+                  <div className={cn(
+                    'max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-sm',
+                    message.role === 'user'
+                      ? 'bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-sm'
+                      : 'bg-zinc-100 dark:bg-zinc-800/80 text-foreground rounded-tl-sm border border-border/30',
+                    message.isWelcome && 'border-l-2 border-l-emerald-400'
+                  )}>
+                    {message.role === 'user' ? (
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                    ) : (
+                      <MarkdownRenderer className="text-sm prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-p:my-0 prose-ul:my-1 prose-li:my-0 max-w-none">
+                        {message.content}
+                      </MarkdownRenderer>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
 
-            {/* Limit reached CTA */}
-            {limitReached && (
-              <div className="ml-8 p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
-                <p className="text-xs font-semibold text-foreground">Ready to get full access?</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited AI tutoring, practice, and platform features.</p>
-                <Link href="/signup" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full rounded-xl font-bold text-xs cursor-pointer h-8 mt-1">
-                    Sign up for free <ArrowRight className="h-3 w-3 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            )}
+              {/* Suggested prompts on fresh conversation */}
+              {!isLoading && messages.length <= 2 && !limitReached && (
+                <div className="space-y-1.5 ml-8">
+                  {suggestedPrompts.map((prompt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => sendMessage(prompt)}
+                      className="flex items-center gap-2 w-full text-left text-[11px] font-medium text-muted-foreground hover:text-foreground bg-zinc-100 dark:bg-zinc-800/60 hover:bg-accent px-3 py-2 rounded-xl transition-colors cursor-pointer border border-border/30 hover:border-border"
+                    >
+                      <Sparkles className="h-3 w-3 text-purple-400 shrink-0" />
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-            <div ref={messagesEndRef} />
-          </div>
+              {isLoading && (
+                <div className="flex gap-2.5">
+                  <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
+                    <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
+                  </div>
+                  <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
+                    <div className="flex gap-1 items-center h-4">
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '120ms' }} />
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '240ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          {/* Input */}
-          <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/30 bg-background">
-            <div className={cn(
-              'relative flex items-end gap-2 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl px-4 py-2.5 border border-border/40 focus-within:border-zinc-400 dark:focus-within:border-zinc-500 transition-colors',
-              limitReached && 'opacity-50 pointer-events-none'
-            )}>
-              <Textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage(input);
-                  }
-                }}
-                placeholder={limitReached ? 'Demo limit reached — sign up for more' : 'Ask me anything about Scorpio...'}
-                className="flex-1 bg-transparent border-0 resize-none p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 min-h-[24px] max-h-[80px] leading-relaxed"
-                rows={1}
-                disabled={isLoading || limitReached}
-              />
-              <Button
-                size="icon"
-                onClick={() => sendMessage(input)}
-                disabled={!input.trim() || isLoading || limitReached}
-                className="h-7 w-7 shrink-0 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                <Send className="h-3.5 w-3.5 text-zinc-100 dark:text-zinc-900" />
-              </Button>
+              {/* Limit reached CTA */}
+              {limitReached && (
+                <div className="ml-8 p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+                  <p className="text-xs font-semibold text-foreground">Ready to get full access?</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited AI tutoring, practice, and platform features.</p>
+                  <Link href="/signup" onClick={() => setIsOpen(false)}>
+                    <Button size="sm" className="w-full rounded-xl font-bold text-xs cursor-pointer h-8 mt-1">
+                      Sign up for free <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
-            <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
-              Scorpio AI · Product Guide · {remaining} messages left
-            </p>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </>
+
+            {/* Input */}
+            <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/30 bg-background">
+              <div className={cn(
+                'relative flex items-end gap-2 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl px-4 py-2.5 border border-border/40 focus-within:border-zinc-400 dark:focus-within:border-zinc-500 transition-colors',
+                limitReached && 'opacity-50 pointer-events-none'
+              )}>
+                <Textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage(input);
+                    }
+                  }}
+                  placeholder={limitReached ? 'Demo limit reached — sign up for more' : 'Ask me anything about Scorpio...'}
+                  className="flex-1 bg-transparent border-0 resize-none p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 min-h-[24px] max-h-[80px] leading-relaxed"
+                  rows={1}
+                  disabled={isLoading || limitReached}
+                />
+                <Button
+                  size="icon"
+                  onClick={() => sendMessage(input)}
+                  disabled={!input.trim() || isLoading || limitReached}
+                  className="h-7 w-7 shrink-0 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:opacity-80 transition-opacity cursor-pointer"
+                >
+                  <Send className="h-3.5 w-3.5 text-zinc-100 dark:text-zinc-900" />
+                </Button>
+              </div>
+              <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
+                Scorpio AI · Product Guide · {remaining} messages left
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

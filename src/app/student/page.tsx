@@ -8,17 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen,  BrainCircuit, BowArrow } from "lucide-react";
+import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow } from "lucide-react";
 import Link from "next/link";
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   Tooltip,
   Legend
 } from "recharts";
@@ -55,7 +55,7 @@ export default function StudentDashboard() {
         if (profile?.courseId) {
           setCourseId(profile.courseId);
           setTeacherId(profile.teacherId || null);
-          
+
           try {
             const courseDoc = await getDoc(doc(db, "courses", profile.courseId));
             if (courseDoc.exists()) {
@@ -76,40 +76,40 @@ export default function StudentDashboard() {
           // LEGACY CODE RESOLUTION
           // If we have a teacherId but NO courseId, the teacherId might actually be a Class Code
           if (resolvedTid && !resolvedCid) {
-             const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", resolvedTid.trim())));
-             if (!codeMatch.empty) {
-                const courseDoc = codeMatch.docs[0];
-                const courseData = courseDoc.data();
-                resolvedCid = courseDoc.id;
-                resolvedTid = courseData.teacherId;
-                
-                // AUTO-SYNC these back to the student doc so it's resolved forever
-                await setDoc(doc(db, "students", user.uid), { 
-                  courseId: resolvedCid, 
-                  teacherId: resolvedTid 
-                }, { merge: true });
-                
-                // Also update unified user if available
-                await setDoc(doc(db, "users", user.uid), { 
-                  courseId: resolvedCid, 
-                  teacherId: resolvedTid 
-                }, { merge: true });
-                
-                console.log("Legacy teacher code resolved to:", resolvedTid, resolvedCid);
-             }
+            const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", resolvedTid.trim())));
+            if (!codeMatch.empty) {
+              const courseDoc = codeMatch.docs[0];
+              const courseData = courseDoc.data();
+              resolvedCid = courseDoc.id;
+              resolvedTid = courseData.teacherId;
+
+              // AUTO-SYNC these back to the student doc so it's resolved forever
+              await setDoc(doc(db, "students", user.uid), {
+                courseId: resolvedCid,
+                teacherId: resolvedTid
+              }, { merge: true });
+
+              // Also update unified user if available
+              await setDoc(doc(db, "users", user.uid), {
+                courseId: resolvedCid,
+                teacherId: resolvedTid
+              }, { merge: true });
+
+              console.log("Legacy teacher code resolved to:", resolvedTid, resolvedCid);
+            }
           }
-          
+
           setTeacherId(resolvedTid);
           setCourseId(resolvedCid);
-          
+
           if (resolvedCid) {
-             try {
-                const courseDoc = await getDoc(doc(db, "courses", resolvedCid));
-                if (courseDoc.exists()) {
-                  setCourseName(courseDoc.data().name);
-                  setCourseCode(courseDoc.data().code);
-                }
-             } catch (e) { console.error("Error fetching course", e); }
+            try {
+              const courseDoc = await getDoc(doc(db, "courses", resolvedCid));
+              if (courseDoc.exists()) {
+                setCourseName(courseDoc.data().name);
+                setCourseCode(courseDoc.data().code);
+              }
+            } catch (e) { console.error("Error fetching course", e); }
           }
         }
       } catch (error) {
@@ -157,8 +157,8 @@ export default function StudentDashboard() {
         );
 
         const submissions = submissionsSnap.docs.map(d => d.data());
-        const completedAssignments = submissions.filter(data => 
-            data.status !== 'draft' && currentAssignmentIds.has(data.assignmentId)
+        const completedAssignments = submissions.filter(data =>
+          data.status !== 'draft' && currentAssignmentIds.has(data.assignmentId)
         ).length;
 
         // Fetch grades for progress chart (last 5 graded submissions)
@@ -168,7 +168,7 @@ export default function StudentDashboard() {
           .slice(0, 5)
           .reverse()
           .map((d, i) => ({
-            name: `A${i+1}`,
+            name: `A${i + 1}`,
             score: d.score
           }));
 
@@ -193,7 +193,7 @@ export default function StudentDashboard() {
       const code = classCode.trim();
       // Check if code matches a course
       const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", code)));
-      
+
       let newTeacherId = "";
       let newCourseId = "";
       let newCourseName = "";
@@ -241,7 +241,7 @@ export default function StudentDashboard() {
         displayName: syncData.name, // Uniform naming across collections
         organizationId: organizationId || null
       }, { merge: true });
-      
+
       alert(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
       window.location.reload(); // Reload to pick up new claims
     } catch (error: any) {
@@ -270,19 +270,19 @@ export default function StudentDashboard() {
       try {
         await setDoc(doc(db, "students", user.uid), resetData, { merge: true });
         legacySuccess = true;
-      } catch (e) { 
-        console.warn("Error clearing legacy student doc:", e); 
+      } catch (e) {
+        console.warn("Error clearing legacy student doc:", e);
       }
 
       try {
         await setDoc(doc(db, "users", user.uid), resetData, { merge: true });
         unifiedSuccess = true;
-      } catch (e) { 
-        console.warn("Error clearing unified user doc:", e); 
+      } catch (e) {
+        console.warn("Error clearing unified user doc:", e);
       }
 
       if (!legacySuccess && !unifiedSuccess) {
-         throw new Error("Could not update your profile to leave class. Please check your connection.");
+        throw new Error("Could not update your profile to leave class. Please check your connection.");
       }
 
       setTeacherId(null);
@@ -361,15 +361,15 @@ export default function StudentDashboard() {
                 Enroll in Class
               </CardTitle>
               <CardDescription className="text-base">
-                {teacherId ? 
-                  "Please enter your Class Code to access assignments and resources." : 
+                {teacherId ?
+                  "Please enter your Class Code to access assignments and resources." :
                   "To get started, please enter the Class Code provided by your teacher."}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               <div className="flex flex-col sm:flex-row gap-4 max-w-md">
-                <Input 
-                  placeholder="Class Code (e.g. PHYS101)" 
+                <Input
+                  placeholder="Class Code (e.g. PHYS101)"
                   value={classCode}
                   onChange={(e) => setClassCode(e.target.value.toUpperCase())}
                   className="font-mono h-12 text-lg"
@@ -427,7 +427,7 @@ export default function StudentDashboard() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
                 />
               </PieChart>

@@ -106,7 +106,7 @@ export default function TutorPage() {
     // Simplified query - only filter by studentId, sort in memory 
     // to avoid the CA9 watcher sync bug in Firestore on composite queries
     const q = query(
-      sessionsRef, 
+      sessionsRef,
       where("studentId", "==", user.uid)
     );
 
@@ -121,10 +121,10 @@ export default function TutorPage() {
           updatedAt: data.updatedAt?.toMillis?.() ?? (data.updatedAt?.seconds ? data.updatedAt.seconds * 1000 : 0),
         };
       });
-      
+
       // Sort in-memory to be safer against SDK version state bugs
       loaded.sort((a, b) => b.updatedAt - a.updatedAt);
-      
+
       setSessions(loaded);
 
       // Initial active session selection (only if none)
@@ -393,14 +393,14 @@ export default function TutorPage() {
             <div className="flex flex-col items-end">
               <span className="text-[10px] font-black uppercase text-primary/70 tracking-[0.15em] leading-none mb-1">Tutor Messages</span>
               <span className="text-xs font-black tracking-tight flex items-center gap-1.5">
-                {(profile as any)?.tutorUsageCurrent || 0} 
-                <span className="text-muted-foreground/30 font-medium">/</span> 
+                {(profile as any)?.tutorUsageCurrent || 0}
+                <span className="text-muted-foreground/30 font-medium">/</span>
                 {orgData.aiTutorLimitPerStudent}
               </span>
             </div>
             <div className="w-16 h-8 relative flex items-center justify-center">
               <div className="absolute inset-0 bg-muted/30 rounded-full" />
-              <div 
+              <div
                 className={cn(
                   "absolute left-0 top-0 bottom-0 transition-all duration-700 rounded-full",
                   ((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent! > 0.8 ? "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]" : "bg-primary shadow-[0_0_8px_rgba(59,130,246,0.3)]"
@@ -436,7 +436,7 @@ export default function TutorPage() {
         </div>
       ) : (
         <div className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
-          
+
           {/* --- AI Tutor Meter (Mobile/Desktop Header) --- */}
           {orgData && (orgData.aiTutorLimitPerStudent ?? 0) > 0 && (
             <div className="md:hidden shrink-0">
@@ -454,7 +454,7 @@ export default function TutorPage() {
                     </div>
                   </div>
                   <div className="flex-1 max-w-[100px] h-1.5 bg-muted rounded-full overflow-hidden border border-border/10">
-                    <div 
+                    <div
                       className={cn(
                         "h-full transition-all duration-500 rounded-full",
                         ((profile as any)?.tutorUsageCurrent || 0) / orgData.aiTutorLimitPerStudent! > 0.8 ? "bg-orange-500" : "bg-primary"
@@ -593,7 +593,7 @@ export default function TutorPage() {
             </ScrollArea>
 
             {/* --- Resize Handle --- */}
-            <div 
+            <div
               className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-primary/40 transition-colors opacity-0 group-hover/sidebar:opacity-100"
               onMouseDown={(e) => {
                 const startX = e.clientX;

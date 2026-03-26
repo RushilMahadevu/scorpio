@@ -88,7 +88,8 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen relative font-medium scroll-smooth">
+    <>
+      <div className="min-h-screen relative font-medium scroll-smooth">
       <LoadingScreen onFinish={() => setIsLoaded(true)} />
       <SpaceBackground />
 
@@ -149,8 +150,8 @@ export default function Home() {
                   <button
                     onMouseEnter={() => setHoveredNav("docs")}
                     className={`h-8 px-4 text-sm font-semibold rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${hoveredNav === "docs"
-                        ? "text-foreground bg-muted/40"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      ? "text-foreground bg-muted/40"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                       }`}
                   >
                     Docs
@@ -324,7 +325,7 @@ export default function Home() {
                   <div className="absolute bottom-[10%] right-[5%] w-[450px] h-[350px] bg-primary/5 blur-[130px] rounded-full" />
                 </div>
 
-                <div className="hidden lg:block">
+                <div className="hidden md:block">
                   <FloatingPrompts />
                 </div>
 
@@ -955,11 +956,11 @@ export default function Home() {
               </div>
             </footer>
 
-            {/* Landing AI Chatbot — visitor-scoped, 10 msg limit, billed to developer account */}
-            {/* <LandingChatbot /> */}
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+      {isLoaded && <LandingChatbot />}
+    </>
   );
 }

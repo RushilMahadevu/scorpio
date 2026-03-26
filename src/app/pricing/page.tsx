@@ -34,7 +34,8 @@ export default function PricingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen relative font-medium">
+    <>
+      <div className="min-h-screen relative font-medium">
       <SpaceBackground />
 
       {/* Header */}
@@ -306,7 +307,8 @@ export default function PricingPage() {
           </div>
         </div>
       </footer>
+      </div>
       <LandingChatbot />
-    </div>
+    </>
   );
 }
