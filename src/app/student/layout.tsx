@@ -23,11 +23,13 @@ export default function StudentLayout({
     <ProtectedRoute allowedRole="student">
       <SpaceBackground />
       <div className="flex h-screen">
-        <StudentSidebar
-          isCollapsed={isCollapsed}
-          onToggle={() => setIsCollapsed(!isCollapsed)}
-        />
-        <main className={`flex-1 bg-background/50 ${isAssignmentView ? "overflow-hidden" : "overflow-auto"}`}>
+        {!isAssignmentView && (
+          <StudentSidebar
+            isCollapsed={isCollapsed}
+            onToggle={() => setIsCollapsed(!isCollapsed)}
+          />
+        )}
+        <main className={`flex-1 bg-background/50 ${isAssignmentView ? "overflow-hidden w-screen fixed inset-0 z-50" : "overflow-auto"}`}>
           <div className={isAssignmentView ? "h-full w-full" : "p-8 max-w-7xl mx-auto w-full"}>
             {children}
           </div>

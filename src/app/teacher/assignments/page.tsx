@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Trash2, Eye, Share2, Globe, Lock, ShieldCheck } from "lucide-react";
+import { PlusCircle, Trash2, Eye, Share2, Globe, Lock, ShieldCheck, ShieldAlert } from "lucide-react";
 
 interface Assignment {
   id: string;
@@ -23,6 +23,7 @@ interface Assignment {
   courseName?: string;
   visibility?: "private" | "network" | "global";
   organizationId?: string;
+  lockdownMode?: boolean;
 }
 
 export default function AssignmentsPage() {
@@ -220,7 +221,14 @@ export default function AssignmentsPage() {
               <TableBody>
                 {filteredAssignments.map((assignment) => (
                   <TableRow key={assignment.id}>
-                    <TableCell className="font-medium">{assignment.title}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {assignment.title}
+                        {assignment.lockdownMode && (
+                          <ShieldAlert className="h-3 w-3 text-red-500" />
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                         {assignment.courseName ? (
                             <Badge variant="outline">{assignment.courseName}</Badge>

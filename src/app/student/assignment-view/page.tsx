@@ -29,7 +29,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Bot, Lightbulb, User, ChevronRight, ChevronLeft } from "lucide-react";
+import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Bot, Lightbulb, User, ChevronRight, ChevronLeft, Lock } from "lucide-react";
 import Link from "next/link";
 import { MathInputField } from "@/components/math-input";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -57,6 +57,7 @@ interface Assignment {
   requireWorkSubmission?: boolean;
   allowAIHelp?: boolean;
   enableTabDetection?: boolean;
+  lockdownMode?: boolean;
   type?: string;
 }
 
@@ -116,9 +117,63 @@ function AssignmentDetailContent() {
       setUnfocusCount((count) => count + 1);
       setShowUnfocusPopup(true);
     };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (assignment?.lockdownMode && hasStarted && !submitted) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    const handleCopy = (e: ClipboardEvent) => {
+      if (assignment?.lockdownMode) {
+        e.preventDefault();
+        // Use toast or alert
+        alert("Copying is disabled in Lockdown Mode to maintain academic integrity.");
+      }
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      if (assignment?.lockdownMode) {
+        e.preventDefault();
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (assignment?.lockdownMode && hasStarted && !submitted && !document.fullscreenElement) {
+        setUnfocusCount((count) => count + 1);
+        setShowUnfocusPopup(true);
+      }
+    };
+
+    // Discourage browser back button in lockdown
+    const handlePopState = (e: PopStateEvent) => {
+        if (assignment?.lockdownMode && hasStarted && !submitted) {
+            window.history.pushState(null, "", window.location.href);
+            alert("Navigation is locked. Please complete and submit your assignment before leaving.");
+        }
+    };
+
+    if (assignment?.lockdownMode && hasStarted && !submitted) {
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener('popstate', handlePopState);
+    }
+
     window.addEventListener('blur', handleBlur);
-    return () => window.removeEventListener('blur', handleBlur);
-  }, [ignoreNextBlurRef, assignment]);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('copy', handleCopy);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('copy', handleCopy);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [ignoreNextBlurRef, assignment, submitted, hasStarted]);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -183,7 +238,8 @@ function AssignmentDetailContent() {
             timeLimit: data.timeLimit,
             requireWorkSubmission: data.requireWorkSubmission || false,
             allowAIHelp: data.allowAIHelp || false,
-            enableTabDetection: data.enableTabDetection ?? true, // Default to true if not present
+            enableTabDetection: data.enableTabDetection ?? true,
+            lockdownMode: data.lockdownMode ?? true, // Default to true if not present
             type: data.type || "standard",
           };
           setAssignment(assignmentData);
@@ -293,6 +349,15 @@ function AssignmentDetailContent() {
       setTimerActive(true);
     }
     setHasStarted(true);
+
+    // Request fullscreen for Lockdown Mode
+    if (assignment.lockdownMode) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        // If it fails (some browsers or if not user-triggered), we still continue, 
+        // but tab detection will catch them anyway
+      });
+    }
   };
 
   // AI Helper Logic
@@ -642,10 +707,26 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                 {assignment.requireWorkSubmission && assignment.timeLimit && (
                   <li>You'll have 5 extra minutes to upload work after time expires.</li>
                 )}
+                {assignment.lockdownMode && (
+                  <li className="text-red-700 font-bold">Lockdown Mode: Fullscreen, Copying/Pasting, and Right-click are disabled.</li>
+                )}
                 <li>Do not refresh the page or close the browser window.</li>
                 <li>Ensure you have a stable internet connection.</li>
               </ul>
             </div>
+
+            {assignment.lockdownMode && (
+              <div className="flex flex-col items-center gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-2 text-red-700 font-bold uppercase tracking-tighter">
+                  <Lock className="h-5 w-5" />
+                  <span>Strict Integrity Lock Active</span>
+                </div>
+                <p className="text-xs text-red-600/80 leading-relaxed text-center">
+                  Starting this assignment will trigger **Fullscreen Mode**. Standard navigation is disabled. 
+                  Any attempt to exit fullscreen, switch tabs, or copy/paste will be logged as a potential violation.
+                </p>
+              </div>
+            )}
 
             <Button size="lg" className="w-full text-lg" onClick={handleStartAssignment}>
               <Play className="h-5 w-5 mr-2" />
@@ -709,10 +790,17 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
           <div className="flex-1 overflow-y-auto relative scroll-smooth">
             <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 pb-20">
               <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
-        <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Link>
+            {!assignment.lockdownMode || !hasStarted || submitted ? (
+              <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 uppercase ring-4 ring-white shadow-sm">
+                <Lock className="h-3 w-3" />
+                Integrity Lock
+              </div>
+            )}
         
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-end hidden sm:flex">
@@ -995,14 +1083,16 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               Submission failed: {submitError}
             </div>
           )}
-          <Button 
-            onClick={handleSaveDraft} 
-            disabled={submitting} 
-            variant="outline"
-            className="w-full"
-          >
-            Save Draft
-          </Button>
+          {!assignment.lockdownMode && (
+            <Button 
+              onClick={handleSaveDraft} 
+              disabled={submitting} 
+              variant="outline"
+              className="w-full"
+            >
+              Save Draft
+            </Button>
+          )}
           <Button 
             onClick={handleSubmit} 
             disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
