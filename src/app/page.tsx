@@ -362,20 +362,30 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                {/* Scroll Progress Bar */}
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary origin-left z-50"
-                  style={{ scaleX }}
-                />
+                {/* Scroll Progress Bar - only visible when scrolled to avoid initial hydration/spring glitches */}
+                <AnimatePresence>
+                  {isScrolled && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary origin-left z-50"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{ scaleX, originX: 0 }}
+                    />
+                  )}
+
+                </AnimatePresence>
               </motion.header>
 
 
-              {/* Page wrapper with animation - filter removed to prevent fixed positioning issues */}
+
+              {/* Page wrapper with animation */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               >
+
 
                 <main className="relative z-10">
                   {/* Hero Section */}
@@ -413,7 +423,12 @@ export default function Home() {
                       {/* Logo */}
                       <div className="flex justify-center relative">
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-24 h-24 bg-primary/15 blur-3xl rounded-full" />
+                          <motion.div 
+                            className="w-32 h-32 bg-primary/20 blur-3xl rounded-full"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.1, duration: 1.2, ease: "easeOut" }}
+                          />
                         </div>
                         <motion.div
                           className="relative cursor-pointer"
@@ -424,42 +439,68 @@ export default function Home() {
                           transition={{
                             rotate: { type: "spring", stiffness: 60, damping: 12 },
                             y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
-                            default: { duration: 2.5, ease: [0.16, 1, 0.3, 1] }
+                            default: { duration: 2, ease: [0.16, 1, 0.3, 1] }
                           }}
                         >
-                          <Logo size={72} className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300" />
+                          <Logo 
+                            size={72} 
+                            layoutId="hero-logo"
+                            className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300" 
+                          />
                         </motion.div>
                       </div>
 
+
                       {/* Headline */}
                       <motion.div
-                        className="space-y-4 relative z-10"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.8, type: "spring", bounce: 0.3 }}
+                        className="space-y-4 relative z-10 text-center"
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: {
+                            opacity: 1,
+                            transition: {
+                              staggerChildren: 0.12,
+                              delayChildren: 0.4
+                            }
+                          }
+                        }}
                       >
-                        <h1 className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black tracking-tighter text-foreground leading-[1] drop-shadow-xl">
+                        <motion.h1 
+                          className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6.5rem] font-black tracking-[-0.04em] text-foreground leading-[0.9] drop-shadow-2xl"
+                          variants={{
+                            hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
+                            visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
+                          }}
+                        >
                           The World&apos;s Only
-                        </h1>
-                        <h1 className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black tracking-tighter leading-[1]">
-                          <span className="relative inline-block pb-2">
-                            <span className="relative z-10 px-2 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">AI Physics LMS</span>
+                        </motion.h1>
+                        <motion.h1 
+                          className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6.5rem] font-black tracking-[-0.04em] leading-[0.9]"
+                          variants={{
+                            hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
+                            visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
+                          }}
+                        >
+                          <span className="relative inline-block pb-1">
+                            <span className="relative z-10 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">AI Physics LMS</span>
                             <motion.span
-                              className="absolute inset-x-0 bottom-0 h-[4px] bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 rounded-full"
+                              className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 rounded-full"
                               initial={{ scaleX: 0, opacity: 0 }}
                               animate={{ scaleX: 1, opacity: 1 }}
-                              transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
+                              transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
                             />
                           </span>
-                        </h1>
+                        </motion.h1>
                       </motion.div>
 
                       {/* Description */}
                       <motion.p
-                        className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium"
+                        className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium text-center"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.7 }}
+                        transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                       >
                         The first verifiable framework for Socratic physics tutoring.
                         <br className="hidden md:block" /> Enforce the struggle with a 4-layer constraint architecture
@@ -472,8 +513,9 @@ export default function Home() {
                         className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative pt-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7, duration: 0.7 }}
+                        transition={{ delay: 1.1, duration: 1, ease: "easeOut" }}
                       >
+
                         <Link href="/request-access" className="w-full sm:w-auto flex-1 group">
                           <Button size="lg" className="w-full font-black text-sm px-8 h-12 rounded-full shadow-[0_0_40px_rgba(var(--primary),0.2)] hover:shadow-[0_0_60px_rgba(var(--primary),0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer gap-2 relative overflow-hidden">
                             <KeyRound className="h-4 w-4 relative z-10" />
