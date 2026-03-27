@@ -389,7 +389,7 @@ export default function Home() {
 
                 <main className="relative z-10">
                   {/* Hero Section */}
-                  <section id="home" className="relative overflow-hidden min-h-[92vh] flex flex-col items-center justify-center pt-2 pb-12">
+                  <section id="home" className="relative overflow-hidden min-h-[100vh] flex flex-col items-center pt-28 md:pt-40 pb-12">
 
                     {/* Atmospheric background */}
                     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
@@ -403,7 +403,7 @@ export default function Home() {
                       <FloatingPrompts />
                     </div>
 
-                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-10 relative z-10 mt-12 md:mt-0">
+                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-8 md:gap-10 relative z-10 my-auto">
 
                       {/* Badge */}
                       <motion.div
