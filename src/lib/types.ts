@@ -2,6 +2,10 @@ import { Timestamp } from "firebase/firestore";
 
 export type UserRole = "teacher" | "student" | "school_admin" | "super_admin";
 
+export interface UserPreferences {
+  autoRedirectPortal?: boolean;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -18,6 +22,9 @@ export interface UserProfile {
   schoolId?: string; // For students: linked school
   classIds: string[]; // List of /classes/{id} the user belongs to
   
+  // Preferences
+  preferences?: UserPreferences;
+
   // Metadata
   createdAt: Timestamp | Date;
   lastLoginAt: Timestamp | Date;

@@ -40,8 +40,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSpaceEffects } from "@/contexts/space-effects-context"
 import { useAppearance, FontOption, ThemeColor } from "@/contexts/appearance-context"
 import { useAuth } from "@/contexts/auth-context"
-import { logout, resetPassword, changeEmail, deleteFullAccount } from "@/lib/firebase"
+import { logout, resetPassword, changeEmail, deleteFullAccount, updateUserProfile } from "@/lib/firebase"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SettingsDialog() {
@@ -55,7 +56,7 @@ export function SettingsDialog() {
     setNebulaBrightness
   } = useSpaceEffects()
   const { font, setFont, themeColor, setThemeColor } = useAppearance()
-  const { user, role } = useAuth()
+  const { user, role, profile } = useAuth()
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [showNote, setShowNote] = React.useState(false)
@@ -64,6 +65,25 @@ export function SettingsDialog() {
   const [alertMessage, setAlertMessage] = React.useState("")
   
   const [alertType, setAlertType] = React.useState<"success" | "error">("success")
+
+  const handleAutoRedirectChange = async (checked: boolean) => {
+    if (!user) return
+    try {
+      await updateUserProfile(user.uid, {
+        preferences: {
+          ...profile?.preferences,
+          autoRedirectPortal: checked
+        }
+      })
+      setAlertMessage("Account settings updated.")
+      setAlertType("success")
+      setTimeout(() => setAlertMessage(""), 3000)
+    } catch (error) {
+      console.error("Error updating preferences:", error)
+      setAlertMessage("Failed to update settings.")
+      setAlertType("error")
+    }
+  }
 
   const handleThemeChange = (newTheme: string) => {
     if (newTheme === "light") {
@@ -241,6 +261,31 @@ export function SettingsDialog() {
                     Change Email
                   </Button>
                   <Separator className="my-2" />
+                  
+                  <div className="space-y-4 pt-2">
+                    <h4 className="text-sm font-medium">Platform Preferences</h4>
+                    <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                      <Checkbox 
+                        id="auto-redirect" 
+                        checked={profile?.preferences?.autoRedirectPortal || false}
+                        onCheckedChange={(checked) => handleAutoRedirectChange(checked === true)}
+                        className="mt-0.5 cursor-pointer"
+                      />
+                      <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAutoRedirectChange(!(profile?.preferences?.autoRedirectPortal))}>
+                        <Label 
+                          htmlFor="auto-redirect" 
+                          className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          Auto-Portal Redirect
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground font-medium">
+                          Skip the landing page and jump straight to your {role || "portal"} when logged in.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator className="my-4" />
                   <Button
                     variant="outline"
                     size="sm"

@@ -3,6 +3,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, si
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch, deleteDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage";
 import { getAI, GoogleAIBackend } from "firebase/ai";
+import { UserProfile, UserRole } from "./types";
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -405,6 +406,22 @@ export const changePassword = async (newPassword: string) => {
   if (!user) throw new Error("No user logged in");
   return updatePassword(user, newPassword);
 };
+
+/**
+ * Updates a user's profile in the unified collection.
+ * 
+ * @param uid The UID of the user
+ * @param data Changes to apply to the user profile
+ */
+export async function updateUserProfile(uid: string, data: Partial<UserProfile>) {
+  try {
+    const userRef = doc(db, "users", uid);
+    await setDoc(userRef, data, { merge: true });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    throw error;
+  }
+}
 
 // Utility for Google sign-in (OAuth for teachers)
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";

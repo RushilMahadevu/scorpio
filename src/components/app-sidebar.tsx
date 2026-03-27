@@ -15,12 +15,15 @@ import {
   PanelLeft,
   PanelRight,
   Home,
+  Lock,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/auth-context";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 export interface NavItem {
   href: string;
@@ -48,6 +51,9 @@ function SidebarContent({
 }: SidebarContentProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { profile } = useAuth();
+  
+  const autoRedirect = profile?.preferences?.autoRedirectPortal;
 
   const handleLogout = async () => {
     await logout();
@@ -137,18 +143,51 @@ function SidebarContent({
       </ScrollArea>
 
       <div className="p-3 border-t border-border/40 space-y-3 bg-muted/10">
-        <motion.div
-          whileHover={{ scale: 1.02, x: 2 }}
-          className={cn(
-            "flex items-center justify-center p-2.5 rounded-xl transition hover:bg-background shadow-sm border border-transparent hover:border-border/50",
-            isCollapsed ? "" : "px-3"
-          )}
-        >
-          <Link href="/" className="flex items-center gap-2 w-full justify-center" prefetch={false}>
-            <Home className="h-4 w-4 text-muted-foreground" />
-            {!isCollapsed && <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Main Site</span>}
-          </Link>
-        </motion.div>
+        <TooltipProvider>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "flex items-center justify-center p-2.5 rounded-xl transition shadow-sm border border-transparent min-w-[40px] h-10 overflow-hidden",
+                  isCollapsed ? "" : "px-3",
+                  autoRedirect ? "opacity-40 cursor-help bg-muted/30" : "hover:bg-background hover:border-border/50 bg-background/50"
+                )}
+              >
+                {!autoRedirect ? (
+                  <Link href="/" className="flex items-center gap-2 w-full justify-center group" prefetch={false}>
+                    <Home className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    {!isCollapsed && (
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap group-hover:text-foreground transition-colors p-0.5">
+                        Main Site
+                      </span>
+                    )}
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-2 w-full justify-center">
+                    <Lock className="h-4 w-4 text-muted-foreground/60" />
+                    {!isCollapsed && (
+                      <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] whitespace-nowrap">
+                        Main Locked
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </TooltipTrigger>
+            {autoRedirect && (
+              <TooltipContent side="right" className="max-w-[200px] text-xs font-bold p-3 bg-background border-border/50 text-foreground animate-in fade-in zoom-in-95 duration-200">
+                <p className="leading-relaxed">
+                  The landing page is disabled while <span className="text-primary italic">"Auto-Portal Redirect"</span> is ON. Disable it in settings to visit the home page.
+                </p>
+              </TooltipContent>
+            )}
+            {!autoRedirect && !isCollapsed && (
+               <TooltipContent side="right" className="text-[10px] font-black uppercase tracking-widest p-2">
+                  Visit Landing Page
+               </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
 
         <div className="space-y-2">
           <div className={cn("flex items-center justify-between min-h-[32px]", isCollapsed ? "justify-center" : "px-2")}>
