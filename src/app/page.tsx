@@ -128,8 +128,8 @@ export default function Home() {
               {/* Sticky Blurred Header */}
               <motion.header
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-                    ? "py-3 bg-background/90 backdrop-blur-2xl border-b border-border/80 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.2)]"
-                    : "py-6 bg-background/0 backdrop-blur-0 border-b border-transparent"
+                  ? "py-3 bg-background/90 backdrop-blur-2xl border-b border-border/80 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.2)]"
+                  : "py-6 bg-background/0 backdrop-blur-0 border-b border-transparent"
                   }`}
                 initial={{ opacity: 0, y: -40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -169,7 +169,7 @@ export default function Home() {
                             } else if (item.target) {
                               const element = document.getElementById(item.target);
                               if (element) {
-                                const yOffset = -100;
+                                const yOffset = 0;
                                 const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
                                 window.scrollTo({ top: y, behavior: "smooth" });
                               }
@@ -177,8 +177,8 @@ export default function Home() {
                             if (!item.isDropdown) setHoveredNav(null);
                           }}
                           className={`relative h-11 px-6 text-[15px] font-bold transition-all duration-300 cursor-pointer rounded-full flex items-center gap-1.5 ${activeNav === item.id || hoveredNav === item.id
-                              ? "text-foreground"
-                              : "text-muted-foreground/60 hover:text-foreground"
+                            ? "text-foreground"
+                            : "text-muted-foreground/60 hover:text-foreground"
                             }`}
                         >
                           {((hoveredNav ? hoveredNav === item.id : activeNav === item.id) && !item.isDropdown) && (
@@ -389,12 +389,12 @@ export default function Home() {
 
                 <main className="relative z-10">
                   {/* Hero Section */}
-                  <section id="home" className="relative overflow-hidden min-h-[100vh] flex flex-col items-center pt-28 md:pt-40 pb-12">
+                  <section id="home" className="relative overflow-hidden min-h-[95vh] flex flex-col items-center justify-center pt-32 md:pt-40 pb-24">
 
                     {/* Atmospheric background */}
                     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
                       {/* Primary central glow */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 blur-[160px] rounded-full" />
+                      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 blur-[160px] rounded-full" />
                       <div className="absolute top-[10%] left-[5%] w-[400px] h-[300px] bg-primary/5 blur-[120px] rounded-full" />
                       <div className="absolute bottom-[10%] right-[5%] w-[450px] h-[350px] bg-primary/5 blur-[130px] rounded-full" />
                     </div>
@@ -403,7 +403,7 @@ export default function Home() {
                       <FloatingPrompts />
                     </div>
 
-                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-8 md:gap-10 relative z-10 my-auto">
+                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-8 md:gap-10 relative z-10 -mt-2">
 
                       {/* Badge */}
                       <motion.div
@@ -423,7 +423,7 @@ export default function Home() {
                       {/* Logo */}
                       <div className="flex justify-center relative">
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <motion.div 
+                          <motion.div
                             className="w-32 h-32 bg-primary/20 blur-3xl rounded-full"
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -442,10 +442,10 @@ export default function Home() {
                             default: { duration: 2, ease: [0.16, 1, 0.3, 1] }
                           }}
                         >
-                          <Logo 
-                            size={72} 
+                          <Logo
+                            size={72}
                             layoutId="hero-logo"
-                            className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300" 
+                            className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300"
                           />
                         </motion.div>
                       </div>
@@ -467,7 +467,7 @@ export default function Home() {
                           }
                         }}
                       >
-                        <motion.h1 
+                        <motion.h1
                           className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6.5rem] font-black tracking-[-0.04em] text-foreground leading-[0.9] drop-shadow-2xl"
                           variants={{
                             hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
@@ -476,7 +476,7 @@ export default function Home() {
                         >
                           The World&apos;s Only
                         </motion.h1>
-                        <motion.h1 
+                        <motion.h1
                           className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6.5rem] font-black tracking-[-0.04em] leading-[0.9]"
                           variants={{
                             hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
@@ -558,26 +558,6 @@ export default function Home() {
                       </motion.div>
 
                     </div>
-
-                    {/* Scroll indicator */}
-                    <motion.div
-                      className="absolute bottom-8 left-1/2 -translate-x-1/2"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 2.0, duration: 0.6 }}
-                    >
-                      <button
-                        aria-label="Scroll down"
-                        onClick={() => { const el = document.getElementById("mission-control"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                        className="flex flex-col items-center gap-1.5 group focus:outline-none"
-                        type="button"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">Scroll</span>
-                        <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
-                          <ChevronDown className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
-                        </motion.div>
-                      </button>
-                    </motion.div>
 
                   </section>
 

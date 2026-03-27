@@ -29,29 +29,44 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
             transition: { duration: 0.8, ease: SWEEP_EASE }
           }}
         >
+          {/* Clean Mathematical Grid Background */}
           <motion.div 
             className="absolute inset-0 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
           >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-[800px] max-h-[800px] bg-primary/5 blur-[160px] rounded-full" />
-            <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
-                 style={{ 
-                   backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                 }} 
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `
+                  linear-gradient(to right, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px),
+                  linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px)
+                `,
+                backgroundSize: '48px 48px',
+                maskImage: 'radial-gradient(ellipse at center, black 15%, transparent 75%)',
+                WebkitMaskImage: 'radial-gradient(ellipse at center, black 15%, transparent 75%)'
+              }}
             />
           </motion.div>
 
           <div className="relative flex flex-col items-center gap-10">
-            <div className="relative">
+            {/* Centered Logo Container */}
+            <div className="relative flex items-center justify-center">
+              {/* Precision Ring Pulse instead of muddy blur */}
               <motion.div
-                className="absolute inset-0 bg-primary/15 blur-[40px] rounded-full"
+                className="absolute w-[90px] h-[90px] rounded-full border border-foreground/20"
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ 
-                  scale: [1, 1.3, 1], 
-                  opacity: [0.1, 0.3, 0.1] 
+                  scale: [1, 2], 
+                  opacity: [0.6, 0] 
                 }}
-                transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+                transition={{ 
+                  duration: 2, 
+                  ease: "easeOut",
+                  repeat: Infinity,
+                  repeatDelay: 0.2
+                }}
               />
               
               <Logo 
@@ -103,7 +118,8 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
               </Logo>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            {/* Scorpio Text Animation - Motion Blur Slide from Left */}
+            <div className="flex flex-col items-center gap-2 pt-2">
               <div className="flex h-16 items-center" aria-label="Scorpio">
                 {CHARS.map((char, i) => (
                   <motion.span
@@ -127,7 +143,6 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                     }}
                     className="inline-block font-sans text-5xl md:text-6xl font-black text-foreground tracking-tighter px-[0.01em]"
                   >
-
                     {char}
                   </motion.span>
                 ))}
