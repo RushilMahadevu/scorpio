@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers
+  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -39,6 +39,8 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [activeNav, setActiveNav] = useState<string>("home");
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -70,7 +72,24 @@ export default function Home() {
   });
 
   useEffect(() => {
-    /* fetchStats removed - activity feed relocated to about page */
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+      
+      // Determine active section for nav highlight
+      const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing", "faq"];
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 100 && rect.bottom >= 100) {
+            setActiveNav(section);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const features = [
@@ -99,101 +118,112 @@ export default function Home() {
           <>
             {/* Sticky Blurred Header */}
             <motion.header
-              className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
+              className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+                isScrolled 
+                  ? "py-3 bg-background/90 backdrop-blur-2xl border-b border-border/80 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.2)]" 
+                  : "py-6 bg-background/0 backdrop-blur-0 border-b border-transparent"
+              }`}
               initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               onMouseLeave={() => setHoveredNav(null)}
             >
-              <div className="flex items-center justify-between px-6 py-3.5 max-w-[1400px] mx-auto w-full">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
-                  <Logo size={20} className="text-foreground" />
-                  <span className="text-sm font-extrabold">Scorpio</span>
+              <div className="flex items-center justify-between px-8 max-w-[1500px] mx-auto w-full">
+                {/* Logo Section */}
+                <Link href="/" className="flex items-center gap-4 group shrink-0">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-700 opacity-0 group-hover:opacity-100" />
+                    <Logo size={28} className="text-foreground relative z-10 group-hover:rotate-[20deg] transition-transform duration-500" />
+                  </div>
+                  <span className="text-xl font-black tracking-tighter group-hover:text-primary transition-colors">Scorpio</span>
                 </Link>
 
-                {/* Desktop Nav */}
-                <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
-                  {[
-                    { id: "home", label: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-                    { id: "problem", label: "Problem", target: "problem" },
-                    { id: "solution", label: "Solution", target: "solution" },
-                    { id: "demos", label: "Demos", target: "demos" },
-                    { id: "efficacy", label: "Research", target: "efficacy" },
-                    { id: "pricing", label: "Pricing", target: "pricing" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onMouseEnter={() => setHoveredNav(null)}
-                      onClick={() => {
-                        if (item.action) {
-                          item.action();
-                        } else if (item.target) {
-                          const element = document.getElementById(item.target);
-                          if (element) {
-                            const yOffset = -80;
-                            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                            window.scrollTo({ top: y, behavior: "smooth" });
-                          }
-                        }
-                        setHoveredNav(null);
-                      }}
-                      className="h-8 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-colors cursor-pointer"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                {/* Unified Desktop Navigation Track */}
+                <div className="hidden lg:flex items-center p-1.5 bg-muted/20 dark:bg-muted/10 backdrop-blur-xl rounded-full border border-border/50 absolute left-1/2 -translate-x-1/2 shadow-[inset_0_1px_4px_rgba(0,0,0,0.05)]">
+                  <nav className="flex items-center gap-1">
+                      {[
+                        { id: "home", label: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+                        { id: "problem", label: "Problem", target: "problem" },
+                        { id: "solution", label: "Solution", target: "solution" },
+                        { id: "demos", label: "Demos", target: "demos" },
+                        { id: "efficacy", label: "Research", target: "efficacy" },
+                        { id: "pricing", label: "Pricing", target: "pricing" },
+                        { id: "docs", label: "Docs", isDropdown: true },
+                        { id: "faq", label: "FAQ", target: "faq" },
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onMouseEnter={() => setHoveredNav(item.id)}
+                          onClick={() => {
+                            if (!item.isDropdown) setActiveNav(item.id);
+                            if (item.action) {
+                              item.action();
+                            } else if (item.target) {
+                              const element = document.getElementById(item.target);
+                              if (element) {
+                                const yOffset = -100;
+                                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                window.scrollTo({ top: y, behavior: "smooth" });
+                              }
+                            }
+                            if (!item.isDropdown) setHoveredNav(null);
+                          }}
+                          className={`relative h-11 px-6 text-[15px] font-bold transition-all duration-300 cursor-pointer rounded-full flex items-center gap-1.5 ${
+                            activeNav === item.id || hoveredNav === item.id
+                              ? "text-foreground"
+                              : "text-muted-foreground/60 hover:text-foreground"
+                          }`}
+                        >
+                          {((hoveredNav ? hoveredNav === item.id : activeNav === item.id) && !item.isDropdown) && (
+                            <motion.div
+                              layoutId="nav-pill"
+                              className="absolute inset-0 bg-background shadow-md border border-border/50 rounded-full -z-10"
+                              transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                            />
+                          )}
+                          {item.label}
+                          {item.isDropdown && (
+                             <ChevronDown className={`h-4 w-4 opacity-50 transition-transform duration-300 ${hoveredNav === "docs" ? "rotate-180" : ""}`} />
+                          )}
+                        </button>
+                      ))}
+                  </nav>
+                </div>
 
-                  {/* Docs Dropdown */}
-                  <button
-                    onMouseEnter={() => setHoveredNav("docs")}
-                    className={`h-8 px-4 text-sm font-semibold rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${hoveredNav === "docs"
-                      ? "text-foreground bg-muted/40"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                      }`}
-                  >
-                    Docs
-                    <ChevronDown className={`h-3 w-3 opacity-50 transition-transform duration-200 ${hoveredNav === "docs" ? "rotate-180" : ""}`} />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const element = document.getElementById("faq");
-                      if (element) {
-                        const yOffset = -80;
-                        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                        window.scrollTo({ top: y, behavior: "smooth" });
-                      }
-                      setHoveredNav(null);
-                    }}
-                    className="h-8 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-colors cursor-pointer"
-                  >
-                    FAQ
-                  </button>
-                </nav>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <div className="flex items-center">
+                {/* Right-side Actions Group */}
+                <div className="flex items-center gap-5">
+                  <div className="hidden sm:block hover:bg-muted/30 p-1.5 rounded-full transition-colors order-first">
                     <ModeToggle />
                   </div>
-                  
-                  <Link href="/signup">
-                    <Button size="sm" className="h-8 font-semibold px-4 rounded-full cursor-pointer shadow-none hover:opacity-90 transition-opacity text-[10px] sm:text-xs">
-                      Sign up
-                    </Button>
-                  </Link>
+
+                  <div className="flex items-center p-1 bg-muted/20 dark:bg-muted/10 backdrop-blur-xl rounded-full border border-border/50 shadow-sm">
+                    <Link href="/login" className="hidden sm:block">
+                      <Button variant="ghost" className="h-10 px-6 font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer text-[14px] rounded-full hover:bg-background/40">
+                        Login
+                      </Button>
+                    </Link>
+                    
+                    <div className="w-px h-5 bg-border/50 mx-1 hidden sm:block" />
+
+                    <Link href="/signup">
+                      <Button 
+                        className="h-10 font-black px-8 rounded-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.97] transition-all shadow-[0_4px_15px_-4px_rgba(var(--primary),0.3)] text-[14px]"
+                      >
+                        Sign up
+                      </Button>
+                    </Link>
+                  </div>
                   
                   <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8 hover:bg-muted/50 rounded-full" aria-label="Open menu">
-                        <Menu className="h-5 w-5" />
+                      <Button variant="ghost" size="icon" className="lg:hidden h-11 w-11 hover:bg-muted/50 rounded-full border border-border/40 ml-1 shadow-sm" aria-label="Open menu">
+                        <Menu className="h-6 w-6" />
                       </Button>
                     </SheetTrigger>
                     <SheetContent side="right" className="w-full max-w-[280px] sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden border-l border-border/40" hideClose>
-                      <div className="flex items-center justify-between px-6 py-4 border-b">
-                        <span className="font-extrabold text-lg">Menu</span>
-                        <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} className="rounded-full hover:bg-accent">
+                      <div className="flex items-center justify-between px-6 py-6 border-b">
+                        <span className="font-extrabold text-xl">Menu</span>
+                        <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} className="rounded-full hover:bg-accent h-10 w-10">
                           <span className="sr-only">Close menu</span>
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -251,19 +281,11 @@ export default function Home() {
                       <div className="px-6 pb-6 pt-4 border-t bg-muted/5">
                         <div className="flex flex-col gap-2">
                           <Link href="/login"><Button variant="outline" size="lg" className="w-full font-medium cursor-pointer">Login</Button></Link>
-                          <Link href="/signup"><Button size="lg" className="w-full font-medium cursor-pointer">Sign up</Button></Link>
+                          <Link href="/signup"><Button size="lg" className="h-11 w-full font-semibold cursor-pointer">Sign up</Button></Link>
                         </div>
                       </div>
                     </SheetContent>
                   </Sheet>
-                  
-                  <div className="h-4 w-px bg-border/40 hidden lg:block mx-1" />
-                  
-                  <Link href="/login" className="hidden sm:block">
-                    <Button variant="ghost" size="sm" className="font-medium text-muted-foreground hover:text-foreground hover:bg-transparent transition-colors cursor-pointer text-sm">
-                      Login
-                    </Button>
-                  </Link>
                 </div>
               </div>
 
@@ -272,34 +294,58 @@ export default function Home() {
                 {hoveredNav === "docs" && (
                   <motion.div
                     key="docs"
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.12, ease: "easeOut" }}
-                    className="absolute top-full left-0 right-0 border-b border-border/40 bg-background/98 backdrop-blur-2xl shadow-2xl"
+                    initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
+                    transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+                    className="absolute top-full left-0 right-0 border-b border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl"
                   >
-                    <div className="container mx-auto px-8 py-8 max-w-6xl">
-                      <div>
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-5">Documentation</p>
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                    <div className="container mx-auto px-10 py-12 max-w-[1300px] grid grid-cols-1 md:grid-cols-4 gap-12">
+                      {/* Left Column: Context */}
+                      <div className="md:col-span-1 space-y-6">
+                        <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 inline-flex shadow-sm">
+                          <BookOpen className="h-7 w-7 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-black tracking-tight">Scorpio Docs</h3>
+                        <p className="text-[15px] text-muted-foreground leading-relaxed font-medium">
+                          Comprehensive guides and institutional research documentation for the Scorpio ecosystem.
+                        </p>
+                        <div className="pt-2">
+                           <Link href="/about" onClick={() => setHoveredNav(null)}>
+                            <Button variant="link" className="p-0 h-auto text-primary text-sm font-bold gap-1 group">
+                              Explore Mission <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+                           </Link>
+                        </div>
+                      </div>
+
+                      {/* Right Columns: Links */}
+                      <div className="md:col-span-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-8">Documentation Modules</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                           {[
                             { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
-                            { href: "/research", label: "Research & Methodology", desc: "Deep dive into our 4-layer AI architecture.", icon: Brain },
-                            { href: "/request-access", label: "Request Access", desc: "Apply for an organization invite code to get started.", icon: KeyRound },
-                            { href: "/contact", label: "Contact Us", desc: "Get help from our institutional success team.", icon: Mail },
-                            { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant data infrastructure.", icon: Shield },
-                            { href: "/terms", label: "Terms of Service", desc: "Standard institutional and usage terms.", icon: FileText },
-                          ].map((item) => (
+                            { href: "/research", label: "Research & Methodology", desc: "Deep dive into our Socratic AI architecture.", icon: Brain },
+                            { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
+                            { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
+                            { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },
+                            { href: "/terms", label: "Terms of Service", desc: "Institutional and usage terms.", icon: FileText },
+                          ].map((item, i) => (
                             <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>
-                              <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer">
-                                <div className="h-8 w-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors mt-0.5">
-                                  <item.icon className="h-4 w-4 text-primary" />
+                              <motion.div 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.03 + 0.1 }}
+                                className="flex items-start gap-4 p-5 rounded-[1.5rem] hover:bg-muted/80 transition-all group cursor-pointer border border-transparent hover:border-border/50 shadow-none hover:shadow-lg hover:shadow-black/5"
+                              >
+                                <div className="h-10 w-10 rounded-[0.9rem] bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                  <item.icon className="h-5 w-5" />
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors leading-tight">{item.label}</p>
-                                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{item.desc}</p>
+                                <div className="min-w-0 pt-0.5">
+                                  <p className="text-[15px] font-black text-foreground group-hover:text-primary transition-colors leading-tight mb-1.5">{item.label}</p>
+                                  <p className="text-[11px] text-muted-foreground font-medium leading-snug">{item.desc}</p>
                                 </div>
-                              </div>
+                              </motion.div>
                             </Link>
                           ))}
                         </div>
@@ -311,10 +357,11 @@ export default function Home() {
 
               {/* Scroll Progress Bar */}
               <motion.div
-                className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-primary/40 origin-left z-50"
+                className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary origin-left z-50"
                 style={{ scaleX }}
               />
             </motion.header>
+
 
             {/* Page wrapper with animation - filter removed to prevent fixed positioning issues */}
             <motion.div
@@ -610,7 +657,9 @@ export default function Home() {
               </section>
 
               {/* Solution Flowchart Section */}
-              <SolutionFlowchart />
+              <div id="solution">
+                <SolutionFlowchart />
+              </div>
 
               {/* See It Work Section (Merged Demo + Dashboard) */}
               <section id="demos" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
@@ -889,7 +938,9 @@ export default function Home() {
               </section>
 
               {/* FAQ */}
-              <LandingFAQ />
+              <div id="faq">
+                <LandingFAQ />
+              </div>
             </main>
 
             <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
