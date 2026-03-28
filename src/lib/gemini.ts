@@ -17,7 +17,7 @@ const model = getGenerativeModel(genAI, {
 
 /**
  * Scrubs Personal Identifiable Information (PII) from text before sending to LLM.
- * Targets: Emails, common phone numbers, and potential ID patterns.
+ * Targets: Emails, common phone numbers, addresses, and potential ID patterns.
  * This is a critical compliance step for FERPA/COPPA.
  * 
  * @param text The input string to scrub
@@ -29,20 +29,54 @@ export function scrubPII(text: string, studentNames: string[] = []): string {
   let scrubbed = text
     // Email addresses
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[EMAIL]")
-    // Phone numbers (Common formats: (123) 456-7890, 123-456-7890, 123.456.7890)
-    .replace(/(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g, "[PHONE]")
+    
+    // Improved Phone numbers: requires some form of separator or parentheses to avoid matching 10-digit physics values
+    // Matches: (123) 456-7890, 123-456-7890, 123.456.7890, +1 123 456 7890
+    .replace(/(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/g, "[PHONE]")
+    
     // Generic ID patterns (e.g. SSN-like 9-digit patterns)
     .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[ID]")
+    
+    // Student ID Patterns (Customizable but targets common school formats)
+    // Matches: ID: 1234567, Student #123456
+    .replace(/\b(ID|Student\s?#?|ID\s?#?):?\s?\d{5,9}\b/gi, "[STUDENT_ID]")
+    
+    // Simple Address pattern (Street/Ave/Building etc.)
+    .replace(/\b\d+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3}\s+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Dr|Drive|Ln|Lane|Ct|Court|Ter|Terrace|Way)\.?\b/gi, "[ADDRESS]")
+    
+    // Date of birth pattern (matches near DOB keywords)
+    .replace(/(?:DOB|Birth|Born)(?:\s+on)?\s*[:\-]?\s*(\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b|\b[A-Z][a-z]{2,8}\s+\d{1,2},?\s+\d{4}\b)/gi, "[BIRTH_DATE]")
+    .replace(/\b(19|20)\d{2}[\/\-]\d{1,2}[\/\-]\d{1,2}\b/g, "[DATE]") // Specific YYYY-MM-DD
+    .replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-](19|20)\d{2}\b/g, "[DATE]") // Specific MM/DD/YYYY
+    
     // Credit card numbers (Simple 13-16 digit check)
     .replace(/\b(?:\d[ -]*?){13,16}\b/g, "[SENSITIVE]");
 
   // Mask student names if provided (case-insensitive)
   if (studentNames.length > 0) {
-    studentNames.forEach((name, index) => {
+    // Collect all name parts to catch "First Last", "First", or "Last" independently
+    const nameParts = new Set<string>();
+    studentNames.forEach(fullName => {
+      if (!fullName) return;
+      nameParts.add(fullName);
+      const split = fullName.split(/\s+/);
+      if (split.length > 1) {
+        split.forEach(part => {
+          if (part.length > 2 && !['and', 'the', 'with'].includes(part.toLowerCase())) {
+            nameParts.add(part);
+          }
+        });
+      }
+    });
+
+    // Sort by length descending to catch full names before part names
+    const sortedParts = Array.from(nameParts).sort((a, b) => b.length - a.length);
+
+    sortedParts.forEach((name) => {
       if (name && name.length > 2) {
         // Create regex for the name with word boundaries
         const nameRegex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-        scrubbed = scrubbed.replace(nameRegex, `[STUDENT_${index + 1}]`);
+        scrubbed = scrubbed.replace(nameRegex, "[NAME]");
       }
     });
   }
