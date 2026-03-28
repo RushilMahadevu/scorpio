@@ -1,3 +1,7 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { PageTransition } from "@/components/page-transition";
 import { DocsSidebar } from "@/components/docs-sidebar";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { BackButton } from "@/components/ui/back-button";
@@ -94,7 +98,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
         {/* Main Content Area */}
         <main className="flex-1 container max-w-4xl mx-auto py-12 md:py-20 px-6">
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </main>
       </div>
     </div>

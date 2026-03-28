@@ -7,6 +7,7 @@ import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { usePathname } from "next/navigation";
+import { PageTransition } from "@/components/page-transition";
 
 
 export default function StudentLayout({
@@ -31,7 +32,9 @@ export default function StudentLayout({
         )}
         <main className={`flex-1 bg-background/50 ${isAssignmentView ? "overflow-hidden w-screen fixed inset-0 z-50" : "overflow-auto"}`}>
           <div className={isAssignmentView ? "h-full w-full" : "p-8 max-w-7xl mx-auto w-full"}>
-            {children}
+            <PageTransition>
+              {children}
+            </PageTransition>
           </div>
         </main>
         {!isAssignmentView && <NavigationChatbot userRole="student" />}

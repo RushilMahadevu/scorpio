@@ -8,6 +8,8 @@ import { PanelLeft } from "lucide-react";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
+import { PageTransition } from "@/components/page-transition";
+import { usePathname } from "next/navigation";
 
 
 export default function TeacherLayout({
@@ -16,6 +18,7 @@ export default function TeacherLayout({
   children: React.ReactNode;
 }) {
   const { isCollapsed, setIsCollapsed } = useSidebarState("teacher");
+  const pathname = usePathname();
 
   return (
     <ProtectedRoute allowedRole="teacher">
@@ -27,7 +30,9 @@ export default function TeacherLayout({
         />
         <main className="flex-1 overflow-auto bg-background/50">
           <div className="p-8 max-w-7xl mx-auto w-full">
-            {children}
+            <PageTransition>
+              {children}
+            </PageTransition>
           </div>
         </main>
         <NavigationChatbot userRole="teacher" />
