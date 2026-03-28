@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap,Component, BowArrow, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles, HelpCircle } from "lucide-react";
+import { Activity, Clock, FileText, Bot, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap,Component, BowArrow, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles, HelpCircle, BrainCircuit } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -125,6 +125,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
         security: "#f43f5e",  // rose-500
         notebook: "#0ea5e9",   // sky-500
         generation: "#ec4899", // pink-500
+        portfolio: "#6366f1",  // indigo-500
         other: "#71717a"      // zinc-500
       };
 
@@ -187,6 +188,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
       case "notebook": return <Notebook className="h-4 w-4 text-sky-500" />;
       case "practice": return <PencilRuler className="h-4 w-4 text-orange-500" />;
       case "generation": return <Sparkles className="h-4 w-4 text-pink-500" />;
+      case "portfolio": return <BrainCircuit className="h-4 w-4 text-indigo-500" />;
       default: return <Activity className="h-4 w-4 text-zinc-500" />;
     }
   };

@@ -64,3 +64,14 @@ export interface PhysicsAssignment {
   questions: any[]; // Consider more specific type later
   createdAt: Timestamp | Date;
 }
+
+export interface StudentPortfolio {
+  studentId: string;
+  organizationId: string;
+  teacherId: string;
+  lastUpdated: Timestamp | Date;
+  strengths: string[];
+  weaknesses: string[];
+  masteryLevel: "Beginner" | "Intermediate" | "Advanced" | "Expert";
+  aiSummary: string;
+}

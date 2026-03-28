@@ -1893,3 +1893,127 @@ RESPONSE GUIDELINES:
     throw error;
   }
 }
+
+/**
+ * Generates a structured student portfolio based on the student's recent AI Tutor chat history.
+ */
+export async function generateStudentPortfolio(
+  studentName: string,
+  chatHistory: { role: "user" | "assistant"; content: string }[]
+): Promise<{ 
+  portfolio: { 
+    strengths: string[]; 
+    weaknesses: string[]; 
+    masteryLevel: "Beginner" | "Intermediate" | "Advanced" | "Expert"; 
+    aiSummary: string;
+  };
+  usage?: { inputTokens: number; outputTokens: number } 
+}> {
+  try {
+    const systemPrompt = `You are an expert Physics Education Professor. 
+Your task is to analyze a student's recent interactions with an AI tutor and generate a structured portfolio summary.
+
+Student Name: ${studentName}
+
+Guidelines:
+1. Analyze the student's questions, problem-solving approach, and conceptual understanding.
+2. Identify 2-4 key "strengths" (e.g., "Understands kinematics equations", "Good at identifying known variables").
+3. Identify 2-4 key "weaknesses" or areas for improvement (e.g., "Struggles with vector components", "Forgets units").
+4. Determine their overall "masteryLevel" from: "Beginner", "Intermediate", "Advanced", "Expert".
+5. Write a concise, professional 2-3 paragraph "aiSummary" addressing the teacher. Describe the student's learning trajectory, common misconceptions, and specific concepts they are working on.
+
+IMPORTANT: Return ONLY a valid JSON object matching this structure:
+{
+  "strengths": ["string", "string"],
+  "weaknesses": ["string", "string"],
+  "masteryLevel": "Intermediate",
+  "aiSummary": "narrative paragraph..."
+}`;
+
+    const chatContext = chatHistory.length > 0 
+      ? `=== RECENT TUTOR SESSIONS ===\n${chatHistory.map(m => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`).join("\n\n")}`
+      : "No completely recent sessions available or student hasn't asked enough questions. Please infer based on lack of data (e.g., student hasn't engaged much).";
+
+    const prompt = `${systemPrompt}\n\n${chatContext}`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 8192,
+        temperature: 0.2, // Low temperature for consistent JSON
+        responseMimeType: "application/json",
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_NONE",
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_NONE",
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_NONE",
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_NONE",
+        },
+      ],
+    });
+
+    const response = await result.response;
+    let text = response.text().trim();
+    
+    // Isolation logic for robustness (strip markdown blocks if AI ignored responseMimeType format)
+    const startIdx = text.indexOf('{');
+    const endIdx = text.lastIndexOf('}');
+    
+    if (startIdx !== -1 && endIdx !== -1) {
+      text = text.substring(startIdx, endIdx + 1);
+    }
+    
+    // Parse JSON
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch (e) {
+      // Robust backup: sanitize common AI JSON formatting errors
+      const sanitized = text
+        .replace(/\\n/g, '__NL__')
+        .replace(/\\(?!["\\\/bfnrtu])/g, '\\\\') // Double escape backslashes
+        .replace(/__NL__/g, '\\n')
+        .replace(/,\s*([\}\]])/g, '$1') // Remove trailing commas
+        .replace(/[\n\r]/g, ' ') // Flatten newlines
+        .trim();
+
+      try {
+        parsed = JSON.parse(sanitized);
+      } catch (e2) {
+        console.error("Failed to parse portfolio JSON:", text);
+        throw new Error(`AI returned invalid JSON: ${text}`);
+      }
+    }
+
+    // Validate fields
+    const validLevels = ["Beginner", "Intermediate", "Advanced", "Expert"];
+    const masteryLevel = validLevels.includes(parsed.masteryLevel) ? parsed.masteryLevel : "Beginner";
+
+    return {
+      portfolio: {
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 5) : ["Engaging with the tutor"],
+        weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses.slice(0, 5) : ["Needs more practice"],
+        masteryLevel: masteryLevel as any,
+        aiSummary: parsed.aiSummary || "The student has primarily been using the tutor casually. More intensive sessions are needed for a deeper analysis.",
+      },
+      usage: {
+        inputTokens: response.usageMetadata?.promptTokenCount || 0,
+        outputTokens: response.usageMetadata?.candidatesTokenCount || 0
+      }
+    };
+  } catch (error) {
+    console.error("Error generating student portfolio:", error);
+    throw error;
+  }
+}
