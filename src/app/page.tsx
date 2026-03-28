@@ -86,7 +86,7 @@ export default function Home() {
       setIsScrolled(window.scrollY > 20);
 
       // Determine active section for nav highlight
-      const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing", "faq"];
+      const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing"];
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -158,7 +158,6 @@ export default function Home() {
                         { id: "efficacy", label: "Research", target: "efficacy" },
                         { id: "pricing", label: "Pricing", target: "pricing" },
                         { id: "docs", label: "Docs", isDropdown: true },
-                        { id: "faq", label: "FAQ", target: "faq" },
                       ].map((item) => (
                         <button
                           key={item.id}
@@ -408,7 +407,7 @@ export default function Home() {
 
                       {/* Badge */}
                       <motion.div
-                        className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors"
                         initial={{ opacity: 0, y: -20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ delay: 0.15, duration: 0.6, type: "spring", bounce: 0.3 }}
@@ -518,7 +517,7 @@ export default function Home() {
                       >
 
                         <Link href="/request-access" className="w-full sm:w-auto flex-1 group">
-                          <Button size="lg" className="w-full font-black text-sm px-8 h-12 rounded-full shadow-[0_0_40px_rgba(var(--primary),0.2)] hover:shadow-[0_0_60px_rgba(var(--primary),0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer gap-2 relative overflow-hidden">
+                          <Button size="lg" className="w-full font-black text-sm px-8 h-12 rounded-full shadow-[0_0_40px_rgba(var(--primary),0.2)] hover:shadow-[0_0_60px_rgba(var(--primary),0.4)] transition-all duration-300 hover:scale-[1.1] cursor-pointer gap-2 relative overflow-hidden">
                             <KeyRound className="h-4 w-4 relative z-10" />
                             <span className="relative z-10">Request Access</span>
                             <ArrowRight className="h-3.5 w-3.5 ml-0.5 relative z-10 group-hover:translate-x-1 transition-transform" />
@@ -528,7 +527,7 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => { const el = document.getElementById("demos"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                          className="flex-1 w-full sm:w-auto font-bold text-sm px-8 h-12 rounded-full border border-border/60 bg-background/50 backdrop-blur-xl hover:bg-muted/50 cursor-pointer inline-flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] text-foreground/80 hover:text-foreground group"
+                          className="flex-1 w-full sm:w-auto font-bold text-sm px-8 h-12 rounded-full border border-border/60 bg-background/50 backdrop-blur-xl hover:bg-muted/50 cursor-pointer inline-flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.1] text-foreground/80 hover:text-foreground group"
                         >
                           <PlayCircle className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                           Watch Demo
@@ -679,7 +678,7 @@ export default function Home() {
                         transition={{ delay: 0.4 }}
                       >
                         <Link href="/about">
-                          <Button variant="ghost" className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-red-500 transition-colors">
+                          <Button variant="ghost" className="cursor-pointer text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-red-500 transition-colors">
                             Read our full mission statement <ArrowRight className="ml-2 h-3 w-3" />
                           </Button>
                         </Link>
