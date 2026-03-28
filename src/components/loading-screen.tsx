@@ -13,8 +13,9 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-      setTimeout(() => onFinish?.(), 500);
-    }, 800);
+      // Faster exit wait
+      setTimeout(() => onFinish?.(), 400);
+    }, 1200); // Snappy 1.2s duration
     return () => clearTimeout(timer);
   }, [onFinish]);
 
@@ -26,7 +27,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
           className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden"
           exit={{ 
             opacity: 0,
-            transition: { duration: 0.8, ease: SWEEP_EASE }
+            transition: { duration: 0.4, ease: "easeOut" }
           }}
         >
           {/* Clean Mathematical Grid Background */}
@@ -89,12 +90,12 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                   animate={{ 
                     pathLength: 1, 
                     opacity: 1,
-                    transition: { duration: 1.4, ease: "easeInOut", delay: 0.1 }
+                    transition: { duration: 0.8, ease: "easeInOut", delay: 0.1 }
                   }}
                   exit={{
                     pathLength: 0.8,
                     opacity: 0,
-                    transition: { duration: 0.4, ease: "easeIn" }
+                    transition: { duration: 0.2, ease: "easeIn" }
                   }}
                 />
                 <motion.path 
@@ -105,14 +106,14 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                     pathLength: 1, 
                     opacity: 1,
                     transition: { 
-                      pathLength: { duration: 1.4, ease: "easeInOut", delay: 0.3 },
-                      opacity: { duration: 0.8, delay: 0.3 }
+                      pathLength: { duration: 0.8, ease: "easeInOut", delay: 0.2 },
+                      opacity: { duration: 0.4, delay: 0.2 }
                     }
                   }}
                   exit={{
                     pathLength: 0,
                     opacity: 0,
-                    transition: { duration: 0.3, ease: "easeIn" }
+                    transition: { duration: 0.2, ease: "easeIn" }
                   }}
                 />
               </Logo>
@@ -130,16 +131,16 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                       opacity: 1,
                       filter: "blur(0px)",
                       transition: { 
-                        duration: 0.8, 
+                        duration: 0.4, 
                         ease: SWEEP_EASE,
-                        delay: 0.6 + i * 0.05 
+                        delay: 0.4 + i * 0.03 
                       }
                     }}
                     exit={{
                       x: 10,
                       opacity: 0,
                       filter: "blur(4px)",
-                      transition: { duration: 0.4, ease: "easeIn" }
+                      transition: { duration: 0.2, ease: "easeIn" }
                     }}
                     className="inline-block font-sans text-5xl md:text-6xl font-black text-foreground tracking-tighter px-[0.01em]"
                   >
@@ -152,7 +153,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                 initial={{ opacity: 0 }}
                 animate={{ 
                   opacity: 0.4, 
-                  transition: { delay: 1.2, duration: 0.8 }
+                  transition: { delay: 0.8, duration: 0.4 }
                 }}
                 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/60"
               >
@@ -166,8 +167,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
               className="h-full bg-primary"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ duration: 0.8, ease: "linear" }}
-              style={{ width: "0%" }}
+              transition={{ duration: 1.2, ease: "linear" }}
             />
           </div>
         </motion.div>

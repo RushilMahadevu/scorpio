@@ -117,10 +117,12 @@ export default function Home() {
     { value: "4-Layer", label: "Constraint Architecture", sublabel: "Inference-Time Scaffolding" }
   ];
 
+  const onLoadingFinish = useCallback(() => setIsLoaded(true), []);
+
   return (
     <>
       <div className="min-h-screen relative font-medium scroll-smooth">
-        <LoadingScreen onFinish={() => setIsLoaded(true)} />
+        <LoadingScreen onFinish={onLoadingFinish} />
         <SpaceBackground />
 
         <AnimatePresence>
