@@ -22,9 +22,16 @@ export async function POST(req: NextRequest) {
     let decodedToken;
     try {
       decodedToken = await adminAuth.verifyIdToken(idToken);
-    } catch (verifyError) {
-      console.error('Token verification failed:', verifyError);
-      return NextResponse.json({ error: 'Invalid ID token' }, { status: 401 });
+    } catch (verifyError: any) {
+      console.error('[SessionAPI] Token verification failed:', verifyError);
+      // Log more details in dev/prod to see what's happening
+      console.error('[SessionAPI] Error Code:', verifyError.code);
+      console.error('[SessionAPI] Error Message:', verifyError.message);
+      
+      return NextResponse.json({ 
+        error: 'Invalid ID token',
+        debug: process.env.NODE_ENV === 'development' ? verifyError.message : undefined 
+      }, { status: 401 });
     }
 
     // Optional sync: Ensure token has the most up-to-date role and organizationId (Phase 1.2)
