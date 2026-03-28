@@ -7,6 +7,7 @@ import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
 import { AppearanceProvider } from "@/contexts/appearance-context";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -137,6 +138,7 @@ export default function RootLayout({
                 </SmoothScroll>
               </AuthProvider>
               <Toaster position="top-center" richColors />
+              <Analytics />
             </SpaceEffectsProvider>
           </AppearanceProvider>
         </ThemeProvider>
