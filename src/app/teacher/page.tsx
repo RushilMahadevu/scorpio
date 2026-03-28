@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, ShieldCheck, LayoutDashboard, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { RundownDialog } from "@/components/ui/rundown-dialog";
 
 interface Submission {
   id: string;
@@ -259,9 +260,65 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back <span className="font-semibold">{user?.displayName || "Teacher"}</span>! Here's an overview of your class.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back <span className="font-semibold">{user?.displayName || "Teacher"}</span>! Here's an overview of your class.</p>
+        </div>
+        
+        <RundownDialog 
+          userRole="teacher"
+          triggerLabel="Platform Tutorial"
+          title="Teacher Instruction Manual"
+          steps={[
+            {
+              title: "1. The Teacher Dashboard",
+              description: "Monitor your classroom status at a glance. The dashboard aggregates real-time stats including enrollment numbers, assignment completion rates, and highlights urgent submissions awaiting your manual review and grading.",
+              icon: LayoutDashboard
+            },
+            {
+              title: "2. Institutional Network",
+              description: "The Network tool provides macro-level analytics across all your registered classes. Use this to compare performance trends, identify common conceptual hurdles across cohorts, and export data for institutional reporting.",
+              icon: Building2
+            },
+            {
+              title: "3. Student Management",
+              description: "Manage your roster and view individual student profiles. Beyond basic data, you can audit their interaction logs with the Socratic AI to see exactly where they got stuck and what hints they required to proceed.",
+              icon: Users
+            },
+            {
+              title: "4. Grading & Feedback",
+              description: "Review student submissions with automated scoring verified by our 4-layer architecture. You can manually override grades, provide specific written feedback, and track historical performance for each student.",
+              icon: GraduationCap
+            },
+            {
+              title: "5. Assignment Management",
+              description: "Your central library for assignments. From here, you can manage the lifecycle of your content—drafting new materials, deploying them to specific classes, and closing submissions after deadlines.",
+              icon: FileText
+            },
+            {
+              title: "6. The Assignment Builder",
+              description: "Build problems with custom inference-time constraints. You define the variables and derivation steps required, while the Socratic engine ensures students cannot bypass the learning process through simple prompt engineering.",
+              icon: PlusCircle
+            },
+            {
+              title: "7. Pedagogical Waypoints",
+              description: "Waypoints are specific conceptual milestones. Configure assignments to require students to 'pass' certain waypoints through derivation or explanation before the AI allows them to proceed to the final solution.",
+              icon: Waypoints
+            },
+            {
+              title: "8. Curriculum Integration",
+              description: "Upload your course syllabi, PDFs, and proprietary materials to the Resource Uploads. Scorpio indexes this content as a 'ground truth' reference, ensuring the AI responses align with your specific teaching methodology.",
+              icon: Upload
+            },
+            {
+              title: "9. How Socratic AI Works",
+              description: "Scorpio's AI acts as a 4-layer pedagogical guardrail. It assesses student input for logic, identifies the specific misconception, and provides a scaffolded hint rather than the answer. This ensures verifiable academic integrity at scale.",
+              icon: ShieldCheck,
+              isSpecial: true
+            }
+          ]}
+        />
       </div>
 
 

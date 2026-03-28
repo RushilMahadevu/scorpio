@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow, Info, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { RundownDialog } from "@/components/ui/rundown-dialog";
 import {
   PieChart,
   Pie,
@@ -332,9 +334,65 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to Scorpio - Powering Physics at Sage Ridge</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome to Scorpio - Powering Physics at Sage Ridge</p>
+        </div>
+
+        <RundownDialog 
+          userRole="student"
+          triggerLabel="Student Tutorial"
+          title="System Navigation Guide"
+          steps={[
+            {
+              title: "1. The Student Dashboard",
+              description: "Your primary overview page. Check for upcoming assignment deadlines, view your recent submission status, and monitor your overall progress in the course.",
+              icon: LayoutDashboard
+            },
+            {
+              title: "2. Working on Assignments",
+              description: "The core of the system. Select an assignment to begin solving problems. Use the Socratic AI chat to get help—but remember, the system is designed to guide you through steps, not give away answers.",
+              icon: FileText
+            },
+            {
+              title: "3. Reviewing Submissions",
+              description: "Access your completed work. Review the exact derivation paths you used and see specific feedback from both the AI and your instructor on where you succeeded or needed improvement.",
+              icon: FileCheck
+            },
+            {
+              title: "4. Grade Tracking",
+              description: "View your current academic standing. This section lists all graded assignments, your individual scores, and class averages where available.",
+              icon: GraduationCap
+            },
+            {
+              title: "5. Adaptive Practice",
+              description: "Use Practice mode to reinforce your understanding of specific physics concepts. The system generates problems based on your historical performance, focusing on areas where you've previously struggled.",
+              icon: BowArrow
+            },
+            {
+              title: "6. Digital Notebook",
+              description: "A persistent, Markdown-supported space for your notes. Use it to document derivations, save conceptual explanations, and prep for exams without switching platforms.",
+              icon: NotebookPen
+            },
+            {
+              title: "7. The Equation Vault",
+              description: "Your searchable database for physics formulas and constants. You can quickly search for specific equations and reference them while working on problems.",
+              icon: PackageOpen
+            },
+            {
+              title: "8. AI Tutor & Learning Library",
+              description: "Access general conceptual help outside of specific assignments. If you're confused about a fundamental law of physics, use the AI Tutor for a deep-dive explanation or browse curated resources.",
+              icon: Bot
+            },
+            {
+              title: "9. Working with the Socratic AI",
+              description: "To succeed, share your logic with the AI. If you're stuck, describe what you've tried or provide a partial derivation. The AI will analyze your work and provide a targeted hint to help you reach the next step.",
+              icon: ShieldCheck,
+              isSpecial: true
+            }
+          ]}
+        />
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
