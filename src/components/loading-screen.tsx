@@ -13,8 +13,8 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-      setTimeout(() => onFinish?.(), 800);
-    }, 1600);
+      setTimeout(() => onFinish?.(), 500);
+    }, 800);
     return () => clearTimeout(timer);
   }, [onFinish]);
 
@@ -166,7 +166,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
               className="h-full bg-primary"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ duration: 1.6, ease: "linear" }}
+              transition={{ duration: 0.8, ease: "linear" }}
               style={{ width: "0%" }}
             />
           </div>

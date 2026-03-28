@@ -23,6 +23,7 @@ import { Comparison } from "@/components/landing/comparison";
 import { SystemAccordion } from "@/components/system-accordion";
 import { FloatingPrompts } from "@/components/ui/floating-prompts";
 import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
+import { Logo } from "@/components/ui/logo";
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 
@@ -33,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const Logo = dynamic(() => import("@/components/ui/logo").then(mod => mod.Logo), { ssr: false });
+
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -383,7 +384,7 @@ export default function Home() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 1.2, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
               >
 
 
@@ -588,6 +589,7 @@ export default function Home() {
                         width={2650}
                         className="mx-auto rounded-2xl object-contain h-full w-full bg-zinc-900"
                         draggable={false}
+                        priority
                       />
                     </ContainerScroll>
                   </div>

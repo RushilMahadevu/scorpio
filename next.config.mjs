@@ -2,7 +2,6 @@
 const nextConfig = {
   reactCompiler: true,
   images: {
-    unoptimized: true,
   },
   output: "standalone",
 };
