@@ -43,7 +43,15 @@ export default function Home() {
   const [activeNav, setActiveNav] = useState<string>("home");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const { user, role, profile, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -395,15 +403,25 @@ export default function Home() {
 
                     {/* Atmospheric background */}
                     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
-                      {/* Primary central glow */}
-                      <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 blur-[160px] rounded-full" />
-                      <div className="absolute top-[10%] left-[5%] w-[400px] h-[300px] bg-primary/5 blur-[120px] rounded-full" />
-                      <div className="absolute bottom-[10%] right-[5%] w-[450px] h-[350px] bg-primary/5 blur-[130px] rounded-full" />
+                      {/* Reduced glow on mobile to save performance */}
+                      {isMobile ? (
+                        <>
+                          <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[80px] rounded-full" />
+                        </>
+                      ) : (
+                        <>
+                          <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 blur-[160px] rounded-full" />
+                          <div className="absolute top-[10%] left-[5%] w-[400px] h-[300px] bg-primary/5 blur-[120px] rounded-full" />
+                          <div className="absolute bottom-[10%] right-[5%] w-[450px] h-[350px] bg-primary/5 blur-[130px] rounded-full" />
+                        </>
+                      )}
                     </div>
 
-                    <div className="hidden md:block">
-                      <FloatingPrompts />
-                    </div>
+                    {!isMobile && (
+                      <div className="hidden md:block">
+                        <FloatingPrompts />
+                      </div>
+                    )}
 
                     <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-8 md:gap-10 relative z-10 -mt-2">
 
@@ -463,8 +481,8 @@ export default function Home() {
                           visible: {
                             opacity: 1,
                             transition: {
-                              staggerChildren: 0.12,
-                              delayChildren: 0.4
+                              staggerChildren: isMobile ? 0 : 0.12,
+                              delayChildren: isMobile ? 0.05 : 0.4
                             }
                           }
                         }}
@@ -515,7 +533,7 @@ export default function Home() {
                         className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative pt-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1.1, duration: 1, ease: "easeOut" }}
+                        transition={{ delay: isMobile ? 0.4 : 1.1, duration: 1, ease: "easeOut" }}
                       >
 
                         <Link href="/request-access" className="w-full sm:w-auto flex-1 group">
@@ -543,7 +561,7 @@ export default function Home() {
                         animate="visible"
                         variants={{
                           hidden: {},
-                          visible: { transition: { staggerChildren: 0.08, delayChildren: 1.1 } }
+                          visible: { transition: { staggerChildren: 0.08, delayChildren: isMobile ? 0.5 : 1.1 } }
                         }}
                       >
                         {stats.map((stat, i) => (
@@ -563,37 +581,39 @@ export default function Home() {
 
                   </section>
 
-                  {/* Container Scroll Section */}
-                  <div id="mission-control" className="flex flex-col pt-0 md:pt-10">
-                    <ContainerScroll
-                      titleComponent={
-                        <div className="flex flex-col items-center justify-center mb-0 md:mb-10">
-                          <Link href="/signup" className="mb-4">
-                            <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
-                              <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
-                              <span className="text-primary font-medium">Precise AI Tracking</span>
-                            </Badge>
-                          </Link>
-                          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-foreground/90 pb-4 leading-tight">
-                            Your Network <br />
-                            <span className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-black mt-1 leading-none text-primary">
-                              Granular Analytics
-                            </span>
-                          </h1>
-                        </div>
-                      }
-                    >
-                      <Image
-                        src="/mission-control.png"
-                        alt="Scorpio Teacher Dashboard showing assignments and student progress"
-                        height={1280}
-                        width={2650}
-                        className="mx-auto rounded-2xl object-contain h-full w-full bg-zinc-900"
-                        draggable={false}
-                        priority
-                      />
-                    </ContainerScroll>
-                  </div>
+                  {/* Container Scroll Section - Only on Desktop */}
+                  {!isMobile && (
+                    <div id="mission-control" className="flex flex-col pt-0 md:pt-10">
+                      <ContainerScroll
+                        titleComponent={
+                          <div className="flex flex-col items-center justify-center mb-0 md:mb-10">
+                            <Link href="/signup" className="mb-4">
+                              <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
+                                <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
+                                <span className="text-primary font-medium">Precise AI Tracking</span>
+                              </Badge>
+                            </Link>
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-foreground/90 pb-4 leading-tight">
+                              Your Network <br />
+                              <span className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-black mt-1 leading-none text-primary">
+                                Granular Analytics
+                              </span>
+                            </h1>
+                          </div>
+                        }
+                      >
+                        <Image
+                          src="/mission-control.png"
+                          alt="Scorpio Teacher Dashboard showing assignments and student progress"
+                          height={1280}
+                          width={2650}
+                          className="mx-auto rounded-2xl object-contain h-full w-full bg-zinc-900"
+                          draggable={false}
+                          priority
+                        />
+                      </ContainerScroll>
+                    </div>
+                  )}
 
 
 
@@ -688,10 +708,12 @@ export default function Home() {
                     </div>
                   </section>
 
-                  {/* Solution Flowchart Section */}
-                  <div id="solution">
-                    <SolutionFlowchart />
-                  </div>
+                  {/* Solution Flowchart Section - Only on Desktop */}
+                  {!isMobile && (
+                    <div id="solution">
+                      <SolutionFlowchart />
+                    </div>
+                  )}
 
                   {/* See It Work Section (Merged Demo + Dashboard) */}
                   <section id="demos" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">

@@ -1,12 +1,43 @@
 "use client";
 
 import { useSpaceEffects } from "@/contexts/space-effects-context";
+import { useState, useEffect } from "react";
 
 export function SpaceBackground() {
   const { spaceEffectsEnabled, spacyLevel, nebulaBrightness } = useSpaceEffects();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   if (!spaceEffectsEnabled) {
     return <div className="fixed inset-0 -z-10 overflow-hidden bg-background" />;
+  }
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
+        <div className="absolute inset-0 opacity-40 dark:opacity-50">
+          {/* Very simple stars for mobile */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                radial-gradient(1px 1px at 20px 30px, currentColor, transparent),
+                radial-gradient(1px 1px at 40px 70px, currentColor, transparent),
+                radial-gradient(1px 1px at 150px 160px, currentColor, transparent),
+                radial-gradient(1px 1px at 250px 40px, currentColor, transparent)
+              `,
+              backgroundSize: '300px 300px',
+            }}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
