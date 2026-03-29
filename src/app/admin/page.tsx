@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { AccessRequests } from "@/components/admin/access-requests";
 import { TeacherInviteCodes } from "@/components/admin/teacher-invite-codes";
 import { FirestoreExplorer } from "@/components/admin/firestore-explorer";
+import { GlobalAnalytics } from "@/components/admin/global-analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ShieldCheck, Eye, EyeOff, Lock, Database } from "lucide-react";
+import { ShieldCheck, Eye, EyeOff, Lock, Database, BarChart3 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminPage() {
@@ -21,7 +22,7 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
   
-  const [activeTab, setActiveTab] = useState<"access" | "database">("access");
+  const [activeTab, setActiveTab] = useState<"access" | "database" | "analytics">("access");
 
   const handleUnlock = async () => {
     if (!secret.trim()) {
@@ -141,6 +142,14 @@ export default function AdminPage() {
             Access & Security
           </Button>
           <Button
+            variant={activeTab === "analytics" ? "secondary" : "ghost"}
+            className="w-full justify-start font-medium"
+            onClick={() => setActiveTab("analytics")}
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Analytics & Insights
+          </Button>
+          <Button
             variant={activeTab === "database" ? "secondary" : "ghost"}
             className="w-full justify-start font-medium"
             onClick={() => setActiveTab("database")}
@@ -181,6 +190,19 @@ export default function AdminPage() {
                 
                 <AccessRequests adminSecret={secret} />
                 <TeacherInviteCodes adminSecret={secret} />
+              </motion.div>
+            )}
+
+            {activeTab === "analytics" && (
+              <motion.div
+                key="analytics"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="max-w-6xl mx-auto space-y-8"
+              >
+                <GlobalAnalytics />
               </motion.div>
             )}
 
