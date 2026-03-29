@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { collection, getDocs, query, where, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
@@ -333,15 +334,34 @@ export default function StudentDashboard() {
     },
   ];
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to Scorpio - Powering Physics at Sage Ridge</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="space-y-1"
+        >
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-black tracking-tight">Dashboard</h1>
+          </div>
+          <p className="text-muted-foreground font-medium flex items-center gap-2">
+            {getGreeting()}, <span className="font-bold text-foreground inline-flex items-center gap-1.5 capitalize border-b border-primary/20">
+              {profile?.displayName?.split(" ")[0] || "Student"}
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            </span>
+          </p>
+        </motion.div>
 
-        <RundownDialog 
+        <RundownDialog
           userRole="student"
           triggerLabel="Student Tutorial"
           title="System Navigation Guide"
@@ -396,12 +416,12 @@ export default function StudentDashboard() {
         />
       </div>
 
-      <OnboardingChecklist 
-        userRole="student" 
-        metadata={{ 
+      <OnboardingChecklist
+        userRole="student"
+        metadata={{
           completedCount: stats.completedAssignments,
           enrolled: !!courseId
-        }} 
+        }}
       />
 
       <div className="grid gap-6 md:grid-cols-3">
