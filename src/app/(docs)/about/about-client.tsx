@@ -32,7 +32,7 @@ export default function AboutClient() {
     {
       icon: ShieldCheck,
       title: "Verifiable Governance",
-      description: "Our proprietary 4-layer constraint architecture ensures academic integrity and pedagogical consistency at scale.",
+      description: "Our transparent 4-layer constraint architecture ensures academic integrity and pedagogical consistency at scale.",
       tag: "Constraint Engineering"
     }
   ];

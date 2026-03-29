@@ -19,12 +19,12 @@ Scorpio is a research-driven educational platform engineered to transform physic
 Scorpio's architecture is built for concurrency, type safety, and real-time synchronization.
 
 ### 🛡️ The 4-Layer Constraint System
-At the heart of Scorpio's AI tutoring capabilities is a proprietary constraint architecture designed to ensure pedagogical validity and eliminate hallucinations.
+At the heart of Scorpio's AI tutoring capabilities is a **transparent and research-driven** constraint architecture designed to ensure pedagogical validity and eliminate hallucinations while maintaining full academic integrity.
 
 [**📄 View Full System Architecture (PDF)**](./public/architecture.pdf)
 
 > [!IMPORTANT]
-> The system enforces strict adherence through four distinct layers:
+> The system enforces strict pedagogical adherence through four distinct, open-source layers:
 
 | Layer  | Constraint      | Purpose                                                      |
 | :----- | :-------------- | :----------------------------------------------------------- |
@@ -46,7 +46,8 @@ At the heart of Scorpio's AI tutoring capabilities is a proprietary constraint a
 ## 🚀 Core Capabilities
 
 ### 🎓 Research-Grade AI Tutoring
-The Scorpio AI Tutor is a **context-aware pedagogical agent**, not a generic chatbot.
+Scorpio is a **context-aware pedagogical agent**, not a generic chatbot. Its reasoning logic is fully open-source and peer-reviewable.
+- **Transparent Pedagogy:** Our prompt engineering and constraint layers are public to ensure academic trust.
 - **Context Retention:** Maintains deep awareness of specific assignments and problem states.
 - **Adaptive Guidance:** Dynamically scales hint complexity based on student performance.
 - **Academic Integrity:** Hardened against jailbreak attempts and direct-answer harvesting.
