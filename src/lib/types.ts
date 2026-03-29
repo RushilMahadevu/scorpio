@@ -25,6 +25,9 @@ export interface UserProfile {
   // Preferences
   preferences?: UserPreferences;
 
+  // Onboarding
+  onboarding?: Record<string, boolean>;
+
   // Metadata
   createdAt: Timestamp | Date;
   lastLoginAt: Timestamp | Date;

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, ShieldCheck, LayoutDashboard, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
+import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
 
 interface Submission {
   id: string;
@@ -321,6 +322,13 @@ export default function TeacherDashboard() {
         />
       </div>
 
+      <OnboardingChecklist 
+        userRole="teacher" 
+        metadata={{ 
+          courseCount: courses.length, 
+          assignmentCount: stats.totalAssignments 
+        }} 
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (

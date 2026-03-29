@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow, Info, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
+import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
 import {
   PieChart,
   Pie,
@@ -394,6 +395,14 @@ export default function StudentDashboard() {
           ]}
         />
       </div>
+
+      <OnboardingChecklist 
+        userRole="student" 
+        metadata={{ 
+          completedCount: stats.completedAssignments,
+          enrolled: !!courseId
+        }} 
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         {statCards.map((stat) => (

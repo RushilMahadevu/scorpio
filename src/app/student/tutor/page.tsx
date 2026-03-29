@@ -98,6 +98,15 @@ export default function TutorPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // --- ONBOARDING COMPLETION ---
+  useEffect(() => {
+    if (user && profile && !profile.onboarding?.chat_tutor) {
+      updateDoc(doc(db, "users", user.uid), {
+        "onboarding.chat_tutor": true
+      }).catch((e) => console.warn("Onboarding update failed", e));
+    }
+  }, [user, profile]);
+
   // --- LOAD ALL SESSIONS (List Only) ---
   useEffect(() => {
     if (!user || user.uid === "loading") return;
