@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AccessRequests } from "@/components/admin/access-requests";
 import { TeacherInviteCodes } from "@/components/admin/teacher-invite-codes";
+import { FirestoreExplorer } from "@/components/admin/firestore-explorer";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
-import { motion } from "framer-motion";
+import { ShieldCheck, Eye, EyeOff, Lock, Database } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminPage() {
   const [secret, setSecret] = useState("");
@@ -19,6 +20,8 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
+  
+  const [activeTab, setActiveTab] = useState<"access" | "database">("access");
 
   const handleUnlock = async () => {
     if (!secret.trim()) {
@@ -108,42 +111,101 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen w-full relative flex flex-col md:flex-row bg-background">
       <SpaceBackground />
-      <div className="relative z-10 max-w-5xl mx-auto px-6 py-10 space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
-        >
+      
+      {/* Sidebar */}
+      <motion.aside 
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="w-full md:w-64 border-b md:border-b-0 md:border-r border-border/40 relative z-20 bg-background/60 backdrop-blur-xl flex flex-col h-auto md:h-screen sticky top-0"
+      >
+        <div className="p-6 flex items-center gap-3 border-b border-border/40">
           <Logo size={24} className="text-foreground" />
           <div>
-            <h1 className="text-xl font-extrabold">Scorpio Admin</h1>
-            <p className="text-xs text-muted-foreground">Access requests · Teacher invite codes</p>
+            <h1 className="text-lg font-bold leading-tight">Admin</h1>
+            <p className="text-xs text-muted-foreground">Scorpio Platform</p>
           </div>
-        </motion.div>
+        </div>
 
+        <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+            Modules
+          </div>
+          <Button
+            variant={activeTab === "access" ? "secondary" : "ghost"}
+            className="w-full justify-start font-medium"
+            onClick={() => setActiveTab("access")}
+          >
+            <Lock className="mr-2 h-4 w-4" />
+            Access & Security
+          </Button>
+          <Button
+            variant={activeTab === "database" ? "secondary" : "ghost"}
+            className="w-full justify-start font-medium"
+            onClick={() => setActiveTab("database")}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            Database Explorer
+          </Button>
+        </nav>
+
+        <div className="p-4 border-t border-border/40 mt-auto">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start text-muted-foreground hover:text-foreground"
+            onClick={() => setAuthed(false)}
+          >
+            Log Out
+          </Button>
+        </div>
+      </motion.aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 min-w-0 relative z-10 p-6 md:p-10 h-[calc(100vh-80px)] md:h-screen overflow-y-auto">
         <TooltipProvider>
-          {/* Access Requests — shown first so you can immediately act on them */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <AccessRequests adminSecret={secret} />
-          </motion.div>
+          <AnimatePresence mode="wait">
+            {activeTab === "access" && (
+              <motion.div
+                key="access"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="max-w-4xl mx-auto space-y-8"
+              >
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight">Access & Security</h2>
+                  <p className="text-muted-foreground">Manage waitlist access requests and teacher invite codes.</p>
+                </div>
+                
+                <AccessRequests adminSecret={secret} />
+                <TeacherInviteCodes adminSecret={secret} />
+              </motion.div>
+            )}
 
-          {/* Teacher Invite Codes */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <TeacherInviteCodes adminSecret={secret} />
-          </motion.div>
+            {activeTab === "database" && (
+              <motion.div
+                key="database"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="max-w-6xl mx-auto h-[80vh] flex flex-col space-y-4"
+              >
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight">Database Explorer</h2>
+                  <p className="text-muted-foreground">Query read-only platform data directly from Firestore.</p>
+                </div>
+                
+                <div className="flex-1 min-h-0">
+                  <FirestoreExplorer adminSecret={secret} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </TooltipProvider>
-      </div>
+      </main>
     </div>
   );
 }
