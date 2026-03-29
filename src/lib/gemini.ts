@@ -949,6 +949,9 @@ const NOTATION_CONSTRAINT = "Use proper physics notation: vectors as \\vec{v}, i
 // SOCRATIC_CONSTRAINT: Implements Socratic method by using guiding questions and building on student responses to foster discovery
 const SOCRATIC_CONSTRAINT = "Use the Socratic method: ask guiding questions, build on student responses, help students discover answers themselves.";
 
+// CONTACT_CONSTRAINT: Informs AI about the correct contact person for platform issues
+const CONTACT_CONSTRAINT = "For any institutional inquiries, billing issues, or high-level platform support, users can contact the founder, Rushil, at rushil@scorpioedu.org.";
+
 // STRICT_CONCISE_CONSTRAINT: Forces very short, strictly pedagogical guidance for assignments
 const STRICT_CONCISE_CONSTRAINT = `CRITICAL: You are guiding a student during an active assignment. 
 - BE CONCISE. Remember responses are directed toward an AP level student.
@@ -962,11 +965,11 @@ const STRICT_CONCISE_CONSTRAINT = `CRITICAL: You are guiding a student during an
 
 const CONSTRAINT_LEVELS: Record<ConstraintLevel, string> = {
   NONE: "",
-  DOMAIN_ONLY: DOMAIN_CONSTRAINT,
-  DOMAIN_PEDAGOGY: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT,
-  DOMAIN_PEDAGOGY_NOTATION: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT,
-  FULL: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + SOCRATIC_CONSTRAINT,
-  STRICT_CONCISE: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + STRICT_CONCISE_CONSTRAINT,
+  DOMAIN_ONLY: DOMAIN_CONSTRAINT + "\n" + CONTACT_CONSTRAINT,
+  DOMAIN_PEDAGOGY: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + CONTACT_CONSTRAINT,
+  DOMAIN_PEDAGOGY_NOTATION: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + CONTACT_CONSTRAINT,
+  FULL: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + SOCRATIC_CONSTRAINT + "\n" + CONTACT_CONSTRAINT,
+  STRICT_CONCISE: DOMAIN_CONSTRAINT + "\n" + PEDAGOGICAL_CONSTRAINT + "\n" + NOTATION_CONSTRAINT + "\n" + STRICT_CONCISE_CONSTRAINT + "\n" + CONTACT_CONSTRAINT,
 };
 
 function formatChatHistory(messages: ChatMessage[]): string {
