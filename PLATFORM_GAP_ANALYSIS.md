@@ -7,11 +7,6 @@ This document outlines the missing features and technical infrastructure require
 ## 🔴 Severity: Critical (Blockers for Launch & Scale)
 *These features are essential for legal compliance, data security, and system stability in a real-world classroom environment.*
 
-### 2. Asynchronous Grading Pipeline
-*   **Gap:** Synchronous AI grading via Server Actions causes timeouts (>10s) and a poor UX.
-*   **Solution:** Transition to a "Job Queue" model: Submission → Firestore Trigger → Cloud Function (Background Grading) → Real-time UI update via `onSnapshot`.
-*   **Impact:** System reliability and scalability.
-
 ### 3. Hardened Multi-Tenant Isolation
 *   **Gap:** Organization-level data isolation is currently handled via soft application logic.
 *   **Solution:** Strict Firestore Security Rules that verify `organizationId` via **Firebase Custom Claims**, ensuring zero "leakage" between separate school districts.
@@ -29,3 +24,4 @@ This document outlines the missing features and technical infrastructure require
 *   **Gap:** Communication is strictly Student-to-AI or Student-to-Teacher.
 *   **Solution:** Anonymous peer-review stages where students critique each other's derivations based on the teacher's rubric before final submission.
 *   **Impact:** Collaborative learning and reduced teacher grading load.
+ 
