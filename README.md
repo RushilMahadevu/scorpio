@@ -34,8 +34,8 @@ At the heart of Scorpio's AI tutoring capabilities is a proprietary constraint a
 | **04** | **Composite**   | Synchronizes all layers for research-grade tutoring.         |
 
 #### Prompt Layering
-[**📦 View Prompt Layering Diagram (PDF)**](./public/prompt_layering.pdf) |
-[**📦 View Prompt Layering Diagram (MD)**](./public/LAYERING.md)
+[**📦 View Prompt Layering Diagram (PDF)**](./public/layering.pdf) |
+[**📦 View Prompt Layering Diagram (MD)**](LAYERING.md)
 
 ### 🔄 Data & Synchronization
 - **Real-Time State:** Powered by **Cloud Firestore** with optimistic UI updates for zero-latency interaction.
