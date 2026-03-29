@@ -626,19 +626,6 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         docRef = await addDoc(collection(db, "submissions"), submissionData);
       }
 
-      // Trigger server-side grading
-      if (assignment.gradingType === "ai") {
-        try {
-            await fetch('/api/grade', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ submissionId: docRef.id })
-            });
-        } catch (gradeError) {
-            console.error("Error triggering grading:", gradeError);
-        }
-      }
-
       setSubmitted(true);
       router.push("/student/submissions");
     } catch (error) {

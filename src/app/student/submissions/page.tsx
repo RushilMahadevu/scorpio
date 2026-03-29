@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,87 +27,59 @@ export default function SubmissionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSubmissions() {
-      if (!user) return;
-      try {
-        // Get Student's Teacher ID and Course ID (Unified first)
-        let studentTeacherId = profile?.teacherId;
-        let studentCourseId = profile?.courseId;
+    if (!user) return;
 
-        if (!studentTeacherId || !studentCourseId) {
+    // 1. Listen for new submissions in real-time
+    const q = query(collection(db, "submissions"), where("studentId", "==", user.uid));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const submissionsData: (Submission | null)[] = await Promise.all(
+        snapshot.docs.map(async (submissionDoc) => {
+          const data = submissionDoc.data();
           try {
-            const studentDoc = await getDoc(doc(db, "students", user.uid));
-            if (studentDoc.exists()) {
-              const studentData = studentDoc.data();
-              studentTeacherId = studentTeacherId || studentData.teacherId;
-              studentCourseId = studentCourseId || studentData.courseId;
+            // Fetch Assignment Details (Cache these maybe? For now just fetch)
+            const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
+            if (!assignmentDoc.exists()) return null;
+
+            const assignData = assignmentDoc.data();
+            
+            // Filter logic
+            if (profile?.courseId) {
+                if (assignData.courseId !== profile.courseId) return null;
+            } else if (profile?.teacherId && assignData.teacherId && profile.teacherId !== assignData.teacherId) {
+                return null;
             }
-          } catch (e) { console.error("Could not fetch legacy student profile", e); }
-        }
+            
+            return {
+              id: submissionDoc.id,
+              assignmentId: data.assignmentId,
+              assignmentTitle: assignData.title,
+              answers: data.answers || [],
+              submittedAt: data.submittedAt?.toDate?.() || (data.submittedAt ? new Date(data.submittedAt) : null),
+              graded: data.graded || false,
+              score: data.score ?? null,
+              feedback: data.feedback ?? "",
+              status: data.status || (data.graded ? 'graded' : 'submitted'),
+            } satisfies Submission;
+          } catch (e) {
+            console.error("Error fetching assignment for submission:", e);
+            return null;
+          }
+        })
+      );
 
-        // --- LEGACY RESOLUTION START ---
-        if (studentTeacherId && !studentCourseId) {
-           const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", studentTeacherId.trim())));
-           if (!codeMatch.empty) {
-              const courseDoc = codeMatch.docs[0];
-              const courseData = courseDoc.data();
-              studentCourseId = courseDoc.id;
-              studentTeacherId = courseData.teacherId;
-           }
-        }
-        // --- LEGACY RESOLUTION END ---
+      const filteredSubmissions = submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft');
+      // Sort by submittedAt descending
+      filteredSubmissions.sort((a, b) => {
+        const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+        const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      setSubmissions(filteredSubmissions);
+      setLoading(false);
+    });
 
-        const submissionsSnap = await getDocs(
-          query(collection(db, "submissions"), where("studentId", "==", user.uid))
-        );
-
-        const submissionsData: (Submission | null)[] = await Promise.all(
-          submissionsSnap.docs.map(async (submissionDoc) => {
-            const data = submissionDoc.data();
-            try {
-              const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
-              if (!assignmentDoc.exists()) {
-                return null; // Filter out if assignment is deleted
-              }
-
-              const assignData = assignmentDoc.data();
-              // Filter logic
-              if (studentCourseId) {
-                  // Strict course filtering
-                  if (assignData.courseId !== studentCourseId) return null;
-              } else if (studentTeacherId && assignData.teacherId && studentTeacherId !== assignData.teacherId) {
-                 // Fallback teacher filtering
-                 return null;
-              }
-
-              return {
-                id: submissionDoc.id,
-                assignmentId: data.assignmentId,
-                assignmentTitle: assignData.title,
-                answers: data.answers || [],
-                submittedAt: data.submittedAt?.toDate?.() || (data.submittedAt ? new Date(data.submittedAt) : null),
-                graded: data.graded || false,
-                score: data.score ?? null,
-                feedback: data.feedback ?? "",
-                status: data.status || (data.graded ? 'graded' : 'submitted'),
-              } satisfies Submission;
-            } catch (e) {
-              console.error("Error fetching assignment:", e);
-              return null;
-            }
-          })
-        );
-
-        const filteredSubmissions = submissionsData.filter((s): s is Submission => s !== null && s.status !== 'draft');
-        setSubmissions(filteredSubmissions);
-      } catch (error) {
-        console.error("Error fetching submissions:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSubmissions();
-  }, [user, profile]);
+    return () => unsubscribe();
+  }, [user]);
 
   return (
     <div className="space-y-6">

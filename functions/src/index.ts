@@ -38,3 +38,6 @@ export const onAssignmentDeleted = onDocumentDeleted("assignments/{assignmentId}
     await batch.commit();
     console.log(`Deleted ${snapshot.size} submissions for assignment ${assignmentId}`);
 });
+
+// Import and export new grading triggers
+export { onSubmissionCreated, onSubmissionUpdated } from "./grading";
