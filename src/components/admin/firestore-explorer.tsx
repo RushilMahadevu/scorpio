@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Database, ChevronLeft, ChevronRight, RefreshCw, FileJson } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Database, ChevronLeft, ChevronRight, RefreshCw, FileJson, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -22,6 +23,9 @@ export function FirestoreExplorer({ adminSecret }: FirestoreExplorerProps) {
   const [lastDocId, setLastDocId] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [history, setHistory] = useState<(string | null)[]>([null]); // history of page cursors
+
+  const [filterField, setFilterField] = useState("");
+  const [filterValue, setFilterValue] = useState("");
 
   useEffect(() => {
     async function fetchCollections() {
@@ -64,6 +68,8 @@ export function FirestoreExplorer({ adminSecret }: FirestoreExplorerProps) {
           collectionName: selectedCollection,
           limit: 20,
           lastDocId: cursor,
+          filterField: filterField.trim(),
+          filterValue: filterValue.trim(),
         }),
       });
 
@@ -112,38 +118,76 @@ export function FirestoreExplorer({ adminSecret }: FirestoreExplorerProps) {
 
   return (
     <Card className="flex flex-col h-full bg-background/60 backdrop-blur-xl border-border/40 shadow-2xl">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border/40">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Database className="h-5 w-5 text-primary" />
+      <CardHeader className="space-y-4 pb-4 border-b border-border/40">
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Database className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-xl">Firestore Explorer</CardTitle>
+              <CardDescription>Read-only view of platform collections</CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-xl">Firestore Explorer</CardTitle>
-            <CardDescription>Read-only view of platform collections</CardDescription>
+          <div className="flex items-center gap-4">
+            <Select
+              value={selectedCollection}
+              onValueChange={(val) => {
+                setSelectedCollection(val);
+              }}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select a collection" />
+              </SelectTrigger>
+              <SelectContent>
+                {collections.map((col) => (
+                  <SelectItem key={col} value={col}>
+                    {col}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="icon" onClick={() => loadDocuments(history[history.length - 1], "refresh")} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              <span className="sr-only">Refresh</span>
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Select
-            value={selectedCollection}
-            onValueChange={(val) => {
-              setSelectedCollection(val);
-            }}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select a collection" />
-            </SelectTrigger>
-            <SelectContent>
-              {collections.map((col) => (
-                <SelectItem key={col} value={col}>
-                  {col}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon" onClick={() => loadDocuments(history[history.length - 1], "refresh")} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            <span className="sr-only">Refresh</span>
+        
+        <div className="flex items-center gap-3 bg-muted/20 p-2.5 rounded-lg border border-border/40 mt-2">
+          <Filter className="h-4 w-4 text-muted-foreground ml-1" />
+          <Input 
+            placeholder="Field (e.g. role)" 
+            value={filterField} 
+            onChange={(e) => setFilterField(e.target.value)}
+            className="h-8 text-xs bg-background max-w-[150px]"
+            onKeyDown={(e) => e.key === 'Enter' && loadDocuments(null, 'refresh')}
+          />
+          <span className="text-muted-foreground/50 text-xs font-mono font-bold">==</span>
+          <Input 
+            placeholder="Value (e.g. teacher)" 
+            value={filterValue} 
+            onChange={(e) => setFilterValue(e.target.value)}
+            className="h-8 text-xs bg-background max-w-[200px]"
+            onKeyDown={(e) => e.key === 'Enter' && loadDocuments(null, 'refresh')}
+          />
+          <Button variant="secondary" size="sm" className="h-8 text-xs ml-auto" onClick={() => loadDocuments(null, 'refresh')}>
+            Apply Filter
           </Button>
+          {(filterField || filterValue) && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 text-xs" 
+              onClick={() => { 
+                setFilterField(""); 
+                setFilterValue(""); 
+                setTimeout(() => loadDocuments(null, 'refresh'), 0); 
+              }}
+            >
+              Clear
+            </Button>
+          )}
         </div>
       </CardHeader>
 

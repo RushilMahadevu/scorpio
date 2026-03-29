@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { action, collectionName, limit = 50, lastDocId } = body;
+    const { action, collectionName, limit = 50, lastDocId, filterField, filterValue } = body;
 
     // ─── LIST COLLECTIONS ────────────────────────────────────────────────────
     if (action === 'listCollections') {
@@ -47,6 +47,12 @@ export async function POST(req: NextRequest) {
       }
 
       let query: FirebaseFirestore.Query = adminDb.collection(collectionName);
+
+      if (filterField && filterValue !== undefined && filterValue !== "") {
+        // Simple equality filter
+        // Note: Equality filters paired with orderBy('__name__', 'asc') do not require a built index.
+        query = query.where(filterField, '==', filterValue);
+      }
 
       // We default to sorting by a field to ensure stable pagination.
       // Many collections use 'createdAt' but some do not. We can just list by document ID
