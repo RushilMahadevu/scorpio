@@ -253,9 +253,7 @@ export default function Home() {
                             {[
                               { id: "home", label: "Home", icon: Globe, action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
                               { id: "problem", label: "Problem", icon: AlertTriangle },
-                              { id: "solution", label: "Solution", icon: Layers },
                               { id: "demos", label: "Demos", icon: PlayCircle },
-                              { id: "how-it-works", label: "Systems", icon: Zap },
                             ].map((item) => (
                               <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { if (item.action) { item.action(); } else { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); } setMenuOpen(false); }}>
                                 <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
