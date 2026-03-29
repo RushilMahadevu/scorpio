@@ -26,12 +26,16 @@ At the heart of Scorpio's AI tutoring capabilities is a proprietary constraint a
 > [!IMPORTANT]
 > The system enforces strict adherence through four distinct layers:
 
-| Layer | Constraint | Purpose |
-| :--- | :--- | :--- |
-| **01** | **Domain** | Restricts knowledge exclusively to physics principles. |
+| Layer  | Constraint      | Purpose                                                      |
+| :----- | :-------------- | :----------------------------------------------------------- |
+| **01** | **Domain**      | Restricts knowledge exclusively to physics principles.       |
 | **02** | **Pedagogical** | Enforces the Socratic method; direct answers are prohibited. |
-| **03** | **Notation** | Mandates proper LaTeX formatting and SI unit adherence. |
-| **04** | **Composite** | Synchronizes all layers for research-grade tutoring. |
+| **03** | **Notation**    | Mandates proper LaTeX formatting and SI unit adherence.      |
+| **04** | **Composite**   | Synchronizes all layers for research-grade tutoring.         |
+
+#### Prompt Layering
+[**📦 View Prompt Layering Diagram (PDF)**](./public/prompt_layering.pdf) |
+[**📦 View Prompt Layering Diagram (MD)**](./public/LAYERING.md)
 
 ### 🔄 Data & Synchronization
 - **Real-Time State:** Powered by **Cloud Firestore** with optimistic UI updates for zero-latency interaction.
@@ -91,16 +95,16 @@ Scorpio includes a dedicated research dashboard to monitor the performance of it
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Frontend** | [Next.js 15](https://nextjs.org/) | Server Components, Streaming, and Routing |
-| **Language** | [TypeScript 5.7](https://www.typescriptlang.org/) | Strict type safety and developer ergonomics |
-| **Styling** | [Tailwind CSS](https://tailwindcss.com/) | Utility-first styling with perceptually uniform colors |
-| **UI Library** | [Shadcn UI](https://ui.shadcn.com/) | Accessible, headless component primitives |
-| **Motion** | [Framer Motion](https://www.framer.com/motion/) | Physics-based animations and gesture handling |
-| **Backend** | [Firebase](https://firebase.google.com/) | Auth, Firestore (NoSQL), Functions, Storage |
-| **AI Model** | [Gemini 2.5 Flash](https://deepmind.google/technologies/gemini/) | Multimodal reasoning and constraint adherence |
-| **Math** | [KaTeX](https://katex.org/) | Fast, accessible equation rendering |
+| Layer          | Technology                                                       | Purpose                                                |
+| :------------- | :--------------------------------------------------------------- | :----------------------------------------------------- |
+| **Frontend**   | [Next.js 15](https://nextjs.org/)                                | Server Components, Streaming, and Routing              |
+| **Language**   | [TypeScript 5.7](https://www.typescriptlang.org/)                | Strict type safety and developer ergonomics            |
+| **Styling**    | [Tailwind CSS](https://tailwindcss.com/)                         | Utility-first styling with perceptually uniform colors |
+| **UI Library** | [Shadcn UI](https://ui.shadcn.com/)                              | Accessible, headless component primitives              |
+| **Motion**     | [Framer Motion](https://www.framer.com/motion/)                  | Physics-based animations and gesture handling          |
+| **Backend**    | [Firebase](https://firebase.google.com/)                         | Auth, Firestore (NoSQL), Functions, Storage            |
+| **AI Model**   | [Gemini 2.5 Flash](https://deepmind.google/technologies/gemini/) | Multimodal reasoning and constraint adherence          |
+| **Math**       | [KaTeX](https://katex.org/)                                      | Fast, accessible equation rendering                    |
 
 ---
 
