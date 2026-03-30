@@ -95,8 +95,7 @@ export const onAssignmentCreated = onDocumentCreated({
             react: React.createElement(AssignmentCreatedEmail, {
                 studentName: student.displayName || student.name || "Student",
                 assignmentName: assignmentData.title || 'Assignment',
-                dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate).toLocaleDateString() : undefined,
-                link: `https://scorpioedu.org/dashboard/student/assignments/${event.params.assignmentId}`
+                link: `https://scorpioedu.org/student/assignments`
             })
         }).catch(err => {
             // Log but don't fail the entire batch if one email fails

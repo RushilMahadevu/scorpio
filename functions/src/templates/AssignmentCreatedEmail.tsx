@@ -7,72 +7,96 @@ import {
   Section,
   Text,
   Hr,
-  Link,
   Tailwind,
-  Heading
+  Button
 } from '@react-email/components';
 
 interface AssignmentCreatedEmailProps {
   studentName: string;
   assignmentName: string;
   courseName?: string;
-  dueDate?: string;
   link: string;
 }
 
 export const AssignmentCreatedEmail = ({
   studentName = "Student",
   assignmentName = "Assignment",
-  courseName = "Physics 101",
-  dueDate = "Next Friday at 11:59 PM",
-  link = "https://scorpioedu.org/dashboard"
+  courseName = "Physics",
+  link = "https://scorpioedu.org/student/assignments"
 }: AssignmentCreatedEmailProps) => {
   return (
     <Html>
       <Tailwind>
         <Head />
-        <Preview>New Assignment: {assignmentName}</Preview>
-        <Body className="bg-zinc-50 font-sans text-zinc-900 m-0 py-8">
-          <Container className="mx-auto max-w-xl rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm my-10">
-            <Section className="mb-6">
-              <Heading className="m-0 text-xl font-bold tracking-tight text-zinc-900">
-                SCORPIO
-              </Heading>
-              <Text className="m-0 mt-1 text-sm font-medium text-zinc-500">
-                Research-Grade Educational Platform
+        <Preview>New Scorpio Assignment: {assignmentName}</Preview>
+        <Body className="bg-[#09090b] font-sans text-[#fafafa] m-0 py-10">
+          <Container className="mx-auto max-w-[465px] border border-solid border-[#27272a] rounded-2xl p-10 bg-[#09090b]">
+            <Section className="mt-4 mb-12 text-center">
+              <table align="center" border={0} cellPadding={0} cellSpacing={0} role="presentation" style={{ margin: '0 auto' }}>
+                <tr>
+                  <td style={{ verticalAlign: 'middle', paddingRight: '10px' }}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="35"
+                      height="35"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="2.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                    </svg>
+                  </td>
+                  <td style={{
+                    fontSize: '28px',
+                    fontWeight: '900',
+                    letterSpacing: '-0.04em',
+                    color: '#ffffff',
+                    verticalAlign: 'middle'
+                  }}>
+                    Scorpio
+                  </td>
+                </tr>
+              </table>
+            </Section>
+
+            <Section className="text-center">
+              <Text className="text-[#a1a1aa] text-xs font-semibold uppercase tracking-[0.1em] mb-4">
+                Research-Grade Intelligence
+              </Text>
+              <Text className="text-[24px] font-bold leading-[32px] mb-8">
+                {assignmentName} is now live.
               </Text>
             </Section>
 
-            <Section>
-              <Text className="mt-0 mb-4 text-base font-medium">Hi {studentName},</Text>
-              <Text className="mb-6 text-base leading-relaxed text-zinc-600">
-                A new assignment <strong className="font-semibold text-zinc-900">{assignmentName}</strong> has been posted
-                {courseName ? ` in ${courseName}` : ''}.
+            <Section className="mb-8">
+              <Text className="text-base leading-7 text-[#d4d4d8]">
+                Hello {studentName.split(' ')[0]},
               </Text>
-
-              {dueDate && (
-                <Section className="my-6 rounded-xl bg-indigo-50 p-4 border border-indigo-100 flex items-center">
-                  <Text className="m-0 text-sm font-medium text-indigo-900">
-                    🕒 Due Date: <strong>{dueDate}</strong>
-                  </Text>
-                </Section>
-              )}
-
-              <Section className="mt-8 mb-4 text-center">
-                <Link
-                  href={link}
-                  className="inline-block rounded-lg bg-zinc-900 px-6 py-3 text-sm font-semibold text-white no-underline shadow-sm hover:bg-zinc-800 transition-all"
-                >
-                  View Assignment Details
-                </Link>
-              </Section>
+              <Text className="text-base leading-7 text-[#d4d4d8]">
+                A new verifiable assessment has been published for your course.
+                Complete your derivations and submit through the dashboard to maintain your progress.
+              </Text>
             </Section>
 
-            <Hr className="my-8 border-zinc-200" />
-            
+            <Section className="text-center mt-10 mb-10">
+              <Button
+                href={link}
+                className="bg-white text-black rounded-full px-10 py-5 text-sm font-bold no-underline shadow-xl tracking-tight"
+              >
+                Access Mission Control
+              </Button>
+            </Section>
+
+            <Hr className="border-[#27272a] my-8" />
+
             <Section>
-              <Text className="text-xs leading-relaxed text-zinc-400">
-                This is an automated message from Scorpio. 
+              <Text className="text-zinc-500 text-[11px] leading-relaxed text-center">
+                SCORPIO PLATFORM — AUTHENTIC STUDENT INTELLIGENCE<br />
+                This is an automated academic notification.
               </Text>
             </Section>
           </Container>
@@ -83,3 +107,4 @@ export const AssignmentCreatedEmail = ({
 };
 
 export default AssignmentCreatedEmail;
+
