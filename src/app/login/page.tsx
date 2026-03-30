@@ -46,7 +46,7 @@ export default function LoginPage() {
       const userCredential = await login(email, password);
       console.log(`[Login] Firebase Auth success. Fetching ID token...`);
       const idToken = await userCredential.user.getIdToken();
-      
+
       console.log(`[Login] ID Token received. Calling session API...`);
       // Set session cookie
       const response = await fetch('/api/auth/session', {
@@ -67,8 +67,8 @@ export default function LoginPage() {
       window.location.href = target;
     } catch (err: any) {
       console.error("[Login] Detailed Error:", err);
-      setError(err?.message === "Failed to create session" 
-        ? "Session creation failed. Please try again." 
+      setError(err?.message === "Failed to create session"
+        ? "Session creation failed. Please try again."
         : "Invalid email or password");
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export default function LoginPage() {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("No session found. Please sign in again.");
-      
+
       const collectionName = recoveryRole === "teacher" ? "teachers" : "students";
       const userData: any = {
         uid: currentUser.uid,
@@ -115,7 +115,7 @@ export default function LoginPage() {
       ]);
 
       const failedIndices = results.map((r, i) => r.status === 'rejected' ? i : -1).filter(i => i !== -1);
-      
+
       if (failedIndices.length > 0) {
         failedIndices.forEach(idx => {
           const collection = idx === 0 ? "users" : collectionName;
@@ -163,7 +163,7 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-md mb-4"
@@ -171,14 +171,14 @@ export default function LoginPage() {
                 {error}
               </motion.div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="rec-email" className="text-sm font-medium">Account Email</Label>
-              <Input 
-                id="rec-email" 
+              <Input
+                id="rec-email"
                 type="email"
-                placeholder="Enter your email" 
-                value={recoveryEmail} 
+                placeholder="Enter your email"
+                value={recoveryEmail}
                 onChange={(e) => setRecoveryEmail(e.target.value)}
                 disabled={loading}
                 className="bg-background/50 border-white/10 focus:border-primary/50"
@@ -187,8 +187,8 @@ export default function LoginPage() {
 
             <div className="space-y-3">
               <Label className="text-sm font-medium">Account Role</Label>
-              <Tabs 
-                defaultValue="student" 
+              <Tabs
+                defaultValue="student"
                 onValueChange={(v) => setRecoveryRole(v as "student" | "teacher")}
                 className="w-full"
               >
@@ -206,17 +206,17 @@ export default function LoginPage() {
             </div>
 
             {recoveryRole === "teacher" && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-2 pt-2"
               >
                 <Label htmlFor="rec-code" className="text-sm font-medium">Teacher Access Code</Label>
-                <Input 
-                  id="rec-code" 
-                  type="password" 
-                  placeholder="Enter required access code" 
-                  value={recoveryAccessCode} 
+                <Input
+                  id="rec-code"
+                  type="password"
+                  placeholder="Enter required access code"
+                  value={recoveryAccessCode}
                   onChange={(e) => setRecoveryAccessCode(e.target.value)}
                   disabled={loading}
                   className="bg-background/50 border-white/10 focus:border-primary/50"
@@ -225,16 +225,16 @@ export default function LoginPage() {
             )}
 
             <div className="pt-4 flex flex-col gap-3">
-              <Button 
-                className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 transition-all active:scale-95 py-6 h-auto text-base" 
+              <Button
+                className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 transition-all active:scale-95 py-6 h-auto text-base"
                 onClick={handleRecovery}
                 disabled={loading}
               >
                 {loading && isRecovering ? "Setting up profile..." : "Finalize Profile"}
               </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full text-muted-foreground hover:text-foreground transition-colors py-2 h-auto" 
+              <Button
+                variant="ghost"
+                className="w-full text-muted-foreground hover:text-foreground transition-colors py-2 h-auto"
                 onClick={handleLogout}
                 disabled={loading}
               >
@@ -261,208 +261,208 @@ export default function LoginPage() {
         className="w-full max-w-md"
       >
         <Card>
-        <CardHeader className="text-center">
-          <motion.div
-            className="flex justify-center mb-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <Logo size={48} className="text-primary" />
-          </motion.div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to Scorpio</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="student" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
-                <GraduationCap className="h-4 w-4" />
-                Student
-              </TabsTrigger>
-              <TabsTrigger value="teacher" className="flex items-center gap-2 cursor-pointer">
-                <Presentation className="h-4 w-4" />
-                Teacher
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="student" className="mt-4">
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4"
-              >
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="space-y-2"
+          <CardHeader className="text-center">
+            <motion.div
+              className="flex justify-center mb-4"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <Logo size={48} className="text-primary" />
+            </motion.div>
+            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardDescription>Sign in to Scorpio</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="student" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
+                  <GraduationCap className="h-4 w-4" />
+                  Student
+                </TabsTrigger>
+                <TabsTrigger value="teacher" className="flex items-center gap-2 cursor-pointer">
+                  <Presentation className="h-4 w-4" />
+                  Teacher
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="student" className="mt-4">
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
                 >
-                  <Label htmlFor="student-email">Email</Label>
-                  <Input
-                    id="student-email"
-                    type="email"
-                    placeholder="student@school.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    aria-label="Student Email"
-                    required
-                  />
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="student-password">Password</Label>
-                    <Link 
-                      href="/forgot-password" 
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="relative">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="space-y-2"
+                  >
+                    <Label htmlFor="student-email">Email</Label>
                     <Input
-                      id="student-password"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pr-10"
-                      aria-label="Student Password"
+                      id="student-email"
+                      type="email"
+                      placeholder="student@school.edu"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      aria-label="Student Email"
                       required
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="student-password">Password</Label>
+                      <Link
+                        href="/forgot-password"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="student-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pr-10"
+                        aria-label="Student Password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </motion.div>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </motion.div>
-                {error && (
-                  <motion.p 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
+                      {error}
+                    </motion.p>
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    {error}
-                  </motion.p>
-                )}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button 
-                    className="w-full transition-all active:scale-[0.98] hover:shadow-md" 
-                    onClick={() => handleLogin("student")}
-                    disabled={loading}
-                  >
-                    {loading ? "Signing in..." : "Sign in as Student"}
-                  </Button>
+                    <Button
+                      className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                      onClick={() => handleLogin("student")}
+                      disabled={loading}
+                    >
+                      {loading ? "Signing in..." : "Sign in as Student"}
+                    </Button>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="teacher" className="mt-4">
-              <motion.div 
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4"
-              >
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="space-y-2"
+              <TabsContent value="teacher" className="mt-4">
+                <motion.div
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
                 >
-                  <Label htmlFor="teacher-email">Email</Label>
-                  <Input
-                    id="teacher-email"
-                    type="email"
-                    placeholder="teacher@school.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    aria-label="Teacher Email"
-                    required
-                  />
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="teacher-password">Password</Label>
-                    <Link 
-                      href="/forgot-password" 
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="relative">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="space-y-2"
+                  >
+                    <Label htmlFor="teacher-email">Email</Label>
                     <Input
-                      id="teacher-password"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pr-10"
-                      aria-label="Teacher Password"
+                      id="teacher-email"
+                      type="email"
+                      placeholder="teacher@school.edu"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      aria-label="Teacher Email"
                       required
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="teacher-password">Password</Label>
+                      <Link
+                        href="/forgot-password"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="teacher-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pr-10"
+                        aria-label="Teacher Password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </motion.div>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </motion.div>
-                {error && (
-                  <motion.p 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
+                      {error}
+                    </motion.p>
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    {error}
-                  </motion.p>
-                )}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button 
-                    className="w-full transition-all active:scale-[0.98] hover:shadow-md" 
-                    onClick={() => handleLogin("teacher")}
-                    disabled={loading}
-                  >
-                    {loading ? "Signing in..." : "Sign in as Teacher"}
-                  </Button>
+                    <Button
+                      className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                      onClick={() => handleLogin("teacher")}
+                      disabled={loading}
+                    >
+                      {loading ? "Signing in..." : "Sign in as Teacher"}
+                    </Button>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
 
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="text-primary hover:underline">
+                Sign up
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   );

@@ -8,7 +8,8 @@ import {
   Text,
   Hr,
   Tailwind,
-  Button
+  Button,
+  Img
 } from '@react-email/components';
 
 interface AssignmentCreatedEmailProps {
@@ -24,38 +25,33 @@ export const AssignmentCreatedEmail = ({
   courseName = "Physics",
   link = "https://scorpioedu.org/student/assignments"
 }: AssignmentCreatedEmailProps) => {
+  const brandColor = '#1a1a1a'; // oklch(0.20 0 0) equivalent
+
   return (
     <Html>
       <Tailwind>
         <Head />
         <Preview>New Scorpio Assignment: {assignmentName}</Preview>
-        <Body className="bg-[#09090b] font-sans text-[#fafafa] m-0 py-10">
-          <Container className="mx-auto max-w-[465px] border border-solid border-[#27272a] rounded-2xl p-10 bg-[#09090b]">
+        <Body style={{ backgroundColor: brandColor }} className="font-sans text-[#fafafa] m-0 py-10">
+          <Container style={{ backgroundColor: brandColor }} className="mx-auto max-w-[465px] border border-solid border-[#333] rounded-2xl p-10">
             <Section className="mt-4 mb-12 text-center">
               <table align="center" border={0} cellPadding={0} cellSpacing={0} role="presentation" style={{ margin: '0 auto' }}>
                 <tr>
-                  <td style={{ verticalAlign: 'middle', paddingRight: '10px' }}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
+                  <td style={{ verticalAlign: 'middle', paddingRight: '12px' }}>
+                    <Img
+                      src="https://scorpioedu.org/favicon-dark.ico"
                       width="35"
                       height="35"
-                      fill="none"
-                      stroke="#ffffff"
-                      strokeWidth="2.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                    </svg>
+                      alt="Scorpio Logo"
+                    />
                   </td>
                   <td style={{
-                    fontSize: '28px',
+                    fontSize: '30px',
                     fontWeight: '900',
-                    letterSpacing: '-0.04em',
+                    letterSpacing: '-0.05em',
                     color: '#ffffff',
-                    verticalAlign: 'middle'
+                    verticalAlign: 'middle',
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
                   }}>
                     Scorpio
                   </td>

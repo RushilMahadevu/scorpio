@@ -81,7 +81,7 @@ export default function SignupPage() {
         }
 
         const validateData = await validateRes.json();
-        
+
         // 2. Safely check if the request was valid
         if (validateData.valid === false) {
           const messages: Record<string, string> = {
@@ -174,343 +174,341 @@ export default function SignupPage() {
         className="w-full max-w-md"
       >
         <Card>
-        <CardHeader className="text-center">
-          <motion.div
-            className="flex justify-center mb-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <Logo size={48} className="text-primary" />
-          </motion.div>
-          <CardTitle className="text-2xl font-bold">Join Scorpio</CardTitle>
-          <CardDescription>Create your account to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TooltipProvider>
-          <Tabs defaultValue="student" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
-                <GraduationCap className="h-4 w-4" />
-                Student
-              </TabsTrigger>
-              <TabsTrigger value="teacher" className="flex items-center gap-2 cursor-pointer">
-                <Presentation className="h-4 w-4" />
-                Teacher
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="student" className="mt-4">
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4"
-              >
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="student-name">Full Name</Label>
-                  <Input
-                    id="student-name"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    aria-label="Full Name"
-                    required
-                  />
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="student-email">Email</Label>
-                  <Input
-                    id="student-email"
-                    type="email"
-                    placeholder="student@school.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    aria-label="Email"
-                    required
-                  />
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="student-password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="student-password"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pr-10"
-                      aria-label="Password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {password && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-1"
-                    >
-                      <div className="flex h-1 w-full gap-1 overflow-hidden rounded-full bg-muted">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className={`h-full flex-1 transition-colors duration-300 ${
-                              i <= strength ? strengthColor : "bg-transparent"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground text-right">
-                        Strength: <span className="font-medium">{strengthText}</span>
-                      </p>
-                    </motion.div>
-                  )}
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="student-code">Class Code (Optional)</Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">Ask your teacher for a code to join their class.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <Input
-                    id="student-code"
-                    placeholder="e.g. CLASS123"
-                    value={accessCode}
-                    onChange={(e) => setAccessCode(e.target.value)}
-                    aria-label="Class Code"
-                  />
-                </motion.div>
-                {error && (
-                  <motion.p 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
-                  >
-                    {error}
-                  </motion.p>
-                )}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button 
-                    className="w-full transition-all active:scale-[0.98] hover:shadow-md" 
-                    onClick={() => handleSignup("student")}
-                    disabled={loading}
-                  >
-                    {loading ? "Creating Account..." : "Sign up as Student"}
-                  </Button>
-                </motion.div>
-              </motion.div>
-            </TabsContent>
+          <CardHeader className="text-center">
+            <motion.div
+              className="flex justify-center mb-4"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <Logo size={48} className="text-primary" />
+            </motion.div>
+            <CardTitle className="text-2xl font-bold">Join Scorpio</CardTitle>
+            <CardDescription>Create your account to get started</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TooltipProvider>
+              <Tabs defaultValue="student" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
+                    <GraduationCap className="h-4 w-4" />
+                    Student
+                  </TabsTrigger>
+                  <TabsTrigger value="teacher" className="flex items-center gap-2 cursor-pointer">
+                    <Presentation className="h-4 w-4" />
+                    Teacher
+                  </TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="teacher" className="mt-4">
-              <motion.div 
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-4"
-              >
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="teacher-name">Full Name</Label>
-                  <Input
-                    id="teacher-name"
-                    placeholder="Dr. Smith"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    aria-label="Full Name"
-                    required
-                  />
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="teacher-email">Email</Label>
-                  <Input
-                    id="teacher-email"
-                    type="email"
-                    placeholder="teacher@school.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    aria-label="Email"
-                    required
-                  />
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="teacher-password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="teacher-password"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pr-10"
-                      aria-label="Password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                <TabsContent value="student" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="space-y-2"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {password && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-1"
+                      <Label htmlFor="student-name">Full Name</Label>
+                      <Input
+                        id="student-name"
+                        placeholder="John Doe"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        aria-label="Full Name"
+                        required
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="space-y-2"
                     >
-                      <div className="flex h-1 w-full gap-1 overflow-hidden rounded-full bg-muted">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div
-                            key={i}
-                            className={`h-full flex-1 transition-colors duration-300 ${
-                              i <= strength ? strengthColor : "bg-transparent"
-                            }`}
-                          />
-                        ))}
+                      <Label htmlFor="student-email">Email</Label>
+                      <Input
+                        id="student-email"
+                        type="email"
+                        placeholder="student@school.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        aria-label="Email"
+                        required
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="space-y-2"
+                    >
+                      <Label htmlFor="student-password">Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="student-password"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pr-10"
+                          aria-label="Password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
                       </div>
-                      <p className="text-[10px] text-muted-foreground text-right">
-                        Strength: <span className="font-medium">{strengthText}</span>
+                      {password && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="space-y-1"
+                        >
+                          <div className="flex h-1 w-full gap-1 overflow-hidden rounded-full bg-muted">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                className={`h-full flex-1 transition-colors duration-300 ${i <= strength ? strengthColor : "bg-transparent"
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground text-right">
+                            Strength: <span className="font-medium">{strengthText}</span>
+                          </p>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 }}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="student-code">Class Code (Optional)</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Ask your teacher for a code to join their class.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Input
+                        id="student-code"
+                        placeholder="e.g. CLASS123"
+                        value={accessCode}
+                        onChange={(e) => setAccessCode(e.target.value)}
+                        aria-label="Class Code"
+                      />
+                    </motion.div>
+                    {error && (
+                      <motion.p
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
+                      >
+                        {error}
+                      </motion.p>
+                    )}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <Button
+                        className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                        onClick={() => handleSignup("student")}
+                        disabled={loading}
+                      >
+                        {loading ? "Creating Account..." : "Sign up as Student"}
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="teacher" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="space-y-2"
+                    >
+                      <Label htmlFor="teacher-name">Full Name</Label>
+                      <Input
+                        id="teacher-name"
+                        placeholder="Dr. Smith"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        aria-label="Full Name"
+                        required
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="space-y-2"
+                    >
+                      <Label htmlFor="teacher-email">Email</Label>
+                      <Input
+                        id="teacher-email"
+                        type="email"
+                        placeholder="teacher@school.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        aria-label="Email"
+                        required
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="space-y-2"
+                    >
+                      <Label htmlFor="teacher-password">Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="teacher-password"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pr-10"
+                          aria-label="Password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      {password && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="space-y-1"
+                        >
+                          <div className="flex h-1 w-full gap-1 overflow-hidden rounded-full bg-muted">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                className={`h-full flex-1 transition-colors duration-300 ${i <= strength ? strengthColor : "bg-transparent"
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground text-right">
+                            Strength: <span className="font-medium">{strengthText}</span>
+                          </p>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 }}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <Label htmlFor="teacher-code">Access Code</Label>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Enter the invite code sent to you. Don&apos;t have one? Request access below.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <Link href="/request-access" className="text-[11px] text-primary hover:underline font-medium shrink-0">
+                          Request a code →
+                        </Link>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="teacher-code"
+                          type={showAccessCode ? "text" : "password"}
+                          placeholder="Required for teacher accounts"
+                          value={accessCode}
+                          onChange={(e) => setAccessCode(e.target.value)}
+                          className="pr-10"
+                          aria-label="Teacher Access Code"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowAccessCode(!showAccessCode)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label={showAccessCode ? "Hide access code" : "Show access code"}
+                        >
+                          {showAccessCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Don&apos;t have a code?{" "}
+                        <Link href="/request-access" className="text-primary hover:underline font-medium">
+                          Request organization access
+                        </Link>{" "}
+                        — we&apos;ll review and send one within 1–2 business days.
                       </p>
                     </motion.div>
-                  )}
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="teacher-code">Access Code</Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Enter the invite code sent to you. Don&apos;t have one? Request access below.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Link href="/request-access" className="text-[11px] text-primary hover:underline font-medium shrink-0">
-                      Request a code →
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="teacher-code"
-                      type={showAccessCode ? "text" : "password"}
-                      placeholder="Required for teacher accounts"
-                      value={accessCode}
-                      onChange={(e) => setAccessCode(e.target.value)}
-                      className="pr-10"
-                      aria-label="Teacher Access Code"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowAccessCode(!showAccessCode)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label={showAccessCode ? "Hide access code" : "Show access code"}
+                    {error && (
+                      <motion.p
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
+                      >
+                        {error}
+                      </motion.p>
+                    )}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
                     >
-                      {showAccessCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Don&apos;t have a code?{" "}
-                    <Link href="/request-access" className="text-primary hover:underline font-medium">
-                      Request organization access
-                    </Link>{" "}
-                    — we&apos;ll review and send one within 1–2 business days.
-                  </p>
-                </motion.div>
-                {error && (
-                  <motion.p 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20"
-                  >
-                    {error}
-                  </motion.p>
-                )}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button 
-                    className="w-full transition-all active:scale-[0.98] hover:shadow-md" 
-                    onClick={() => handleSignup("teacher")}
-                    disabled={loading}
-                  >
-                    {loading ? "Creating Account..." : "Sign up as Teacher"}
-                  </Button>
-                </motion.div>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
-          </TooltipProvider>
-          
-          <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+                      <Button
+                        className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                        onClick={() => handleSignup("teacher")}
+                        disabled={loading}
+                      >
+                        {loading ? "Creating Account..." : "Sign up as Teacher"}
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </TabsContent>
+              </Tabs>
+            </TooltipProvider>
+
+            <div className="mt-4 text-center text-sm">
+              Already have an account?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   );

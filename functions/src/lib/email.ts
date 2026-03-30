@@ -26,7 +26,7 @@ export async function sendEmail({
   
   try {
     const data = await resend.emails.send({
-      from: 'Scorpio Platform <no-reply@scorpioedu.org>', 
+      from: 'Scorpio Platform <hello@scorpioedu.org>', 
       to,
       subject,
       react,
