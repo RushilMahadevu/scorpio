@@ -426,7 +426,7 @@ export default function StudentDashboard() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {statCards.map((stat) => (
-          <Card key={stat.title} className="border-none bg-zinc-50 dark:bg-zinc-900/50 shadow-sm">
+          <Card key={stat.title} className="border-none bg-zinc-50 dark:bg-primary/0 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{stat.title}</CardTitle>
               <stat.icon className="h-4 w-4 text-primary" />
@@ -468,10 +468,10 @@ export default function StudentDashboard() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="md:col-span-2 lg:col-span-3 border-none bg-zinc-100 dark:bg-zinc-900/50 rounded-3xl">
+          <Card className="md:col-span-2 lg:col-span-3 border-none bg-zinc-100 dark:bg-primary/0 rounded-3xl">
             <CardHeader className="flex flex-row items-center justify-between p-6">
               <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-primary/0 flex items-center justify-center shadow-sm">
                   <School className="h-7 w-7 text-primary" />
                 </div>
                 <div>
@@ -479,7 +479,7 @@ export default function StudentDashboard() {
                     {courseName || "Physics Course"}
                   </CardTitle>
                   <CardDescription className="flex items-center gap-3 text-sm font-medium">
-                    <span className="font-mono bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs">{courseCode}</span>
+                    <span className="font-mono bg-zinc-200 dark:bg-primary/0 px-2 py-0.5 rounded text-xs">{courseCode}</span>
                     <span className="opacity-50">•</span>
                     <span>{teacherName || "Instructor"}</span >
                   </CardDescription>
@@ -494,7 +494,7 @@ export default function StudentDashboard() {
         )}
 
         {/* Progress Overview Card */}
-        <Card className="rounded-3xl border-none bg-zinc-50 dark:bg-zinc-900/50 shadow-sm flex flex-col">
+        <Card className="rounded-3xl border-none bg-zinc-50 dark:bg-primary/0 shadow-sm flex flex-col">
           <CardHeader className="pb-0">
             <CardTitle className="text-lg font-bold">Progress</CardTitle>
           </CardHeader>
@@ -523,32 +523,32 @@ export default function StudentDashboard() {
         </Card>
 
         {/* Quick Actions Card */}
-        <Card className="rounded-3xl border-none bg-zinc-50 dark:bg-zinc-900/50 shadow-sm">
+        <Card className="rounded-3xl border-none bg-zinc-50 dark:bg-primary/0 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-bold">Quick Hub</CardTitle>
             <CardDescription className="font-medium">Direct Access</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 pb-8">
             <Link href="/student/assignments">
-              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-zinc-800 shadow-sm">
+              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-primary/0 shadow-sm">
                 <FileText className="h-5 w-5" />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Assignments</span>
               </Button>
             </Link>
             <Link href="/student/practice">
-              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-zinc-800 shadow-sm">
+              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-primary/0 shadow-sm">
                 <BowArrow className="h-5 w-5" />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Practice</span>
               </Button>
             </Link>
             <Link href="/student/formula-hub">
-              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-zinc-800 shadow-sm">
+              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-primary/0 shadow-sm">
                 <PackageOpen className="h-5 w-5" />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Eq. Vault</span>
               </Button>
             </Link>
             <Link href="/student/submissions">
-              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-zinc-800 shadow-sm">
+              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border-none bg-white dark:bg-primary/0 shadow-sm">
                 <FileCheck className="h-5 w-5" />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Grades</span>
               </Button>
@@ -557,7 +557,7 @@ export default function StudentDashboard() {
         </Card>
 
         {/* AI Tutor Card */}
-        <Card className="rounded-3xl border-none bg-zinc-50 dark:bg-zinc-900/50 shadow-sm">
+        <Card className="rounded-3xl border-none bg-zinc-50 dark:bg-primary/0 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Bot className="h-5 w-5" />
@@ -569,7 +569,7 @@ export default function StudentDashboard() {
               Step-by-step physics guidance and conceptual help available anytime.
             </p>
             <Link href="/student/tutor">
-              <Button className="w-full bg-primary text-background hover:bg-primary/90 font-bold rounded-2xl h-12 shadow-md">
+              <Button className="cursor-pointer w-full bg-primary text-background hover:bg-primary/90 font-bold rounded-2xl h-12 shadow-md">
                 Ask Questions <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
