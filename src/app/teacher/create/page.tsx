@@ -88,7 +88,7 @@ function CreateAssignmentForm() {
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
   const [allowAIHelp, setAllowAIHelp] = useState(false);
   const [enableTabDetection, setEnableTabDetection] = useState(true);
-  const [lockdownMode, setLockdownMode] = useState(true);
+  const [lockdownMode, setLockdownMode] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
@@ -583,17 +583,12 @@ function CreateAssignmentForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card className="border-zinc-200 shadow-sm overflow-hidden">
-            {gradingType === "ai" && (
-              <div className="absolute top-0 right-0 p-4">
-                <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5">
-                  AI GRADING ENABLED
-                </Badge>
-              </div>
-            )}
+
+          {/* ── 1. Assignment Details ── */}
+          <Card className="border-zinc-200 shadow-sm">
             <CardHeader>
               <CardTitle>Assignment Details</CardTitle>
-              <CardDescription>Basic information for the assignment.</CardDescription>
+              <CardDescription>Basic information about this assignment.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -607,7 +602,6 @@ function CreateAssignmentForm() {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="course">Class / Section <span className="text-destructive">*</span></Label>
                   <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
@@ -642,16 +636,14 @@ function CreateAssignmentForm() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="timeLimit">Time Limit (Minutes)</Label>
-                  <div className="relative">
-                    <Input
-                      id="timeLimit"
-                      type="number"
-                      min="0"
-                      placeholder="Unlimited"
-                      value={timeLimit}
-                      onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
-                    />
-                  </div>
+                  <Input
+                    id="timeLimit"
+                    type="number"
+                    min="0"
+                    placeholder="Unlimited"
+                    value={timeLimit}
+                    onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="topic">Topic / Subject</Label>
@@ -672,404 +664,25 @@ function CreateAssignmentForm() {
                   </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Integrity and Tutoring Settings - Pulled out of Advanced */}
-          <Card className="border-primary/10 bg-primary/5 shadow-none overflow-hidden ring-1 ring-primary/5">
-            <CardHeader className="py-4 border-b">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                Integrity & Intelligence Guard
-              </CardTitle>
-              <CardDescription className="text-[10px]">Critical settings affecting student performance and academic honesty.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="lockdownMode"
-                      checked={lockdownMode}
-                      onCheckedChange={(checked) => setLockdownMode(!!checked)}
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="lockdownMode" className="text-xs font-bold flex items-center gap-1.5">
-                        <Lock className="h-3 w-3" />
-                        Lockdown
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-red-200 shadow-2xl rounded-2xl">
-                          <div className="bg-red-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                              <Lock className="h-3.5 w-3.5" />
-                              Strict Integrity Mode
-                            </p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[10px] font-medium leading-relaxed text-muted-foreground italic">
-                              Used for high-stakes assessments.
-                            </p>
-                            <ul className="space-y-1.5 pt-1">
-                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
-                                <CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" />
-                                <span>Forces **Fullscreen** to participate.</span>
-                              </li>
-                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
-                                <CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" />
-                                <span>Blocks **Copy, Paste, and Right-click**.</span>
-                              </li>
-                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
-                                <CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" />
-                                <span>Requires approval to leave the view.</span>
-                              </li>
-                            </ul>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="enableTabDetection"
-                      checked={enableTabDetection}
-                      onCheckedChange={(checked) => setEnableTabDetection(!!checked)}
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="enableTabDetection" className="text-xs font-bold flex items-center gap-1.5">
-                        <ShieldCheck className="h-3 w-3" />
-                        Tab Detection
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-orange-200 shadow-2xl rounded-2xl">
-                          <div className="bg-orange-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                              <ShieldCheck className="h-3.5 w-3.5" />
-                              Focus Monitoring
-                            </p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground">
-                              Detects when students minimize the window or focus on other applications.
-                            </p>
-                            <div className="p-2.5 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-100 dark:border-orange-900/30">
-                              <p className="text-[9px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-tighter">Violation Log</p>
-                              <p className="text-[10px] text-orange-600 dark:text-orange-300 mt-1">
-                                Each tab-switch is timestamped and flagged in your final report.
-                              </p>
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`flex flex-col gap-3 ${isFreePlan ? 'opacity-50' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="allowAIHelp"
-                      checked={allowAIHelp}
-                      disabled={isFreePlan}
-                      onCheckedChange={(checked) => setAllowAIHelp(!!checked)}
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="allowAIHelp" className="text-xs font-bold flex items-center gap-1.5">
-                        <Sparkles className="h-3 w-3" />
-                        AI Tutoring
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-purple-200 shadow-2xl rounded-2xl">
-                          <div className="bg-purple-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                              <Bot className="h-3.5 w-3.5" />
-                              Socratic Assistance
-                            </p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground">
-                              Students can access **Scorpio AI** for conceptual hints during the task.
-                            </p>
-                            <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 border-t pt-2">
-                              PEDAGOGICAL GUARDRAILS:
-                            </p>
-                            <p className="text-[10px] text-zinc-500 leading-tight">
-                              The AI will guide students through the methodology without revealing final solutions.
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="requireWork"
-                      checked={requireWorkSubmission}
-                      onCheckedChange={(checked) => setRequireWorkSubmission(!!checked)}
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="requireWork" className="text-xs font-bold flex items-center gap-1.5">
-                        <FileUp className="h-3 w-3" />
-                        Evidence
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-emerald-200 shadow-2xl rounded-2xl">
-                          <div className="bg-emerald-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                              <FileUp className="h-3.5 w-3.5" />
-                              Process Submission
-                            </p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                              Requires students to upload an artifact (PDF or Image) to complete their submission.
-                            </p>
-                            <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-md border border-emerald-100 dark:border-emerald-900/30">
-                              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                              <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Recommended for Show Your Work</p>
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Instructions & Content</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-
-              {gradingType === "ai" && (
-                <div className="space-y-3 p-4 bg-muted/30 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="rubric" className="text-sm font-semibold">Global Grading Rubric</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      onClick={async () => {
-                        if (!title) {
-                          toast.error("Please enter a title first.");
-                          return;
-                        }
-                        setAiLoading(true);
-                        try {
-                          const prompt = `Generate a high-level grading rubric for an assignment titled "${title}". Focus on expectations for accuracy, units, and reasoning.`;
-                          const response = await fetch('/api/chat', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              message: prompt,
-                              userId: user?.uid,
-                              userRole: 'teacher'
-                            })
-                          });
-
-                          if (!response.ok) {
-                            const err = await response.json();
-                            throw new Error(err.error || "Failed to generate rubric.");
-                          }
-
-                          const data = await response.json();
-                          setRubric(data.text);
-                          toast.success("Rubric generated.");
-                        } catch (e: any) {
-                          toast.error(e.message || "Failed to generate rubric.");
-                        } finally {
-                          setAiLoading(false);
-                        }
-                      }}
-                    >
-                      <Sparkles className="h-3.5 w-3.5 mr-2" />
-                      Generate Rubric
-                    </Button>
-                  </div>
-                  <Textarea
-                    id="rubric"
-                    value={rubric}
-                    onChange={(e) => setRubric(e.target.value)}
-                    placeholder="General criteria for grading this assignment..."
-                    rows={4}
-                    className="bg-background text-sm"
-                  />
-                </div>
-              )}
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description / Instructions</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Learning objectives or instructions for students..."
-                  rows={2}
+                  placeholder="Learning objectives or instructions visible to students..."
+                  rows={3}
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Collapsible advanced options */}
-          <CollapsibleSection title="Advanced Configuration" defaultOpen={false}>
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <Label className="font-bold text-sm">Course Visibility</Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-4 space-y-2 border-primary/20 shadow-2xl rounded-2xl">
-                          <p className="font-bold text-xs flex items-center gap-2 text-primary uppercase tracking-widest">
-                            <Waypoints className="h-3.5 w-3.5" />
-                            Sharing Options
-                          </p>
-                          <p className="text-[11px] leading-relaxed text-muted-foreground">
-                            Control who can access and fork this assignment.
-                          </p>
-                          <div className="space-y-2 pt-1 border-t">
-                            <p className="text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
-                              **Private**: Only you and your students.
-                            </p>
-                            <p className="text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
-                              **Network**: Shared with your department colleagues.
-                            </p>
-                            <p className="text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400">
-                              **Global**: Open to the entire Scorpio community.
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Badge variant="outline" className="text-[9px] font-black tracking-widest text-primary border-primary/20 bg-primary/5 uppercase">
-                      Publishing
-                    </Badge>
-                  </div>
-
-                  <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as "private" | "network" | "global")} className="space-y-3">
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer group">
-                      <RadioGroupItem value="private" id="visible-private" className="mt-1" />
-                      <div className="flex-grow">
-                        <Label htmlFor="visible-private" className="cursor-pointer font-bold block text-sm">Private</Label>
-                        <span className="text-xs text-muted-foreground">Only you and students in this class can access.</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
-                      <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="mt-1" />
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor="visible-network" className={`cursor-pointer font-bold block text-sm ${!profile?.organizationId ? 'text-muted-foreground' : ''}`}>
-                            Department Network
-                          </Label>
-                          {!profile?.organizationId && <Badge variant="secondary" className="text-[10px]">LOCKED</Badge>}
-                        </div>
-                        <span className="text-xs text-muted-foreground">Shared with colleagues in {profile?.organizationId || "your school"}.</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
-                      <RadioGroupItem value="global" id="visible-global" className="mt-1" />
-                      <div className="flex-grow">
-                        <Label htmlFor="visible-global" className="cursor-pointer font-bold block text-sm text-primary">Global Waypoint</Label>
-                        <span className="text-xs text-muted-foreground">Contribute to the public library of verified benchmarks.</span>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <Label className="font-bold text-sm">Grading Logic</Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-4 space-y-2 border-primary/20 shadow-2xl rounded-2xl">
-                          <p className="font-bold text-xs flex items-center gap-2 text-primary uppercase tracking-widest">
-                            <BrainCircuit className="h-3.5 w-3.5" />
-                            Review Strategy
-                          </p>
-                          <p className="text-[11px] leading-relaxed text-muted-foreground">
-                            Determines how submissions are evaluated.
-                          </p>
-                          <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/10">
-                            <p className="text-[10px] font-bold text-primary uppercase tracking-tighter">AI-Assisted</p>
-                            <p className="text-[9px] text-muted-foreground mt-0.5">
-                              Scorpio evaluates answers based on your rubric and drafting scores.
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-
-                  <RadioGroup
-                    value={gradingType}
-                    onValueChange={(v) => {
-                      if (isFreePlan && v === "ai") {
-                        toast.error("AI Grading requires a Standard subscription.");
-                        return;
-                      }
-                      setGradingType(v as "ai" | "manual");
-                    }}
-                    className="space-y-3"
-                  >
-                    <div className={`flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer ${isFreePlan ? 'opacity-60' : ''}`}>
-                      <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} className="mt-1" />
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor="grading-ai" className="cursor-pointer font-bold block text-sm">AI-Assisted Grading</Label>
-                          {isFreePlan && <Lock className="h-3 w-3" />}
-                        </div>
-                        <span className="text-xs text-muted-foreground">Automated feedback and scoring based on your rubric.</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
-                      <RadioGroupItem value="manual" id="grading-manual" className="mt-1" />
-                      <div className="flex-grow">
-                        <Label htmlFor="manual" className="cursor-pointer font-bold block text-sm">Manual Teacher Review</Label>
-                        <span className="text-xs text-muted-foreground">Traditional grading workflow for maximum oversight.</span>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </div>
-            </div>
-          </CollapsibleSection>
-
-          {/* Ensure proper nesting of the Card component */}
+          {/* ── 2. Questions ── */}
           <Card>
             <CardHeader>
               <CardTitle>Questions</CardTitle>
-              <CardDescription>Add questions to your assignment</CardDescription>
+              <CardDescription>Add and configure the questions students will answer.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {questions.map((question, index) => (
@@ -1196,6 +809,250 @@ function CreateAssignmentForm() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* ── 3. Grading ── */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <BrainCircuit className="h-4 w-4 text-primary" />
+                Grading
+              </CardTitle>
+              <CardDescription>How will student submissions be evaluated?</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <RadioGroup
+                value={gradingType}
+                onValueChange={(v) => {
+                  if (isFreePlan && v === "ai") {
+                    toast.error("AI Grading requires a Standard subscription.");
+                    return;
+                  }
+                  setGradingType(v as "ai" | "manual");
+                }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              >
+                <div className={`flex items-start space-x-3 p-4 rounded-lg border hover:bg-muted/40 transition-colors ${gradingType === 'ai' ? 'border-primary/40 bg-primary/5' : ''} ${isFreePlan ? 'opacity-60' : ''}`}>
+                  <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} className="cursor-pointer mt-1" />
+                  <div className="flex-grow">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="grading-ai" className="font-bold text-sm">AI-Assisted Grading</Label>
+                      {isFreePlan && <Lock className="h-3 w-3" />}
+                    </div>
+                    <span className="text-xs text-muted-foreground">Automated feedback and scoring based on your rubric.</span>
+                  </div>
+                </div>
+                <div className={`flex items-start space-x-3 p-4 rounded-lg border hover:bg-muted/40 transition-colors ${gradingType === 'manual' ? 'border-primary/40 bg-primary/5' : ''}`}>
+                  <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer mt-1" />
+                  <div className="flex-grow">
+                    <Label htmlFor="grading-manual" className="font-bold text-sm">Manual Teacher Review</Label>
+                    <span className="text-xs text-muted-foreground block">Traditional grading workflow for maximum oversight.</span>
+                  </div>
+                </div>
+              </RadioGroup>
+
+              {gradingType === "ai" && (
+                <div className="space-y-3 p-4 bg-muted/30 border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="rubric" className="text-sm font-semibold">Global Grading Rubric</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={async () => {
+                        if (!title) { toast.error("Please enter a title first."); return; }
+                        setAiLoading(true);
+                        try {
+                          const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              message: `Generate a high-level grading rubric for an assignment titled "${title}". Focus on expectations for accuracy, units, and reasoning.`,
+                              userId: user?.uid,
+                              userRole: 'teacher'
+                            })
+                          });
+                          if (!response.ok) { const err = await response.json(); throw new Error(err.error || "Failed to generate rubric."); }
+                          const data = await response.json();
+                          setRubric(data.text);
+                          toast.success("Rubric generated.");
+                        } catch (e: any) {
+                          toast.error(e.message || "Failed to generate rubric.");
+                        } finally {
+                          setAiLoading(false);
+                        }
+                      }}
+                    >
+                      <Sparkles className="h-3.5 w-3.5 mr-2" />
+                      Generate Rubric
+                    </Button>
+                  </div>
+                  <Textarea
+                    id="rubric"
+                    value={rubric}
+                    onChange={(e) => setRubric(e.target.value)}
+                    placeholder="General criteria for grading this assignment..."
+                    rows={4}
+                    className="bg-background text-sm"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ── 4. Test Security & Student Tools ── */}
+          <Card className="border-primary/10 bg-primary/5 shadow-none ring-1 ring-primary/5">
+            <CardHeader className="py-4 border-b">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Test Security & Student Tools
+              </CardTitle>
+              <CardDescription className="text-[10px]">Enable exam-style security features and conceptual support tools.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <Checkbox className="cursor-pointer" id="lockdownMode" checked={lockdownMode} onCheckedChange={(checked) => setLockdownMode(!!checked)} />
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="lockdownMode" className="text-xs font-bold flex items-center gap-1.5">
+                        <Lock className="h-3 w-3" /> Lockdown (Tests)
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-red-200 shadow-2xl rounded-2xl">
+                          <div className="bg-red-600 p-4 text-white">
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><Lock className="h-3.5 w-3.5" />Secure Test Mode</p>
+                          </div>
+                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
+                            <p className="text-[10px] font-medium leading-relaxed text-muted-foreground italic">Highly recommended for formal exams.</p>
+                            <ul className="space-y-1.5 pt-1">
+                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400"><CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /><span>Locks browser to full-screen mode.</span></li>
+                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400"><CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /><span>Disables switching tabs or copy-pasting.</span></li>
+                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400"><CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /><span>Warns instructor if window is closed.</span></li>
+                            </ul>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Best for exams. Prevents switching tabs or using shortcuts.</p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <Checkbox className="cursor-pointer" id="enableTabDetection" checked={enableTabDetection} onCheckedChange={(checked) => setEnableTabDetection(!!checked)} />
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="enableTabDetection" className="text-xs font-bold flex items-center gap-1.5">
+                        <ShieldCheck className="h-3 w-3" /> Switch Detection
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-orange-200 shadow-2xl rounded-2xl">
+                          <div className="bg-orange-600 p-4 text-white">
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" />Switch Logs</p>
+                          </div>
+                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
+                            <p className="text-[11px] leading-relaxed text-muted-foreground">Notifies you every time a student switches tabs or windows.</p>
+                            <div className="p-2.5 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-100 dark:border-orange-900/30">
+                              <p className="text-[9px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-tighter">Violation Log</p>
+                              <p className="text-[10px] text-orange-600 dark:text-orange-300 mt-1">Each event is timestamped and flagged in your final report.</p>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Logs if students exit the tab or switch applications.</p>
+                </div>
+
+                <div className={`flex flex-col gap-3 ${isFreePlan ? 'opacity-50' : ''}`}>
+                  <div className="flex items-center gap-2">
+                    <Checkbox className="cursor-pointer" id="allowAIHelp" checked={allowAIHelp} disabled={isFreePlan} onCheckedChange={(checked) => setAllowAIHelp(!!checked)} />
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="allowAIHelp" className="text-xs font-bold flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3" /> Enable AI Tutor
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-purple-200 shadow-2xl rounded-2xl">
+                          <div className="bg-purple-600 p-4 text-white">
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><Bot className="h-3.5 w-3.5" />Guided Tutoring</p>
+                          </div>
+                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
+                            <p className="text-[11px] leading-relaxed text-muted-foreground">Students get conceptual hints without giving away final answers.</p>
+                            <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 border-t pt-2">SOCRATIC METHOD:</p>
+                            <p className="text-[10px] text-zinc-500 leading-tight">The AI guides students through step-by-step logic and terminology.</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Gives students conceptual hints ONLY. Never reveals answers.</p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <Checkbox className="cursor-pointer" id="requireWork" checked={requireWorkSubmission} onCheckedChange={(checked) => setRequireWorkSubmission(!!checked)} />
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="requireWork" className="text-xs font-bold flex items-center gap-1.5">
+                        <FileUp className="h-3 w-3" /> Photo of Work
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-emerald-200 shadow-2xl rounded-2xl">
+                          <div className="bg-emerald-600 p-4 text-white">
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><FileUp className="h-3.5 w-3.5" />Evidence of Work</p>
+                          </div>
+                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
+                            <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">Require students to upload an image of their written steps.</p>
+                            <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-md border border-emerald-100 dark:border-emerald-900/30">
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                              <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Prevents AI Chatbot Cheating</p>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Forces students to upload an image of their scratch paper.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── 5. Publishing / Visibility (optional, collapsible) ── */}
+          <CollapsibleSection title="Publishing & Visibility" defaultOpen={false}>
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">Control who can view and fork this assignment beyond your class.</p>
+              <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as "private" | "network" | "global")} className="space-y-2">
+                <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
+                  <RadioGroupItem value="private" id="visible-private" className="mt-1" />
+                  <div className="flex-grow">
+                    <Label htmlFor="visible-private" className="cursor-pointer font-bold block text-sm">Private</Label>
+                    <span className="text-xs text-muted-foreground">Only you and students in this class can access.</span>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
+                  <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="mt-1" />
+                  <div className="flex-grow">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="visible-network" className={`cursor-pointer font-bold block text-sm ${!profile?.organizationId ? 'text-muted-foreground' : ''}`}>Department Network</Label>
+                      {!profile?.organizationId && <Badge variant="secondary" className="text-[10px]">LOCKED</Badge>}
+                    </div>
+                    <span className="text-xs text-muted-foreground">Shared with colleagues in {profile?.organizationId || "your school"}.</span>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
+                  <RadioGroupItem value="global" id="visible-global" className="mt-1" />
+                  <div className="flex-grow">
+                    <Label htmlFor="visible-global" className="cursor-pointer font-bold block text-sm text-primary">Global Waypoint</Label>
+                    <span className="text-xs text-muted-foreground">Contribute to the public library of verified benchmarks.</span>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+          </CollapsibleSection>
 
           <div className="flex gap-4">
             <Button type="submit" disabled={loading} className="cursor-pointer">

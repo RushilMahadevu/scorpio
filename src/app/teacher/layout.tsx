@@ -28,11 +28,13 @@ export default function TeacherLayout({
           isCollapsed={isCollapsed}
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
-        <main className="flex-1 overflow-auto bg-background/50">
+        <main className="flex-1 overflow-y-auto bg-background/50">
           <div className="p-8 max-w-7xl mx-auto w-full">
-            <PageTransition>
-              {children}
-            </PageTransition>
+            <div className="relative overflow-hidden">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </div>
           </div>
         </main>
         <NavigationChatbot userRole="teacher" />
