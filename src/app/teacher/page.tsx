@@ -108,14 +108,26 @@ export default function TeacherDashboard() {
         // Instead, filter submissions by checking if assignmentId belongs to one of our assignments.
         const myAssignmentIds = new Set(assignmentsSnap.docs.map((d: any) => d.id));
         
-        // Warning: Fetching all submissions might be slow if DB is large. 
-        // Ideal: Submissions should have 'teacherId' or we query per assignment.
-        // For now: Fetch all and filter client-side.
-        const submissionsSnap = await getDocs(collection(db, "submissions"));
+        // CHUNKED FETCHING: Only fetch submissions for teacher's assignments
+        // This is critical for security (prevent leaking all submissions) and performance.
+        const myAssignmentIdsArr = Array.from(myAssignmentIds);
+        const subChunks = [];
+        for (let i = 0; i < myAssignmentIdsArr.length; i += 30) {
+            subChunks.push(myAssignmentIdsArr.slice(i, i + 30));
+        }
+        
+        let submissions: Submission[] = [];
+        if (subChunks.length > 0) {
+            const subResults = await Promise.all(subChunks.map(chunk => 
+                getDocs(query(collection(db, "submissions"), where("assignmentId", "in", chunk)))
+            ));
+            subResults.forEach(snap => {
+                snap.docs.forEach(doc => {
+                    submissions.push({ id: doc.id, ...doc.data() } as Submission);
+                });
+            });
+        }
 
-        const submissions: Submission[] = submissionsSnap.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() } as Submission))
-            .filter(s => s.assignmentId && myAssignmentIds.has(s.assignmentId));
 
         const completed = submissions.filter((s) => s.graded).length;
         const pending = submissions.filter((s) => !s.graded).length;

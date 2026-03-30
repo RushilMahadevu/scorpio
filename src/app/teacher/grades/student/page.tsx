@@ -56,17 +56,28 @@ export default function StudentDetailsPage() {
         setAssignments(assignmentOptions);
         
         // Allowed assignments set for validation
-        const allowedAssignmentIds = new Set(assignmentsSnapshot.docs.map(d => d.id));
+        const allowedAssignmentIdsArr = Array.from(new Set(assignmentsSnapshot.docs.map(d => d.id)));
+        const allowedAssignmentIdsSet = new Set(allowedAssignmentIdsArr);
 
-        // Fetch submissions
-        const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
-        const snapshot = await getDocs(q);
+        // Fetch submissions for this student belonging to the teacher's assignments
+        let submissionsDocs: any[] = [];
+        if (allowedAssignmentIdsArr.length > 0) {
+            const chunks = [];
+            for (let i = 0; i < allowedAssignmentIdsArr.length; i += 30) {
+                chunks.push(allowedAssignmentIdsArr.slice(i, i + 30));
+            }
+            
+            const results = await Promise.all(chunks.map(chunk => 
+                getDocs(query(collection(db, "submissions"), where("studentId", "==", studentId), where("assignmentId", "in", chunk)))
+            ));
+            results.forEach(snap => submissionsDocs.push(...snap.docs));
+        }
 
-        const submissionsData = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
+        const processedSubmissions = await Promise.all(submissionsDocs.map(async (docSnapshot) => {
           const data = docSnapshot.data();
           
-          // Verify assignment ownership
-          if (!allowedAssignmentIds.has(data.assignmentId)) return null;
+          // Verify assignment ownership (redundant but safe)
+          if (!allowedAssignmentIdsSet.has(data.assignmentId)) return null;
 
           // Try to get student name from first submission if not available elsewhere
           if (data.studentName) setStudentName(data.studentName);
@@ -75,11 +86,11 @@ export default function StudentDetailsPage() {
           let assignmentTitle = "Unknown Assignment";
           let assignmentExists = false;
           if (data.assignmentId) {
-            const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
-            if (assignmentDoc.exists()) {
-              assignmentTitle = assignmentDoc.data().title;
-              assignmentExists = true;
-            }
+             const assignment = assignmentOptions.find(a => a.id === data.assignmentId);
+             if (assignment) {
+                 assignmentTitle = assignment.title;
+                 assignmentExists = true;
+             }
           }
 
           if (!assignmentExists) return null;
@@ -95,7 +106,8 @@ export default function StudentDetailsPage() {
           };
         }));
 
-        setSubmissions(submissionsData.filter((s): s is Submission => s !== null));
+        setSubmissions(processedSubmissions.filter((s): s is Submission => s !== null));
+
       } catch (error) {
         console.error("Error fetching student data:", error);
       } finally {

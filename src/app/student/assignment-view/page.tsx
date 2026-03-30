@@ -59,7 +59,10 @@ interface Assignment {
   enableTabDetection?: boolean;
   lockdownMode?: boolean;
   type?: string;
+  teacherId?: string;
+  courseId?: string;
 }
+
 
 interface ChatMessage {
   id: string;
@@ -241,7 +244,10 @@ function AssignmentDetailContent() {
             enableTabDetection: data.enableTabDetection ?? true,
             lockdownMode: data.lockdownMode ?? true, // Default to true if not present
             type: data.type || "standard",
+            teacherId: data.teacherId || studentTeacherId,
+            courseId: data.courseId || studentCourseId,
           };
+
           setAssignment(assignmentData);
 
           // Check for existing submission
@@ -533,8 +539,11 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
             studentEmail: user.email,
             answers: answersArray,
             status: 'draft',
+            teacherId: assignment.teacherId,
+            courseId: assignment.courseId,
             updatedAt: new Date(),
         };
+
 
         if (existingSubmission?.id) {
             // Update existing draft
@@ -612,7 +621,10 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         workFiles: workFilesData,
         unfocusCount,
         status: 'submitted',
+        teacherId: assignment.teacherId,
+        courseId: assignment.courseId,
       };
+
       // Do not include score, feedback, gradedAnswers if present
       delete submissionData.score;
       delete submissionData.feedback;

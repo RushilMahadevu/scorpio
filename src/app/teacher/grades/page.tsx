@@ -31,6 +31,8 @@ export default function TeacherGradesPage() {
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState<{id: string, title: string, courseId?: string}[]>([]);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("all");
+  const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
+
 
   useEffect(() => {
     async function fetchCourses() {
@@ -64,10 +66,13 @@ export default function TeacherGradesPage() {
             })));
         } catch (e) {
             console.error("Error fetching assignments", e);
+        } finally {
+            setAssignmentsLoaded(true);
         }
     }
     fetchAssignments();
   }, [user]);
+
 
   useEffect(() => {
     async function fetchStudentsAndGrades() {
@@ -86,26 +91,41 @@ export default function TeacherGradesPage() {
             filteredAssignmentIds = [selectedAssignmentId];
         }
 
-        if (filteredAssignmentIds.length === 0 && assignments.length > 0) {
-            // No assignments for this course or filter combination
+        if (!assignmentsLoaded) {
+            return;
+        }
+
+        if (filteredAssignmentIds.length === 0) {
+            // No assignments for this teacher or filter combination
             setStudents([]);
             setLoading(false);
             return;
         }
 
         // 2. Query relevant submissions
-        let q;
+        let submissionsDocs: any[] = [];
         if (selectedAssignmentId !== "all") {
-            q = query(collection(db, "submissions"), where("assignmentId", "==", selectedAssignmentId));
+            const snap = await getDocs(query(collection(db, "submissions"), where("assignmentId", "==", selectedAssignmentId)));
+            submissionsDocs = snap.docs;
         } else {
-            // If we have a selected course, we could also filter by students in that course.
-            // But let's stick to assignment-based filtering for now as it's more direct for "grades".
-            q = collection(db, "submissions");
+            // CHUNKED FETCHING: Only fetch submissions for teacher's assignments
+            // This is critical for security (prevent leaking all submissions) and performance.
+            const chunks = [];
+            for (let i = 0; i < filteredAssignmentIds.length; i += 30) {
+                chunks.push(filteredAssignmentIds.slice(i, i + 30));
+            }
+            
+            if (chunks.length > 0) {
+               const results = await Promise.all(chunks.map(chunk => 
+                  getDocs(query(collection(db, "submissions"), where("assignmentId", "in", chunk)))
+               ));
+               results.forEach(snap => submissionsDocs.push(...snap.docs));
+            }
         }
         
-        const submissionsSnap = await getDocs(q);
         const studentMap = new Map<string, { name: string; email: string; scores: number[]; count: number }>();
         const validAssignmentIds = new Set(filteredAssignmentIds);
+
 
         // Fetch students in the course to cross-reference (if course selected)
         let courseStudentIds = new Set<string>();
@@ -118,12 +138,12 @@ export default function TeacherGradesPage() {
             snap2.docs.forEach(d => courseStudentIds.add(d.id));
         }
 
-        submissionsSnap.forEach((doc) => {
+        submissionsDocs.forEach((doc) => {
           const data = doc.data();
           if (data.status === 'draft') return; 
           
           // Verify assignment belongs to filter
-          if (validAssignmentIds.size > 0 && !validAssignmentIds.has(data.assignmentId)) return;
+          if (!validAssignmentIds.has(data.assignmentId)) return;
 
           const studentId = data.studentId;
           
@@ -145,6 +165,7 @@ export default function TeacherGradesPage() {
             student.scores.push(data.score);
           }
         });
+
 
         // 3. Populate names from student docs if missing
         const unknownStudents = Array.from(studentMap.entries())
@@ -203,7 +224,8 @@ export default function TeacherGradesPage() {
     }
 
     fetchStudentsAndGrades();
-  }, [selectedAssignmentId, selectedCourseId, user, assignments]);
+  }, [selectedAssignmentId, selectedCourseId, user, assignments, assignmentsLoaded]);
+
 
   const deleteStudent = async (studentId: string) => {
     if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions and uploaded storage files to save space.")) return;
