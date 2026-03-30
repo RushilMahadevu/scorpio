@@ -67,8 +67,8 @@ function SidebarContent({
           className="flex items-center gap-3 mb-6 px-2"
           whileHover={{ scale: 1.02 }}
         >
-          <div className="bg-primary/10 p-2.5 rounded-xl shadow-inner-sm">
-            <CompassLogo className="h-6 w-6 text-primary flex-shrink-0" />
+          <div className="bg-primary/20 p-2 rounded-xl shadow-inner-sm">
+            <CompassLogo className="h-6 w-6 text-foreground flex-shrink-0" />
           </div>
           <AnimatePresence mode="wait">
             {!isCollapsed && (
@@ -77,7 +77,7 @@ function SidebarContent({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
-                className="font-bold text-xl tracking-tight whitespace-nowrap"
+                className="font-black text-xl tracking-tighter whitespace-nowrap"
               >
                 Scorpio
               </motion.span>
