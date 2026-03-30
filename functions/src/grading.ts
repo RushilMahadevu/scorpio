@@ -2,6 +2,9 @@ import * as admin from "firebase-admin";
 import { onDocumentUpdated, onDocumentCreated } from "firebase-functions/v2/firestore";
 import { GoogleGenAI } from "@google/genai";
 import { Polar } from "@polar-sh/sdk";
+import { defineSecret } from "firebase-functions/params";
+
+const resendApiKey = defineSecret("RESEND_API_KEY");
 
 // Initialize Polar
 const polar = new Polar({
@@ -343,19 +346,48 @@ async function processGrading(submissionId: string, submissionData: any) {
     });
 
     console.log(`Successfully graded submission ${submissionId} (Modern GenAI)`);
+
+    // --- EMAIL NOTIFICATION (DISABLED) ---
+    // if (studentData?.email && finalScore !== undefined) {
+    //     try {
+    //         const courseName = "Scorpio Platform"; // Future improvement: fetch class name if available
+    //         await sendEmail({
+    //             apiKey: resendApiKey.value(),
+    //             to: studentData.email,
+    //             subject: `Your Grade is Available: ${assignmentData?.title || 'Assignment'} - ${finalScore}%`,
+    //             react: React.createElement(GradeAvailableEmail, {
+    //                 studentName: studentData.displayName || studentData.name || "Student",
+    //                 assignmentName: assignmentData?.title || 'Assignment',
+    //                 courseName,
+    //                 score: finalScore,
+    //                 maxScore: 100, // finalScore is currently normalized to 100 percentage points above
+    //                 link: `https://scorpioedu.org/dashboard/student/assignments/${assignmentId}`
+    //             })
+    //         });
+    //         console.log(`Grade available email successfully triggered for ${studentData.email}`);
+    //     } catch (error) {
+    //         console.error("Failed to send grade notification email:", error);
+    //     }
+    // }
 }
 
 /**
  * FIRESTORE TRIGGERS
  */
-export const onSubmissionCreated = onDocumentCreated("submissions/{submissionId}", async (event) => {
+export const onSubmissionCreated = onDocumentCreated({
+    document: "submissions/{submissionId}",
+    secrets: [resendApiKey]
+}, async (event) => {
     const submissionData = event.data?.data();
     if (submissionData && submissionData.status === 'submitted' && !submissionData.graded) {
         await processGrading(event.params.submissionId, submissionData);
     }
 });
 
-export const onSubmissionUpdated = onDocumentUpdated("submissions/{submissionId}", async (event) => {
+export const onSubmissionUpdated = onDocumentUpdated({
+    document: "submissions/{submissionId}",
+    secrets: [resendApiKey]
+}, async (event) => {
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
 

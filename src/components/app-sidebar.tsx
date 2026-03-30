@@ -52,7 +52,7 @@ function SidebarContent({
   const pathname = usePathname();
   const router = useRouter();
   const { profile } = useAuth();
-  
+
   const autoRedirect = profile?.preferences?.autoRedirectPortal;
 
   const handleLogout = async () => {
@@ -84,7 +84,7 @@ function SidebarContent({
             )}
           </AnimatePresence>
         </motion.div>
-        
+
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <motion.div
@@ -100,7 +100,7 @@ function SidebarContent({
           )}
         </AnimatePresence>
       </div>
-      
+
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {navItems.map((item) => {
@@ -129,9 +129,9 @@ function SidebarContent({
                     <span className="whitespace-nowrap">{item.label}</span>
                   )}
                   {isActive && !isCollapsed && (
-                    <motion.span 
+                    <motion.span
                       layoutId="active-pill"
-                      className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" 
+                      className="absolute left-0 w-1 h-5 bg-primary rounded-r-full"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -182,9 +182,9 @@ function SidebarContent({
               </TooltipContent>
             )}
             {!autoRedirect && !isCollapsed && (
-               <TooltipContent side="right" className="text-[10px] font-black uppercase tracking-widest p-2">
-                  Visit Landing Page
-               </TooltipContent>
+              <TooltipContent side="right" className="text-[10px] font-black uppercase tracking-widest p-2">
+                Visit Landing Page
+              </TooltipContent>
             )}
           </Tooltip>
         </TooltipProvider>
@@ -215,7 +215,7 @@ function SidebarContent({
               {isCollapsed ? <PanelRight className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
             </Button>
           </div>
-          
+
           <div className={cn("flex items-center justify-between min-h-[32px]", isCollapsed ? "justify-center" : "px-2")}>
             <AnimatePresence>
               {!isCollapsed && (
@@ -276,7 +276,7 @@ export function AppSidebar({
               roleLabel={roleLabel}
               navItems={navItems}
               isCollapsed={false}
-              onToggle={() => {}}
+              onToggle={() => { }}
               onNavigate={() => setOpen(false)}
             />
           </SheetContent>

@@ -382,28 +382,8 @@ function CreateAssignmentForm() {
         rubric: rubric || null,
       });
 
-      // 2. Fetch students enrolled in this course
-      if (user?.uid && selectedCourseId) {
-        const studentsSnap = await getDocs(query(collection(db, "students"), where("courseId", "==", selectedCourseId)));
-        for (const studentDoc of studentsSnap.docs) {
-          const student = studentDoc.data();
-          if (student.email) {
-            // 3. Send email via API route
-            await fetch('/api/send-assignment-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                to: student.email,
-                assignmentTitle: title,
-                dueDate,
-                assignmentLink: `/student/assignments/${assignmentRef.id}`,
-              }),
-            });
-          }
-        }
-      } else {
-        console.warn("Could not determine teacherId for sending assignment emails.");
-      }
+      // The email notifications to students are now automatically handled in the background
+      // by the Firebase Cloud Function 'onAssignmentCreated'.
 
       router.push("/teacher/assignments");
     } catch (error) {
