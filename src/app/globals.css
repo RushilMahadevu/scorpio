@@ -313,3 +313,45 @@ html {
 .sidebar-transition {
   transition: width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.2s cubic-bezier(0.4,0,0.2,1);
 }
+
+/* ── Rich Answer Editor (contenteditable) ── */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  position: absolute;
+}
+[contenteditable][data-placeholder]:empty {
+  position: relative;
+}
+
+/* Math chip — rendered KaTeX inline pill */
+.math-chip .katex {
+  font-size: 1em;
+}
+.math-chip .katex-html {
+  white-space: nowrap;
+}
+
+/* ── Rich Editor Block Handling ── */
+[contenteditable] div, [contenteditable] p {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 1em;
+}
+
+[contenteditable] ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5em 0 !important;
+}
+
+[contenteditable] ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5em 0 !important;
+}
+
+[contenteditable] li {
+  margin: 0.25em 0 !important;
+}
