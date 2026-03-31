@@ -51,7 +51,8 @@ import {
   MessageSquare,
   Send,
   Sparkle,
-  GraduationCap
+  GraduationCap,
+  Pencil
 } from "lucide-react";
 import {
   Tooltip,
@@ -118,6 +119,9 @@ export default function NetworkPage() {
   const [limitsInput, setLimitsInput] = useState("");
   const [limitsLoading, setLimitsLoading] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renamedOrgName, setRenamedOrgName] = useState("");
+  const [updatingName, setUpdatingName] = useState(false);
 
   useEffect(() => {
     if (organization?.aiBudgetLimit !== undefined) {
@@ -158,6 +162,24 @@ export default function NetworkPage() {
       router.replace("/teacher/network");
     }
   }, [searchParams, router]);
+
+  const handleRenameNetwork = async () => {
+    if (!user || !organization || user.uid !== organization.ownerId || !renamedOrgName.trim()) return;
+    setUpdatingName(true);
+    try {
+      await updateDoc(doc(db, "organizations", organization.id), {
+        name: renamedOrgName.trim()
+      });
+      toast.success("Network renamed successfully.");
+      setOrganization(prev => prev ? { ...prev, name: renamedOrgName.trim() } : null);
+      setIsRenaming(false);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to rename network.");
+    } finally {
+      setUpdatingName(false);
+    }
+  };
 
   const handleUpdateTutorLimit = async () => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
@@ -503,7 +525,17 @@ export default function NetworkPage() {
 
   async function leaveNetwork() {
     if (!user || !profile?.organizationId || !organization) return;
-    if (!confirm("Are you sure you want to leave this network?")) return;
+
+    const isOwner = user.uid === organization.ownerId;
+    if (isOwner) {
+      const confirmName = prompt(`To disband this network, please type its name: ${organization.name}`);
+      if (confirmName !== organization.name) {
+        toast.error("Network name did not match. Disband cancelled.");
+        return;
+      }
+    } else {
+      if (!confirm("Are you sure you want to leave this network?")) return;
+    }
 
     setLoading(true);
     try {
@@ -716,13 +748,36 @@ export default function NetworkPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   <Card className="lg:col-span-2">
                     <CardHeader>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
+                      <div className="flex justify-between items-center w-full">
+                        <div className="flex items-center gap-3 w-full">
                           <Building2 className="h-6 w-6 text-primary" />
-                          <div>
-                            <CardTitle className="text-2xl font-bold">
-                              {organization?.name}
-                            </CardTitle>
+                          <div className="flex-1">
+                            {isRenaming && user?.uid === organization.ownerId ? (
+                              <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                <Input
+                                  value={renamedOrgName}
+                                  onChange={e => setRenamedOrgName(e.target.value)}
+                                  className="h-8 md:w-[300px] text-sm"
+                                  placeholder="Network Name"
+                                  autoFocus
+                                />
+                                <Button size="sm" onClick={handleRenameNetwork} disabled={updatingName} className="h-8 cursor-pointer">
+                                  {updatingName ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setIsRenaming(false)} className="h-8 cursor-pointer">
+                                  Cancel
+                                </Button>
+                              </div>
+                            ) : (
+                              <CardTitle className="text-2xl font-bold flex items-center gap-2 group">
+                                {organization?.name}
+                                {user?.uid === organization.ownerId && (
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-muted-foreground hover:text-primary" onClick={() => { setIsRenaming(true); setRenamedOrgName(organization.name); }}>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
+                              </CardTitle>
+                            )}
                             <CardDescription className="flex items-center gap-2">
                               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
                               Physics Network Active • ID: {organization?.id}
