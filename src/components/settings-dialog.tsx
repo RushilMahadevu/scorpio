@@ -85,6 +85,25 @@ export function SettingsDialog() {
     }
   }
 
+  const handleAssignmentEmailsChange = async (checked: boolean) => {
+    if (!user) return
+    try {
+      await updateUserProfile(user.uid, {
+        preferences: {
+          ...profile?.preferences,
+          disableAssignmentEmails: checked
+        }
+      })
+      setAlertMessage("Account settings updated.")
+      setAlertType("success")
+      setTimeout(() => setAlertMessage(""), 3000)
+    } catch (error) {
+      console.error("Error updating preferences:", error)
+      setAlertMessage("Failed to update settings.")
+      setAlertType("error")
+    }
+  }
+
   const handleThemeChange = (newTheme: string) => {
     if (newTheme === "light") {
       setShowNote(true)
@@ -283,6 +302,27 @@ export function SettingsDialog() {
                         </p>
                       </div>
                     </div>
+                    {role === "teacher" && (
+                      <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10 mt-2">
+                        <Checkbox 
+                          id="disable-emails" 
+                          checked={profile?.preferences?.disableAssignmentEmails || false}
+                          onCheckedChange={(checked) => handleAssignmentEmailsChange(checked === true)}
+                          className="mt-0.5 cursor-pointer"
+                        />
+                        <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAssignmentEmailsChange(!(profile?.preferences?.disableAssignmentEmails))}>
+                          <Label 
+                            htmlFor="disable-emails" 
+                            className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            Disable Assignment Emails
+                          </Label>
+                          <p className="text-[11px] text-muted-foreground font-medium">
+                            Turn off email notifications sent to your students when you create new assignments.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <Separator className="my-4" />

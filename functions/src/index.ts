@@ -69,6 +69,15 @@ export const onAssignmentCreated = onDocumentCreated({
         console.log("No teacherId found on assignment, skipping emails.");
         return;
     }
+
+    const teacherDoc = await db.collection("users").doc(teacherId).get();
+    if (teacherDoc.exists) {
+        const teacherData = teacherDoc.data();
+        if (teacherData?.preferences?.disableAssignmentEmails) {
+            console.log(`Teacher ${teacherId} has disabled assignment emails, skipping.`);
+            return;
+        }
+    }
     
     // Find all students for this teacher
     const studentsSnapshot = await db.collection("users")

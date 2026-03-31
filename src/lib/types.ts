@@ -4,6 +4,7 @@ export type UserRole = "teacher" | "student" | "school_admin" | "super_admin";
 
 export interface UserPreferences {
   autoRedirectPortal?: boolean;
+  disableAssignmentEmails?: boolean;
 }
 
 export interface UserProfile {
