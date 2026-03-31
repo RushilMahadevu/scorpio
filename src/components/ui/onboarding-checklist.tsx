@@ -160,7 +160,7 @@ export function OnboardingChecklist({
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="w-full overflow-hidden"
         >
-          <Card className="border-none bg-zinc-100/50 dark:bg-zinc-900/40 backdrop-blur-md shadow-sm">
+          <Card className="border border-zinc-200/50 dark:border-white/5 bg-zinc-100/50 dark:bg-zinc-900/40 backdrop-blur-md shadow-sm">
             <div className="flex flex-col sm:flex-row items-center gap-4 px-6 py-4">
               <div className="flex items-center gap-3 shrink-0">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
