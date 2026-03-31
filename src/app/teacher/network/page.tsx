@@ -581,6 +581,7 @@ export default function NetworkPage() {
   return (
     <TooltipProvider>
       <div className="container p-6 mx-auto space-y-8">
+        
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/50 pb-6">
           <div className="space-y-1">
             <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">

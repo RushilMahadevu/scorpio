@@ -35,8 +35,8 @@ const robotoMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorpio | The Verifiable AI Physics LMS",
-    template: "%s | Scorpio",
+    default: "Scorpio",
+    template: "%s • Scorpio",
   },
   description: "The only AI Physics LMS that prevents cheating. Our 4-layer constraint architecture enforces step-by-step derivation and genuine student understanding.",
   keywords: [

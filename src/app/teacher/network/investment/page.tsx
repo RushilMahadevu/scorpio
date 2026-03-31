@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 export default function InvestmentTrackerPage() {
   return (
     <div className="container p-6 mx-auto space-y-10 pb-24 max-w-7xl">
+      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-zinc-100 dark:border-zinc-800/50">
         <div className="space-y-4">
           <Link href="/teacher/network">

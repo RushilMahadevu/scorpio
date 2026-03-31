@@ -739,6 +739,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
 
   return (
     <div className="flex h-[100dvh] w-full bg-background overflow-hidden relative">
+      
       <Dialog open={showUnfocusPopup}>
         <DialogContent 
           className={`sm:max-w-md border-2 ${unfocusCount <= 1 ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30" : "border-red-500 bg-red-50 dark:bg-red-950/30"}`}

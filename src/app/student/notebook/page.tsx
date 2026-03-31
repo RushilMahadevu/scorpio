@@ -453,6 +453,7 @@ export default function NotebookPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] space-y-4">
+      
       {/* FULL SCREEN VIEWER OVERLAY */}
       {isFullScreen && !isEditing && (
         <div className="fixed inset-0 z-[100] bg-white dark:bg-zinc-950 flex flex-col overflow-hidden">

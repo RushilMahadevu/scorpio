@@ -318,6 +318,7 @@ export default function Vault() {
 
   return (
     <div className="space-y-6">
+      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">

@@ -113,6 +113,7 @@ export default function BillingPage() {
 
   return (
     <div className="min-h-screen bg-transparent text-foreground pb-20 relative">
+      
       {/* Space Aesthetic Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] animate-pulse" />

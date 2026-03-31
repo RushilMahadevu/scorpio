@@ -396,6 +396,7 @@ function CreateAssignmentForm() {
   return (
     <TooltipProvider delayDuration={100}>
       <div className="max-w-3xl mx-auto space-y-6">
+        
         {/* Header: Title and AI button */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>

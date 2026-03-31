@@ -123,6 +123,7 @@ export default function WaypointsPage() {
 
   return (
     <div className="container p-6 mx-auto space-y-8">
+      
       {/* Dynamic Header */}
       <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-white/5 p-5 md:p-6 shadow-sm">
         {/* Animated Background Elements */}
