@@ -286,11 +286,11 @@ export function SettingsDialog() {
                     <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
                       <Checkbox 
                         id="auto-redirect" 
-                        checked={profile?.preferences?.autoRedirectPortal || false}
+                        checked={profile?.preferences?.autoRedirectPortal ?? true}
                         onCheckedChange={(checked) => handleAutoRedirectChange(checked === true)}
                         className="mt-0.5 cursor-pointer"
                       />
-                      <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAutoRedirectChange(!(profile?.preferences?.autoRedirectPortal))}>
+                      <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAutoRedirectChange(!(profile?.preferences?.autoRedirectPortal ?? true))}>
                         <Label 
                           htmlFor="auto-redirect" 
                           className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
@@ -306,11 +306,11 @@ export function SettingsDialog() {
                       <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10 mt-2">
                         <Checkbox 
                           id="disable-emails" 
-                          checked={profile?.preferences?.disableAssignmentEmails || false}
+                          checked={profile?.preferences?.disableAssignmentEmails ?? true}
                           onCheckedChange={(checked) => handleAssignmentEmailsChange(checked === true)}
                           className="mt-0.5 cursor-pointer"
                         />
-                        <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAssignmentEmailsChange(!(profile?.preferences?.disableAssignmentEmails))}>
+                        <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAssignmentEmailsChange(!(profile?.preferences?.disableAssignmentEmails ?? true))}>
                           <Label 
                             htmlFor="disable-emails" 
                             className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"

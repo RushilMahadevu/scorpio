@@ -53,7 +53,7 @@ function SidebarContent({
   const router = useRouter();
   const { profile } = useAuth();
 
-  const autoRedirect = profile?.preferences?.autoRedirectPortal;
+  const autoRedirect = profile?.preferences?.autoRedirectPortal ?? true;
 
   const handleLogout = async () => {
     await logout();

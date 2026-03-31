@@ -59,7 +59,7 @@ export default function Home() {
   // Logged-in users should be able to view the landing page freely, 
   // UNLESS they have the auto-redirect preference enabled.
   useEffect(() => {
-    if (!authLoading && user && role && profile?.preferences?.autoRedirectPortal) {
+    if (!authLoading && user && role && (profile?.preferences?.autoRedirectPortal ?? true)) {
       if (role === "teacher") {
         router.push("/teacher");
       } else if (role === "student") {

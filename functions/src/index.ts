@@ -73,7 +73,8 @@ export const onAssignmentCreated = onDocumentCreated({
     const teacherDoc = await db.collection("users").doc(teacherId).get();
     if (teacherDoc.exists) {
         const teacherData = teacherDoc.data();
-        if (teacherData?.preferences?.disableAssignmentEmails) {
+        const disableEmails = teacherData?.preferences?.disableAssignmentEmails ?? true;
+        if (disableEmails) {
             console.log(`Teacher ${teacherId} has disabled assignment emails, skipping.`);
             return;
         }

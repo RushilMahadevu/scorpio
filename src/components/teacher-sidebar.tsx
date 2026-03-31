@@ -1,10 +1,10 @@
 "use client";
 
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Upload, 
-  Users, 
+import {
+  LayoutDashboard,
+  FileText,
+  Upload,
+  Users,
   PlusCircle,
   BarChart3,
   GraduationCap,

@@ -1,9 +1,9 @@
 "use client";
 
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Bot, 
+import {
+  LayoutDashboard,
+  FileText,
+  Bot,
   FileCheck,
   Library,
   GraduationCap,
