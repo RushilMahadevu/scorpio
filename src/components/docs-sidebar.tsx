@@ -7,7 +7,7 @@ import { BookOpen, FileText, Info, Mail, Shield } from "lucide-react";
 
 const items = [
   { title: "About", href: "/about", icon: Info },
-  { title: "Research & Data", href: "/research", icon: BookOpen },
+  { title: "Research & Methodology", href: "/research", icon: BookOpen },
   { title: "Privacy Policy", href: "/privacy", icon: Shield },
   { title: "Terms of Service", href: "/terms", icon: FileText },
   { title: "Contact Support", href: "/contact", icon: Mail },
@@ -25,8 +25,8 @@ export function DocsSidebar() {
             <span
               className={cn(
                 "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 relative z-10",
-                isActive 
-                  ? "text-primary bg-primary/5 scale-95" 
+                isActive
+                  ? "text-primary bg-primary/5 scale-95"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >

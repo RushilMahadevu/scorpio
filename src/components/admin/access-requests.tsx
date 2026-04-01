@@ -1,5 +1,6 @@
 "use client";
 
+import { Metadata } from "next";
 import { useState, useEffect, useCallback } from "react";
 import {
   Card,
@@ -70,6 +71,11 @@ const ROLE_LABELS: Record<string, string> = {
 interface AccessRequestsProps {
   adminSecret: string;
 }
+
+export const metadata: Metadata = {
+  title: "Access Request • Scorpio",
+  description: "Apply for institutional access to Scorpio",
+};
 
 export function AccessRequests({ adminSecret }: AccessRequestsProps) {
   const [requests, setRequests] = useState<AccessRequest[]>([]);
@@ -457,8 +463,8 @@ export function AccessRequests({ adminSecret }: AccessRequestsProps) {
                       detailRequest.status === "pending"
                         ? "bg-amber-500/15 text-amber-500 border-amber-500/20"
                         : detailRequest.status === "approved"
-                        ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
-                        : "bg-destructive/10 text-destructive border-destructive/20"
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+                          : "bg-destructive/10 text-destructive border-destructive/20"
                     )}
                   >
                     {detailRequest.status}

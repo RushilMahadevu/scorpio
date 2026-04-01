@@ -121,7 +121,7 @@ export function LandingHeader() {
                 <div className="space-y-1">
                   <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
                   {[
-                    { id: "efficacy", label: "Research & Efficacy", icon: Brain },
+                    { id: "efficacy", label: "Compare", icon: Brain },
                     { id: "mission", label: "Philosophy", icon: Orbit },
                     { id: "activity", label: "Activity", icon: Activity },
                     { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
@@ -222,7 +222,7 @@ export function LandingHeader() {
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-5">Institutional</p>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                     {[
-                      { id: "efficacy", label: "Efficacy", desc: "Pedagogical methodology and learning outcomes.", icon: Brain },
+                      { id: "efficacy", label: "Compare", desc: "Pedagogical methodology and learning outcomes.", icon: Brain },
                       { id: "mission", label: "Philosophy", desc: "The first principles behind constraint-led tutoring.", icon: Orbit },
                       { id: "activity", label: "Development", desc: "Live updates and platform evolution stats.", icon: Activity },
                       { id: "pricing", label: "Cost & Scale", desc: "Institutional pricing and ROI analysis.", icon: ChartColumnIncreasing },

@@ -165,7 +165,7 @@ export default function Home() {
                         { id: "problem", label: "Problem", target: "problem" },
                         { id: "solution", label: "Solution", target: "solution" },
                         { id: "demos", label: "Demos", target: "demos" },
-                        { id: "efficacy", label: "Research", target: "efficacy" },
+                        { id: "efficacy", label: "Compare", target: "efficacy" },
                         { id: "pricing", label: "Pricing", target: "pricing" },
                         { id: "docs", label: "Docs", isDropdown: true },
                       ].map((item) => (
@@ -264,7 +264,7 @@ export default function Home() {
                           <div className="space-y-1">
                             <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
                             {[
-                              { id: "efficacy", label: "Research", icon: Brain },
+                              { id: "efficacy", label: "Compare", icon: Brain },
                               { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
                               { id: "faq", label: "FAQ", icon: MessageCircle },
                             ].map((item) => (
@@ -1027,7 +1027,7 @@ export default function Home() {
                           className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                         >
                           <BookOpen className="h-5 w-5" />
-                          <span className="text-sm font-medium">Research</span>
+                          <span className="text-sm font-medium">Research & Methodology</span>
                         </Link>
                         <Link
                           href="/privacy"

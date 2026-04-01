@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, MessageCircle, Github, HelpCircle, Send, Globe, Layout } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact • Scorpio",
+  title: "Contact",
   description: "Get in touch with the Scorpio team. We're here to help schools and educators transform physics education with AI.",
 };
 

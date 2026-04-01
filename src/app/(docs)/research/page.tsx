@@ -11,7 +11,7 @@ import CostComparisonChart from "@/components/admin/cost-comparison-chart";
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "Research & Methodology • Scorpio",
+  title: "Research & Methodology",
   description: "Explore Scorpio: A verifiable framework for enforcing Socratic scaffolding in physics LLMs beyond fine-tuning. Results from our 125-response expert-validated ablation study.",
   keywords: ["AI Research", "STEM Education", "Constraint Engineering", "Socratic Scaffolding", "Physics LLM", "Expert Validation"],
 };
@@ -112,7 +112,7 @@ export default function ResearchPage() {
             <BookOpen size={32} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">Scorpio Research</h1>
+            <h1 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">Research & Methodology</h1>
             <p className="text-muted-foreground mt-2 text-sm italic font-medium">Scorpio: A Verifiable Framework for Enforcing Socratic Scaffolding in Physics LLMs Beyond Fine-Tuning</p>
           </div>
         </div>

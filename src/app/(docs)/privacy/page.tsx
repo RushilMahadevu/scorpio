@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy • Scorpio",
+  title: "Privacy Policy",
   description: "Read how Scorpio protects student data, ensures COPPA/FERPA compliance, and secures educational records.",
 };
 

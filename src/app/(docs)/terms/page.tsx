@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-   title: "Terms of Service • Scorpio",
+   title: "Terms of Service",
    description: "Terms and conditions for using the Scorpio AI learning platform for schools, teachers, and students.",
 };
 
