@@ -1,12 +1,16 @@
 {
     "$schema": "https://opencode.ai/config.json",
+    "instructions": [
+        "CONTRIBUTING.md",
+        "LAYERING.MD",
+        "PROJECT_AUDIT.md"
+    ],
     "permission": {
         "edit": "ask",
         "delete": "ask",
         "bash": {
-            "*": "ask",
-            "ls": "allow",
-            "cd": "allow"
+            "*": "allow",
+            "rm": "ask"
         }
     }
 }

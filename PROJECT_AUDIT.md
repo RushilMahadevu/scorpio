@@ -247,8 +247,8 @@ The admin page appears to be a single `page.tsx` file. Verify it's gated behind 
 
 ## 🔵 Tech Debt
 
-### T1. Dual-collection student data model (legacy + unified)
-Every student fetch queries BOTH `students/` (legacy) and `users/` (unified). This pattern appears in at least 6 files. The legacy collection should be progressively deprecated.
+<!-- ### T1. Dual-collection student data model (legacy + unified)
+Every student fetch queries BOTH `students/` (legacy) and `users/` (unified). This pattern appears in at least 6 files. The legacy collection should be progressively deprecated. -->
 
 ### T2. `any` used for assignment `createdAt` field
 **File:** `teacher/page-client.tsx` (line 32 — `createdAt: any`)  

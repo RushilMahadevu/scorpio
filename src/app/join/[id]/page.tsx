@@ -56,6 +56,13 @@ export default function JoinNetworkPage() {
 
     setJoining(true);
     try {
+      // 1. Verify capacity
+      const membersSnap = await getDocs(query(collection(db, "users"), where("organizationId", "==", orgId)));
+      if (membersSnap.size >= 50) {
+        toast.error("This network has reached its 50-practitioner limit.");
+        return;
+      }
+
       await setDoc(doc(db, "users", user.uid), {
         organizationId: orgId,
         role: "teacher", 

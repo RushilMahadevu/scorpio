@@ -517,8 +517,8 @@ export default function NetworkPage() {
       const orgData = orgSnap.data();
       const membersSnap = await getDocs(query(collection(db, "users"), where("organizationId", "==", cleanId)));
 
-      if (membersSnap.size >= 10) {
-        toast.error("This network has reached its 10-practitioner limit.");
+      if (membersSnap.size >= 50) {
+        toast.error("This network has reached its 50-practitioner limit.");
         return;
       }
 

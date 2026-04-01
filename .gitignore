@@ -65,3 +65,4 @@ yarn-error.log*
 DEMO.md
 /scripts/
 src/app/admin/
+service-account*.json

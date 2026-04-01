@@ -133,12 +133,8 @@ export default function TeacherGradesPage() {
         // Fetch students in the course to cross-reference (if course selected)
         let courseStudentIds = new Set<string>();
         if (selectedCourseId !== "all") {
-            const [snap1, snap2] = await Promise.all([
-                getDocs(query(collection(db, "students"), where("courseId", "==", selectedCourseId))),
-                getDocs(query(collection(db, "users"), where("courseId", "==", selectedCourseId), where("role", "==", "student")))
-            ]);
-            snap1.docs.forEach(d => courseStudentIds.add(d.id));
-            snap2.docs.forEach(d => courseStudentIds.add(d.id));
+            const snap = await getDocs(query(collection(db, "users"), where("courseId", "==", selectedCourseId), where("role", "==", "student")));
+            snap.docs.forEach(d => courseStudentIds.add(d.id));
         }
 
         submissionsDocs.forEach((doc) => {
@@ -177,25 +173,14 @@ export default function TeacherGradesPage() {
         await Promise.all(
           unknownStudents.map(async ([studentId, _]) => {
             try {
-              // Try legacy students first
-              const studentDoc = await getDoc(doc(db, "students", studentId));
-              if (studentDoc.exists()) {
-                const studentData = studentDoc.data();
+              // Try unified users
+              const userDoc = await getDoc(doc(db, "users", studentId));
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
                 const student = studentMap.get(studentId);
                 if (student) {
-                  student.name = studentData.name || "Unknown Student";
-                  student.email = studentData.email || student.email;
-                }
-              } else {
-                // Try unified users second
-                const userDoc = await getDoc(doc(db, "users", studentId));
-                if (userDoc.exists()) {
-                  const userData = userDoc.data();
-                  const student = studentMap.get(studentId);
-                  if (student) {
-                    student.name = userData.displayName || userData.name || "Unknown Student";
-                    student.email = userData.email || student.email;
-                  }
+                  student.name = userData.displayName || userData.name || "Unknown Student";
+                  student.email = userData.email || student.email;
                 }
               }
             } catch (error) {

@@ -88,10 +88,10 @@ export function RosterImport() {
       const batch = writeBatch(db);
       
       data.forEach((student) => {
-        // Generate a standard Firebase-style random ID for the student document
-        const studentRef = doc(collection(db, "students"));
+        // Generate a standard Firebase-style random ID
+        const userDoc = doc(collection(db, "users"));
         
-        batch.set(studentRef, {
+        const commonData = {
           email: student.email,
           displayName: student.name,
           teacherId: user.uid,
@@ -99,7 +99,10 @@ export function RosterImport() {
           createdAt: serverTimestamp(),
           status: "pending_invite",
           importedBy: user.uid
-        }, { merge: true });
+        };
+
+        // Unified collection
+        batch.set(userDoc, commonData, { merge: true });
       });
 
       await batch.commit();

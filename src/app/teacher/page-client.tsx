@@ -74,27 +74,17 @@ export default function TeacherDashboard() {
         
         // 2. Fetch all relevant data snapshots
         // Fetch data with individual error handling to avoid one query failure blocking everything
-        const [assignmentsSnap, legacySnap, unifiedSnap, legacyByCourseSnap, unifiedByCourseSnap, legacyByCodeSnap] = await Promise.all([
+        const [assignmentsSnap, unifiedSnap, unifiedByCourseSnap] = await Promise.all([
           getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid))).catch(e => ({ docs: [], size: 0 } as any)),
-          getDocs(query(collection(db, "students"), where("teacherId", "==", user.uid))).catch(e => ({ docs: [], size: 0 } as any)),
           getDocs(query(collection(db, "users"), where("teacherId", "==", user.uid), where("role", "==", "student"))).catch(e => ({ docs: [], size: 0 } as any)),
           (myCourseIdsArr.length > 0 
-            ? getDocs(query(collection(db, "students"), where("courseId", "in", myCourseIdsArr))).catch(e => ({ docs: [], size: 0 } as any))
-            : Promise.resolve({ docs: [], size: 0 } as any)),
-          (myCourseIdsArr.length > 0 
             ? getDocs(query(collection(db, "users"), where("courseId", "in", myCourseIdsArr), where("role", "==", "student"))).catch(e => ({ docs: [], size: 0 } as any))
-            : Promise.resolve({ docs: [], size: 0 } as any)),
-          (myCodesArr.length > 0
-            ? getDocs(query(collection(db, "students"), where("teacherId", "in", myCodesArr))).catch(e => ({ docs: [], size: 0 } as any))
             : Promise.resolve({ docs: [], size: 0 } as any))
         ]);
 
         const uniqueStudentIds = new Set([
-          ...legacySnap.docs.map((d: any) => d.id),
           ...unifiedSnap.docs.map((d: any) => d.id),
-          ...legacyByCourseSnap.docs.map((d: any) => d.id),
-          ...unifiedByCourseSnap.docs.map((d: any) => d.id),
-          ...legacyByCodeSnap.docs.map((d: any) => d.id)
+          ...unifiedByCourseSnap.docs.map((d: any) => d.id)
         ]);
         
         // Auto-migrate the legacy course records found
