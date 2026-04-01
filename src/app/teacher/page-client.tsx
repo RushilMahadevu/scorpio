@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, ShieldCheck, LayoutDashboard, Sparkles } from "lucide-react";
+import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, PackageCheck, LayoutDashboard, Sparkles, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
@@ -325,16 +325,22 @@ export default function TeacherDashboard() {
               icon: Waypoints
             },
             {
-              title: "8. Curriculum Integration",
-              description: "Upload your course syllabi, PDFs, and proprietary materials to the Resource Uploads. Scorpio indexes this content as a 'ground truth' reference, ensuring the AI responses align with your specific teaching methodology.",
+              title: "8. Vault Controls",
+              description: "Define exactly which equations students can access in their Equation Vault. You can restrict standard physics formulas for specific classes or upload your own custom LaTeX equations to supplement the curriculum.",
+              icon: PackageCheck
+            },
+            {
+              title: "9. Curriculum Integration",
+              description: "Upload your course syllabi, PDFs, and proprietary materials to the Resource Uploads. Scorpio indexses this content as a 'ground truth' reference, ensuring the AI responses align with your specific teaching methodology.",
               icon: Upload
             },
             {
-              title: "9. How Socratic AI Works",
+              title: "10. How Socratic AI Works",
               description: "Scorpio's AI acts as a 4-layer pedagogical guardrail. It assesses student input for logic, identifies the specific misconception, and provides a scaffolded hint rather than the answer. This ensures verifiable academic integrity at scale.",
               icon: ShieldCheck,
               isSpecial: true
             }
+
           ]}
         />
       </div>
@@ -367,7 +373,7 @@ export default function TeacherDashboard() {
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>Common tasks you might want to do</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
             <Link href="/teacher/create">
               <PlusCircle className="h-4 w-4 text-primary" />
@@ -384,6 +390,12 @@ export default function TeacherDashboard() {
             <Link href="/teacher/uploads">
               <Upload className="h-4 w-4 text-primary" />
               <span className="text-xs">Upload PDF</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
+            <Link href="/teacher/vault">
+              <PackageCheck className="h-4 w-4 text-primary" />
+              <span className="text-xs">Vault Controls</span>
             </Link>
           </Button>
         </CardContent>

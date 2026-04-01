@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Building2,
   Waypoints,
+  PackageCheck,
 } from "lucide-react";
 import { AppSidebar } from "./app-sidebar";
 
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/teacher/assignments", label: "My Assignments", icon: FileText },
   { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
   { href: "/teacher/waypoints", label: "Waypoints", icon: Waypoints },
+  { href: "/teacher/vault", label: "Vault Controls", icon: PackageCheck },
   { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },
 ];
 

@@ -29,8 +29,8 @@ export default function TeacherLayout({
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <main className="flex-1 overflow-y-auto bg-background/50">
-          <div className="p-8 max-w-7xl mx-auto w-full">
-            <div className="relative overflow-hidden">
+          <div className="p-8 w-full">
+            <div className="max-w-7xl mx-auto">
               <PageTransition>
                 {children}
               </PageTransition>

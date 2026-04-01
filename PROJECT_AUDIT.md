@@ -44,7 +44,7 @@ The Quick Hub card links to `/student/formula-hub` but the actual route is `/stu
 The `practice_history` collection rule is defined **twice** (lines 100–105 and 107–111), word-for-word identical. The second block is dead and can cause confusion during future edits. -->
 
 <!-- ---
-# REALTIME NOT NECCESSARY
+# REALTIME NOT NECESSARY
 ### 4. "Instructor notified" message is a lie — tab violation isn't actually sent anywhere
 **File:** `student/assignment-view/page.tsx` (line 764)
 
@@ -100,10 +100,10 @@ Every waypoint card displays `v1.2.0` as a badge. This is a hardcoded string, no
 
 ---
 
-### 11. Vault "Class Data Stream" section is purely placeholder text
+<!-- ### 11. Vault "Class Data Stream" section is purely placeholder text
 **File:** `student/vault/page.tsx` (lines 496–505)
 
-The card reads: *"Centralized reference for General Physics (V1.2)"* and *"Your teacher has not uploaded specific formula restrictions..."* — this is all hardcoded static text. It should dynamically show teacher-uploaded restrictions (if any) or be removed.
+The card reads: *"Centralized reference for General Physics (V1.2)"* and *"Your teacher has not uploaded specific formula restrictions..."* — this is all hardcoded static text. It should dynamically show teacher-uploaded restrictions (if any) or be removed. -->
 
 <!-- ---
 
@@ -145,12 +145,12 @@ Replace all `alert()` / `confirm()` / `window.*` usage with `sonner` toasts (alr
 ### F2. Grade-back email notification for students
 Uncomment and complete the grading email trigger in `functions/src/grading.ts`. Students currently have zero automated feedback when a grade arrives. This is a major UX gap for an academic platform.
 
----
-
+<!-- ---
+# NOT NECESSARY
 ### F3. Real-time "pending grading" counter on teacher dashboard
 The teacher dashboard shows pending submissions pulled on page load. Add a Firestore `onSnapshot` listener so the "Pending Review" stat card updates live without requiring a page refresh.
 
----
+--- -->
 
 ### F4. Student grade trend chart on submissions page
 The student dashboard shows a bar chart but only for the last 5 submissions with labels like `A1`, `A2`. Add actual assignment titles as labels and show trend direction (improving/declining) to make it actionable.
@@ -170,14 +170,14 @@ The `dueDate` field is stored on assignments but the student assignment view nev
 ### F7. Bulk student import feedback improvements
 `roster-import.tsx` has basic CSV import. It does a page reload on success and shows minimal feedback on errors. Add per-row success/failure reporting and allow partial imports (skip invalid rows, import valid ones).
 
----
-
+<!-- ---
+# a couple second delay to ensure completion is correctly checked
 ### F8. Onboarding checklist auto-dismiss
 **File:** `onboarding-checklist.tsx`
 
 Once all checklist items are complete, the checklist stays visible. It should auto-collapse or offer a "Dismiss forever" option. Similarly, it shouldn't re-appear for experienced users who've completed setup long ago.
 
----
+--- -->
 
 ### F9. Teacher "Pending Grading" deep-link to specific submission
 In the teacher dashboard, clicking a pending submission item links to the assignment overview (`/teacher/assignment-view?id=...`), not directly to that student's submission. Add a direct link to `/teacher/submission/grade?id=...` to save clicks.
@@ -191,24 +191,27 @@ The digital notebook is 43KB — likely complex. Verify it has auto-save behavio
 
 ---
 
-### F11. Equation Vault — teacher-defined formula restrictions
-The vault currently shows all 25+ formulas to every student regardless of class. The placeholder text in the vault acknowledges this. Build a teacher-side interface to "lock" certain equation categories for specific assignments or courses. This is mentioned in the platform tutorial but not yet implemented.
+<!-- ### F11. Equation Vault — teacher-defined formula restrictions
+The vault currently shows all 25+ formulas to every student regardless of class. The placeholder text in the vault acknowledges this. Build a teacher-side interface to "lock" certain equation categories for specific assignments or courses. This is mentioned in the platform tutorial but not yet implemented. -->
 
 ---
-
+<!-- 
+# Not available because teachers' own assignments act as waypoints
 ### F12. Waypoints — "My Waypoints" tab missing
 **File:** `teacher/waypoints/page.tsx`
 
 The Waypoints page has "Global" and "Department" tabs. There's no "Mine" tab to see only the teacher's own created waypoints. The current fallback (`where("teacherId", "==", user.uid)`) is only accessible when neither Global nor Network tab is active — this logic is fragile and the tab is effectively hidden.
 
----
+--- -->
 
+<!-- 
+# Fixed already
 ### F13. Network page — 4 x `window.location.reload()` calls
 **File:** `teacher/network/page.tsx` (lines 372, 482, 519, 559)
 
 After network creation, renaming, joining, or leaving — the page does a full reload. Replace these with targeted state updates using `setCourses`, `setOrganization`, etc. This is especially jarring when the network page is visually rich.
 
----
+--- -->
 
 ### F14. AI Tutor — session persistence across page reloads
 **File:** `student/tutor/page.tsx`
@@ -217,19 +220,23 @@ The tutor chat uses Firestore `tutor_sessions` collection. Verify the session is
 
 ---
 
-### F15. Mobile layout — assignment view is not mobile-optimized
+<!--
+# Unnecessary as mobile is not supported
+ ### F15. Mobile layout — assignment view is not mobile-optimized
 **File:** `student/assignment-view/page.tsx`
 
 The assignment view uses `ResizablePanelGroup` with a horizontal split for the Socratic AI panel. On mobile (`isMobile` flag), the AI panel behavior should be a slide-up sheet rather than a side panel. Verify this path is fully tested.
 
----
+--- -->
 
+<!-- 
+# Fixed!
 ### F16. Missing 404 page styling consistency
 **File:** `src/app/not-found.tsx`
 
 The 404 page exists but may not match the current premium aesthetic. Since the settings dialog links to several non-existent pages (see fix #9), users will hit this often.
 
----
+--- -->
 
 ### F17. Admin dashboard is not protected by role check on client side
 **File:** `src/app/admin/page.tsx`

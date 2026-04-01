@@ -53,6 +53,7 @@ const CATEGORIES = [
   { id: "thermo", name: "Thermodynamics" },
   { id: "electricity", name: "Electricity" },
   { id: "nuclear", name: "Nuclear & Atomic" },
+  { id: "custom", name: "Custom Equations" },
 ];
 
 const FORMULAS: Formula[] = [
@@ -284,6 +285,8 @@ const FORMULAS: Formula[] = [
 export default function Vault() {
   const { profile } = useAuth();
   const [courseName, setCourseName] = useState<string | null>(null);
+  const [restrictedIds, setRestrictedIds] = useState<string[]>([]);
+  const [customFormulas, setCustomFormulas] = useState<Formula[]>([]);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -294,21 +297,29 @@ export default function Vault() {
       if (profile?.courseId) {
         const courseDoc = await getDoc(doc(db, "courses", profile.courseId));
         if (courseDoc.exists()) {
-          setCourseName(courseDoc.data().name);
+          const data = courseDoc.data();
+          setCourseName(data.name);
+          setRestrictedIds(data.restrictedFormulaIds || []);
+          setCustomFormulas(data.customFormulas || []);
         }
       }
     }
     fetchCourse();
   }, [profile?.courseId]);
 
-  const handleCopy = (formula: Formula) => {
-    navigator.clipboard.writeText(formula.formula);
+  const handleCopy = (formula: any) => {
+    navigator.clipboard.writeText(formula.formula || formula.latex);
     setCopiedId(formula.id);
     toast.success(`${formula.name} copied to clipboard!`);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const filteredFormulas = FORMULAS.filter(formula => {
+  const allFormulas = [...FORMULAS, ...customFormulas];
+
+  const filteredFormulas = allFormulas.filter(formula => {
+    // Check if formula is restricted by teacher
+    if (restrictedIds.includes(formula.id)) return false;
+
     const matchesSearch = formula.name.toLowerCase().includes(search.toLowerCase()) || 
                          formula.formula.toLowerCase().includes(search.toLowerCase()) ||
                          formula.description.toLowerCase().includes(search.toLowerCase());
@@ -415,12 +426,17 @@ export default function Vault() {
                    </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-4 mt-auto">
-                  {Object.entries(formula.variables).map(([symbol, name]) => (
+                  {formula.variables && Object.entries(formula.variables).map(([symbol, name]) => (
                     <div key={symbol} className="text-[11px] flex items-center gap-2 text-muted-foreground font-medium">
                       <span className="font-black text-primary font-mono w-5 inline-flex justify-center bg-primary/5 rounded py-0.5">{symbol}</span>
                       <span className="truncate">{name}</span>
                     </div>
                   ))}
+                  {!formula.variables && (
+                    <div className="text-[11px] flex items-center gap-2 text-muted-foreground font-medium italic">
+                      No variable definitions provided.
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -497,13 +513,17 @@ export default function Vault() {
                   Centralized reference for {"General Physics"} (V1.2)
                 </CardDescription>
              </CardHeader>
-             <CardContent>
+              <CardContent>
                 <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-primary/10 rounded-2xl p-6">
                   <p className="text-muted-foreground font-medium italic leading-relaxed">
-                    "Your teacher has not uploaded specific formula restrictions for this class. All standard physics equations are currently visible. Click any formula card to copy its calculation ready form."
+                    {restrictedIds.length > 0 
+                      ? `Your teacher has restricted ${restrictedIds.length} formulas for this class. Only approved equations are visible in your vault.`
+                      : "Your teacher has not uploaded specific formula restrictions for this class. All standard physics equations are currently visible. Click any formula card to copy its calculation ready form."
+                    }
                   </p>
                 </div>
-             </CardContent>
+              </CardContent>
+
           </Card>
       </div>
     </div>

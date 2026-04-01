@@ -1,0 +1,12 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "permission": {
+        "edit": "ask",
+        "delete": "ask",
+        "bash": {
+            "*": "ask",
+            "ls": "allow",
+            "cd": "allow"
+        }
+    }
+}
