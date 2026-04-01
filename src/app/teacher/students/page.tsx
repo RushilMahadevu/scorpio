@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { db, cleanupStudentData } from "@/lib/firebase";
-import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/auth-context";import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,6 +26,7 @@ export default function StudentsPage() {
   const { user } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchStudents() {
@@ -109,7 +110,6 @@ export default function StudentsPage() {
   }, [user]);
 
   const deleteStudent = async (studentId: string) => {
-    if (!confirm("Are you sure you want to remove this student? This will remove them from your class lists and delete their submissions to save storage space.")) return;
     try {
       // 1. Storage & Submissions Cleanup (Space saving)
       await cleanupStudentData(studentId);
@@ -122,9 +122,10 @@ export default function StudentsPage() {
         setDoc(doc(db, "users", studentId), { teacherId: null, courseId: null }, { merge: true })
       ]);
       setStudents(students.filter((s) => s.id !== studentId));
+      toast.success("Student records removed.");
     } catch (error: any) {
       console.error("Error deleting student:", error);
-      alert(`Failed to delete student: ${error.message}`);
+      toast.error(`Failed to delete student: ${error.message}`);
     }
   };
 
@@ -199,7 +200,7 @@ export default function StudentsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => deleteStudent(student.id)}
+                        onClick={() => setStudentToDelete(student.id)}
                         className="hover:text-destructive cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -212,6 +213,16 @@ export default function StudentsPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!studentToDelete}
+        onOpenChange={(open) => !open && setStudentToDelete(null)}
+        title="Remove Student"
+        description="Are you sure you want to remove this student? This will remove them from your class lists and delete their submissions to save storage space."
+        onConfirm={() => studentToDelete && deleteStudent(studentToDelete)}
+        confirmText="Remove"
+        variant="destructive"
+      />
     </div>
   );
 }

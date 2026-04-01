@@ -23,7 +23,7 @@ confirm("Are you sure...")                    → <AlertDialog> with confirm but
 
 ---
 
-### 2. Broken route: `/student/formula-hub` doesn't exist
+<!-- ### 2. Broken route: `/student/formula-hub` doesn't exist
 **File:** `src/app/student/page-client.tsx` (line 545)
 
 The Quick Hub card links to `/student/formula-hub` but the actual route is `/student/vault`. This is a dead link visible on every student's dashboard.
@@ -34,7 +34,7 @@ The Quick Hub card links to `/student/formula-hub` but the actual route is `/stu
 
 // Fix
 <Link href="/student/vault">
-```
+``` -->
 
 ---
 

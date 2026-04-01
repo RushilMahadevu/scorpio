@@ -5,6 +5,8 @@ import Link from "next/link";
 import { collection, getDocs, deleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +36,7 @@ export default function AssignmentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
   const [filter, setFilter] = useState<string>("all");
   const [sort, setSort] = useState<string>("dueDateAsc");
+  const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -82,12 +85,13 @@ export default function AssignmentsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this assignment?")) return;
     try {
       await deleteDoc(doc(db, "assignments", id));
       setAssignments(assignments.filter((a) => a.id !== id));
+      toast.success("Assignment deleted.");
     } catch (error) {
       console.error("Error deleting assignment:", error);
+      toast.error("Failed to delete assignment.");
     }
   }
 
@@ -271,7 +275,7 @@ export default function AssignmentsPage() {
                           variant="ghost"
                           size="sm"
                           className="cursor-pointer"
-                          onClick={() => handleDelete(assignment.id)}
+                          onClick={() => setAssignmentToDelete(assignment.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -284,6 +288,16 @@ export default function AssignmentsPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!assignmentToDelete}
+        onOpenChange={(open) => !open && setAssignmentToDelete(null)}
+        title="Delete Assignment"
+        description="Are you sure you want to delete this assignment? This will permanently remove all student submissions for this assignment as well."
+        onConfirm={() => assignmentToDelete && handleDelete(assignmentToDelete)}
+        confirmText="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }

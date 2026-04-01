@@ -88,6 +88,7 @@ import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { NetworkTutorial } from "@/components/network-tutorial";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NetworkStudents } from "@/components/teacher/network-students";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function NetworkPage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -98,6 +99,9 @@ export default function NetworkPage() {
   const [networkMembers, setNetworkMembers] = useState<any[]>([]);
   const [creatingOrg, setCreatingOrg] = useState(false);
   const [newOrgName, setNewOrgName] = useState("");
+  const [memberToKick, setMemberToKick] = useState<{ id: string, name: string } | null>(null);
+  const [ownerToTransfer, setOwnerToTransfer] = useState<{ id: string, name: string } | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [joiningOrgId, setJoiningOrgId] = useState("");
   const [upgrading, setUpgrading] = useState(false);
   const [updatingBudget, setUpdatingBudget] = useState(false);
@@ -362,34 +366,46 @@ export default function NetworkPage() {
 
   const transferOwnership = async (newOwnerId: string, newOwnerName: string) => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
-    if (!confirm(`Are you sure you want to transfer ownership to ${newOwnerName}? You will lose administrative control.`)) return;
+    setOwnerToTransfer({ id: newOwnerId, name: newOwnerName });
+  };
+
+  const handleTransferOwnership = async () => {
+    if (!user || !organization || !ownerToTransfer) return;
 
     try {
       await updateDoc(doc(db, "organizations", organization.id), {
-        ownerId: newOwnerId
+        ownerId: ownerToTransfer.id
       });
-      toast.success(`Ownership transferred to ${newOwnerName}`);
+      toast.success(`Ownership transferred to ${ownerToTransfer.name}`);
       window.location.reload();
     } catch (e) {
       console.error(e);
       toast.error("Failed to transfer ownership.");
+    } finally {
+      setOwnerToTransfer(null);
     }
   };
 
   const kickMember = async (memberId: string, name: string) => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
     if (memberId === user.uid) return;
-    if (!confirm(`Are you sure you want to remove ${name} from the network?`)) return;
+    setMemberToKick({ id: memberId, name });
+  };
+
+  const handleKickMember = async () => {
+    if (!user || !organization || !memberToKick) return;
 
     try {
-      await updateDoc(doc(db, "users", memberId), {
+      await updateDoc(doc(db, "users", memberToKick.id), {
         organizationId: null
       });
-      toast.success(`${name} has been removed.`);
-      setNetworkMembers(prev => prev.filter(m => m.uid !== memberId));
+      toast.success(`${memberToKick.name} has been removed.`);
+      setNetworkMembers(prev => prev.filter(m => m.uid !== memberToKick.id));
     } catch (e) {
       console.error(e);
       toast.error("Failed to remove member.");
+    } finally {
+      setMemberToKick(null);
     }
   };
 
@@ -528,15 +544,22 @@ export default function NetworkPage() {
 
     const isOwner = user.uid === organization.ownerId;
     if (isOwner) {
+      // For owners, we still use the prompt to ensure they type the name exactly as a strong confirmation
       const confirmName = prompt(`To disband this network, please type its name: ${organization.name}`);
       if (confirmName !== organization.name) {
         toast.error("Network name did not match. Disband cancelled.");
         return;
       }
     } else {
-      if (!confirm("Are you sure you want to leave this network?")) return;
+      setShowLeaveConfirm(true);
+      return;
     }
 
+    await handleLeaveNetwork();
+  }
+
+  async function handleLeaveNetwork() {
+    if (!user || !profile?.organizationId || !organization) return;
     setLoading(true);
     try {
       const orgId = profile.organizationId;
@@ -1599,6 +1622,36 @@ export default function NetworkPage() {
             </div>
           </div>
         )}
+
+        <ConfirmDialog
+          open={!!memberToKick}
+          onOpenChange={(open) => !open && setMemberToKick(null)}
+          title="Remove Member"
+          description={`Are you sure you want to remove ${memberToKick?.name} from the network?`}
+          onConfirm={handleKickMember}
+          confirmText="Remove"
+          cancelText="Cancel"
+        />
+
+        <ConfirmDialog
+          open={!!ownerToTransfer}
+          onOpenChange={(open) => !open && setOwnerToTransfer(null)}
+          title="Transfer Ownership"
+          description={`Are you sure you want to transfer ownership to ${ownerToTransfer?.name}? You will lose administrative control.`}
+          onConfirm={handleTransferOwnership}
+          confirmText="Transfer"
+          cancelText="Cancel"
+        />
+
+        <ConfirmDialog
+          open={showLeaveConfirm}
+          onOpenChange={setShowLeaveConfirm}
+          title="Leave Network"
+          description="Are you sure you want to leave this network?"
+          onConfirm={handleLeaveNetwork}
+          confirmText="Leave"
+          cancelText="Cancel"
+        />
       </div>
     </TooltipProvider>
   );

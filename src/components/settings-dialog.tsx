@@ -44,6 +44,8 @@ import { logout, resetPassword, changeEmail, deleteFullAccount, updateUserProfil
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { toast } from "sonner"
 
 export function SettingsDialog() {
   const { setTheme, theme } = useTheme()
@@ -60,6 +62,7 @@ export function SettingsDialog() {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [showNote, setShowNote] = React.useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
   const [newEmail, setNewEmail] = React.useState("")
   const [emailChangeOpen, setEmailChangeOpen] = React.useState(false)
   const [alertMessage, setAlertMessage] = React.useState("")
@@ -120,8 +123,6 @@ export function SettingsDialog() {
 
   const handleDeleteAccount = async () => {
     if (!user) return
-    const confirmDelete = confirm("CRITICAL: This will permanently delete your account and ALL your data (submissions, storage files, profile). This cannot be undone. Are you absolutely sure?")
-    if (!confirmDelete) return
 
     try {
       setAlertMessage("Deleting account and data...")
@@ -130,6 +131,7 @@ export function SettingsDialog() {
       await deleteFullAccount(user.uid, role || "student")
       
       setAlertMessage("Account deleted successfully. Goodbye.")
+      toast.success("Account deleted successfully.")
       setTimeout(() => {
         router.push("/signup")
         setOpen(false)
@@ -138,6 +140,7 @@ export function SettingsDialog() {
       console.error("Error deleting account:", error)
       setAlertMessage(`Failed to delete account: ${error.message}`)
       setAlertType("error")
+      toast.error(`Failed to delete account: ${error.message}`)
     }
   }
 
@@ -346,7 +349,7 @@ export function SettingsDialog() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={handleDeleteAccount}
+                      onClick={() => setShowDeleteConfirm(true)}
                       className="w-full justify-start h-10 text-destructive hover:bg-destructive/10 cursor-pointer"
                     >
                       <Trash2 className="mr-3 h-4 w-4" />
@@ -357,6 +360,16 @@ export function SettingsDialog() {
               </div>
             </div>
           </TabsContent>
+
+          <ConfirmDialog
+            open={showDeleteConfirm}
+            onOpenChange={setShowDeleteConfirm}
+            title="Delete Account"
+            description="CRITICAL: This will permanently delete your account and ALL your data (submissions, storage files, profile). This cannot be undone. Are you absolutely sure?"
+            onConfirm={handleDeleteAccount}
+            confirmText="Delete Account"
+            variant="destructive"
+          />
 
           <TabsContent value="appearance" className="space-y-4 mt-4">
             <div className="space-y-6">

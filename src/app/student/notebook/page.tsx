@@ -75,6 +75,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import TurndownService from "turndown";
 import Showdown from "showdown";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const turndown = new TurndownService();
 const converter = new Showdown.Converter();
@@ -98,6 +99,7 @@ export default function NotebookPage() {
   const [title, setTitle] = useState("Untitled Notebook");
   const [isEditing, setIsEditing] = useState(true);
   const [editorMode, setEditorMode] = useState<'markdown' | 'rich-text'>('rich-text');
+  const [notebookToDelete, setNotebookToDelete] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -324,17 +326,23 @@ export default function NotebookPage() {
       return;
     }
 
-    if (!confirm("Delete this notebook? This cannot be undone.")) return;
+    setNotebookToDelete(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!notebookToDelete) return;
 
     try {
-      await deleteDoc(doc(db, "notebooks", id));
-      if (activeNotebookId === id) {
-        const remaining = notebooks.filter(n => n.id !== id);
+      await deleteDoc(doc(db, "notebooks", notebookToDelete));
+      if (activeNotebookId === notebookToDelete) {
+        const remaining = notebooks.filter(n => n.id !== notebookToDelete);
         setActiveNotebookId(remaining[0]?.id || null);
       }
       toast.success("Notebook erased.");
     } catch (err) {
       toast.error("Deletion failed.");
+    } finally {
+      setNotebookToDelete(null);
     }
   };
 
@@ -959,7 +967,16 @@ export default function NotebookPage() {
           </ResizablePanel>
         )}
       </ResizablePanelGroup>
-    </div>
+
+        <ConfirmDialog
+          open={!!notebookToDelete}
+          onOpenChange={(open) => !open && setNotebookToDelete(null)}
+          title="Delete Notebook"
+          description="Are you sure you want to delete this notebook? This cannot be undone."
+          onConfirm={handleConfirmDelete}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
   );
 }
 

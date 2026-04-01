@@ -162,7 +162,7 @@ function CreateAssignmentForm() {
 
   const handleImportQuestions = async () => {
     if (!importText.trim()) {
-      alert("Please paste some text to import questions.");
+      toast.error("Please paste some text to import questions.");
       return;
     }
     setImportLoading(true);
@@ -354,7 +354,7 @@ function CreateAssignmentForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseId) {
-      alert("Please select a class for this assignment.");
+      toast.error("Please select a class for this assignment.");
       return;
     }
     setLoading(true);

@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "sonner";
 import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, ShieldCheck, LayoutDashboard, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
@@ -54,6 +56,7 @@ export default function TeacherDashboard() {
   const [newCourseCode, setNewCourseCode] = useState("");
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchStats() {
@@ -192,7 +195,7 @@ export default function TeacherDashboard() {
       // Check if code exists in courses
       const existing = await getDocs(query(collection(db, "courses"), where("code", "==", code)));
       if (!existing.empty) {
-        alert("Class code already exists. Please choose another.");
+        toast.error("Class code already exists. Please choose another.");
         setIsCreatingCourse(false);
         return;
       }
@@ -205,7 +208,7 @@ export default function TeacherDashboard() {
              // We can't query teachers by ID easily without knowing it, but we can try to fetch it
              const teacherDoc = await getDocs(query(collection(db, "teachers"), where("__name__", "==", code)));
              if (!teacherDoc.empty) {
-                 alert("This code is reserved by another teacher (Legacy ID). Please choose another.");
+                 toast.error("This code is reserved by another teacher (Legacy ID). Please choose another.");
                  setIsCreatingCourse(false);
                  return;
              }
@@ -221,26 +224,27 @@ export default function TeacherDashboard() {
 
       setNewCourseName("");
       setNewCourseCode("");
+      toast.success("Class created successfully!");
       setDialogOpen(false); // Close dialog after creation
       // Refresh courses
       const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), orderBy("createdAt", "desc")));
       setCourses(coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
     } catch (error) {
       console.error("Error creating course:", error);
-      alert("Failed to create course");
+      toast.error("Failed to create course");
     } finally {
       setIsCreatingCourse(false);
     }
   };
 
   const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm("Are you sure you want to delete this class?")) return;
     try {
       await deleteDoc(doc(db, "courses", courseId));
       setCourses(courses.filter(c => c.id !== courseId));
+      toast.success("Class deleted successfully!");
     } catch (error) {
        console.error("Error deleting course:", error);
-       alert("Failed to delete course");
+       toast.error("Failed to delete course");
     }
   };
 
@@ -456,7 +460,7 @@ export default function TeacherDashboard() {
                           className="h-6 w-6 cursor-pointer hover:bg-accent/50 transition-colors" 
                           onClick={() => {
                             navigator.clipboard.writeText(course.code);
-                            alert("Code copied!");
+                            toast.success("Code copied!");
                           }}
                           title="Copy Code"
                         >
@@ -468,7 +472,7 @@ export default function TeacherDashboard() {
                       variant="ghost" 
                       size="icon" 
                       className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
-                      onClick={() => handleDeleteCourse(course.id)}
+                      onClick={() => setCourseToDelete(course.id)}
                     >
                       <Trash2 className="h-4 w-4 cursor-pointer hover:bg-destructive/10 transition-colors" />
                     </Button>
@@ -479,8 +483,16 @@ export default function TeacherDashboard() {
           </div>
         </CardContent>
       </Card>
-
       <div className="grid gap-4 md:grid-cols-2">
+        <ConfirmDialog
+          open={!!courseToDelete}
+          onOpenChange={(open) => !open && setCourseToDelete(null)}
+          title="Delete Class"
+          description="Are you sure you want to delete this class? This will also remove all students access to this class s assignments."
+          onConfirm={() => courseToDelete && handleDeleteCourse(courseToDelete)}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
         <Card>
           <CardHeader>
             <CardTitle>Recent Assignments</CardTitle>

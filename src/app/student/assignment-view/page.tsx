@@ -31,6 +31,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Bot, Lightbulb, User, ChevronRight, ChevronLeft, Lock } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MathInputField } from "@/components/math-input";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { helpSolveProblem } from "@/lib/gemini";
@@ -132,7 +134,7 @@ function AssignmentDetailContent() {
       if (assignment?.lockdownMode) {
         e.preventDefault();
         // Use toast or alert
-        alert("Copying is disabled in Lockdown Mode to maintain academic integrity.");
+        toast.error("Copying is disabled in Lockdown Mode to maintain academic integrity.");
       }
     };
 
@@ -153,7 +155,7 @@ function AssignmentDetailContent() {
     const handlePopState = (e: PopStateEvent) => {
         if (assignment?.lockdownMode && hasStarted && !submitted) {
             window.history.pushState(null, "", window.location.href);
-            alert("Navigation is locked. Please complete and submit your assignment before leaving.");
+            toast.error("Navigation is locked. Please complete and submit your assignment before leaving.");
         }
     };
 
@@ -484,7 +486,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
     });
     
     if (invalidFiles.length > 0) {
-      alert("Some files were not added:\n" + invalidFiles.join("\n"));
+      toast.error("Some files were not added:\n" + invalidFiles.join("\n"));
     }
     
     setUploadedFiles([...uploadedFiles, ...validFiles]);
@@ -553,10 +555,10 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
             const docRef = await addDoc(collection(db, "submissions"), submissionData);
             setExistingSubmission({ ...submissionData, id: docRef.id });
         }
-        alert("Draft saved!");
+        toast.success("Draft saved!");
     } catch (error) {
         console.error("Error saving draft:", error);
-        alert("Failed to save draft.");
+        toast.error("Failed to save draft.");
     } finally {
         setSubmitting(false);
     }
@@ -569,7 +571,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
     ignoreNextBlurRef.current = true;
     // Validate work submission
     if (assignment.requireWorkSubmission && uploadedFiles.length === 0) {
-      alert("Please upload your work (PDF or images) before submitting.");
+      toast.error("Please upload your work (PDF or images) before submitting.");
       return;
     }
     setSubmitting(true);

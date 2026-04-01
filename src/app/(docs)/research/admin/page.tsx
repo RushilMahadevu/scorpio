@@ -98,7 +98,7 @@ export default function ResearchPage() {
 
   const copyLatex = () => {
     navigator.clipboard.writeText(latexTables);
-    alert("LaTeX tables copied to clipboard!");
+    toast.success("LaTeX tables copied to clipboard!");
   };
 
   const estimate = estimateStudyCost();

@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toast } from "sonner";
 import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow, Info, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
@@ -50,6 +52,7 @@ export default function StudentDashboard() {
   const [classCode, setClassCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   useEffect(() => {
     async function syncTeacherId() {
@@ -246,11 +249,11 @@ export default function StudentDashboard() {
         organizationId: organizationId || null
       }, { merge: true });
 
-      alert(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
+      toast.success(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
       window.location.reload(); // Reload to pick up new claims
     } catch (error: any) {
       console.error("Error joining class:", error);
-      alert(`Failed to join class: ${error.message}`);
+      toast.error(`Failed to join class: ${error.message}`);
     }
     finally {
       setJoining(false);
@@ -258,7 +261,7 @@ export default function StudentDashboard() {
   };
 
   const handleLeaveClass = async () => {
-    if (!user || !confirm("Are you sure you want to leave this class?")) return;
+    if (!user) return;
     setLeaving(true);
     try {
       const resetData = {
@@ -294,11 +297,11 @@ export default function StudentDashboard() {
       setCourseId(null);
       setCourseName(null);
       setClassCode("");
-      alert("Successfully left class.");
+      toast.success("Successfully left class.");
       window.location.reload(); // Refresh to clear context fully
     } catch (error: any) {
       console.error("Error leaving class:", error);
-      alert(`Failed to leave class: ${error.message}`);
+      toast.error(`Failed to leave class: ${error.message}`);
     } finally {
       setLeaving(false);
     }
@@ -486,13 +489,23 @@ export default function StudentDashboard() {
                   </CardDescription>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleLeaveClass} disabled={leaving} className="text-muted-foreground h-10 hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer">
+              <Button variant="ghost" size="sm" onClick={() => setShowLeaveConfirm(true)} disabled={leaving} className="text-muted-foreground h-10 hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer">
                 <LogOut className="h-4 w-4 mr-2" />
                 {leaving ? "Leaving..." : "Leave Class"}
               </Button>
             </CardHeader>
           </Card>
         )}
+
+        <ConfirmDialog
+          open={showLeaveConfirm}
+          onOpenChange={setShowLeaveConfirm}
+          title="Leave Class"
+          description="Are you sure you want to leave this class? You will no longer be able to access assignments or resources from this instructor."
+          onConfirm={handleLeaveClass}
+          confirmText="Leave Class"
+          cancelText="Stay"
+        />
 
         {/* Progress Overview Card */}
         <Card className="rounded-3xl border border-zinc-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm shadow-sm flex flex-col">
@@ -542,7 +555,7 @@ export default function StudentDashboard() {
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Practice</span>
               </Button>
             </Link>
-            <Link href="/student/formula-hub">
+            <Link href="/student/vault">
               <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border border-zinc-200/50 dark:border-white/10 bg-white/80 dark:bg-zinc-800/50 shadow-sm">
                 <PackageOpen className="h-5 w-5" />
                 <span className="text-[10px] font-bold uppercase tracking-tighter">Eq. Vault</span>

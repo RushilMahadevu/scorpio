@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from "firebase/firestore";
 import { db, uploadFilesToStorage } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +37,7 @@ export default function ResourcesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [resourceToDelete, setResourceToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -110,22 +113,24 @@ export default function ResourcesPage() {
       setFile(null);
       setType("link");
       setUploadProgress(0);
+      toast.success("Resource added successfully!");
       await fetchResources();
     } catch (error) {
       console.error("Error adding resource:", error);
-      alert("Error adding resource. Please check your connection and try again.");
+      toast.error("Error adding resource. Please check your connection and try again.");
     } finally {
       setAdding(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this resource?")) return;
     try {
       await deleteDoc(doc(db, "resources", id));
       setResources(resources.filter((r) => r.id !== id));
+      toast.success("Resource deleted!");
     } catch (error) {
       console.error("Error deleting resource:", error);
+      toast.error("Error deleting resource.");
     }
   }
 
@@ -369,7 +374,7 @@ export default function ResourcesPage() {
                           variant="ghost"
                           size="sm"
                           className="cursor-pointer"
-                          onClick={() => handleDelete(resource.id)}
+                          onClick={() => setResourceToDelete(resource.id)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -382,6 +387,16 @@ export default function ResourcesPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!resourceToDelete}
+        onOpenChange={(open) => !open && setResourceToDelete(null)}
+        title="Delete Resource"
+        description="Are you sure you want to delete this resource? This action cannot be undone."
+        onConfirm={() => resourceToDelete && handleDelete(resourceToDelete)}
+        confirmText="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }

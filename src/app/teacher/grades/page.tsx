@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, writeBatch, doc, getDoc } from "firebase/firestore";
 import { db, cleanupStudentData } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,7 @@ export default function TeacherGradesPage() {
   const [assignments, setAssignments] = useState<{id: string, title: string, courseId?: string}[]>([]);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("all");
   const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -228,15 +231,15 @@ export default function TeacherGradesPage() {
 
 
   const deleteStudent = async (studentId: string) => {
-    if (!confirm("Are you sure you want to remove this student from the gradebook? This will delete all their submissions and uploaded storage files to save space.")) return;
     try {
       // 1. Cleanup Storage and Submissions
       await cleanupStudentData(studentId, selectedCourseId === "all" ? undefined : selectedCourseId);
       
       setStudents(students.filter((s) => s.id !== studentId));
+      toast.success("Student records removed.");
     } catch (error: any) {
       console.error("Error deleting student:", error);
-      alert(`Failed to delete student: ${error.message}`);
+      toast.error(`Failed to delete student: ${error.message}`);
     }
   };
 
@@ -357,7 +360,7 @@ export default function TeacherGradesPage() {
                               variant="ghost"
                               size="sm"
                               className="cursor-pointer"
-                              onClick={() => deleteStudent(student.id)}
+                              onClick={() => setStudentToDelete(student.id)}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -380,6 +383,16 @@ export default function TeacherGradesPage() {
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!studentToDelete}
+        onOpenChange={(open) => !open && setStudentToDelete(null)}
+        title="Remove Student Records"
+        description="Are you sure you want to remove this student from the gradebook? This will delete all their submissions and uploaded storage files to save space."
+        onConfirm={() => studentToDelete && deleteStudent(studentToDelete)}
+        confirmText="Remove"
+        variant="destructive"
+      />
     </div>
   );
 }
