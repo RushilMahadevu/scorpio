@@ -419,13 +419,24 @@ export function NetworkStudents({ organizationId, teacherIds }: { organizationId
 
         if (fetchedStudents.length > 0) {
           const studentIds = fetchedStudents.map(s => s.uid);
-          const portfoliosSnap = await getDocs(query(
-            collection(db, "portfolios"),
-            where("organizationId", "==", organizationId)
-          ));
+          // Firestore 'in' query supports up to 30 items. 
+          // If there are more students, we'll need to chunk the requests.
+          const portfolioChunks = [];
+          for (let i = 0; i < studentIds.length; i += 30) {
+            const chunk = studentIds.slice(i, i + 30);
+            portfolioChunks.push(getDocs(query(
+              collection(db, "portfolios"),
+              where("studentId", "in", chunk)
+            )));
+          }
+
+          const portfolioSnaps = await Promise.all(portfolioChunks);
           const portsData: Record<string, StudentPortfolio> = {};
-          portfoliosSnap.docs.forEach(doc => {
-            if (studentIds.includes(doc.id)) portsData[doc.id] = doc.data() as StudentPortfolio;
+          
+          portfolioSnaps.forEach(snap => {
+            snap.docs.forEach(doc => {
+              portsData[doc.id] = doc.data() as StudentPortfolio;
+            });
           });
           setPortfolios(portsData);
         }

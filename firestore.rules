@@ -124,6 +124,17 @@ service cloud.firestore {
       allow update: if isTeacher() && resource.data.ownerId == request.auth.uid;
     }
 
+    // Student Portfolios
+    match /portfolios/{studentId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == studentId || 
+        isTeacher()
+      );
+      // Portfolio generation is handled by admin API, so client only needs read.
+      // However, if we ever want the client to delete/update:
+      allow write: if isTeacher();
+    }
+
     // Teacher Invite Codes — server-side only (admin SDK bypasses these rules)
     // No client should ever read or write this collection directly
     match /teacherInviteCodes/{code} {
