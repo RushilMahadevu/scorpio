@@ -818,10 +818,6 @@ export default function NotebookPage() {
           </div>
         </ResizablePanel>
 
-        <ResizableHandle withHandle className="w-1.5 bg-zinc-100 dark:bg-zinc-800/50 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors" />
-
-        {/* AI COPILOT PANEL */}
-        {showCopilot && (
           <ResizablePanel defaultSize={35} minSize={25}>
             <div className="h-full flex flex-col bg-zinc-50/10 dark:bg-zinc-950/20">
               <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
@@ -977,6 +973,7 @@ export default function NotebookPage() {
           confirmText="Delete"
           cancelText="Cancel"
         />
+    </div>
   );
 }
 
