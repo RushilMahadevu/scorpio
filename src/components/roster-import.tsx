@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { collection, doc, writeBatch, serverTimestamp } from "firebase/firestore";
@@ -23,6 +24,7 @@ interface CsvData {
 }
 
 export function RosterImport() {
+  const router = useRouter();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<CsvData[]>([]);
@@ -109,7 +111,7 @@ export function RosterImport() {
       setTimeout(() => {
         setOpen(false);
         setSuccess(null);
-        window.location.reload(); // Refresh to see new students
+        router.refresh(); // Refresh to see new students without full reload
       }, 2000);
 
     } catch (err: any) {

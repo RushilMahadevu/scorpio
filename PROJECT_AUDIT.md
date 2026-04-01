@@ -52,17 +52,19 @@ The UI tells students: *"This event has been logged and your instructor has been
 
 --- -->
 
+
+<!-- # WILL BE IMPLEMENTED LATER
 ### 5. Grade email notification is disabled and left as dead code
 **File:** `functions/src/grading.ts` (lines 350–371)
 
 A `GradeAvailableEmail` block is completely commented out with a `//` comment saying "EMAIL NOTIFICATION (DISABLED)". This means students have no automated way to know when they get a grade back. This should either be properly implemented or removed.
 
----
+--- -->
 
-### 6. `window.location.reload()` used instead of proper state updates
+<!-- ### 6. `window.location.reload()` used instead of proper state updates
 **Files:** `student/page-client.tsx` (lines 250, 298), `teacher/network/page.tsx` (lines 372, 482, 519, 559), `roster-import.tsx` (line 112)
 
-Hard reloading the page to refresh state is a poor pattern — it flashes, is slow, and loses scroll position. These should use React state updates or router refresh (`router.refresh()`) instead.
+Hard reloading the page to refresh state is a poor pattern — it flashes, is slow, and loses scroll position. These should use React state updates or router refresh (`router.refresh()`) instead. -->
 
 ---
 

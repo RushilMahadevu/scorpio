@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
@@ -76,7 +77,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,9 +91,9 @@ import { NetworkStudents } from "@/components/teacher/network-students";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function NetworkPage() {
+  const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [networkMembers, setNetworkMembers] = useState<any[]>([]);
@@ -377,7 +377,7 @@ export default function NetworkPage() {
         ownerId: ownerToTransfer.id
       });
       toast.success(`Ownership transferred to ${ownerToTransfer.name}`);
-      window.location.reload();
+      router.refresh();
     } catch (e) {
       console.error(e);
       toast.error("Failed to transfer ownership.");
@@ -495,7 +495,7 @@ export default function NetworkPage() {
       }, { merge: true });
 
       // Refresh page state (assuming AuthProvider triggers or we manual update)
-      window.location.reload();
+      router.refresh();
     } catch (e) {
       console.error(e);
     }
@@ -532,7 +532,7 @@ export default function NetworkPage() {
       }, { merge: true });
 
       toast.success(`Joined ${orgData.name}! Connect with your students to sync your local collective.`);
-      window.location.reload();
+      router.refresh();
     } catch (e) {
       console.error(e);
       toast.error("Failed to join network. You may already be in one or have insufficient permissions.");
@@ -579,7 +579,7 @@ export default function NetworkPage() {
         console.log("Last member left. Organization deleted.");
       }
 
-      window.location.reload();
+      router.refresh();
     } catch (e) {
       console.error("Error leaving network:", e);
       toast.error("Failed to leave network accurately.");

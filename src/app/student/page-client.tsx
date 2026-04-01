@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { collection, getDocs, query, where, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
@@ -37,6 +38,7 @@ interface Stats {
 }
 
 export default function StudentDashboard() {
+  const router = useRouter();
   const { user, profile } = useAuth();
   const [stats, setStats] = useState<Stats>({
     totalAssignments: 0,
@@ -250,7 +252,7 @@ export default function StudentDashboard() {
       }, { merge: true });
 
       toast.success(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
-      window.location.reload(); // Reload to pick up new claims
+      router.refresh(); // Refresh to pick up new claims without full reload
     } catch (error: any) {
       console.error("Error joining class:", error);
       toast.error(`Failed to join class: ${error.message}`);
@@ -298,7 +300,7 @@ export default function StudentDashboard() {
       setCourseName(null);
       setClassCode("");
       toast.success("Successfully left class.");
-      window.location.reload(); // Refresh to clear context fully
+      router.refresh(); // Refresh to clear context without full reload
     } catch (error: any) {
       console.error("Error leaving class:", error);
       toast.error(`Failed to leave class: ${error.message}`);
