@@ -320,7 +320,7 @@ export default function WaypointsPage() {
                            <Star className="h-3 w-3 text-primary" />
                            {waypoint.forkCount || 0} Active Fork{(waypoint.forkCount || 0) !== 1 ? 's' : ''}
                         </span>
-                        <span>v1.2.0</span>
+                        <span>v1</span>
                       </div>
                     </CardContent>
                     

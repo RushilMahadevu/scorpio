@@ -66,35 +66,37 @@ A `GradeAvailableEmail` block is completely commented out with a `//` comment sa
 
 Hard reloading the page to refresh state is a poor pattern — it flashes, is slow, and loses scroll position. These should use React state updates or router refresh (`router.refresh()`) instead. -->
 
----
+<!-- ---
 
 ### 7. `any` types scattered across data-critical paths
 **Files:** `teacher/page-client.tsx`, `student/practice/page.tsx`, `student/submissions/page.tsx`, `teacher/create/page.tsx`, `teacher/network/page.tsx`
 
 Multiple interfaces use `any[]` for `questions`, `answers`, `history`, and `networkMembers`. These fields are read/written frequently and should have proper TypeScript interfaces.
 
----
+--- -->
 
 ## 🟡 Important Fixes (Should Fix Soon)
 
+<!-- # FIXED FROM PREV. CRIT. FIX
 ### 8. "Copy code" button shows `alert("Code copied!")` instead of toast
 **File:** `teacher/page-client.tsx` (line 459)
 
 This is inside the class code card — arguably the most-used teacher action. Native alert here is especially jarring.
 
----
+--- -->
 
+<!-- # Already done!
 ### 9. Settings dialog links to `/about`, `/contact`, `/privacy`, `/terms` — none exist
 **File:** `settings-dialog.tsx` (lines 168, 625, 635, 645)
 
 Clicking "Learn More About Scorpio", "Contact & Support", "Privacy Policy", and "Terms of Service" routes to pages that don't exist in the `src/app` directory. These will 404. Either build the pages or remove the buttons.
 
----
+--- -->
 
-### 10. Waypoints version is hardcoded as `v1.2.0`
+<!-- ### 10. Waypoints version is hardcoded as `v1.2.0`
 **File:** `teacher/waypoints/page.tsx` (line 323)
 
-Every waypoint card displays `v1.2.0` as a badge. This is a hardcoded string, not read from any data field, so it's permanently wrong as data evolves.
+Every waypoint card displays `v1.2.0` as a badge. This is a hardcoded string, not read from any data field, so it's permanently wrong as data evolves. -->
 
 ---
 
@@ -103,42 +105,42 @@ Every waypoint card displays `v1.2.0` as a badge. This is a hardcoded string, no
 
 The card reads: *"Centralized reference for General Physics (V1.2)"* and *"Your teacher has not uploaded specific formula restrictions..."* — this is all hardcoded static text. It should dynamically show teacher-uploaded restrictions (if any) or be removed.
 
----
+<!-- ---
 
 ### 12. Grading cloud function: `resendApiKey` secret defined but never used
 **File:** `functions/src/grading.ts` (line 7)
 
 `resendApiKey` is imported and declared on the function triggers (lines 379, 389) but the email block that would use it is commented out. This adds unnecessary secret fetching cost on every trigger execution.
 
----
+--- -->
 
 ### 13. `practice_history` update rule is missing
 **File:** `firestore.rules`
 
 The `practice_history` collection has `read`, `create`, and `delete` rules but **no `update` rule**. This is likely intentional, but it means any patch/update to an existing history entry by a student will silently fail.
 
----
+<!-- ---
 
 ### 14. Sidebar "formula-hub" navigation link may also be broken
 **File:** `student-sidebar.tsx` or `app-sidebar.tsx`
 
 Related to issue #2 — any sidebar nav link for the Equation Vault should point to `/student/vault` not `/student/formula-hub`. Verify the nav links are consistent.
 
----
+--- -->
 
-### 15. Assignment view "start screen" boxes use hard-coded light-mode colors
+<!-- ### 15. Assignment view "start screen" boxes use hard-coded light-mode colors
 **File:** `student/assignment-view/page.tsx` (lines 687–727)
 
 The lockdown warning uses `bg-red-50 border-red-200 text-red-700` and the work submission box uses `bg-blue-50 border-blue-200`. These don't adapt to dark mode and will look washed out or unreadable on dark theme.
 
----
+--- -->
 
 ## 🟢 Good-to-Have Features
-
+<!-- 
 ### F1. Toast system — unified notification layer
 Replace all `alert()` / `confirm()` / `window.*` usage with `sonner` toasts (already installed). Create a `toast.error`, `toast.success`, and a `<ConfirmDialog>` wrapper to standardize the entire platform.
 
----
+--- -->
 
 ### F2. Grade-back email notification for students
 Uncomment and complete the grading email trigger in `functions/src/grading.ts`. Students currently have zero automated feedback when a grade arrives. This is a major UX gap for an academic platform.
