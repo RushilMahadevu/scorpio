@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, MessageCircle, Github, HelpCircle, Send, Globe, Layout } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact Us | Scorpio AI Learning Platform",
+  title: "Contact • Scorpio",
   description: "Get in touch with the Scorpio team. We're here to help schools and educators transform physics education with AI.",
 };
 
@@ -71,15 +71,15 @@ export default function ContactPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
-               <div className="text-xs font-mono text-muted-foreground mb-4 truncate italic">
-                  {method.value}
-               </div>
-               <Button size="sm" className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-all" asChild>
-                  <a href={method.href} target={method.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer">
-                    {method.action}
-                    <Send className="h-3 w-3" />
-                  </a>
-               </Button>
+              <div className="text-xs font-mono text-muted-foreground mb-4 truncate italic">
+                {method.value}
+              </div>
+              <Button size="sm" className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-all" asChild>
+                <a href={method.href} target={method.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer">
+                  {method.action}
+                  <Send className="h-3 w-3" />
+                </a>
+              </Button>
             </CardContent>
           </Card>
         ))}
@@ -93,28 +93,28 @@ export default function ContactPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-medium">
           <div className="space-y-2">
-             <h3 className="text-sm font-bold text-foreground">Is Scorpio open source?</h3>
-             <p className="text-xs text-muted-foreground leading-relaxed">
-                Yes! Scorpio is licensed under the MIT license and is available for community contributions on GitHub.
-             </p>
+            <h3 className="text-sm font-bold text-foreground">Is Scorpio open source?</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Yes! Scorpio is licensed under the MIT license and is available for community contributions on GitHub.
+            </p>
           </div>
           <div className="space-y-2">
-             <h3 className="text-sm font-bold text-foreground">How do I reset my password?</h3>
-             <p className="text-xs text-muted-foreground leading-relaxed">
-                Password resets are handled securely through Firebase Auth. Click "Forgot Password" on the login screen.
-             </p>
+            <h3 className="text-sm font-bold text-foreground">How do I reset my password?</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Password resets are handled securely through Firebase Auth. Click "Forgot Password" on the login screen.
+            </p>
           </div>
           <div className="space-y-2">
-             <h3 className="text-sm font-bold text-foreground">Can I use this in my school?</h3>
-             <p className="text-xs text-muted-foreground leading-relaxed">
-                Scorpio is built for scale. Contact us for priority setup or documentation on self-hosting your own instance.
-             </p>
+            <h3 className="text-sm font-bold text-foreground">Can I use this in my school?</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Scorpio is built for scale. Contact us for priority setup or documentation on self-hosting your own instance.
+            </p>
           </div>
           <div className="space-y-2">
-             <h3 className="text-sm font-bold text-foreground">What AI models are supported?</h3>
-             <p className="text-xs text-muted-foreground leading-relaxed">
-                We currently optimize for Gemini 2.5 Flash, but our constraint architecture is model-agnostic.
-             </p>
+            <h3 className="text-sm font-bold text-foreground">What AI models are supported?</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              We currently optimize for Gemini 2.5 Flash, but our constraint architecture is model-agnostic.
+            </p>
           </div>
         </div>
       </section>

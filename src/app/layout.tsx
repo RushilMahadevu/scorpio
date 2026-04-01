@@ -35,12 +35,16 @@ const robotoMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorpio",
+    default: "Scorpio • The Verifiable AI Physics LMS",
     template: "%s • Scorpio",
   },
   description: "The only AI Physics LMS that prevents cheating. Our 4-layer constraint architecture enforces step-by-step derivation and genuine student understanding.",
   keywords: [
     "Physics LMS",
+    "AI LMS",
+    "AI Physics Tutor",
+    "AI Physics Learning",
+    "AI Physics Education",
     "Anti-Cheating Physics Platform",
     "Verifiable AI",
     "Academic Integrity Software",
@@ -58,7 +62,7 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
-    title: "Scorpio | The Verifiable AI Physics LMS",
+    title: "Scorpio • The Verifiable AI Physics LMS",
     description: "Enforce the struggle with the only LMS that prevents AI cheating. Research-grade constraint architecture for genuine physics mastery.",
     url: "https://scorpioedu.org",
     siteName: "Scorpio",

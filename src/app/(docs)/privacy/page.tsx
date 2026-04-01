@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Scorpio Student Data Protection",
+  title: "Privacy Policy • Scorpio",
   description: "Read how Scorpio protects student data, ensures COPPA/FERPA compliance, and secures educational records.",
 };
 
@@ -53,8 +53,8 @@ export default function PrivacyPage() {
           At Scorpio, we believe that education requires trust. Our privacy framework is designed to keep student data secure while enabling advanced AI learning.
         </p>
         <div className="flex items-center gap-2 text-sm text-muted-foreground italic bg-muted/30 w-fit px-4 py-1.5 rounded-full border border-border/40">
-           <FileText className="h-4 w-4" />
-           Last updated: February 16, 2026
+          <FileText className="h-4 w-4" />
+          Last updated: February 16, 2026
         </div>
       </section>
 
@@ -72,9 +72,9 @@ export default function PrivacyPage() {
             </div>
             <Card className="bg-card/40 border-border/50">
               <CardContent className="pt-6">
-                 <p className="text-sm text-muted-foreground leading-relaxed">
-                    {section.content}
-                 </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {section.content}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -90,10 +90,10 @@ export default function PrivacyPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold transition hover:opacity-90">
-               Request Data Export
+              Request Data Export
             </a>
             <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-border bg-background hover:bg-muted transition font-semibold">
-               Privacy Inquiry
+              Privacy Inquiry
             </a>
           </div>
         </div>

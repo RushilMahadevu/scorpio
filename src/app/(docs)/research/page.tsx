@@ -11,7 +11,7 @@ import CostComparisonChart from "@/components/admin/cost-comparison-chart";
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "Research & Methodology | Scorpio Verifiable AI Framework",
+  title: "Research & Methodology • Scorpio",
   description: "Explore Scorpio: A verifiable framework for enforcing Socratic scaffolding in physics LLMs beyond fine-tuning. Results from our 125-response expert-validated ablation study.",
   keywords: ["AI Research", "STEM Education", "Constraint Engineering", "Socratic Scaffolding", "Physics LLM", "Expert Validation"],
 };
