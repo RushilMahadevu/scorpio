@@ -8,7 +8,7 @@ Items are grouped by severity and area.
 
 ## 🔴 Critical Fixes (Must Fix)
 
-### 1. `window.alert()` used throughout — Breaks UX and looks broken
+<!-- ### 1. `window.alert()` used throughout — Breaks UX and looks broken
 **Files:** `student/page-client.tsx`, `student/assignment-view/page.tsx`, `teacher/page-client.tsx`, `teacher/create/page.tsx`, `teacher/uploads/page.tsx`, `teacher/grades/page.tsx`, `teacher/students/page.tsx`
 
 Native `alert()` and `confirm()` dialogs interrupt the browser, are unstyled, look terrible, and block the thread. Every single one should be replaced with the `sonner` toast library (already imported in the vault page) or a Dialog component.
@@ -21,7 +21,7 @@ confirm("Are you sure...")                    → <AlertDialog> with confirm but
 
 **Count:** ~20+ instances across the codebase.
 
----
+--- -->
 
 <!-- ### 2. Broken route: `/student/formula-hub` doesn't exist
 **File:** `src/app/student/page-client.tsx` (line 545)
@@ -38,19 +38,19 @@ The Quick Hub card links to `/student/formula-hub` but the actual route is `/stu
 
 ---
 
-### 3. Duplicate Firestore rule block
+<!-- ### 3. Duplicate Firestore rule block
 **File:** `firestore.rules` (lines 100–111)
 
-The `practice_history` collection rule is defined **twice** (lines 100–105 and 107–111), word-for-word identical. The second block is dead and can cause confusion during future edits.
+The `practice_history` collection rule is defined **twice** (lines 100–105 and 107–111), word-for-word identical. The second block is dead and can cause confusion during future edits. -->
 
----
-
+<!-- ---
+# REALTIME NOT NECCESSARY
 ### 4. "Instructor notified" message is a lie — tab violation isn't actually sent anywhere
 **File:** `student/assignment-view/page.tsx` (line 764)
 
 The UI tells students: *"This event has been logged and your instructor has been notified."* The `unfocusCount` is saved to the submission document, but no notification is actually sent to the teacher in real-time. Either implement the notification or soften the wording.
 
----
+--- -->
 
 ### 5. Grade email notification is disabled and left as dead code
 **File:** `functions/src/grading.ts` (lines 350–371)
