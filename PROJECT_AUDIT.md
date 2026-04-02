@@ -253,19 +253,19 @@ Every student fetch queries BOTH `students/` (legacy) and `users/` (unified). Th
 **File:** `teacher/page-client.tsx` (line 32 — `createdAt: any`)  
 Firestore Timestamps should be typed as `Timestamp | string | Date` and normalized at the point of use.
 
-### T3. Test files in project root
-`test-editor.js` and `test-tiptap.js` are sitting in the project root directory. These should be moved to `__tests__/` or deleted.
+### T3. Test files in project root (FIXED)
+~~`test-editor.js` and `test-tiptap.js` are sitting in the project root directory. These should be moved to `__tests__/` or deleted.~~ Moved to `__tests__/`.
 
 ### T4. `.DS_Store` files committed
 Several `.DS_Store` files exist in `src/` subfolders. Add `**/.DS_Store` to `.gitignore` and remove them from git tracking.
 
 ### T5. `fix-metadata.js` script in root — purpose unclear
 A `fix-metadata.js` file exists in the root but has no documentation. Add a comment explaining what it does and when to run it, or move it to `scripts/`.
-
+<!-- 
 ### T6. `gemini.ts` has grown to 80KB
 **File:** `src/lib/gemini.ts`
 
-At 80,368 bytes, this file is a monolith. It mixes AI prompts, PII scrubbing, response parsing, grading logic, tutor logic, practice generation, and chatbot logic. Split into domain-specific modules (`gemini-grading.ts`, `gemini-tutor.ts`, `gemini-practice.ts`, etc.)
+At 80,368 bytes, this file is a monolith. It mixes AI prompts, PII scrubbing, response parsing, grading logic, tutor logic, practice generation, and chatbot logic. Split into domain-specific modules (`gemini-grading.ts`, `gemini-tutor.ts`, `gemini-practice.ts`, etc.) -->
 
 ### T7. Empty `/src/components/dashboard/` directory
 `src/components/dashboard/` exists but is completely empty. Either populate it or remove it.
