@@ -11,6 +11,7 @@ import {
   Building2,
   Waypoints,
   PackageCheck,
+  Presentation,
 } from "lucide-react";
 import { AppSidebar } from "./app-sidebar";
 
@@ -36,6 +37,7 @@ export function TeacherSidebar({
   return (
     <AppSidebar
       roleLabel="Teacher"
+      roleIcon={Presentation}
       navItems={navItems}
       isCollapsed={isCollapsed}
       onToggle={onToggle}

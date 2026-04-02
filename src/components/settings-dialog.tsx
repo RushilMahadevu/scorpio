@@ -7,17 +7,17 @@ import {
   Sparkles, 
   User, 
   LogOut, 
-  Settings as SettingsIcon, 
+  SlidersHorizontal as SettingsIcon, 
   Palette, 
   Info, 
   KeyRound, 
-  Mail, 
+  Mails, 
   Shield, 
   FileText,
   CreditCard,
   Building2,
   CheckCircle2,
-  Trash2
+  Trash2,
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
@@ -279,7 +279,7 @@ export function SettingsDialog() {
                     onClick={() => setEmailChangeOpen(true)}
                     className="w-full justify-start h-10 cursor-pointer"
                   >
-                    <Mail className="mr-3 h-4 w-4" />
+                    <Mails className="mr-3 h-4 w-4" />
                     Change Email
                   </Button>
                   <Separator className="my-2" />
@@ -621,7 +621,7 @@ export function SettingsDialog() {
                   <img src="/favicon.svg" alt="Scorpio Logo" className="h-6 w-6" />
                 </div>
                 <h3 className="font-semibold">Scorpio</h3>
-                <p className="text-sm text-muted-foreground">Built for Sage Ridge School.</p>
+                <p className="text-sm text-muted-foreground">Built for Adaptive Learning.</p>
                 <p className="text-xs text-muted-foreground">Version 2.0</p>
               </div>
 
@@ -640,7 +640,7 @@ export function SettingsDialog() {
                   }}
                   className="w-full cursor-pointer"
                 >
-                  <Mail className="mr-2 h-4 w-4" />
+                  <Mails className="mr-2 h-4 w-4" />
                   Contact & Support
                 </Button>
                 <Button
@@ -668,10 +668,17 @@ export function SettingsDialog() {
               </div>
 
               <Separator />
-
               <div className="text-center">
-                <p className="text-xs text-muted-foreground font-bold">
-                    Made by Rushil Mahadevu
+                <p className="text-xs text-muted-foreground">
+                  Made by{" "}
+                  <a
+                    href="https://rushil-m.web.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold hover:underline"
+                  >
+                    Rushil Mahadevu
+                  </a>
                 </p>
               </div>
             </div>

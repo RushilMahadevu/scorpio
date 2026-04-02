@@ -12,8 +12,8 @@ import {
   LogOut,
   LucideIcon,
   Menu,
-  PanelLeft,
-  PanelRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   Home,
   Lock,
 } from "lucide-react";
@@ -33,6 +33,7 @@ export interface NavItem {
 
 interface AppSidebarProps {
   roleLabel: string;
+  roleIcon?: React.ComponentType<{ className?: string }>;
   navItems: NavItem[];
   isCollapsed: boolean;
   onToggle: () => void;
@@ -44,6 +45,7 @@ interface SidebarContentProps extends AppSidebarProps {
 
 function SidebarContent({
   roleLabel,
+  roleIcon: RoleIcon,
   navItems,
   isCollapsed,
   onNavigate,
@@ -62,17 +64,26 @@ function SidebarContent({
 
   return (
     <div className="flex h-full flex-col min-w-[72px] max-w-64 overflow-hidden">
-      <div className="px-4 py-6 border-b border-border/40 flex-shrink-0">
+      <div className="px-4 py-6 border-b border-border/40 flex-shrink-0 flex flex-col items-center">
         <motion.div
-          className="flex items-center gap-3 mb-6 px-2"
+          layout
+          className={cn(
+            "flex items-center gap-3 w-full px-2",
+            isCollapsed ? "justify-center" : "justify-start"
+          )}
           whileHover={{ scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <div className="bg-primary/20 p-2 rounded-xl shadow-inner-sm">
-            <CompassLogo className="h-6 w-6 text-foreground flex-shrink-0" />
-          </div>
-          <AnimatePresence mode="wait">
+          <motion.div 
+            layout
+            className="bg-primary/20 p-2 rounded-xl shadow-inner-sm flex-shrink-0"
+          >
+            <CompassLogo className="h-6 w-6 text-foreground" />
+          </motion.div>
+          <AnimatePresence mode="popLayout">
             {!isCollapsed && (
               <motion.span
+                layout
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -84,21 +95,6 @@ function SidebarContent({
             )}
           </AnimatePresence>
         </motion.div>
-
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="px-3 py-1.5 bg-muted/40 rounded-lg mb-2"
-            >
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap">
-                {roleLabel}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-4">
@@ -141,6 +137,30 @@ function SidebarContent({
           })}
         </nav>
       </ScrollArea>
+
+      <div className="px-3 mb-2">
+        <div className={cn(
+          "flex items-center gap-3 w-full transition-all duration-300",
+          isCollapsed ? "justify-center" : "px-3 py-1.5 bg-muted/40 rounded-lg"
+        )}>
+          {RoleIcon && (
+            <RoleIcon className={cn(
+              "h-4 w-4 transition-colors",
+              isCollapsed ? "text-muted-foreground" : "text-primary/70"
+            )} />
+          )}
+          {!isCollapsed && (
+            <motion.span
+              initial={{ opacity: 0, x: -5 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -5 }}
+              className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap"
+            >
+              {roleLabel}
+            </motion.span>
+          )}
+        </div>
+      </div>
 
       <div className="p-3 border-t border-border/40 space-y-3 bg-muted/10">
         <TooltipProvider>
@@ -212,7 +232,7 @@ function SidebarContent({
                 isCollapsed ? "" : "ml-auto"
               )}
             >
-              {isCollapsed ? <PanelRight className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+              {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
             </Button>
           </div>
 
@@ -241,6 +261,7 @@ function SidebarContent({
 
 export function AppSidebar({
   roleLabel,
+  roleIcon,
   navItems,
   isCollapsed,
   onToggle,
@@ -258,6 +279,7 @@ export function AppSidebar({
         <div className="w-full h-full overflow-hidden">
           <SidebarContent
             roleLabel={roleLabel}
+            roleIcon={roleIcon}
             navItems={navItems}
             isCollapsed={isCollapsed}
             onToggle={onToggle}
@@ -274,6 +296,7 @@ export function AppSidebar({
           <SheetContent side="left" className="w-64 p-0">
             <SidebarContent
               roleLabel={roleLabel}
+              roleIcon={roleIcon}
               navItems={navItems}
               isCollapsed={false}
               onToggle={() => { }}

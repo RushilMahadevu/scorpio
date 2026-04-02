@@ -35,6 +35,7 @@ export function StudentSidebar({
   return (
     <AppSidebar
       roleLabel="Student"
+      roleIcon={GraduationCap}
       navItems={navItems}
       isCollapsed={isCollapsed}
       onToggle={onToggle}
