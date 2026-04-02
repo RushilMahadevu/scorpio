@@ -37,7 +37,7 @@ interface Stats {
   grades: { name: string; score: number }[];
 }
 
-export default function StudentDashboard() {
+export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }) {
   const router = useRouter();
   const { user, profile } = useAuth();
   const [stats, setStats] = useState<Stats>({
@@ -55,6 +55,13 @@ export default function StudentDashboard() {
   const [joining, setJoining] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [dataReady, setDataReady] = useState(false);
+
+  useEffect(() => {
+    if (dataReady && onLoaded) {
+      onLoaded();
+    }
+  }, [dataReady, onLoaded]);
 
   useEffect(() => {
     async function syncTeacherId() {
@@ -187,8 +194,10 @@ export default function StudentDashboard() {
           pendingAssignments: Math.max(0, totalAssignments - completedAssignments),
           grades: gradedSubmissions,
         });
+        setDataReady(true);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setDataReady(true); // Still ready even if error
       }
     }
 

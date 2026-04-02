@@ -41,7 +41,7 @@ interface Stats {
   pendingSubmissions: number;
 }
 
-export default function TeacherDashboard() {
+export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }) {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({
     totalAssignments: 0,
@@ -57,6 +57,13 @@ export default function TeacherDashboard() {
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+  const [dataReady, setDataReady] = useState(false);
+
+  useEffect(() => {
+    if (dataReady && onLoaded) {
+      onLoaded();
+    }
+  }, [dataReady, onLoaded]);
 
   useEffect(() => {
     async function fetchStats() {
