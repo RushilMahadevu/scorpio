@@ -14,8 +14,8 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Home,
-  Lock,
+  PlaneLanding,
+  DoorClosedLocked,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
@@ -175,19 +175,19 @@ function SidebarContent({
               >
                 {!autoRedirect ? (
                   <Link href="/" className="flex items-center gap-2 w-full justify-center group" prefetch={false}>
-                    <Home className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <PlaneLanding className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     {!isCollapsed && (
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap group-hover:text-foreground transition-colors p-0.5">
-                        Main Site
+                        Landing Page
                       </span>
                     )}
                   </Link>
                 ) : (
                   <div className="flex items-center gap-2 w-full justify-center">
-                    <Lock className="h-4 w-4 text-muted-foreground/60" />
+                    <DoorClosedLocked className="h-4 w-4 text-muted-foreground/60" />
                     {!isCollapsed && (
                       <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] whitespace-nowrap">
-                        Main Locked
+                        Landing Page Locked
                       </span>
                     )}
                   </div>
@@ -197,7 +197,7 @@ function SidebarContent({
             {autoRedirect && (
               <TooltipContent side="right" className="max-w-[200px] text-xs font-bold p-3 bg-background border-border/50 text-foreground animate-in fade-in zoom-in-95 duration-200">
                 <p className="leading-relaxed">
-                  The landing page is disabled while <span className="text-primary italic">"Auto-Portal Redirect"</span> is ON. Disable it in settings to visit the home page.
+                  The landing page is disabled while <span className="text-primary italic">"Auto-Portal Redirect"</span> is ON. Disable it in settings to visit the PlaneLanding page.
                 </p>
               </TooltipContent>
             )}

@@ -10,13 +10,14 @@ import {
   SlidersHorizontal as SettingsIcon, 
   Palette, 
   Info, 
-  KeyRound, 
+  RotateCcwKey, 
   Mails, 
   Shield, 
   FileText,
   CreditCard,
   Building2,
   CheckCircle2,
+  Mail,
   Trash2,
 } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -270,7 +271,7 @@ export function SettingsDialog() {
                     onClick={handlePasswordReset}
                     className="w-full justify-start h-10 cursor-pointer"
                   >
-                    <KeyRound className="mr-3 h-4 w-4" />
+                    <RotateCcwKey className="mr-3 h-4 w-4" />
                     Reset Password
                   </Button>
                   <Button
@@ -493,9 +494,9 @@ export function SettingsDialog() {
                           className="grid grid-cols-5 gap-2"
                         >
                           {[0, 10, 25, 40, 50].map((level) => (
-                            <div key={level} className="flex flex-col items-center gap-1 cursor-pointer">
-                              <RadioGroupItem value={String(level)} id={`spacy-${level}`} />
-                              <Label htmlFor={`spacy-${level}`} className="text-xs text-center">
+                            <div key={level} className="flex flex-col items-center gap-1">
+                              <RadioGroupItem value={String(level)} id={`spacy-${level}`} className="cursor-pointer" />
+                              <Label htmlFor={`spacy-${level}`} className="text-xs text-center cursor-pointer">
                                 {level === 0
                                   ? "Off"
                                   : level === 10
@@ -519,7 +520,7 @@ export function SettingsDialog() {
                             <div key={level} className="flex flex-col items-center">
                               <button
                                 onClick={() => setNebulaBrightness(level)}
-                                className={`w-full py-2 px-1 text-[10px] font-medium rounded-md border transition-all ${
+                                className={`w-full py-2 px-1 text-[10px] font-medium rounded-md border transition-all cursor-pointer ${
                                   nebulaBrightness === level
                                     ? "bg-primary text-primary-foreground border-primary"
                                     : "bg-background hover:bg-muted border-border"
@@ -640,7 +641,7 @@ export function SettingsDialog() {
                   }}
                   className="w-full cursor-pointer"
                 >
-                  <Mails className="mr-2 h-4 w-4" />
+                  <Mail className="mr-2 h-4 w-4" />
                   Contact & Support
                 </Button>
                 <Button

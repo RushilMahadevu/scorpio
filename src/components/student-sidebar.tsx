@@ -8,6 +8,7 @@ import {
   Library,
   GraduationCap,
   PackageOpen,
+  ChartColumnBig,
   BowArrow,
   NotebookPen
 } from "lucide-react";
@@ -17,7 +18,7 @@ const navItems = [
   { href: "/student", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/assignments", label: "Assignments", icon: FileText },
   { href: "/student/submissions", label: "My Submissions", icon: FileCheck },
-  { href: "/student/grades", label: "Grades", icon: GraduationCap },
+  { href: "/student/grades", label: "Grades", icon: ChartColumnBig },
   { href: "/student/practice", label: "Practice", icon: BowArrow },
   { href: "/student/notebook", label: "Notebook", icon: NotebookPen },
   { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },

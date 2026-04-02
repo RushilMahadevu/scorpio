@@ -6,7 +6,7 @@
         "PROJECT_AUDIT.md"
     ],
     "permission": {
-        "edit": "ask",
+        "edit": "allow",
         "delete": "ask",
         "bash": {
             "*": "allow",
