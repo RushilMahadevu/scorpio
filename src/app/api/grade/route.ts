@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { gradeResponse } from '@/lib/gemini';
+import { gradeResponse } from '@/lib/ai/grading';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
 export async function POST(req: NextRequest) {

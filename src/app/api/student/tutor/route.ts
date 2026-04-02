@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { explainPhysicsConcept, helpSolveProblem } from "@/lib/gemini";
+import { explainPhysicsConcept, helpSolveProblem } from "@/lib/ai/tutor";
 import { adminDb } from "@/lib/firebase-admin";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
 

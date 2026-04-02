@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
-import { generatePracticeProblem } from '@/lib/gemini';
+import { generatePracticeProblem } from '@/lib/ai/practice';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
 export async function POST(req: NextRequest) {

@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { collection, addDoc, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { parseQuestionsManually } from "@/lib/gemini";
+import { parseQuestionsManually } from "@/lib/ai/assignment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

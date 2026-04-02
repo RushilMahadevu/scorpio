@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MathInputField } from "@/components/math-input";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { helpSolveProblem } from "@/lib/gemini";
+import { helpSolveProblem } from "@/lib/ai/tutor";
 import "katex/dist/katex.min.css";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 

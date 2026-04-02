@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseQuestionsFromText } from "@/lib/gemini";
+import { parseQuestionsFromText } from "@/lib/ai/assignment";
 import { adminDb } from "@/lib/firebase-admin";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
 

@@ -114,10 +114,10 @@ The card reads: *"Centralized reference for General Physics (V1.2)"* and *"Your 
 
 --- -->
 
-### 13. `practice_history` update rule is missing
+<!-- ### 13. `practice_history` update rule is missing
 **File:** `firestore.rules`
 
-The `practice_history` collection has `read`, `create`, and `delete` rules but **no `update` rule**. This is likely intentional, but it means any patch/update to an existing history entry by a student will silently fail.
+The `practice_history` collection has `read`, `create`, and `delete` rules but **no `update` rule**. This is likely intentional, but it means any patch/update to an existing history entry by a student will silently fail. -->
 
 <!-- ---
 
@@ -229,8 +229,7 @@ The assignment view uses `ResizablePanelGroup` with a horizontal split for the S
 
 --- -->
 
-<!-- 
-# Fixed!
+<!-- # Fixed!
 ### F16. Missing 404 page styling consistency
 **File:** `src/app/not-found.tsx`
 

@@ -12,7 +12,7 @@ import {
   exportToCSV,
   generateComprehensiveLatexTables,
   estimateStudyCost
-} from "@/lib/gemini";
+} from "@/lib/ai/research";
 
 export default function ResearchPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

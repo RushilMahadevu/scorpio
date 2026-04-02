@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { getNetworkLimitsHelp, NetworkLimitsContext } from '@/lib/gemini';
+import { getNetworkLimitsHelp } from '@/lib/ai/network';
+import type { NetworkLimitsContext } from '@/lib/ai/network';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
 export async function POST(req: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
-import { getNotebookAssistantResponse } from "@/lib/gemini";
+import { getNotebookAssistantResponse } from "@/lib/ai/notebook";
 
 export async function POST(req: NextRequest) {
   if (!adminDb) {

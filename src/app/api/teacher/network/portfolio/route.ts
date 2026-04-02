@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, adminFieldWithValue } from "@/lib/firebase-admin";
-import { generateStudentPortfolio } from "@/lib/gemini";
+import { generateStudentPortfolio } from "@/lib/ai/network";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
 
 
