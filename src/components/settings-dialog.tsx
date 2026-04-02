@@ -58,7 +58,7 @@ export function SettingsDialog() {
     nebulaBrightness,
     setNebulaBrightness
   } = useSpaceEffects()
-  const { font, setFont, themeColor, setThemeColor } = useAppearance()
+  const { font, setFont, themeColor, setThemeColor, customColor, setCustomColor } = useAppearance()
   const { user, role, profile } = useAuth()
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
@@ -146,20 +146,16 @@ export function SettingsDialog() {
   }
 
   const getInitials = (name: string | null | undefined, email?: string | null) => {
-    // First try display name
     if (name && typeof name === 'string' && name.trim()) {
       return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     }
     
-    // Then try email
     if (email && typeof email === 'string' && email.trim()) {
       const emailName = email.split("@")[0]
       if (emailName) {
-        // If email has dots (like first.last), use those initials
         if (emailName.includes(".")) {
           return emailName.split(".").map(n => n[0]).join("").toUpperCase().slice(0, 2)
         } else {
-          // Otherwise use first 2 characters
           return emailName.substring(0, 2).toUpperCase()
         }
       }
@@ -383,14 +379,14 @@ export function SettingsDialog() {
                 <div className="space-y-3">
                   <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-1 gap-2">
                     <div
-                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                      onClick={() => handleThemeChange("dark")}
+                      className={`flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer ${theme === "light" && themeColor === "midnight" ? "opacity-50 grayscale pointer-events-none" : ""}`}
+                      onClick={() => !(theme === "light" && themeColor === "midnight") && handleThemeChange("dark")}
                     >
-                      <RadioGroupItem value="dark" id="dark-theme" />
+                      <RadioGroupItem value="dark" id="dark-theme" disabled={theme === "light" && themeColor === "midnight"} />
                       <div className="flex items-center gap-2">
                         <Moon className="h-4 w-4" />
                         <div>
-                          <Label htmlFor="dark-theme" className="font-medium">Dark</Label>
+                          <Label htmlFor="dark-theme" className={`font-medium ${theme === "light" && themeColor === "midnight" ? "" : "cursor-pointer"}`}>Dark</Label>
                           <p className="text-xs text-muted-foreground">Perfect for late-night studying</p>
                         </div>
                       </div>
@@ -449,13 +445,37 @@ export function SettingsDialog() {
                       onClick={() => setThemeColor(t.value as ThemeColor)}
                       className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${
                         themeColor === t.value ? "border-primary bg-primary/5" : "border-transparent"
-                      }`}
+                      } ${t.value === "midnight" && theme === "light" ? "opacity-50 grayscale pointer-events-none" : ""}`}
                       title={t.name}
+                      disabled={t.value === "midnight" && theme === "light"}
                     >
                       <div className={`h-6 w-6 rounded-full ${t.color} shadow-sm group-hover:scale-110 transition-transform`} />
                       <span className="text-[10px] font-medium truncate w-full text-center">{t.name}</span>
                     </button>
                   ))}
+                  <button
+                    onClick={() => setThemeColor("custom")}
+                    className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${
+                      themeColor === "custom" ? "border-primary bg-primary/5" : "border-transparent"
+                    }`}
+                    title="Custom Color"
+                  >
+                    <div 
+                      className="h-6 w-6 rounded-full shadow-sm group-hover:scale-110 transition-transform relative overflow-hidden" 
+                      style={{ backgroundColor: customColor }}
+                    >
+                      <input
+                        type="color"
+                        value={customColor}
+                        onChange={(e) => {
+                          setCustomColor(e.target.value)
+                          setThemeColor("custom")
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium truncate w-full text-center">Custom</span>
+                  </button>
                 </div>
               </div>
 
@@ -612,7 +632,8 @@ export function SettingsDialog() {
                     </div>
                   </RadioGroup>
                 </div>
-              </div>            </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="learn-more" className="space-y-4 mt-4">

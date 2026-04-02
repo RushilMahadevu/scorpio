@@ -3,13 +3,15 @@
 import * as React from "react";
 
 export type FontOption = "inter" | "ibm-plex-sans" | "verdana" | "roboto-mono" | "opendyslexic";
-export type ThemeColor = "default" | "ocean" | "violet" | "rose" | "amber" | "emerald" | "midnight";
+export type ThemeColor = "default" | "ocean" | "violet" | "rose" | "amber" | "emerald" | "midnight" | "custom";
 
 interface AppearanceContextType {
   font: FontOption;
   setFont: (font: FontOption) => void;
   themeColor: ThemeColor;
   setThemeColor: (theme: ThemeColor) => void;
+  customColor: string;
+  setCustomColor: (color: string) => void;
 }
 
 const AppearanceContext = React.createContext<AppearanceContextType | undefined>(undefined);
@@ -17,6 +19,7 @@ const AppearanceContext = React.createContext<AppearanceContextType | undefined>
 export function AppearanceProvider({ children }: { children: React.ReactNode }) {
   const [font, setFontState] = React.useState<FontOption>("inter");
   const [themeColor, setThemeColorState] = React.useState<ThemeColor>("default");
+  const [customColor, setCustomColorState] = React.useState<string>("#3b82f6");
 
   React.useEffect(() => {
     const storedFont = localStorage.getItem("app-font") as FontOption;
@@ -25,8 +28,13 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     }
     
     const storedTheme = localStorage.getItem("app-theme-color") as ThemeColor;
-    if (storedTheme && ["default", "ocean", "violet", "rose", "amber", "emerald", "midnight"].includes(storedTheme)) {
+    if (storedTheme && ["default", "ocean", "violet", "rose", "amber", "emerald", "midnight", "custom"].includes(storedTheme)) {
       setThemeColorState(storedTheme);
+    }
+
+    const storedCustomColor = localStorage.getItem("app-custom-color");
+    if (storedCustomColor) {
+      setCustomColorState(storedCustomColor);
     }
   }, []);
 
@@ -47,6 +55,14 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     }, 300);
   };
 
+  const setCustomColor = (newColor: string) => {
+    setCustomColorState(newColor);
+    localStorage.setItem("app-custom-color", newColor);
+    if (themeColor === "custom") {
+      document.documentElement.style.setProperty("--primary", newColor);
+    }
+  };
+
   // Synchronize classes with state
   React.useEffect(() => {
     const html = document.documentElement;
@@ -57,13 +73,21 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     html.classList.add(`font-${font}`);
     
     // Manage Theme Classes
-    const themeClasses = ["theme-default", "theme-ocean", "theme-violet", "theme-rose", "theme-amber", "theme-emerald", "theme-midnight"];
+    const themeClasses = ["theme-default", "theme-ocean", "theme-violet", "theme-rose", "theme-amber", "theme-emerald", "theme-midnight", "theme-custom"];
     html.classList.remove(...themeClasses);
     html.classList.add(`theme-${themeColor}`);
-  }, [font, themeColor]);
+
+    if (themeColor === "custom") {
+      html.style.setProperty("--primary", customColor);
+      // Also update other primary-related variables if necessary
+      // e.g., --primary-foreground can be calculated or set to a default
+    } else {
+      html.style.removeProperty("--primary");
+    }
+  }, [font, themeColor, customColor]);
 
   return (
-    <AppearanceContext.Provider value={{ font, setFont, themeColor, setThemeColor }}>
+    <AppearanceContext.Provider value={{ font, setFont, themeColor, setThemeColor, customColor, setCustomColor }}>
       {children}
     </AppearanceContext.Provider>
   );
