@@ -606,7 +606,7 @@ function CreateAssignmentForm() {
                 <div className="space-y-2">
                   <Label htmlFor="course">Class / Section <span className="text-destructive">*</span></Label>
                   <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                    <SelectTrigger id="course">
+                    <SelectTrigger id="course" className="cursor-pointer">
                       <SelectValue placeholder="Select a class..." />
                     </SelectTrigger>
                     <SelectContent>

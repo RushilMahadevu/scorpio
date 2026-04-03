@@ -35,7 +35,7 @@ export default function AssignmentsPage() {
   const [courses, setCourses] = useState<{id: string, name: string}[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("all");
   const [filter, setFilter] = useState<string>("all");
-  const [sort, setSort] = useState<string>("dueDateAsc");
+  const [sort, setSort] = useState<string>("dueDateDesc");
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
@@ -172,8 +172,8 @@ export default function AssignmentsPage() {
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="dueDateAsc" className="cursor-pointer">Due Date (Earliest)</SelectItem>
               <SelectItem value="dueDateDesc" className="cursor-pointer">Due Date (Latest)</SelectItem>
+              <SelectItem value="dueDateAsc" className="cursor-pointer">Due Date (Earliest)</SelectItem>
               <SelectItem value="titleAsc" className="cursor-pointer">Title (A-Z)</SelectItem>
               <SelectItem value="titleDesc" className="cursor-pointer">Title (Z-A)</SelectItem>
             </SelectContent>
@@ -263,6 +263,13 @@ export default function AssignmentsPage() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      {isPastDue(assignment.dueDate) ? (
+                        <Badge variant="destructive">Past Due</Badge>
+                      ) : (
+                        <Badge variant="outline">Active</Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
