@@ -151,11 +151,11 @@ Uncomment and complete the grading email trigger in `functions/src/grading.ts`. 
 The teacher dashboard shows pending submissions pulled on page load. Add a Firestore `onSnapshot` listener so the "Pending Review" stat card updates live without requiring a page refresh.
 
 --- -->
-
+<!-- 
 ### F4. Student grade trend chart on submissions page
 The student dashboard shows a bar chart but only for the last 5 submissions with labels like `A1`, `A2`. Add actual assignment titles as labels and show trend direction (improving/declining) to make it actionable.
 
----
+--- -->
 
 ### F5. Teacher assignment duplicate / clone feature
 Currently teachers can "Acquire Template" from the Waypoints library via fork, but can't clone one of their **own** existing assignments. A "Duplicate" button on each assignment card in `/teacher/assignments` would save significant time.
@@ -178,11 +178,11 @@ The `dueDate` field is stored on assignments but the student assignment view nev
 Once all checklist items are complete, the checklist stays visible. It should auto-collapse or offer a "Dismiss forever" option. Similarly, it shouldn't re-appear for experienced users who've completed setup long ago.
 
 --- -->
-
+<!-- 
 ### F9. Teacher "Pending Grading" deep-link to specific submission
 In the teacher dashboard, clicking a pending submission item links to the assignment overview (`/teacher/assignment-view?id=...`), not directly to that student's submission. Add a direct link to `/teacher/submission/grade?id=...` to save clicks.
 
----
+--- -->
 
 ### F10. Notebook auto-save / save indicator
 **File:** `student/notebook/page.tsx`
@@ -213,12 +213,12 @@ After network creation, renaming, joining, or leaving — the page does a full r
 
 --- -->
 
-### F14. AI Tutor — session persistence across page reloads
+<!-- ### F14. AI Tutor — session persistence across page reloads
 **File:** `student/tutor/page.tsx`
 
 The tutor chat uses Firestore `tutor_sessions` collection. Verify the session is actually loaded on mount so students don't lose their conversation when refreshing. If it's already done, this is fine — but confirm there's no regression after recent changes.
 
----
+--- -->
 
 <!--
 # Unnecessary as mobile is not supported
@@ -256,11 +256,11 @@ Firestore Timestamps should be typed as `Timestamp | string | Date` and normaliz
 ### T3. Test files in project root (FIXED)
 ~~`test-editor.js` and `test-tiptap.js` are sitting in the project root directory. These should be moved to `__tests__/` or deleted.~~ Moved to `__tests__/`.
 
-### T4. `.DS_Store` files committed
-Several `.DS_Store` files exist in `src/` subfolders. Add `**/.DS_Store` to `.gitignore` and remove them from git tracking.
+<!-- ### T4. `.DS_Store` files committed
+Several `.DS_Store` files exist in `src/` subfolders. Add `**/.DS_Store` to `.gitignore` and remove them from git tracking. -->
 
-### T5. `fix-metadata.js` script in root — purpose unclear
-A `fix-metadata.js` file exists in the root but has no documentation. Add a comment explaining what it does and when to run it, or move it to `scripts/`.
+<!-- ### T5. `fix-metadata.js` script in root — purpose unclear -->
+<!-- A `fix-metadata.js` file exists in the root but has no documentation. Add a comment explaining what it does and when to run it, or move it to `scripts/`. -->
 <!-- 
 ### T6. `gemini.ts` has grown to 80KB
 **File:** `src/lib/gemini.ts`

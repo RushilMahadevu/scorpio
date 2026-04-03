@@ -64,15 +64,25 @@ function AssignmentDetailsContent() {
         
         const submissionsData = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
           const data = docSnapshot.data();
-          let studentName = "Unknown Student";
-          let studentEmail = "";
           
-          if (data.studentId) {
-            const studentDoc = await getDoc(doc(db, "students", data.studentId));
-            if (studentDoc.exists()) {
-              const studentData = studentDoc.data();
-              studentName = studentData.name || "Unknown";
-              studentEmail = studentData.email;
+          // Filter out draft submissions
+          if (data.status === 'draft') return null;
+          
+          // Use studentName and studentEmail from submission document
+          let studentName = data.studentName || "Unknown Student";
+          let studentEmail = data.studentEmail || "";
+          
+          // Fallback to users collection if name is missing
+          if (studentName === "Unknown Student" && data.studentId) {
+            try {
+              const userDoc = await getDoc(doc(db, "users", data.studentId));
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                studentName = userData.displayName || userData.name || "Unknown Student";
+                studentEmail = userData.email || studentEmail;
+              }
+            } catch (error) {
+              console.error(`Error fetching user ${data.studentId}:`, error);
             }
           }
 
@@ -85,7 +95,8 @@ function AssignmentDetailsContent() {
           };
         }));
 
-        setSubmissions(submissionsData as Submission[]);
+        // Filter out null entries (draft submissions)
+        setSubmissions(submissionsData.filter(s => s !== null) as Submission[]);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
