@@ -88,7 +88,7 @@ function SidebarContent({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
-                className="font-black text-xl tracking-tighter whitespace-nowrap"
+                className="font-inter font-black text-xl tracking-tighter whitespace-nowrap"
               >
                 Scorpio
               </motion.span>

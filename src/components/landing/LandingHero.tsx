@@ -115,7 +115,7 @@ export function LandingHero() {
         </div>
 
         <motion.h1
-          className="text-6xl md:text-8xl font-black mb-6 text-foreground pb-2"
+          className="text-6xl md:text-8xl font-black font-inter tracking-tighter mb-6 text-foreground pb-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}

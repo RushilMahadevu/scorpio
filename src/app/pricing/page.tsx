@@ -42,9 +42,9 @@ export default function PricingPage() {
       <motion.header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
         initial={{ opacity: 0, y: -40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}>
         <div className="flex items-center justify-between px-6 py-3.5 max-w-[1400px] mx-auto w-full">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0 !font-inter">
             <Logo size={20} className="text-foreground" />
-            <span className="text-sm font-extrabold">Scorpio</span>
+            <span className="text-sm font-inter font-black tracking-tighter">Scorpio</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
             {navLinks.map(({ label, href }) => (
@@ -283,8 +283,8 @@ export default function PricingPage() {
       <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
         <div className="container mx-auto px-6 py-12">
           <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-            <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0">
-              <Logo size={24} className="text-foreground" /><span className="text-md font-extrabold">Scorpio</span>
+            <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0 !font-inter">
+              <Logo size={24} className="text-foreground" /><span className="text-md font-inter font-black tracking-tighter">Scorpio</span>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-0">
               {[

@@ -17,7 +17,7 @@ interface AppearanceContextType {
 const AppearanceContext = React.createContext<AppearanceContextType | undefined>(undefined);
 
 export function AppearanceProvider({ children }: { children: React.ReactNode }) {
-  const [font, setFontState] = React.useState<FontOption>("inter");
+  const [font, setFontState] = React.useState<FontOption>("ibm-plex-sans");
   const [themeColor, setThemeColorState] = React.useState<ThemeColor>("default");
   const [customColor, setCustomColorState] = React.useState<string>("#3b82f6");
 

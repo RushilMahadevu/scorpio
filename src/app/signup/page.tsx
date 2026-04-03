@@ -183,7 +183,7 @@ export default function SignupPage() {
             >
               <Logo size={48} className="text-primary" />
             </motion.div>
-            <CardTitle className="text-2xl font-bold">Join Scorpio</CardTitle>
+            <CardTitle className="text-2xl font-inter font-bold tracking-tighter">Join Scorpio</CardTitle>
             <CardDescription>Create your account to get started</CardDescription>
           </CardHeader>
           <CardContent>

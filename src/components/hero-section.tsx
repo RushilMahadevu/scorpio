@@ -45,7 +45,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
         >
-          <h1 className="text-7xl md:text-6xl font-bold tracking-tight leading-none">
+          <h1 className="text-7xl md:text-6xl font-inter font-black tracking-tighter leading-none">
             Scorpio
           </h1>
         </motion.div>

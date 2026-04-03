@@ -74,7 +74,7 @@ html.lenis {
   --font-roboto-mono: var(--font-roboto-mono);
   --font-verdana: Verdana, Geneva, sans-serif;
   --font-opendyslexic: "OpenDyslexic", sans-serif;
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-ibm-plex-sans);
   --font-mono: var(--font-roboto-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

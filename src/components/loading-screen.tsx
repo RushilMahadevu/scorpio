@@ -142,7 +142,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                       filter: "blur(4px)",
                       transition: { duration: 0.2, ease: "easeIn" }
                     }}
-                    className="inline-block font-sans text-5xl md:text-6xl font-black text-foreground tracking-tighter px-[0.01em]"
+                    className="inline-block font-inter text-5xl md:text-6xl font-black text-foreground tracking-tighter px-[0.01em]"
                   >
                     {char}
                   </motion.span>

@@ -270,7 +270,7 @@ export default function LoginPage() {
             >
               <Logo size={48} className="text-primary" />
             </motion.div>
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-inter font-black tracking-tighter">Welcome Back</CardTitle>
             <CardDescription>Sign in to Scorpio</CardDescription>
           </CardHeader>
           <CardContent>

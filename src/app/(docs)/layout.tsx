@@ -22,14 +22,14 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         <div className="flex items-center gap-3 p-8 border-b border-border/10">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-all hover:scale-105 active:scale-95">
             <Logo size={28} className="text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />
-            <span className="font-black text-xl tracking-tigther">Scorpio</span>
+            <span className="font-black text-xl tracking-tigther">Scorpio Docs</span>
           </Link>
         </div>
 
         <ScrollArea className="flex-1 py-10 px-6">
           <div className="mb-6 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2">
             <span className="w-4 h-px bg-primary/30" />
-            Documentation
+            Docs
           </div>
           <DocsSidebar />
         </ScrollArea>
@@ -57,7 +57,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border/40 bg-background/60 backdrop-blur-md sticky top-0 z-40">
           <Link href="/" className="flex items-center gap-2">
             <Logo size={20} className="text-primary" />
-            <span className="font-bold tracking-tighter uppercase italic">Scorpio Docs</span>
+            <span className="font-bold tracking-tighter ">Scorpio Docs</span>
           </Link>
           <Sheet>
             <SheetTrigger asChild>
@@ -68,12 +68,12 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             <SheetContent side="left" className="w-72 p-0 bg-background/95 backdrop-blur-xl border-r border-border/40">
               <div className="flex items-center gap-3 p-8 border-b border-border/10">
                 <Logo size={28} className="text-primary" />
-                <span className="font-black text-xl tracking-tighter uppercase italic">Scorpio</span>
+                <span className="text-xl font-black tracking-tighter">Scorpio Docs</span>
               </div>
               <div className="p-6">
                 <div className="mb-6 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2">
                   <span className="w-4 h-px bg-primary/30" />
-                  Documentation
+                  Docs
                 </div>
                 <DocsSidebar />
                 <div className="mt-10 pt-8 border-t border-border/10">

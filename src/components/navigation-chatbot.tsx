@@ -215,7 +215,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black tracking-tight text-foreground">Scorpio AI</p>
+              <p className="text-sm font-inter font-black tracking-tighter text-foreground">Scorpio AI</p>
               <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
                 Online · Platform Expert

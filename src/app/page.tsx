@@ -152,9 +152,9 @@ export default function Home() {
                   <Link href="/" className="flex items-center gap-4 group shrink-0">
                     <div className="relative">
                       <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-700 opacity-0 group-hover:opacity-100" />
-                      <Logo size={28} className="text-foreground relative z-10 group-hover:rotate-[20deg] transition-transform duration-500" />
+                      <Logo size={24} className="text-foreground relative z-10 group-hover:rotate-[20deg] transition-transform duration-500" />
                     </div>
-                    <span className="text-xl font-black tracking-tighter group-hover:text-primary transition-colors">Scorpio</span>
+                    <span className="font-inter text-xl font-black tracking-tighter group-hover:text-primary transition-colors">Scorpio</span>
                   </Link>
 
                   {/* Unified Desktop Navigation Track */}

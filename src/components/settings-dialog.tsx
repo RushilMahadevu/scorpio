@@ -572,25 +572,25 @@ export function SettingsDialog() {
                   >
                     <div
                       className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                      onClick={() => setFont("inter")}
-                    >
-                      <RadioGroupItem value="inter" id="font-inter" />
-                      <div className="flex items-center gap-2">
-                        <div style={{ fontFamily: 'var(--font-inter)' }}>
-                          <Label htmlFor="font-inter" className="font-medium">Inter (Default)</Label>
-                          <p className="text-xs text-muted-foreground">Standard, modern, and highly readable</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
                       onClick={() => setFont("ibm-plex-sans")}
                     >
                       <RadioGroupItem value="ibm-plex-sans" id="font-ibm-plex-sans" />
                       <div className="flex items-center gap-2">
                         <div style={{ fontFamily: 'var(--font-ibm-plex-sans)' }}>
-                          <Label htmlFor="font-ibm-plex-sans" className="font-medium">IBM Plex Sans</Label>
+                          <Label htmlFor="font-ibm-plex-sans" className="font-medium text-foreground">IBM Plex Sans (Default)</Label>
                           <p className="text-xs text-muted-foreground">Technical, precise, and professional</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("inter")}
+                    >
+                      <RadioGroupItem value="inter" id="font-inter" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'var(--font-inter)' }}>
+                          <Label htmlFor="font-inter" className="font-medium text-foreground">Inter</Label>
+                          <p className="text-xs text-muted-foreground">Standard, modern, and highly readable</p>
                         </div>
                       </div>
                     </div>
@@ -642,7 +642,7 @@ export function SettingsDialog() {
                 <div className="bg-primary/10 p-3 rounded-full w-fit mx-auto">
                   <img src="/favicon.svg" alt="Scorpio Logo" className="h-6 w-6" />
                 </div>
-                <h3 className="font-semibold">Scorpio</h3>
+                <h3 className="font-inter font-bold tracking-tighter">Scorpio</h3>
                 <p className="text-sm text-muted-foreground">Built for Adaptive Learning.</p>
                 <p className="text-xs text-muted-foreground">Version 2.0</p>
               </div>

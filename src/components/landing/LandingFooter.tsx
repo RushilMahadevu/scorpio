@@ -8,9 +8,9 @@ export function LandingFooter() {
       <div className="container mx-auto px-6 py-12">
         <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           {/* Logo Section */}
-          <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0">
+          <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0 !font-inter">
             <Logo size={24} className="text-foreground" />
-            <span className="text-md font-extrabold">Scorpio</span>
+            <span className="text-md font-inter font-black tracking-tighter">Scorpio</span>
           </div>
 
           {/* Links Section */}

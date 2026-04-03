@@ -110,8 +110,8 @@ export function ModeToggle() {
             </div>
             <div className="flex flex-col gap-1">
               {[
-                { id: "inter", label: "Inter (Default)", font: "var(--font-inter)" },
-                { id: "ibm-plex-sans", label: "IBM Plex", font: "var(--font-ibm-plex-sans)" },
+                { id: "ibm-plex-sans", label: "IBM Plex (Default)", font: "var(--font-ibm-plex-sans)" },
+                { id: "inter", label: "Inter", font: "var(--font-inter)" },
                 { id: "verdana", label: "Verdana", font: "Verdana, sans-serif" },
                 { id: "roboto-mono", label: "Roboto Mono", font: "var(--font-roboto-mono)" },
                 { id: "opendyslexic", label: "OpenDyslexic", font: "OpenDyslexic, sans-serif" }

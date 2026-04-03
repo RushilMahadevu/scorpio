@@ -46,9 +46,9 @@ export function LandingHeader() {
     >
       <div className="flex items-center justify-between px-6 py-3.5 max-w-[1400px] mx-auto w-full">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0 !font-inter">
           <Logo size={20} className="text-foreground" />
-          <span className="text-sm font-extrabold">Scorpio</span>
+          <span className="text-sm font-inter font-black tracking-tighter">Scorpio</span>
         </Link>
 
         {/* Desktop Nav */}
