@@ -12,7 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Trash2, Eye, Share2, Globe, Lock, ShieldCheck, ShieldAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { PlusCircle, Trash2, Eye, Share2, Globe, Lock, ShieldCheck, ShieldAlert, Copy } from "lucide-react";
+import { addDoc } from "firebase/firestore";
 
 interface Assignment {
   id: string;
@@ -30,6 +32,7 @@ interface Assignment {
 
 export default function AssignmentsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<{id: string, name: string}[]>([]);
@@ -82,6 +85,17 @@ export default function AssignmentsPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleDuplicate(assignment: Assignment) {
+    if (!user) return;
+    const { id, courseName, ...rest } = assignment;
+    const waypointData = {
+      ...rest,
+      title: `${assignment.title}`,
+    };
+    sessionStorage.setItem("forked_assignment", JSON.stringify(waypointData));
+    router.push("/teacher/create?fork=true");
   }
 
   async function handleDelete(id: string) {
@@ -278,6 +292,14 @@ export default function AssignmentsPage() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="cursor-pointer"
+                          onClick={() => handleDuplicate(assignment)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
