@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { FileText, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, PackageCheck, LayoutDashboard, Sparkles, ShieldCheck } from "lucide-react";
+import { FileText, RotateCcw, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, PackageCheck, LayoutDashboard, Sparkles, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
@@ -245,6 +245,17 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
     }
   };
 
+  const generateCourseCode = () => {
+    // Generate a random code of 4-6 uppercase letters/numbers
+    const length = Math.floor(Math.random() * 3) + 4; // 4 to 6 characters
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < length; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewCourseCode(code);
+  };
+
   const statCards = [
     {
       title: "Total Assignments",
@@ -402,7 +413,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>My Classes</CardTitle>
-            <CardDescription>Manage your class names and codes</CardDescription>
+            <CardDescription>Manage your class names and codes—each student limited to one class.</CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -436,6 +447,10 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
                     value={newCourseCode}
                     onChange={(e) => setNewCourseCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
                   />
+                  <Button variant="outline" size="sm" onClick={generateCourseCode} className="cursor-pointer">
+                    <RotateCcw className="h-4 w-4" />
+                    Generate Code
+                  </Button>
                   <p className="text-xs text-muted-foreground">This is the code students will use to join.</p>
                 </div>
               </div>
@@ -474,6 +489,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
                           title="Copy Code"
                         >
                           <Copy className="h-3 w-3" />
+
                         </Button>
                       </div>
                     </div>
