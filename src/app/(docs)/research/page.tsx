@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, TrendingUp, Target, Download, Eye, LayoutDashboard, ShieldCheck, Microscope, Layers, ChevronDown, SquareFunction, Globe, Shield, Lock, Activity } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CruxLogo } from "@/components/ui/crux-logo";
+import { BookOpen, TrendingUp, Target, Download, Eye, LayoutDashboard, ShieldCheck, Microscope, Layers, ChevronDown, SquareFunction, Globe, Shield, Lock, Activity, Info } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import CostComparisonChart from "@/components/admin/cost-comparison-chart";
 import { cn } from "@/lib/utils"
@@ -105,6 +107,15 @@ export default function ResearchPage() {
 
   return (
     <div className="w-full space-y-10">
+      <Alert className="bg-primary/5 border-primary/20">
+        <Info className="h-4 w-4 text-primary" />
+        <AlertTitle className="text-primary font-bold">Terminology Update: <span className="text-red-700 dark:text-red-300">Scorpio</span> → <span className="text-green-700 dark:text-green-300">Crux</span></AlertTitle>
+        <AlertDescription className="text-sm text-muted-foreground italic">
+          Scorpio is the name of our physics tutoring platform. 
+          The AI tutoring engine, formerly referred to as Scorpio, is now officially named Crux.
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div className="border-b border-border/40 pb-8">
         <div className="flex items-center gap-4 mb-4">
