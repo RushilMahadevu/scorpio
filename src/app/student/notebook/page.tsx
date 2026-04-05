@@ -5,18 +5,18 @@ import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/contexts/auth-context";
 import { db } from "@/lib/firebase";
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
-  onSnapshot, 
-  updateDoc, 
-  serverTimestamp, 
-  collection, 
-  query, 
-  where, 
+import {
+  doc,
+  getDoc,
+  setDoc,
+  onSnapshot,
+  updateDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
   deleteDoc,
-  increment 
+  increment
 } from "firebase/firestore";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -25,15 +25,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { 
-  BookOpen, 
-  Sparkles, 
-  Send, 
-  Loader2, 
-  Save, 
-  Clock, 
-  PenLine, 
-  Eye, 
+import {
+  BookOpen,
+  Send,
+  Loader2,
+  Save,
+  Clock,
+  PenLine,
+  Eye,
   Cpu,
   Trash2,
   Maximize2,
@@ -55,11 +54,11 @@ import {
   RotateCcw,
   Minimize2
 } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
 interface Notebook {
@@ -76,6 +75,7 @@ import { toast } from "sonner";
 import TurndownService from "turndown";
 import Showdown from "showdown";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CruxLogo } from "@/components/ui/crux-logo";
 
 const turndown = new TurndownService();
 const converter = new Showdown.Converter();
@@ -129,7 +129,7 @@ export default function NotebookPage() {
   // AI is disabled IF:
   // 1. Organization has exhausted its budget (aiUsageCurrent >= aiBudgetLimit, with safety for 0 limits)
   // 2. Student has reached their personal monthly interaction limit
-  const isAiDisabled = 
+  const isAiDisabled =
     (orgData?.aiBudgetLimit > 0 && (orgData?.aiUsageCurrent || 0) >= (orgData?.aiBudgetLimit || 0)) ||
     (orgData?.aiNotebookLimitPerStudent > 0 && studentUsage >= (orgData?.aiNotebookLimitPerStudent || 0));
 
@@ -137,7 +137,7 @@ export default function NotebookPage() {
   const getHtml = (md: string) => converter.makeHtml(md);
   // Helper to get Markdown from HTML
   const getMarkdown = (html: string) => turndown.turndown(html);
-  
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch List of Notebooks & Org Settings
@@ -150,7 +150,7 @@ export default function NotebookPage() {
         const userDoc = await getDoc(doc(db, "users", user!.uid));
         const userData = userDoc.data();
         const orgId = userData?.organizationId;
-        
+
         if (orgId) {
           // Use onSnapshot for real-time subscription status updates
           const unsubscribeOrg = onSnapshot(doc(db, "organizations", orgId), (orgSnap) => {
@@ -176,13 +176,13 @@ export default function NotebookPage() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const handleSnapshot = async () => {
         let list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Notebook));
-        
+
         // Migration: Check if a notebook existed at notebooks/{uid} (the old structure)
         if (list.length === 0) {
           try {
             const oldRef = doc(db, "notebooks", user.uid);
             const oldSnap = await getDoc(oldRef);
-            
+
             if (oldSnap.exists()) {
               const oldData = oldSnap.data();
               if (!oldData.studentId) {
@@ -220,7 +220,7 @@ export default function NotebookPage() {
           if (!activeNotebookId && list.length > 0) {
             setActiveNotebookId(list[0].id);
           }
-          
+
           setLoading(false);
         }
       };
@@ -276,7 +276,7 @@ export default function NotebookPage() {
 
   const saveNotebook = async () => {
     if (!user || !activeNotebookId || !hasUnsavedChanges) return;
-    
+
     setIsSaving(true);
     try {
       const docRef = doc(db, "notebooks", activeNotebookId);
@@ -297,8 +297,8 @@ export default function NotebookPage() {
 
   const createNewNotebook = async () => {
     if (!user || !orgData) return;
-    
-    const limit = orgData?.notebookLimitPerStudent || 1; 
+
+    const limit = orgData?.notebookLimitPerStudent || 1;
     if (notebooks.length >= limit) {
       toast.error(`Allowance exceeded. Limited to ${limit} notebooks.`);
       return;
@@ -400,7 +400,7 @@ export default function NotebookPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.error) {
         toast.error(data.error);
         return;
@@ -418,7 +418,7 @@ export default function NotebookPage() {
         }
         return updatedMessages;
       });
-      
+
       // Persist usage count to Firestore
       if (user) {
         const userRef = doc(db, "users", user.uid);
@@ -448,12 +448,12 @@ export default function NotebookPage() {
         <div className="max-w-md space-y-2">
           <h2 className="text-2xl font-black tracking-tight">Access Restricted</h2>
           <p className="text-sm text-zinc-500 font-medium leading-relaxed">
-            Your instructor has not enabled Digital Notebook access for this network. 
+            Your instructor has not enabled Digital Notebook access for this network.
             Please contact your teacher to activate this researcher tool.
           </p>
         </div>
         <Button variant="outline" className="rounded-xl font-bold px-8 cursor-pointer" onClick={() => window.history.back()}>
-           Return to Dashboard
+          Return to Dashboard
         </Button>
       </div>
     );
@@ -461,79 +461,79 @@ export default function NotebookPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] space-y-4">
-      
+
       {/* FULL SCREEN VIEWER OVERLAY */}
       {isFullScreen && !isEditing && (
         <div className="fixed inset-0 z-[100] bg-white dark:bg-zinc-950 flex flex-col overflow-hidden">
           {/* FOCUS HEADER */}
           <div className="flex items-center justify-between p-6 md:px-12 lg:px-20 border-b border-zinc-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-10">
-             <div className="flex items-center gap-4">
-               <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
-                 <BookMarked className="h-5 w-5" />
-               </div>
-               <div>
-                 <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-                 <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest">Focus Mode Active</p>
-               </div>
-             </div>
-             
-             <div className="flex items-center gap-3">
-               <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                 <Button 
-                   variant="ghost" 
-                   size="icon" 
-                   className="h-8 w-8 rounded-lg cursor-pointer"
-                   onClick={() => setZoomLevel(prev => Math.max(50, prev - 10))}
-                 >
-                   <ZoomOut className="h-4 w-4" />
-                 </Button>
-                 <div className="px-3 min-w-[60px] text-center">
-                    <span className="text-[11px] font-black font-mono">{zoomLevel}%</span>
-                 </div>
-                 <Button 
-                   variant="ghost" 
-                   size="icon" 
-                   className="h-8 w-8 rounded-lg cursor-pointer"
-                   onClick={() => setZoomLevel(prev => Math.min(200, prev + 10))}
-                 >
-                   <ZoomIn className="h-4 w-4" />
-                 </Button>
-                 <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-                 <Button 
-                   variant="ghost" 
-                   size="icon" 
-                   className="h-8 w-8 rounded-lg cursor-pointer"
-                   onClick={() => setZoomLevel(100)}
-                 >
-                   <RotateCcw className="h-3.5 w-3.5" />
-                 </Button>
-               </div>
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+                <BookMarked className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight">{title}</h1>
+                <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest">Focus Mode Active</p>
+              </div>
+            </div>
 
-               <Button 
-                variant="outline" 
+            <div className="flex items-center gap-3">
+              <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg cursor-pointer"
+                  onClick={() => setZoomLevel(prev => Math.max(50, prev - 10))}
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <div className="px-3 min-w-[60px] text-center">
+                  <span className="text-[11px] font-black font-mono">{zoomLevel}%</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg cursor-pointer"
+                  onClick={() => setZoomLevel(prev => Math.min(200, prev + 10))}
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg cursor-pointer"
+                  onClick={() => setZoomLevel(100)}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
+              <Button
+                variant="outline"
                 className="rounded-xl h-10 px-4 font-bold flex items-center gap-2 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all cursor-pointer"
                 onClick={() => {
                   setIsFullScreen(false);
                   setZoomLevel(100);
                 }}
-               >
-                 <Minimize2 className="h-4 w-4" /> EXIT FOCUS
-               </Button>
-             </div>
+              >
+                <Minimize2 className="h-4 w-4" /> EXIT FOCUS
+              </Button>
+            </div>
           </div>
 
           {/* SCROLLABLE CONTENT */}
           <div className="flex-1 overflow-y-auto w-full custom-scrollbar scroll-smooth">
-             <div className="min-h-full p-8 md:p-12 lg:p-20 flex justify-center">
-                <div 
-                  className="w-full max-w-4xl transition-all duration-200 origin-top"
-                  style={{ transform: `scale(${zoomLevel / 100})`, width: `${100 * (100 / zoomLevel)}%` }}
-                >
-                   <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-p:leading-relaxed prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900/50 prose-pre:rounded-2xl pb-60">
-                      <MarkdownRenderer noProse>{content}</MarkdownRenderer>
-                   </div>
+            <div className="min-h-full p-8 md:p-12 lg:p-20 flex justify-center">
+              <div
+                className="w-full max-w-4xl transition-all duration-200 origin-top"
+                style={{ transform: `scale(${zoomLevel / 100})`, width: `${100 * (100 / zoomLevel)}%` }}
+              >
+                <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-p:leading-relaxed prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900/50 prose-pre:rounded-2xl pb-60">
+                  <MarkdownRenderer noProse>{content}</MarkdownRenderer>
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -542,11 +542,11 @@ export default function NotebookPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl border border-zinc-200/50 dark:border-zinc-700/50">
-             <NotebookPen className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
+            <NotebookPen className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <input 
+              <input
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
@@ -554,20 +554,19 @@ export default function NotebookPage() {
                 }}
                 className="text-xl font-bold tracking-tight bg-transparent border-none focus:ring-0 p-0 w-auto min-w-[100px] outline-none"
               />
-              <Badge variant="outline" className="text-[10px] font-mono bg-zinc-50 border-zinc-200 text-zinc-500 dark:bg-zinc-900 dark:border-zinc-800">BETA</Badge>
             </div>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-medium uppercase tracking-wider">
-               {isSaving ? (
-                 <span className="flex items-center gap-1 text-zinc-500 animate-pulse">
-                   <CloudUpload className="h-2.5 w-2.5" /> Synchronizing Notes...
-                 </span>
-               ) : lastSavedAt ? (
-                 <span className="flex items-center gap-1">
-                   <Clock className="h-2.5 w-2.5" /> Last sync at {lastSavedAt.toLocaleTimeString()}
-                 </span>
-               ) : (
-                 "Preparing Workspace..."
-               )}
+              {isSaving ? (
+                <span className="flex items-center gap-1 text-zinc-500 animate-pulse">
+                  <CloudUpload className="h-2.5 w-2.5" /> Syncing...
+                </span>
+              ) : lastSavedAt ? (
+                <span className="flex items-center gap-1">
+                  <Clock className="h-2.5 w-2.5" /> Synced at {lastSavedAt.toLocaleTimeString().split(":")[0] + ":" + lastSavedAt.toLocaleTimeString().split(":")[1] + " " + lastSavedAt.toLocaleTimeString().split(" ")[1]}
+                </span>
+              ) : (
+                "Syncing..."
+              )}
             </p>
           </div>
         </div>
@@ -630,16 +629,16 @@ export default function NotebookPage() {
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors ml-1 cursor-pointer" onClick={saveNotebook} disabled={!hasUnsavedChanges || isSaving}>
             <Save className={cn("h-4 w-4", isSaving && "animate-spin")} />
           </Button>
-          <Button 
-            variant={showCopilot ? "secondary" : "outline"} 
-            size="icon" 
+          <Button
+            variant={showCopilot ? "secondary" : "outline"}
+            size="icon"
             className={cn(
               "h-9 w-9 rounded-xl ml-1 transition-all cursor-pointer",
               showCopilot ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900" : "border-zinc-200 dark:border-zinc-700"
             )}
             onClick={() => setShowCopilot(!showCopilot)}
           >
-            <Sparkles className={cn("h-4 w-4", showCopilot && "animate-pulse")} />
+            <CruxLogo className={cn("h-4 w-4", showCopilot && "animate-pulse")} />
           </Button>
         </div>
       </div>
@@ -652,9 +651,9 @@ export default function NotebookPage() {
               <Label className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
                 <Files className="h-3 w-3" /> My Library
               </Label>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="h-6 w-6 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
                 onClick={createNewNotebook}
               >
@@ -664,12 +663,12 @@ export default function NotebookPage() {
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-1">
                 {notebooks.map((nb) => (
-                  <div 
+                  <div
                     key={nb.id}
                     className={cn(
                       "group flex items-center justify-between p-2.5 rounded-xl transition-all cursor-pointer border",
-                      activeNotebookId === nb.id 
-                        ? "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 shadow-sm" 
+                      activeNotebookId === nb.id
+                        ? "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 shadow-sm"
                         : "border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900/50 text-zinc-500"
                     )}
                     onClick={() => {
@@ -718,9 +717,9 @@ export default function NotebookPage() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-opacity shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -728,7 +727,7 @@ export default function NotebookPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-32">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-[11px] font-bold py-2 cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -739,7 +738,7 @@ export default function NotebookPage() {
                           Rename
                         </DropdownMenuItem>
                         {notebooks.length > 1 && (
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="text-red-500 dark:text-red-400 focus:text-red-500 text-[11px] font-bold py-2 cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -757,14 +756,14 @@ export default function NotebookPage() {
               </div>
             </ScrollArea>
             <div className="p-3 border-t border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50">
-               <div className="flex items-center justify-between px-1">
-                 <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
-                   {notebooks.length} / {orgData?.notebookLimitPerStudent || 1} Used
-                 </span>
-                 {orgData?.subscriptionStatus === "none" && (
-                   <Badge variant="outline" className="text-[8px] bg-zinc-200/20 border-zinc-300 text-zinc-400 font-black px-1.5 py-0">FREE</Badge>
-                 )}
-               </div>
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                  {notebooks.length} / {orgData?.notebookLimitPerStudent || 1} Used
+                </span>
+                {orgData?.subscriptionStatus === "none" && (
+                  <Badge variant="outline" className="text-[8px] bg-zinc-200/20 border-zinc-300 text-zinc-400 font-black px-1.5 py-0">FREE</Badge>
+                )}
+              </div>
             </div>
           </div>
         </ResizablePanel>
@@ -775,14 +774,14 @@ export default function NotebookPage() {
         <ResizablePanel defaultSize={50} minSize={30}>
           <div className="h-full flex flex-col">
             <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50">
-               <Label className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
-                  <PenLine className="h-3 w-3" /> Notes Editor
-               </Label>
-               <Badge variant="secondary" className="text-[9px] bg-zinc-200/20 text-zinc-500 border-none uppercase font-bold tracking-tighter">
-                 {isEditing ? (editorMode === 'rich-text' ? "Rich Text Mode" : "Markdown Mode") : "Read Only"}
-               </Badge>
+              <Label className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
+                <PenLine className="h-3 w-3" /> Notes Editor
+              </Label>
+              <Badge variant="secondary" className="text-[9px] bg-zinc-200/20 text-zinc-500 border-none uppercase font-bold tracking-tighter">
+                {isEditing ? (editorMode === 'rich-text' ? "Rich Text Mode" : "Markdown Mode") : "Read Only"}
+              </Badge>
             </div>
-            
+
             <div className="flex-1 overflow-hidden relative">
               {loading ? (
                 <div className="h-full w-full flex items-center justify-center bg-zinc-50/5 dark:bg-zinc-900/5 backdrop-blur-sm">
@@ -793,9 +792,9 @@ export default function NotebookPage() {
                 </div>
               ) : isEditing ? (
                 editorMode === "rich-text" ? (
-                  <RichTextEditor 
-                    content={getHtml(content)} 
-                    onChange={handleRichTextChange} 
+                  <RichTextEditor
+                    content={getHtml(content)}
+                    onChange={handleRichTextChange}
                   />
                 ) : (
                   <Textarea
@@ -825,38 +824,38 @@ export default function NotebookPage() {
           <ResizablePanel defaultSize={35} minSize={25}>
             <div className="h-full flex flex-col bg-zinc-50/10 dark:bg-zinc-950/20">
               <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
-                 <Label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] flex items-center gap-2">
-                    <Sparkles className="h-3 w-3" /> Study Copilot
-                 </Label>
-                 <div className="flex items-center gap-1">
-                    {orgData?.aiNotebookLimitPerStudent > 0 && (
-                     <div className="flex flex-col items-end mr-2">
-                       <div className="flex items-center gap-1.5 mb-1">
-                         <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">Usage</span>
-                         <span className="text-[10px] font-black tabular-nums">{studentUsage} / {orgData.aiNotebookLimitPerStudent}</span>
-                       </div>
-                       <div className="w-20 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                         <div 
-                           className={cn(
-                             "h-full transition-all duration-500",
-                             (studentUsage / orgData.aiNotebookLimitPerStudent) > 0.9 ? "bg-red-500" : 
-                             (studentUsage / orgData.aiNotebookLimitPerStudent) > 0.7 ? "bg-amber-500" : "bg-emerald-500"
-                           )}
-                           style={{ width: `${Math.min(100, (studentUsage / orgData.aiNotebookLimitPerStudent) * 100)}%` }}
-                         />
-                       </div>
-                     </div>
-                   )}
-                   <Cpu className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-700" />
-                   <Button 
-                    variant="ghost" 
-                    size="icon" 
+                <Label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] flex items-center gap-2">
+                  <CruxLogo className="h-3 w-3" /> Study Copilot
+                </Label>
+                <div className="flex items-center gap-1">
+                  {orgData?.aiNotebookLimitPerStudent > 0 && (
+                    <div className="flex flex-col items-end mr-2">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">Usage</span>
+                        <span className="text-[10px] font-black tabular-nums">{studentUsage} / {orgData.aiNotebookLimitPerStudent}</span>
+                      </div>
+                      <div className="w-20 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className={cn(
+                            "h-full transition-all duration-500",
+                            (studentUsage / orgData.aiNotebookLimitPerStudent) > 0.9 ? "bg-red-500" :
+                              (studentUsage / orgData.aiNotebookLimitPerStudent) > 0.7 ? "bg-amber-500" : "bg-emerald-500"
+                          )}
+                          style={{ width: `${Math.min(100, (studentUsage / orgData.aiNotebookLimitPerStudent) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <Cpu className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-700" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className="h-6 w-6 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
                     onClick={() => setShowCopilot(false)}
-                   >
-                     <X className="h-3 w-3" />
-                   </Button>
-                 </div>
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
 
               {/* CHAT AREA */}
@@ -877,12 +876,12 @@ export default function NotebookPage() {
                   {messages.length === 0 && (
                     <div className="text-center py-12 px-4 space-y-4">
                       <div className="inline-flex p-3 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
-                        <Sparkles className="h-6 w-6 text-zinc-400" />
+                        <CruxLogo className="h-6 w-6 text-zinc-400" />
                       </div>
                       <div>
                         <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest mb-1">Notes Assistant Ready</h3>
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          I can help you summarize your notes, suggest research topics, 
+                          I can help you summarize your notes, suggest research topics,
                           or explain concepts you've written about.
                         </p>
                       </div>
@@ -896,7 +895,7 @@ export default function NotebookPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {messages.map((m, idx) => (
                     <div key={idx} className={cn(
                       "flex flex-col gap-2 w-full",
@@ -904,8 +903,8 @@ export default function NotebookPage() {
                     )}>
                       <div className={cn(
                         "p-4 rounded-2xl text-[14px] leading-relaxed shadow-sm border max-w-[92%]",
-                        m.role === 'user' 
-                          ? "bg-zinc-900 text-white border-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 font-medium" 
+                        m.role === 'user'
+                          ? "bg-zinc-900 text-white border-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 font-medium"
                           : "bg-white text-zinc-900 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-800"
                       )}>
                         {m.role === 'assistant' ? (
@@ -916,7 +915,7 @@ export default function NotebookPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {isLoading && (
                     <div className="flex flex-col gap-2 max-w-[85%] items-start">
                       <div className="p-3 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center gap-2">
@@ -936,47 +935,47 @@ export default function NotebookPage() {
 
               {/* INPUT AREA */}
               <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-                 <div className="relative group">
-                   <Textarea 
-                     value={inputValue}
-                     onChange={(e) => setInputValue(e.target.value)}
-                     onKeyDown={(e) => {
-                       if (e.key === 'Enter' && !e.shiftKey) {
-                         e.preventDefault();
-                         handleSendMessage();
-                       }
-                     }}
-                     disabled={isAiDisabled}
-                     placeholder={isAiDisabled ? "AI Assistant Disabled" : "Ask Copilot..."}
-                     className="min-h-[60px] max-h-[120px] pr-12 text-[12px] rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm transition-all focus-visible:ring-zinc-500 disabled:bg-zinc-100 disabled:opacity-50"
-                   />
-                   <Button 
-                     size="icon" 
-                     className="absolute bottom-2 right-2 h-8 w-8 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 cursor-pointer"
-                     onClick={handleSendMessage}
-                     disabled={!inputValue.trim() || isLoading || isAiDisabled}
-                   >
-                     <Send className="h-3.5 w-3.5" />
-                   </Button>
-                 </div>
-                 <p className="mt-2 text-[9px] text-center text-muted-foreground uppercase tracking-widest font-bold">
-                    AI uses network budget. Use wisely.
-                 </p>
+                <div className="relative group">
+                  <Textarea
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    disabled={isAiDisabled}
+                    placeholder={isAiDisabled ? "AI Assistant Disabled" : "Ask Copilot..."}
+                    className="min-h-[60px] max-h-[120px] pr-12 text-[12px] rounded-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm transition-all focus-visible:ring-zinc-500 disabled:bg-zinc-100 disabled:opacity-50"
+                  />
+                  <Button
+                    size="icon"
+                    className="absolute bottom-2 right-2 h-8 w-8 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 cursor-pointer"
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading || isAiDisabled}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <p className="mt-2 text-[9px] text-center text-muted-foreground uppercase tracking-widest font-bold">
+                  AI uses network budget. Use wisely.
+                </p>
               </div>
             </div>
           </ResizablePanel>
         )}
       </ResizablePanelGroup>
 
-        <ConfirmDialog
-          open={!!notebookToDelete}
-          onOpenChange={(open) => !open && setNotebookToDelete(null)}
-          title="Delete Notebook"
-          description="Are you sure you want to delete this notebook? This cannot be undone."
-          onConfirm={handleConfirmDelete}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
+      <ConfirmDialog
+        open={!!notebookToDelete}
+        onOpenChange={(open) => !open && setNotebookToDelete(null)}
+        title="Delete Notebook"
+        description="Are you sure you want to delete this notebook? This cannot be undone."
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

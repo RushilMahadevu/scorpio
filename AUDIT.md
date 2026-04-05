@@ -29,15 +29,6 @@ The `dueDate` field is successfully read from Firestore and rendered in the UI (
 
 The `practice_history` collection has `read`, `create`, and `delete` rules for students, but **no `update` rule**. This means any attempt by a student client to patch/update an existing practice history entry will silently fail with a permission denied error. 
 
----
-
-### 5. Hardcoded Light-Mode Colors in Assignment View
-**File:** `src/app/student/assignment-view/page.tsx` (Lines ~720, 747, 801, 823)
-
-Several critical warning boxes and popups (e.g., Lockdown Mode warnings, Unfocus warnings, Grace Period alerts) use hard-coded Tailwind classes like `bg-red-50 border-red-200 text-red-700`, `bg-yellow-50`, and `bg-orange-100`. These do not adapt to dark mode and will appear washed out, unreadable, or visually broken for users on the dark theme.
-
----
-
 ### 6. Admin Page relies on Client-Side Verification
 **File:** `src/app/admin/page.tsx`
 
@@ -46,13 +37,6 @@ The admin dashboard protects itself by asking for a secret text string and valid
 ---
 
 ## 🟢 Good-to-Have Features
-
-### 7. Notebook Auto-Save Feedback
-**File:** `src/app/student/notebook/page.tsx`
-
-While the notebook *does* implement an auto-save loop (using `hasUnsavedChanges` and a 3-second timeout), the only feedback provided to the user is a small spinning icon. Adding a clear textual indicator (e.g., "Saved to cloud" vs "Unsaved changes") would significantly increase student trust and prevent them from panic-clicking the manual save button.
-
----
 
 ### 8. Analytics on Socratic Engagement
 Provide teachers with visibility into *how* students use the AI. Are they asking for direct answers? How many prompts does it take them to reach the solution? Adding metrics around Socratic interactions will help educators identify learning gaps faster.
@@ -84,10 +68,10 @@ There are over **178** `console.error` statements and **51** `console.log` state
 
 ## Summary
 
-| Category | Count |
-|---|---|
-| 🔴 Critical fixes | 3 |
-| 🟡 Important fixes | 3 |
-| 🟢 Good-to-have features | 2 |
-| 🔵 Tech debt items | 3 |
-| **Total** | **11** |
+| Category                | Count  |
+| ----------------------- | ------ |
+| 🔴 Critical fixes        | 3      |
+| 🟡 Important fixes       | 3      |
+| 🟢 Good-to-have features | 2      |
+| 🔵 Tech debt items       | 3      |
+| **Total**               | **11** |
