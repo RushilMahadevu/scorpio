@@ -374,7 +374,7 @@ function ProfileCardView({ student, portfolio }: { student: any; portfolio: Stud
           <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
             <div className="flex items-center gap-1.5">
               <BrainCircuit className="h-3 w-3 text-indigo-400/50" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-white/20">Scorpio AI Network</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-white/20">Crux Network</span>
             </div>
             <span className="text-[8px] font-mono text-white/20">{lastUpdated ? formatDate(lastUpdated, { month: "short", day: "numeric", year: "numeric" }) : ""}</span>
           </div>

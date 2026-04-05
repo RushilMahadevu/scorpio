@@ -12,6 +12,8 @@ import { MarkdownRenderer } from './markdown-renderer';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
+import { CruxLogo } from './ui/crux-logo';
+
 const LIMIT = 10;
 const VISITOR_KEY = 'scorpio_landing_visitor_id';
 const COUNT_KEY = 'scorpio_landing_msg_count';
@@ -86,7 +88,7 @@ export function LandingChatbot() {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: `**Welcome to Scorpio AI!** 👋\n\nI'm your product guide. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
+      content: `**Welcome to Crux!** 👋\n\nI'm the AI tutor embedded in Scorpio. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
       isWelcome: true,
     }]);
   }, []);
@@ -160,7 +162,7 @@ export function LandingChatbot() {
           'fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer',
           'h-14 w-14 bg-card/40 border border-border/50 backdrop-blur-sm hover:bg-card/60 hover:border-border hover:scale-105'
         )}
-        aria-label="Ask Scorpio AI"
+        aria-label="Ask Crux"
       >
         {isOpen
           ? <X className="h-5 w-5 text-foreground" />
@@ -189,12 +191,12 @@ export function LandingChatbot() {
             <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-zinc-50 dark:bg-zinc-900/60 shrink-0">
               <div className="relative">
                 <div className="h-9 w-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow">
-                  <Bot className="h-[18px] w-[18px] text-zinc-100 dark:text-zinc-900" />
+                  <CruxLogo size={18} className="text-zinc-100 dark:text-zinc-900" />
                 </div>
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Scorpio AI</p>
+                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Crux</p>
                 <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
                   Online · Product Guide
@@ -247,7 +249,7 @@ export function LandingChatbot() {
                 <div key={i} className={cn('flex gap-2.5', message.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {message.role === 'assistant' && (
                     <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
+                      <CruxLogo size={14} className="text-zinc-100 dark:text-zinc-900" />
                     </div>
                   )}
                   <div className={cn(
@@ -287,7 +289,7 @@ export function LandingChatbot() {
               {isLoading && (
                 <div className="flex gap-2.5">
                   <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
-                    <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
+                    <CruxLogo size={14} className="text-zinc-100 dark:text-zinc-900" />
                   </div>
                   <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
                     <div className="flex gap-1 items-center h-4">
@@ -346,7 +348,7 @@ export function LandingChatbot() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
-                Scorpio AI · Product Guide · {remaining} messages left
+                Crux · Product Guide · {remaining} messages left
               </p>
             </div>
           </motion.div>

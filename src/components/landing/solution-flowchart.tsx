@@ -90,7 +90,7 @@ export function SolutionFlowchart() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            How Scorpio <span className="text-primary italic">Actually</span> Works.
+            How Crux AI <span className="text-primary italic">Actually</span> Works.
           </motion.h2>
           
           <motion.p 
@@ -181,7 +181,7 @@ export function SolutionFlowchart() {
                 What <span className="text-primary italic">Differentiates</span> Us.
               </h3>
               <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                Standard LLMs are trained to be helpful assistants. Scorpio is architected to be a rigorous physics mentor.
+                Standard LLMs are trained to be helpful assistants. Crux is architected to be a rigorous physics mentor.
               </p>
             </div>
 
@@ -228,7 +228,7 @@ export function SolutionFlowchart() {
                       <div className="h-3 w-3 rounded-full bg-red-500/50" />
                       <div className="h-3 w-3 rounded-full bg-amber-500/50" />
                       <div className="h-3 w-3 rounded-full bg-emerald-500/50" />
-                      <span className="ml-2 text-[10px] font-mono text-muted-foreground/60">scorpio-pedagogical-engine.ts</span>
+                      <span className="ml-2 text-[10px] font-mono text-muted-foreground/60">crux-pedagogical-engine.ts</span>
                    </div>
                    
                    <div className="space-y-3 font-mono text-[11px]">

@@ -24,6 +24,7 @@ import { SystemAccordion } from "@/components/system-accordion";
 import { FloatingPrompts } from "@/components/ui/floating-prompts";
 import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 import { Logo } from "@/components/ui/logo";
+import { CruxLogo } from "@/components/ui/crux-logo";
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 

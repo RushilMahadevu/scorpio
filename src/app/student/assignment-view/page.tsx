@@ -29,7 +29,8 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Bot, Lightbulb, User, ChevronRight, ChevronLeft, Lock } from "lucide-react";
+import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Lightbulb, User, ChevronRight, ChevronLeft, Lock } from "lucide-react";
+import { CruxLogo } from "@/components/ui/crux-logo";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -1131,7 +1132,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                <div className="p-4 h-16 border-b flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
-                      <Bot className="h-5 w-5" />
+                      <CruxLogo className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-bold text-xs tracking-tight leading-none uppercase">Physics Tutor</h3>
@@ -1181,7 +1182,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           <div className={`mt-1 h-7 w-7 rounded-full shrink-0 flex items-center justify-center shadow-sm ${
                             msg.role === 'user' ? 'bg-zinc-900 text-white' : 'bg-white border dark:bg-zinc-800'
                           }`}>
-                            {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 text-zinc-400" />}
+                            {msg.role === 'user' ? <User className="h-4 w-4" /> : <CruxLogo className="h-4 w-4 text-zinc-400" />}
                           </div>
                           <div
                             className={`rounded-2xl px-4 py-3 shadow-sm border ${
@@ -1199,7 +1200,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                     {aiLoading && (
                       <div className="flex items-start gap-3">
                         <div className="mt-1 h-7 w-7 rounded-full bg-white border dark:bg-zinc-800 flex items-center justify-center">
-                          <Bot className="h-4 w-4 text-zinc-400" />
+                          <CruxLogo className="h-4 w-4 text-zinc-400" />
                         </div>
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center justify-center shadow-sm">
                           <div className="flex gap-1.5">
@@ -1269,7 +1270,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                 <div className="p-4 border-b flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
-                      <Bot className="h-5 w-5" />
+                      <CruxLogo className="h-5 w-5" />
                     </div>
                     <span className="font-bold text-sm uppercase tracking-tight">AI Advisor</span>
                   </div>

@@ -29,7 +29,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PlusCircle, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, Info, CheckCircle2, Bot } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, Info, CheckCircle2 } from "lucide-react";
+import { CruxLogo } from "@/components/ui/crux-logo";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -978,7 +979,7 @@ function CreateAssignmentForm() {
                         <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-purple-200 shadow-2xl rounded-2xl">
                           <div className="bg-purple-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><Bot className="h-3.5 w-3.5" />Guided Tutoring</p>
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><CruxLogo className="h-3.5 w-3.5" />Guided Tutoring</p>
                           </div>
                           <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
                             <p className="text-[11px] leading-relaxed text-muted-foreground">Students get conceptual hints without giving away final answers.</p>

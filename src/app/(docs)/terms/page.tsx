@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
    title: "Terms of Service",
-   description: "Terms and conditions for using the Scorpio AI learning platform for schools, teachers, and students.",
+   description: "Terms and conditions for using the Scorpio learning platform for schools, teachers, and students.",
 };
 
 export default function TermsPage() {

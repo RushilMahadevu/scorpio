@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { FileText, CheckCircle, Clock, Bot, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow, Info, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck, Sparkles } from "lucide-react";
+import { FileText, CheckCircle, Clock, School, LogOut, Library, FileCheck, Sigma, TrendingUp, Calendar, ArrowRight, Calculator, PackageOpen, BrainCircuit, BowArrow, Info, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck, Sparkles } from "lucide-react";
+import { CruxLogo } from "@/components/ui/crux-logo";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
@@ -419,7 +420,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
             {
               title: "8. AI Tutor & Learning Library",
               description: "Access general conceptual help outside of specific assignments. If you're confused about a fundamental law of physics, use the AI Tutor for a deep-dive explanation or browse curated resources.",
-              icon: Bot
+              icon: CruxLogo
             },
             {
               title: "9. Working with the Socratic AI",
@@ -585,7 +586,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         <Card className="rounded-3xl border border-zinc-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm shadow-sm ring-1 ring-black/5 dark:ring-white/5">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Bot className="h-5 w-5" />
+              <CruxLogo className="h-5 w-5" />
               AI Tutor
             </CardTitle>
           </CardHeader>

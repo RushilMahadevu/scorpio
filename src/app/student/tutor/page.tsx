@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, User, Lightbulb, Calculator, Lock, Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, MoreHorizontal } from "lucide-react";
+import { Send, User, Lightbulb, Calculator, Lock, Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,7 @@ import { db } from "@/lib/firebase";
 import { Organization } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { CruxLogo } from "@/components/ui/crux-logo";
 
 
 // Typewriter effect for assistant messages
@@ -389,9 +390,9 @@ export default function TutorPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col">
+    <div className="h-[calc(100vh-8.5rem)] flex flex-col overflow-hidden">
       
-      <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-3xl font-bold">AI Physics Tutor</h1>
           <p className="text-muted-foreground text-sm">Ask questions about physics concepts or get help solving problems</p>
@@ -454,7 +455,7 @@ export default function TutorPage() {
                 <CardContent className="p-3 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2.5">
                     <div className="p-2 bg-primary/10 rounded-lg">
-                      <Bot className="h-4 w-4 text-primary" />
+                      <CruxLogo size={16} className="text-primary" />
                     </div>
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-primary/70 mb-0.5">Tutor Messages</p>
@@ -623,8 +624,8 @@ export default function TutorPage() {
           </div>
 
           {/* --- Main Chat Area --- */}
-          <div className="flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300">
-            <div className="flex gap-2 mb-4 items-center">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300 overflow-hidden">
+            <div className="flex gap-2 mb-4 items-center shrink-0">
               {!sidebarOpen && (
                 <Button
                   size="icon"
@@ -657,8 +658,8 @@ export default function TutorPage() {
             <Card className="flex-1 flex flex-col min-h-0">
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  Chat with AI Tutor
+                  <CruxLogo size={20} />
+                  Chat with Crux
                 </CardTitle>
                 <CardDescription>
                   {mode === "concept"
@@ -666,11 +667,12 @@ export default function TutorPage() {
                     : "Describe your problem and I'll help you solve it step by step"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
-                <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={scrollRef}>
+              <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden relative">
+                <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
+                  <div className="p-4">
                   {messages.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
-                      <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <CruxLogo size={48} className="mx-auto mb-4 opacity-50" />
                       <p>Start a conversation by asking a question!</p>
                       <div className="mt-4 space-y-2">
                         <p className="text-sm">Try asking:</p>
@@ -708,7 +710,7 @@ export default function TutorPage() {
                                   : "bg-muted"
                               )}
                             >
-                              {message.role === "assistant" ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                              {message.role === "assistant" ? <CruxLogo size={16} /> : <User className="h-4 w-4" />}
                             </div>
                             <div
                               className={cn(
@@ -734,7 +736,7 @@ export default function TutorPage() {
                       {loading && (
                         <div className="flex gap-3 animate-pulse">
                           <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary/20 text-primary">
-                            <Bot className="h-4 w-4" />
+                            <CruxLogo size={16} />
                           </div>
                           <div className="rounded-2xl px-4 py-2 bg-muted/40 border border-muted-foreground/10">
                             <div className="flex gap-1 items-center h-5">
@@ -748,7 +750,8 @@ export default function TutorPage() {
                       <div ref={messagesEndRef} />
                     </div>
                   )}
-                </div>
+                  </div>
+                </ScrollArea>
 
                 {rateLimitError && (
                   <div className="p-4 text-red-600 text-sm font-semibold border-b bg-red-50 rounded">

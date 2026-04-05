@@ -10,7 +10,7 @@
 
 > **Transforming Physics Education through AI-Driven Socratic Tutoring.**
 
-Scorpio is a research-driven educational platform engineered to transform physics instruction. By integrating a novel **4-layer AI constraint architecture** with a high-performance, space-themed interface, Scorpio bridges the gap between traditional Learning Management Systems (LMS) and the dynamic cognitive requirements of physics problem-solving.
+Scorpio is a research-driven educational platform engineered to transform physics instruction. By integrating a novel **4-layer AI constraint architecture** through its specialized pedagogical AI, **Crux**, with a high-performance, space-themed interface, Scorpio bridges the gap between traditional Learning Management Systems (LMS) and the dynamic cognitive requirements of physics problem-solving.
 
 ---
 
@@ -19,7 +19,7 @@ Scorpio is a research-driven educational platform engineered to transform physic
 Scorpio's architecture is built for concurrency, type safety, and real-time synchronization.
 
 ### 🛡️ The 4-Layer Constraint System
-At the heart of Scorpio's AI tutoring capabilities is a **transparent and research-driven** constraint architecture designed to ensure pedagogical validity and eliminate hallucinations while maintaining full academic integrity.
+At the heart of Crux's AI tutoring capabilities is a **transparent and research-driven** constraint architecture designed to ensure pedagogical validity and eliminate hallucinations while maintaining full academic integrity.
 
 [**📄 View Full System Architecture (PDF)**](./public/architecture.pdf)
 
@@ -46,7 +46,7 @@ At the heart of Scorpio's AI tutoring capabilities is a **transparent and resear
 ## 🚀 Core Capabilities
 
 ### 🎓 Research-Grade AI Tutoring
-Scorpio is a **context-aware pedagogical agent**, not a generic chatbot. Its reasoning logic is fully open-source and peer-reviewable.
+Crux is a **context-aware pedagogical agent**, not a generic chatbot. Its reasoning logic is fully open-source and peer-reviewable.
 - **Transparent Pedagogy:** Our prompt engineering and constraint layers are public to ensure academic trust.
 - **Context Retention:** Maintains deep awareness of specific assignments and problem states.
 - **Adaptive Guidance:** Dynamically scales hint complexity based on student performance.

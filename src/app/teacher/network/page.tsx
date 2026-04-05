@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CruxLogo } from "@/components/ui/crux-logo";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import framer from "framer-motion";
@@ -48,7 +49,6 @@ import {
   CreditCard,
   Notebook,
   HelpCircle,
-  Bot,
   MessageSquare,
   Send,
   Sparkle,
@@ -118,7 +118,7 @@ export default function NetworkPage() {
   // Limits Assistant
   const [limitsOpen, setLimitsOpen] = useState(false);
   const [limitsMessages, setLimitsMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
-    { role: "assistant", content: "Hi! I'm **Scorpio AI**. Ask me anything about your network's limits, budgets, or capacities — I'll explain what each setting does and suggest optimal values for your class size. 🎯" }
+    { role: "assistant", content: "Hi! I'm **Crux**. Ask me anything about your network's limits, budgets, or capacities — I'll explain what each setting does and suggest optimal values for your class size. 🎯" }
   ]);
   const [limitsInput, setLimitsInput] = useState("");
   const [limitsLoading, setLimitsLoading] = useState(false);
@@ -1005,8 +1005,8 @@ export default function NetworkPage() {
                       className="h-9 text-[10px] font-black uppercase tracking-widest gap-2 cursor-pointer border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10 rounded-full px-5 self-start sm:self-auto"
                       onClick={() => setLimitsOpen(true)}
                     >
-                      <Bot className="h-3.5 w-3.5" />
-                      Ask Scorpio AI
+                      <CruxLogo size={14} className="text-purple-600 dark:text-purple-400" />
+                      Ask Crux
                     </Button>
                   </div>
 
@@ -1454,7 +1454,7 @@ export default function NetworkPage() {
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            <CruxLogo size={16} className="text-purple-600 dark:text-purple-400" />
                             AI Tutor Messages
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -1463,7 +1463,7 @@ export default function NetworkPage() {
                               <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-purple-200/50 shadow-2xl rounded-2xl">
                                 <div className="bg-purple-600 p-5 text-white">
                                   <div className="flex items-center gap-2 mb-1.5">
-                                    <Bot className="h-5 w-5" />
+                                    <CruxLogo size={20} />
                                     <p className="font-black text-sm uppercase tracking-widest">Personal Tutor</p>
                                   </div>
                                   <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
@@ -1554,7 +1554,7 @@ export default function NetworkPage() {
             <DialogHeader className="p-6 bg-zinc-50 dark:bg-zinc-900/50 border-b border-border/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-500/10 rounded-xl">
-                  <Bot className="h-5 w-5 text-purple-500" />
+                  <CruxLogo size={20} className="text-purple-500" />
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-black tracking-tight">Limits Assistant</DialogTitle>
@@ -1609,7 +1609,7 @@ export default function NetworkPage() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground mt-2 text-center font-medium opacity-60">
-                Scorpio AI has full access to your network snapshot.
+                Crux has full access to your network snapshot.
               </p>
             </div>
           </DialogContent>

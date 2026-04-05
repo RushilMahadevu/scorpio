@@ -13,6 +13,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { MarkdownRenderer } from './markdown-renderer';
 import { cn } from '@/lib/utils';
 
+import { CruxLogo } from './ui/crux-logo';
+
 type UserRole = 'student' | 'teacher';
 
 interface NavigationChatbotProps {
@@ -57,7 +59,7 @@ const teacherQuickActions: QuickAction[] = [
 
 const studentSuggested = [
   "How do I start an assignment?",
-  "What's the AI Tutor for?",
+  "What is Crux?",
   "How does Practice work?",
   "Where are my grades?",
 ];
@@ -96,12 +98,12 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   useEffect(() => {
     const firstName = profile?.displayName?.split(' ')[0] || (userRole === 'teacher' ? 'Teacher' : 'there');
     const roleBlurb = userRole === 'teacher'
-      ? `I know every corner of Scorpio — assignments, AI limits, network billing, grading, waypoints, and more. Just ask.`
+      ? `I know every corner of Scorpio — assignments, Crux usage limits, network billing, grading, waypoints, and more. Just ask.`
       : `I know every feature of Scorpio — assignments, your AI Tutor, Practice mode, Notebook, grades, and more. Just ask.`;
 
     setMessages([{
       role: 'assistant',
-      content: `**${getGreeting()}, ${firstName}!** 👋\n\nI'm **Scorpio AI** — your platform expert.\n\n${roleBlurb}`,
+      content: `**${getGreeting()}, ${firstName}!** 👋\n\nI'm **Crux** — your Scorpio platform expert.\n\n${roleBlurb}`,
       isWelcome: true,
     }]);
   }, [profile?.displayName, userRole]);
@@ -186,11 +188,11 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
           "fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-md transition-all duration-300 cursor-pointer",
           "h-14 w-14 bg-card/40 border border-border/50 backdrop-blur-sm hover:bg-card/60 hover:border-border hover:scale-105"
         )}
-        aria-label="Scorpio AI Assistant"
+        aria-label="Crux AI Assistant"
       >
         {isOpen
           ? <X className="h-5 w-5 text-foreground" />
-          : <MessageCircle className="h-5 w-5 text-foreground" />
+          : <CruxLogo size={20} className="text-foreground" />
         }
         {hasUnread && !isOpen && (
           <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />
@@ -210,12 +212,12 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
           <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-zinc-50 dark:bg-zinc-900/60 shrink-0">
             <div className="relative">
               <div className="h-9 w-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow">
-                <Bot className="h-[18px] w-[18px] text-zinc-100 dark:text-zinc-900" />
+                <CruxLogo size={18} className="text-zinc-100 dark:text-zinc-900" />
               </div>
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-inter font-black tracking-tighter text-foreground">Scorpio AI</p>
+              <p className="text-sm font-inter font-black tracking-tighter text-foreground">Crux</p>
               <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
                 Online · Platform Expert
@@ -253,7 +255,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 <div className={cn("flex gap-2.5", message.role === 'user' ? "justify-end" : "justify-start")}>
                   {message.role === 'assistant' && (
                     <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
+                      <CruxLogo size={14} className="text-zinc-100 dark:text-zinc-900" />
                     </div>
                   )}
                   <div className={cn(
@@ -306,7 +308,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
             {isLoading && (
               <div className="flex gap-2.5">
                 <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
-                  <Bot className="h-3 w-3 text-zinc-100 dark:text-zinc-900" />
+                  <CruxLogo size={14} className="text-zinc-100 dark:text-zinc-900" />
                 </div>
                 <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
                   <div className="flex gap-1 items-center h-4">
@@ -336,7 +338,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                     sendMessage(input);
                   }
                 }}
-                placeholder="Ask me anything about Scorpio..."
+                placeholder="Ask Crux about Scorpio..."
                 className="flex-1 bg-transparent border-0 resize-none p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 min-h-[24px] max-h-[80px] leading-relaxed"
                 rows={1}
                 disabled={isLoading || !!rateLimitError}
@@ -351,7 +353,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
               </Button>
             </div>
             <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
-              Scorpio AI · Physics Platform Expert
+              Crux · Scorpio Platform Expert
             </p>
           </div>
         </div>

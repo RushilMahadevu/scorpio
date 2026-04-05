@@ -143,7 +143,7 @@ export function Workflow() {
                 </div>
                 <Image 
                   src="/demos/ai-tutor.png" 
-                  alt="Scorpio AI Tutor Chat" 
+                  alt="Crux Tutor Chat" 
                   width={800} 
                   height={600} 
                   className="w-full h-[300px] object-cover object-top"
@@ -157,7 +157,7 @@ export function Workflow() {
               <DialogTitle className="sr-only">Conceptual Discovery Interface</DialogTitle>
               <Image 
                 src="/demos/ai-tutor.png" 
-                alt="Scorpio AI Tutor Full View" 
+                alt="Crux Tutor Full View" 
                 width={1920} 
                 height={1080} 
                 className="max-w-full max-h-[90vh] w-auto h-auto rounded-xl shadow-2xl object-contain"

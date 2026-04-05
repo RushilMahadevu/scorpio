@@ -16,6 +16,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { toast } from "sonner";
+import { CruxLogo } from "@/components/ui/crux-logo";
 
 interface Question {
   id: string;
@@ -332,9 +333,9 @@ export default function GradeSubmissionPage() {
             {gradingQuestion === 'all' ? (
               <Sparkles className="h-4 w-4 mr-2 animate-spin" />
             ) : (
-              <Brain className="h-4 w-4 mr-2" />
+              <CruxLogo size={16} className="text-foreground" />
             )}
-            Re-grade with AI
+            Re-grade with Crux AI
           </Button>
           <Button 
             onClick={handleSave} 

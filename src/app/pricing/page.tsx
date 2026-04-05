@@ -201,7 +201,7 @@ export default function PricingPage() {
                   <h4 className="font-black text-sm">What You Unlock</h4>
                 </div>
                 {[
-                  { title: "Always-on AI Tutor", desc: "No throttling during finals, midterms, or late-night study sessions." },
+                  { title: "Always-on Crux AI", desc: "No throttling during finals, midterms, or late-night study sessions." },
                   { title: "Department Waypoints", desc: "One curriculum, synchronized instantly across every teacher in your network." },
                   { title: "Mastery Analytics", desc: "See exactly who\u2019s falling behind before it becomes a grade problem." },
                   { title: "Hard Spend Caps", desc: "Set monthly AI cost ceilings so you never get a surprise bill." },

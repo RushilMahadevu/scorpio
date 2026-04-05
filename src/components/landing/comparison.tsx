@@ -17,7 +17,7 @@ export function Comparison() {
       >
         <div className="text-center space-y-4 mb-16">
           <div className="text-xs font-black text-primary uppercase tracking-[0.25em]">Independent Research · 125-Response Ablation Study</div>
-          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Not another AI chatbot wrapper.</h2>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Hows Crux <span className="text-primary italic">Stands Apart</span></h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium leading-relaxed">
             Every metric below is sourced from our published ablation study — blinded scoring by an independent Ph.D. auditor across 25 physics problems.
           </p>
@@ -44,7 +44,7 @@ export function Comparison() {
               <div className="col-span-1 text-xs font-black uppercase tracking-[0.15em] text-muted-foreground">Capability</div>
               <div className="col-span-1 text-center">
                 <div className="inline-flex flex-col items-center gap-1">
-                  <span className="text-xs font-black uppercase tracking-widest text-foreground">Scorpio</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-foreground">Crux</span>
                   <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Full Stack</span>
                 </div>
               </div>

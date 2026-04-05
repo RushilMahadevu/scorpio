@@ -31,7 +31,7 @@ export async function getNetworkLimitsHelp(
       ? ((ctx.practiceUsageCurrent / ctx.practiceLimit) * 100).toFixed(1)
       : "0";
 
-    const systemPrompt = `You are **Scorpio AI**, an expert assistant for physics teachers managing their Scorpio Network.
+    const systemPrompt = `You are **Crux**, an expert assistant for physics teachers managing their Scorpio Network.
 Your job is to answer questions about limits, budgets, and capacities — clearly, concisely, and in plain English.
 
 === CURRENT NETWORK SNAPSHOT ===
@@ -72,7 +72,7 @@ RESPONSE GUIDELINES:
 - Always end with a short actionable tip if relevant.`;
 
     const chatHistoryContext = chatHistory.length > 0 
-      ? `Previous conversation history:\n${chatHistory.map(m => `${m.role === "user" ? "Teacher" : "Scorpio AI"}: ${m.content}`).join("\n")}\n\n`
+      ? `Previous conversation history:\n${chatHistory.map(m => `${m.role === "user" ? "Teacher" : "Crux"}: ${m.content}`).join("\n")}\n\n`
       : "";
 
     const fullPrompt = `${systemPrompt}\n\n${chatHistoryContext}Teacher Question: ${message}`;

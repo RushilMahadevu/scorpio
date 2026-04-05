@@ -3,7 +3,6 @@
 import {
   LayoutDashboard,
   FileText,
-  Bot,
   FileCheck,
   Library,
   GraduationCap,
@@ -12,6 +11,7 @@ import {
   BowArrow,
   NotebookPen
 } from "lucide-react";
+import { CruxLogo } from "./ui/crux-logo";
 import { AppSidebar } from "./app-sidebar";
 
 const navItems = [
@@ -22,7 +22,7 @@ const navItems = [
   { href: "/student/practice", label: "Practice", icon: BowArrow },
   { href: "/student/notebook", label: "Notebook", icon: NotebookPen },
   { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },
-  { href: "/student/tutor", label: "AI Tutor", icon: Bot },
+  { href: "/student/tutor", label: "AI Tutor", icon: CruxLogo },
   { href: "/student/resources", label: "Resources", icon: Library },
 ];
 

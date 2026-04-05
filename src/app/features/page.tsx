@@ -351,7 +351,7 @@ export default function FeaturesPage() {
                     <div className="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <div className="bg-background/20 backdrop-blur-md p-3 rounded-full border border-white/20"><Maximize2 className="h-6 w-6 text-white" /></div>
                     </div>
-                    <Image src="/demos/ai-tutor.png" alt="Scorpio AI Tutor Chat" width={800} height={600} className="w-full h-[300px] object-cover object-top" />
+                    <Image src="/demos/ai-tutor.png" alt="Crux Tutor Chat" width={800} height={600} className="w-full h-[300px] object-cover object-top" />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-20 lg:text-right">
                       <p className="text-xs font-bold text-white uppercase tracking-widest">View AI Tutor Interface</p>
                     </div>
@@ -359,7 +359,7 @@ export default function FeaturesPage() {
                 </DialogTrigger>
                 <DialogContent className="max-w-[95vw] lg:max-w-5xl max-h-[90vh] p-0 overflow-hidden bg-transparent border-none shadow-none focus-visible:outline-none flex items-center justify-center">
                   <DialogTitle className="sr-only">Conceptual Discovery Interface</DialogTitle>
-                  <Image src="/demos/ai-tutor.png" alt="Scorpio AI Tutor Full View" width={1920} height={1080} className="max-w-full max-h-[90vh] w-auto h-auto rounded-xl shadow-2xl object-contain" />
+                  <Image src="/demos/ai-tutor.png" alt="Crux Tutor Full View" width={1920} height={1080} className="max-w-full max-h-[90vh] w-auto h-auto rounded-xl shadow-2xl object-contain" />
                 </DialogContent>
               </Dialog>
               <div className="space-y-10 lg:text-right lg:pr-5 lg:border-r lg:border-l-0 border-l border-border/60 pl-5 lg:pl-0">
