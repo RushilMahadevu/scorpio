@@ -646,7 +646,7 @@ export default function Home() {
                         }
                       >
                         <Image
-                          src="/mission-control.png"
+                          src="/mc.png"
                           alt="Scorpio Teacher Dashboard showing assignments and student progress"
                           height={1280}
                           width={2650}
