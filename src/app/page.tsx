@@ -25,6 +25,7 @@ import { FloatingPrompts } from "@/components/ui/floating-prompts";
 import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 import { Logo } from "@/components/ui/logo";
 import { CruxLogo } from "@/components/ui/crux-logo";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 
@@ -114,8 +115,8 @@ export default function Home() {
   const features = [
     { icon: Brain, title: "Socratic Scaffolding", description: "Enforces the 'Struggle'—a 4-layer architecture ensuring pedagogical depth over simple answer-retrieval.", tag: "Pedagogical" },
     { icon: SquareFunction, title: "0.92 Notation Density", description: "Real-time, symbolic LaTeX rendering verified for professional academic standards and precision.", tag: "Mathematical" },
-    { icon: Orbit, title: "Inference-Time Scaffolding", description: "No fine-tuning, no black-box retraining. Every Socratic behaviour is enforced at inference-time — observable, auditable, reproducible.", tag: "Verifiable" },
-    { icon: Calculator, title: "Constraint-Led Derivation", description: "Students are guided through the derivation, not handed it. The AI architecture makes bypassing the learning process structurally impossible.", tag: "Architecture" },
+    { icon: Orbit, title: "Inference-Time Scaffolding", description: "No fine-tuning, no black-box retraining. Every Socratic behaviour is enforced by Crux at inference-time — observable, auditable, reproducible.", tag: "Verifiable" },
+    { icon: Calculator, title: "Constraint-Led Derivation", description: "Students are guided through the derivation, not handed it. The Crux architecture makes bypassing the learning process structurally impossible.", tag: "Architecture" },
     { icon: ShieldUser, title: "Verifiable Integrity", description: "Rigid schema constraints block 'homework-solving' hacks and ensure academic honesty at scale.", tag: "Verifiable" }
   ];
 
@@ -341,7 +342,7 @@ export default function Home() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             {[
                               { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
-                              { href: "/research", label: "Research & Methodology", desc: "Deep dive into our Socratic AI architecture.", icon: Brain },
+                              { href: "/research", label: "Research & Methodology", desc: "Deep dive into the Crux Socratic architecture.", icon: Brain },
                               { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
                               { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
                               { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },
@@ -436,7 +437,7 @@ export default function Home() {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                         </div>
-                        <span className="text-[11px] font-black tracking-[0.25em] text-foreground/90 uppercase">Built for Physics Educators</span>
+                        <span className="text-[11px] font-black tracking-[0.25em] text-foreground/90 uppercase">Audited by a Ph.D.</span>
                       </motion.div>
 
                       {/* Logo */}
@@ -521,10 +522,53 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                       >
-                        The first verifiable framework for Socratic physics tutoring.
-                        <br className="hidden md:block" /> Enforce the struggle with a 4-layer constraint architecture
-                        that makes bypassing the learning process{" "}
-                        <span className="text-foreground font-bold">structurally impossible.</span>
+                        <TooltipProvider delayDuration={0}>
+                          Powered by{" "}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-foreground font-black tracking-tight cursor-help border-b border-dotted border-foreground/30">Crux</span>
+                            </TooltipTrigger>
+                            <TooltipContent className="p-4 bg-background border border-border shadow-2xl max-w-xs" side="top">
+                              <div className="flex flex-col gap-3 text-left">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-1.5 rounded-lg bg-primary/10">
+                                    <CruxLogo size={18} className="text-primary" />
+                                  </div>
+                                  <span className="font-bold text-foreground text-sm">Crux AI</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  The engine behind Scorpio. A specialized AI architecture that enforces Socratic methodology through 4-layer inference-time constraints.
+                                </p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                          , Scorpio is the first AI-native{" "}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-foreground font-bold cursor-help border-b border-dotted border-foreground/30">LMS</span>
+                            </TooltipTrigger>
+                            <TooltipContent className="px-3 py-2 bg-background border border-border" side="top">
+                              <span className="text-xs font-medium text-foreground">Learning Management System</span>
+                            </TooltipContent>
+                          </Tooltip>{" "}
+                          that makes bypassing the physics learning process{" "}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-foreground font-black cursor-help border-b border-dotted border-foreground/30 text-nowrap">structurally impossible.</span>
+                            </TooltipTrigger>
+                            <TooltipContent className="p-4 bg-background border border-border shadow-2xl max-w-[240px]" side="top">
+                              <div className="space-y-2 text-left">
+                                <div className="flex items-center gap-2">
+                                  <Layers className="h-4 w-4 text-primary" />
+                                  <span className="font-bold text-sm text-foreground">4-Layer Constraint</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  Every response must pass through: Schema Validation, Pedagogical Alignment, Symbolic Verification, and Socratic Scaffolding.
+                                </p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </motion.p>
 
                       {/* CTAs */}

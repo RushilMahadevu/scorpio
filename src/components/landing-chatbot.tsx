@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  MessageCircle, X, Send, Bot, Sparkles, ArrowRight,
+  X, Send, Bot, Sparkles, ArrowRight,
   GraduationCap, BookOpen, BarChart2, Zap, Users, Brain
 } from 'lucide-react';
 import { MarkdownRenderer } from './markdown-renderer';
@@ -166,7 +166,7 @@ export function LandingChatbot() {
       >
         {isOpen
           ? <X className="h-5 w-5 text-foreground" />
-          : <MessageCircle className="h-5 w-5 text-foreground" />
+          : <CruxLogo className="h-5 w-5 text-foreground" />
         }
         {hasUnread && !isOpen && (
           <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />

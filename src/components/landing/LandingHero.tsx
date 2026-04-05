@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, KeyRound, PlayCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
+import { CruxLogo } from "@/components/ui/crux-logo";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -94,28 +95,58 @@ export function LandingHero() {
           <span className="text-xs font-semibold tracking-wide text-primary/90 uppercase">Built for Physics Educators</span>
         </motion.div>
 
-        <div className="flex justify-center mb-8 relative">
-          <div className="absolute inset-x-0 inset-y-0 flex items-center justify-center pointer-events-none z-0">
-            <div className="w-20 h-20 bg-primary/20 blur-3xl rounded-full scale-150 opacity-60" />
+        <div className="flex justify-center mb-12 relative">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <motion.div
+              className="w-48 h-48 bg-primary/20 blur-[100px] rounded-full"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 1.5, ease: "easeOut" }}
+            />
           </div>
-          <motion.div
-            className="relative cursor-pointer z-10"
-            onClick={() => setLogoRotation(prev => prev + 360)}
-            animate={{ rotate: logoRotation, y: [0, -10, 0] }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{
-              rotate: { type: "spring", stiffness: 60, damping: 12 },
-              y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
-              default: { duration: 2.5, ease: [0.16, 1, 0.3, 1] }
-            }}
-          >
-            <Logo size={80} className="text-foreground drop-shadow-[0_0_25px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_35px_rgba(255,255,255,0.15)] transition-all duration-300" />
-          </motion.div>
+          
+          <div className="flex items-center gap-6 relative z-10">
+            <motion.div
+              className="cursor-pointer"
+              onClick={() => setLogoRotation(prev => prev + 360)}
+              animate={{ rotate: logoRotation, y: [0, -8, 0] }}
+              whileHover={{ scale: 1.08 }}
+              transition={{
+                rotate: { type: "spring", stiffness: 60, damping: 12 },
+                y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+                default: { duration: 2, ease: [0.16, 1, 0.3, 1] }
+              }}
+            >
+              <Logo
+                size={72}
+                className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)]"
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "auto", opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="h-12 w-px bg-border/40 mx-2"
+            />
+
+            <motion.div
+              className="flex flex-col items-center gap-1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7, duration: 0.8 }}
+            >
+              <CruxLogo 
+                size={56} 
+                className="text-primary animate-pulse shadow-[0_0_30px_rgba(var(--primary),0.4)]" 
+              />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Crux Engine</span>
+            </motion.div>
+          </div>
         </div>
 
         <motion.h1
-          className="text-6xl md:text-8xl font-black font-inter tracking-tighter mb-6 text-foreground pb-2"
+          className="text-6xl md:text-8xl font-black font-inter tracking-tighter mb-4 text-foreground pb-2 leading-none"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
@@ -124,16 +155,16 @@ export function LandingHero() {
         </motion.h1>
 
         <motion.p
-          className="text-2xl md:text-3xl font-semibold mb-8 max-w-2xl mx-auto text-foreground/80 leading-tight"
+          className="text-2xl md:text-4xl font-black mb-8 max-w-3xl mx-auto leading-tight bg-gradient-to-r from-foreground via-foreground/80 to-muted-foreground bg-clip-text text-transparent"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65, duration: 0.8 }}
         >
-          The World's Only AI Physics LMS
+          The Physics LMS Powered by Crux
         </motion.p>
 
         <motion.p
-          className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
+          className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-medium"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
@@ -144,8 +175,9 @@ export function LandingHero() {
         >
           The first verifiable framework for Socratic physics tutoring. 
           Enforce the struggle with a 4-layer constraint architecture 
-          that makes bypassing the learning process structurally impossible.
+          powered by the <span className="text-primary font-bold">Crux Socratic Engine</span>.
         </motion.p>
+
 
         {/* Stats Bar */}
         <motion.div
