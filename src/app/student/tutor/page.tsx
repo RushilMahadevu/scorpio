@@ -454,8 +454,8 @@ export default function TutorPage() {
               <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border-primary/20 shadow-sm overflow-hidden">
                 <CardContent className="p-3 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <CruxLogo size={16} className="text-primary" />
+                    <div className="p-2 bg-zinc-900 rounded-lg shadow-sm border border-white/5">
+                      <CruxLogo size={16} className="text-white" />
                     </div>
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-primary/70 mb-0.5">Tutor Messages</p>
@@ -658,7 +658,9 @@ export default function TutorPage() {
             <Card className="flex-1 flex flex-col min-h-0">
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2">
-                  <CruxLogo size={20} />
+                  <div className="h-8 w-8 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg border border-white/5">
+                    <CruxLogo size={16} className="text-white" />
+                  </div>
                   Chat with Crux
                 </CardTitle>
                 <CardDescription>
@@ -672,7 +674,9 @@ export default function TutorPage() {
                   <div className="p-4">
                   {messages.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
-                      <CruxLogo size={48} className="mx-auto mb-4 opacity-50" />
+                      <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-zinc-900 flex items-center justify-center shadow-xl border border-white/5 opacity-50 grayscale hover:grayscale-0 transition-all duration-300">
+                        <CruxLogo size={40} className="text-white" />
+                      </div>
                       <p>Start a conversation by asking a question!</p>
                       <div className="mt-4 space-y-2">
                         <p className="text-sm">Try asking:</p>
@@ -704,13 +708,13 @@ export default function TutorPage() {
                           >
                             <div
                               className={cn(
-                                "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full mt-1",
+                                "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full mt-1 border border-white/5",
                                 message.role === "assistant"
-                                  ? "bg-primary text-primary-foreground"
+                                  ? "bg-zinc-900 text-white shadow-md"
                                   : "bg-muted"
                               )}
                             >
-                              {message.role === "assistant" ? <CruxLogo size={16} /> : <User className="h-4 w-4" />}
+                              {message.role === "assistant" ? <CruxLogo size={14} className="text-white" /> : <User className="h-4 w-4" />}
                             </div>
                             <div
                               className={cn(
@@ -735,8 +739,8 @@ export default function TutorPage() {
                       })}
                       {loading && (
                         <div className="flex gap-3 animate-pulse">
-                          <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary/20 text-primary">
-                            <CruxLogo size={16} />
+                          <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-zinc-900 text-white border border-white/5 shadow-sm">
+                            <CruxLogo size={14} className="text-white" />
                           </div>
                           <div className="rounded-2xl px-4 py-2 bg-muted/40 border border-muted-foreground/10">
                             <div className="flex gap-1 items-center h-5">

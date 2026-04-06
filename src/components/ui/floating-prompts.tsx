@@ -34,10 +34,10 @@ const PromptCard = ({ icon: Icon, userText, aiText, delay, rotation, side, top }
     const height = rect.height;
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    
+
     const xPct = mouseX / width;
     const yPct = mouseY / height;
-    
+
     x.set(xPct);
     y.set(yPct);
   };
@@ -50,46 +50,45 @@ const PromptCard = ({ icon: Icon, userText, aiText, delay, rotation, side, top }
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8, filter: "brightness(2) blur(10px)", y: 50, rotate: rotation }}
-      animate={{ 
+      animate={{
         opacity: 1,
         scale: 1,
         y: 0,
         rotate: rotation,
         filter: "brightness(1) blur(0px)"
       }}
-      exit={{ 
-        opacity: 0, 
-        scale: 0.9, 
+      exit={{
+        opacity: 0,
+        scale: 0.9,
         filter: "brightness(1.5) blur(8px)",
         y: -30,
         transition: { duration: 0.8, ease: "easeInOut" }
       }}
-      transition={{ 
+      transition={{
         duration: 2,
         delay: delay,
         ease: [0.22, 1, 0.36, 1]
       }}
-      className={`absolute w-full max-w-[220px] xl:max-w-[310px] z-[30] pointer-events-auto group ${
-        side === "left" ? "left-4 xl:left-8" : "right-4 xl:right-8"
-      }`}
+      className={`absolute w-full max-w-[220px] xl:max-w-[310px] z-[30] pointer-events-auto group ${side === "left" ? "left-4 xl:left-8" : "right-4 xl:right-8"
+        }`}
       style={{ top, perspective: 1200 }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       <motion.div
-        animate={{ 
+        animate={{
           y: [0, -12, 0],
           rotate: [0, 1, 0, -1, 0]
         }}
-        transition={{ 
+        transition={{
           y: { duration: 8, repeat: Infinity, ease: "easeInOut" },
           rotate: { duration: 7, repeat: Infinity, ease: "easeInOut" }
         }}
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="relative p-4 xl:p-6 rounded-2xl bg-background/65 backdrop-blur-3xl border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-visible group-hover:bg-background/85 group-hover:border-primary/45 group-hover:shadow-[0_30px_80px_rgba(var(--primary),0.3)] transition-all duration-500 cursor-default"
+        className="relative p-4 xl:p-6 rounded-2xl bg-background/65 backdrop-blur-3xl border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-visible group-hover:scale-105 group-hover:bg-background/85 group-hover:border-primary/45 group-hover:shadow-[0_30px_80px_rgba(var(--primary),0.3)] transition-all duration-500 cursor-default"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
-        
+
         <div style={{ transform: "translateZ(50px)" }} className="relative z-10">
           <div className="flex items-start gap-4 mb-3 xl:mb-4">
             <div className="h-9 w-9 xl:h-11 xl:w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 shadow-inner shadow-primary/20 border border-primary/10 transition-colors group-hover:bg-primary/15">
@@ -105,13 +104,13 @@ const PromptCard = ({ icon: Icon, userText, aiText, delay, rotation, side, top }
         <div style={{ transform: "translateZ(30px)" }} className="relative z-10 pl-[48px] xl:pl-[56px]">
           <div className="absolute left-[24px] xl:left-[28px] top-[-10px] bottom-0 w-[1.5px] bg-gradient-to-b from-primary/40 to-transparent" />
           <div className="space-y-2 pt-1">
-             <div className="flex items-center gap-2">
-              <CruxLogo className="size-2 xl:size-3"/>
-                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-primary leading-none font-mono">Crux</p>
-             </div>
-             <div className="text-[12px] xl:text-[13.5px] font-medium text-muted-foreground/90 leading-relaxed pr-1">
-               {typeof aiText === 'string' ? aiText : aiText}
-             </div>
+            <div className="flex items-center gap-2">
+              <CruxLogo className="size-2 xl:size-3" />
+              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-primary leading-none font-mono">Crux</p>
+            </div>
+            <div className="text-[12px] xl:text-[13.5px] font-medium text-muted-foreground/90 leading-relaxed pr-1">
+              {typeof aiText === 'string' ? aiText : aiText}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -153,7 +152,7 @@ export const FloatingPrompts = () => {
       ),
       delay: 0.6,
       side: "right" as const,
-      top: "45%", 
+      top: "45%",
       rotation: 6
     },
     // Cycle 2: Top-Right & Mid-Left (Raised above stats)
@@ -180,13 +179,13 @@ export const FloatingPrompts = () => {
         <>
           Recall the condition for constructive interference. The path difference must satisfy:
           <div className="mt-2.5 py-1.5 px-3 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-sm">
-             <InlineMath math="\Delta L = n\lambda" />
+            <InlineMath math="\Delta L = n\lambda" />
           </div>
         </>
       ),
       delay: 0.4,
-      side: "left" as const, 
-      top: "48%", 
+      side: "left" as const,
+      top: "48%",
       rotation: -10
     }
   ];
@@ -194,7 +193,7 @@ export const FloatingPrompts = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     const initialDelay = setTimeout(() => {
-      setActiveCycle(1); 
+      setActiveCycle(1);
       interval = setInterval(() => {
         setActiveCycle((prev) => (prev === 1 ? 2 : 1));
       }, 9000);

@@ -186,13 +186,13 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-md transition-all duration-300 cursor-pointer",
-          "h-14 w-14 bg-card/40 border border-border/50 backdrop-blur-sm hover:bg-card/60 hover:border-border hover:scale-105"
+          "h-14 w-14 bg-zinc-900 border border-white/10 shadow-xl hover:bg-zinc-800 hover:border-white/20 hover:scale-105"
         )}
         aria-label="Crux AI Assistant"
       >
         {isOpen
-          ? <X className="h-5 w-5 text-foreground" />
-          : <CruxLogo size={20} className="text-foreground" />
+          ? <X className="h-5 w-5 text-white" />
+          : <CruxLogo size={20} className="text-white" />
         }
         {hasUnread && !isOpen && (
           <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />
@@ -211,8 +211,8 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
           {/* Header */}
           <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-zinc-50 dark:bg-zinc-900/60 shrink-0">
             <div className="relative">
-              <div className="h-9 w-9 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow">
-                <CruxLogo size={18} className="text-zinc-100 dark:text-zinc-900" />
+              <div className="h-9 w-9 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg border border-white/5">
+                <CruxLogo size={18} className="text-white" />
               </div>
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
             </div>
@@ -254,8 +254,8 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
               <div key={i}>
                 <div className={cn("flex gap-2.5", message.role === 'user' ? "justify-end" : "justify-start")}>
                   {message.role === 'assistant' && (
-                    <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <CruxLogo size={14} className="text-zinc-100 dark:text-zinc-900" />
+                    <div className="h-6 w-6 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 mt-0.5 border border-white/5">
+                      <CruxLogo size={14} className="text-white" />
                     </div>
                   )}
                   <div className={cn(
@@ -307,8 +307,8 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
 
             {isLoading && (
               <div className="flex gap-2.5">
-                <div className="h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
-                  <CruxLogo size={14} className="text-zinc-100 dark:text-zinc-900" />
+                <div className="h-6 w-6 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 border border-white/5">
+                  <CruxLogo size={14} className="text-white" />
                 </div>
                 <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
                   <div className="flex gap-1 items-center h-4">
