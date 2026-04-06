@@ -100,7 +100,12 @@ function SidebarContent({
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isRootRoute = item.href === "/teacher" || item.href === "/student" || item.href === "/admin";
+            const isActive = pathname ? (
+              isRootRoute 
+                ? pathname === item.href 
+                : pathname === item.href || pathname.startsWith(item.href + "/")
+            ) : false;
             return (
               <Link key={item.href} href={item.href} onClick={onNavigate}>
                 <motion.div

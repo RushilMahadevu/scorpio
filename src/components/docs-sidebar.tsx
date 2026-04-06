@@ -19,7 +19,7 @@ export function DocsSidebar() {
   return (
     <nav className="flex flex-col space-y-1">
       {items.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname ? (pathname === item.href || pathname.startsWith(item.href + "/")) : false;
         return (
           <Link key={item.href} href={item.href} className="relative group">
             <span
