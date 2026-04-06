@@ -1,11 +1,11 @@
 "use client";
 
 import { SpaceBackground } from "@/components/ui/space-background";
-import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring, useMotionValue, useTransform, animate } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X
+  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X, Users, Building2
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/loading-screen";
 import { LandingChatbot } from "@/components/landing-chatbot";
 import { LandingFAQ } from "@/components/landing-faq";
@@ -36,6 +37,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+function AnimatedNumber({ value }: { value: number }) {
+  const count = useMotionValue(value);
+  const rounded = useTransform(count, (latest) => latest.toFixed(2));
+
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 0.5, ease: "easeOut" });
+    return controls.stop;
+  }, [value, count]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
+
 
 
 export default function Home() {
@@ -46,6 +59,7 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly" | "enterprise">("yearly");
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -850,134 +864,225 @@ export default function Home() {
                         </motion.p>
                       </div>
 
-                      {/* Pricing Cards */}
-                      <motion.div
-                        className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto"
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, amount: 0.2 }}
-                        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
-                      >
-                        {/* Monthly */}
-                        <motion.div
-                          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                          className="relative p-8 border border-border bg-card/30 backdrop-blur-sm rounded-2xl flex flex-col gap-6 hover:border-primary/30 transition-all duration-300 hover:shadow-xl shadow-sm"
-                        >
-                          <div>
-                            <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/50 rounded-full px-2.5 py-0.5 mb-4">Monthly</div>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-5xl font-black tracking-tighter">$4.99</span>
-                              <span className="text-muted-foreground text-base font-medium">/mo</span>
+                      {/* Unified Billing Widget */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-6xl mx-auto">
+                        
+                        {/* Left Column: Context / Image */}
+                        <div className="lg:col-span-6 space-y-8">
+                          <div className="relative rounded-3xl overflow-hidden border border-border shadow-2xl group bg-muted/40 pb-0">
+                            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
+                            <Image
+                              src="/plan.jpg"
+                              alt="Platform Preview"
+                              width={800}
+                              height={600}
+                              className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out border-b border-border"
+                              loading="eager"
+                            />
+                            <div className="absolute bottom-6 left-6 right-6 z-20">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-background/95 backdrop-blur-md p-5 rounded-2xl border border-border shadow-lg">
+                                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                                  <Users className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                  <h4 className="text-base font-bold text-foreground">One Network. Infinite Seats.</h4>
+                                  <p className="text-sm text-muted-foreground mt-0.5">Every student and teacher included.</p>
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-muted-foreground text-sm mt-2 leading-relaxed">Flexible access, cancel anytime.</p>
                           </div>
-                          <ul className="space-y-3 flex-1">
-                            {["Teacher AI Dashboard", "Network Waypoints", "Real-time Mastery Views", "Priority Support"].map((f) => (
-                              <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 font-medium">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />{f}
-                              </li>
-                            ))}
-                          </ul>
-                          <Link href="/signup">
-                            <Button className="cursor-pointer w-full bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 font-black py-6 text-base rounded-xl shadow-md">
-                              Get Started <ArrowRight className="h-4 w-4 ml-2 opacity-50 inline" />
-                            </Button>
-                          </Link>
-                        </motion.div>
 
-                        {/* Yearly */}
-                        <motion.div
-                          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                          className="relative p-8 border-2 border-primary bg-primary/[0.02] rounded-2xl flex flex-col gap-6 overflow-hidden transition-all hover:scale-[1.01] duration-300 shadow-lg shadow-primary/5"
-                        >
-                          <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] px-4 py-1.5 font-black uppercase tracking-widest rounded-bl-xl">
-                            Best Value
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[
+                              { title: "Zero Markup Guarantee", desc: "Pay exactly what Google charges for AI, roughly $0.08 per 250 students." },
+                              { title: "Real-time Mastery Tracking", desc: "Pinpoint struggling concepts instantly across your entire cohort." },
+                              { title: "Automated Workflows", desc: "Free up hours of grading and curriculum alignment every single week." },
+                              { title: "Hard Spend Caps", desc: "Set definitive budget ceilings so you never encounter surprise billing." }
+                            ].map((feature, idx) => (
+                              <div key={idx} className="p-6 rounded-2xl border border-border bg-card/30 backdrop-blur-sm hover:bg-muted/40 transition-colors shadow-sm">
+                                <CheckCircle2 className="h-6 w-6 text-emerald-500 mb-4" />
+                                <h4 className="text-base font-bold mb-2 text-foreground">{feature.title}</h4>
+                                <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                              </div>
+                            ))}
                           </div>
-                          <div>
-                            <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary border border-primary/30 bg-primary/5 rounded-full px-2.5 py-0.5 mb-4">Yearly</div>
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-5xl font-black tracking-tighter">$29.88</span>
-                              <span className="text-muted-foreground text-base font-medium">/yr</span>
+                        </div>
+
+                        {/* Right Column: Pricing Switcher */}
+                        <div className="lg:col-span-6 sticky top-24">
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="p-8 md:p-10 rounded-[2.5rem] border border-border bg-card shadow-2xl relative overflow-hidden"
+                          >
+                            <div className="absolute -top-10 -right-10 p-6 pointer-events-none opacity-[0.03] dark:opacity-10">
+                              <ShieldCheck className="w-64 h-64 text-foreground" />
                             </div>
-                            <p className="text-sm text-primary font-bold mt-2 flex items-center gap-1.5">
-                              <Zap className="h-4 w-4" /> $2.49/mo — save $30 a year
+
+                            <h3 className="text-3xl font-extrabold mb-3 relative z-10 tracking-tight text-foreground">Global License</h3>
+                            <p className="text-muted-foreground text-base mb-10 relative z-10">
+                              Unlock the full power of Scorpio for your entire department.
                             </p>
-                          </div>
-                          <ul className="space-y-3 flex-1">
-                            {["Everything in Monthly", "Priority AI Processing", "Extended Usage History", "Dept-wide Discount"].map((f) => (
-                              <li key={f} className="flex items-center gap-3 text-sm font-bold text-foreground">
-                                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />{f}
-                              </li>
-                            ))}
-                          </ul>
-                          <Link href="/signup">
-                            <Button className="cursor-pointer w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 text-base rounded-xl shadow-xl shadow-primary/20">
-                              Claim Annual Plan <ArrowRight className="h-4 w-4 ml-2 inline" />
-                            </Button>
-                          </Link>
-                        </motion.div>
-                      </motion.div>
 
-                      {/* Info strip */}
+                            {/* Billing Cycle Toggle */}
+                            <div className="flex p-1.5 bg-muted rounded-3xl mb-10 relative z-10 overflow-x-auto">
+                              <button
+                                onClick={() => setBillingCycle("monthly")}
+                                className={cn(
+                                  "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
+                                  billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                              >
+                                Monthly
+                              </button>
+                              <button
+                                onClick={() => setBillingCycle("yearly")}
+                                className={cn(
+                                  "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-1.5",
+                                  billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                              >
+                                Annual <Badge variant="secondary" className="dark:bg-green-700 bg-green-500 text-white">Save 50%</Badge>
+                              </button>
+                              <button
+                                onClick={() => setBillingCycle("enterprise")}
+                                className={cn(
+                                  "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
+                                  billingCycle === "enterprise" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                              >
+                                Enterprise
+                              </button>
+                            </div>
+
+                            {billingCycle === "enterprise" ? (
+                              <div className="relative z-10 h-full flex flex-col pt-2 pb-6">
+                                <div className="mb-8 text-center flex-1">
+                                  <h4 className="text-3xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500 tracking-tight">Custom Scale</h4>
+                                  <p className="text-muted-foreground text-[15px] leading-relaxed mx-auto">
+                                    For deployments across multiple networks, we offer custom authentication integrations, dedicated infrastructure SLAs, and volume discounts.
+                                  </p>
+                                </div>
+
+                                <ul className="space-y-4 mb-10 bg-background/50 p-6 rounded-2xl border border-border/50 hidden sm:block">
+                                  {[
+                                    "Custom SSO Integrations",
+                                    "Dedicated Infrastructure",
+                                    "Volume Pricing Tiers",
+                                    "10+ Network Scale"
+                                  ].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-4">
+                                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Building2 className="h-3.5 w-3.5 text-primary" />
+                                      </div>
+                                      <span className="text-sm font-semibold text-foreground">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+
+                                <Button
+                                  asChild
+                                  className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground mt-auto"
+                                >
+                                  <a href="mailto:rushil@scorpioedu.org">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <span>Contact Sales via Email</span>
+                                      <ArrowRight className="h-5 w-5" />
+                                    </div>
+                                  </a>
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="mb-10 relative z-10">
+                                  <div className="flex items-end gap-2 mb-2">
+                                    <span className="text-7xl font-black tracking-tighter text-foreground">
+                                      $<AnimatedNumber value={billingCycle === "yearly" ? 2.49 : 4.99} />
+                                    </span>
+                                    <span className="text-muted-foreground font-medium pb-3 text-lg">/mo</span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground font-medium"> Billed {billingCycle === "yearly" ? "annually - Save 50% ($29.88)" : "monthly"} as one subscription.</p>
+                                </div>
+
+                                <ul className="space-y-4 mb-10 relative z-10">
+                                  {[
+                                    "Everything in Free",
+                                    "Unlimited Students & Courses",
+                                    "All Integrations with Crux AI",
+                                    "Teacher AI Dashboards",
+                                    "Network Waypoint Syncing",
+                                    "Comprehensive Control of Capacities & Limits",
+                                    "Cancel Anytime"
+                                  ].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-4">
+                                      <div className="h-6 w-6 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                      </div>
+                                      <span className="text-base font-medium text-foreground">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+
+                                <Link href="/signup">
+                                  <Button
+                                    className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground relative z-10"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span>{billingCycle === "yearly" ? "Claim Annual Plan" : "Start Monthly Plan"}</span>
+                                      <ArrowRight className="h-5 w-5" />
+                                    </div>
+                                  </Button>
+                                </Link>
+
+                                <p className="text-xs text-center text-muted-foreground/70 mt-8 relative z-10 leading-relaxed px-4">
+                                  Payments are secure and encrypted. Institutions can cancel subscription at any time.
+                                </p>
+                              </>
+                            )}
+                          </motion.div>
+                        </div>
+                      </div>
+
+                      {/* Why Zero Markup block */}
                       <motion.div
-                        className="grid grid-cols-1 md:grid-cols-3 gap-5"
-                        initial={{ opacity: 0, y: 16 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-muted/20 backdrop-blur-md border border-border/50 rounded-[2.5rem] p-8 md:p-12"
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
                       >
-                        <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 backdrop-blur-sm space-y-4">
-                          <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                            <h4 className="font-black text-sm">What You Unlock</h4>
-                          </div>
-                          {[
-                            { title: "Always-on AI Tutor", desc: "No throttling during finals, midterms, or late-night study sessions." },
-                            { title: "Department Waypoints", desc: "One curriculum, synchronized instantly across every teacher in your network." },
-                            { title: "Mastery Analytics", desc: "See exactly who's falling behind before it becomes a grade problem." },
-                            { title: "Hard Spend Caps", desc: "Set monthly AI cost ceilings so you never get a surprise bill." },
-                          ].map((item, i) => (
-                            <div key={i} className="space-y-0.5">
-                              <h5 className="font-bold text-xs text-foreground">{item.title}</h5>
-                              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                            </div>
-                          ))}
+                        <div className="space-y-6">
+                           <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
+                              <Zap className="h-4 w-4" />
+                              Zero Markup Pass-Through
+                           </div>
+                           <h3 className="text-3xl font-black tracking-tight text-foreground">One Platform. Zero EdTech Bloat.</h3>
+                           <p className="text-muted-foreground text-lg font-medium leading-relaxed">
+                              Most platforms markup AI costs 500%. We charge a flat fee for the infrastructure and pass raw compute costs directly to you. Every dollar goes into student mastery, not platform margins.
+                           </p>
+                           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {[
+                                "Google Gemini-Flash Rates",
+                                "FERPA & GDPR Infrastructure",
+                                "Department-Wide Syncing",
+                                "Priority Inference Tunnels"
+                              ].map(f => (
+                                <li key={f} className="flex items-center gap-2 text-sm font-bold text-foreground">
+                                   <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                   {f}
+                                </li>
+                              ))}
+                           </ul>
                         </div>
-                        <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
-                          <div className="flex items-center gap-2">
-                            <Globe className="h-4 w-4 text-primary" />
-                            <h4 className="font-black text-sm">Zero Markup. Seriously.</h4>
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            Most EdTech companies mark up API costs 300–500%. We charge you exactly what Google charges us — every dollar goes directly to your students' learning.
-                          </p>
-                          <div className="flex gap-6 pt-1">
-                            <div>
-                              <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.15</p>
-                              <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Input</p>
-                            </div>
-                            <div className="w-px bg-border self-stretch" />
-                            <div>
-                              <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.60</p>
-                              <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Output</p>
-                            </div>
-                          </div>
-                          <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Google DeepMind Gemini 2.5 Flash rates</p>
-                        </div>
-                        <div className="p-6 bg-zinc-100/50 dark:bg-zinc-900/50 rounded-2xl text-white space-y-4 overflow-hidden relative group">
-                          <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <div className="relative z-10 space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Lock className="h-4 w-4 text-amber-500" />
-                              <h4 className="font-black text-foreground text-sm">Scaling Beyond One School?</h4>
-                            </div>
-                            <p className="text-xs text-muted-foreground leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
-                            <Link href="/contact">
-                              <Button variant="outline" className="cursor-pointer w-full bg-transparent border-white/20 text-white hover:bg-white hover:text-black font-black uppercase tracking-widest text-[10px] py-4 rounded-xl mt-2">
-                                Contact Us
-                              </Button>
-                            </Link>
-                          </div>
+                        <div className="grid grid-cols-2 gap-4">
+                           <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
+                              <p className="text-3xl font-black text-primary mb-1">$0.15</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Input</p>
+                           </div>
+                           <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
+                              <p className="text-3xl font-black text-primary mb-1">$0.60</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Output</p>
+                           </div>
                         </div>
                       </motion.div>
 
@@ -988,7 +1093,12 @@ export default function Home() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                       >
-                        <CostComparisonChart />
+                        <div className="text-center mb-10">
+                           <h3 className="text-2xl font-bold mb-2 text-foreground italic">The scale difference.</h3>
+                        </div>
+                        <div className="bg-card/40 backdrop-blur-xl border border-border shadow-2xl rounded-[3rem] p-4 md:p-8">
+                           <CostComparisonChart />
+                        </div>
                       </motion.div>
 
                     </div>
