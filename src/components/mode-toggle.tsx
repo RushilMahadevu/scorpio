@@ -46,17 +46,17 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleThemeChange("dark")}> 
+        <DropdownMenuItem className="cursor-pointer" onClick={() => handleThemeChange("dark")}>
           Dark <span className="ml-2 text-xs text-muted-foreground">(Recommended)</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleThemeChange("light")}> 
-          Light 
+        <DropdownMenuItem className="cursor-pointer" onClick={() => handleThemeChange("light")}>
+          Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleThemeChange("system")}> 
+        <DropdownMenuItem className="cursor-pointer" onClick={() => handleThemeChange("system")}>
           System
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={toggleSpaceEffects} onSelect={(e) => e.preventDefault()}>
+        <DropdownMenuItem className="cursor-pointer" onClick={toggleSpaceEffects} onSelect={(e) => e.preventDefault()}>
           <Sparkles className="mr-2 h-4 w-4" />
           Space Effects: {spaceEffectsEnabled ? "On" : "Off"}
         </DropdownMenuItem>
@@ -71,17 +71,16 @@ export function ModeToggle() {
                     e.stopPropagation();
                     setSpacyLevel(level);
                   }}
-                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${
-                    spacyLevel === level 
-                      ? "bg-primary text-primary-foreground border-primary" 
-                      : "bg-background hover:bg-muted border-border"
-                  }`}
+                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${spacyLevel === level
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background hover:bg-muted border-border"
+                    }`}
                 >
                   {level}
                 </button>
               ))}
             </div>
-            
+
             <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nebula Intensity</div>
             <div className="grid grid-cols-4 gap-1.5">
               {[0, 10, 20, 35].map((level) => (
@@ -91,11 +90,10 @@ export function ModeToggle() {
                     e.stopPropagation();
                     setNebulaBrightness(level);
                   }}
-                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${
-                    nebulaBrightness === level 
-                      ? "bg-primary text-primary-foreground border-primary" 
-                      : "bg-background hover:bg-muted border-border"
-                  }`}
+                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${nebulaBrightness === level
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background hover:bg-muted border-border"
+                    }`}
                 >
                   {level === 0 ? "Off" : level === 10 ? "Dim" : level === 20 ? "Mid" : "High"}
                 </button>
@@ -103,7 +101,7 @@ export function ModeToggle() {
             </div>
 
             <div className="my-3 h-px bg-border/50" />
-            
+
             <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Palette className="h-3 w-3" />
               Typography
@@ -123,11 +121,10 @@ export function ModeToggle() {
                     setFont(f.id as FontOption);
                   }}
                   style={{ fontFamily: f.font }}
-                  className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors cursor-pointer flex items-center justify-between ${
-                    font === f.id 
-                      ? "bg-primary/10 text-primary font-bold" 
-                      : "hover:bg-muted text-muted-foreground"
-                  }`}
+                  className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors cursor-pointer flex items-center justify-between ${font === f.id
+                    ? "bg-primary/10 text-primary font-bold"
+                    : "hover:bg-muted text-muted-foreground"
+                    }`}
                 >
                   {f.label}
                   {font === f.id && <div className="h-1 w-1 rounded-full bg-primary" />}
@@ -136,7 +133,7 @@ export function ModeToggle() {
             </div>
 
             <div className="my-3 h-px bg-border/50" />
-            
+
             <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Palette className="h-3 w-3" />
               Accent Color
@@ -158,9 +155,8 @@ export function ModeToggle() {
                     setThemeColor(t.value as ThemeColor);
                   }}
                   title={t.name}
-                  className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${
-                    themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
-                  }`}
+                  className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
+                    }`}
                 >
                   <div className={`h-4 w-4 rounded-full ${t.color} shadow-xs group-hover:scale-110 transition-transform`} />
                 </button>

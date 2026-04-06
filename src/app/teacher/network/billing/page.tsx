@@ -3,35 +3,46 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { 
-  Sparkles, 
-  CheckCircle2, 
-  Zap, 
-  Loader2, 
+import { doc, getDoc } from "firebase/firestore";
+import {
+  Sparkles,
+  CheckCircle2,
+  Loader2,
   ArrowLeft,
-  CreditCard,
   ShieldCheck,
-  Globe,
   Lock,
   ArrowRight,
-  Calculator,
-  ChevronLeft
+  Building2,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Organization } from "@/lib/types";
 import CostComparisonChart from "@/components/admin/cost-comparison-chart";
+import Image from "next/image";
+
+function AnimatedNumber({ value }: { value: number }) {
+  const count = useMotionValue(value);
+  const rounded = useTransform(count, (latest) => latest.toFixed(2));
+
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 0.5, ease: "easeOut" });
+    return controls.stop;
+  }, [value, count]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
 
 export default function BillingPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const [upgrading, setUpgrading] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly" | "enterprise">("yearly");
 
   useEffect(() => {
     if (authLoading) return;
@@ -59,7 +70,7 @@ export default function BillingPage() {
 
   const handleUpgrade = async (planId: string) => {
     if (!user || !organization) return;
-    
+
     setUpgrading(true);
     try {
       const response = await fetch("/api/checkout", {
@@ -74,7 +85,7 @@ export default function BillingPage() {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || data.error || "Failed to start checkout.");
-      
+
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -111,258 +122,315 @@ export default function BillingPage() {
 
   const isOwner = user?.uid === organization.ownerId || (profile?.role as string) === "school_admin";
 
+  const handleCheckout = () => {
+    handleUpgrade(billingCycle === "yearly" ? "standard_yearly" : "standard_monthly");
+  };
+
   return (
-    <div className="min-h-screen bg-transparent text-foreground pb-20 relative">
-      
-      {/* Space Aesthetic Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
+    <div className="min-h-screen bg-transparent text-foreground pb-20 relative font-sans">
+
+      {/* SaaS Grid Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,transparent,black_10rem,black_calc(100%-10rem),transparent)]">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_20%,transparent_100%)]"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
       </div>
 
-      {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 pt-10 pb-12 relative z-10">
-        <Link href="/teacher/network" className="group inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-10 uppercase tracking-widest font-black">
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
+      <div className="max-w-6xl mx-auto px-6 pt-10 pb-16 relative z-10">
+        <Link href="/teacher/network" className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-12 font-medium">
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Back to Network
         </Link>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-          <div className="space-y-5 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.25em]">
-              <Sparkles className="h-3 w-3" /> Unlock Your Department's Full Potential
+        {/* Hero Section */}
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
+          <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/20 bg-primary/5 text-primary font-medium tracking-wide">
+            <Sparkles className="h-3.5 w-3.5 mr-2 inline" /> Empower Your Entire Department
+          </Badge>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.05]">
+            Enterprise-grade AI, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500">
+              without the markup.
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
+            Unlimited student access. Powerful analytics. Curriculum synchronization.
+            Give your physics department the tools they need for <span className="font-semibold text-foreground">$4.99 a month total</span>.
+          </p>
+        </div>
+
+        {/* Current License Strip */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-between p-5 rounded-2xl border border-border bg-card/50 backdrop-blur-md shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-xl flex items-center justify-center shrink-0",
+                organization.planId === "free" ? "bg-muted" : "bg-primary/20"
+              )}>
+                <Building2 className={cn("h-6 w-6", organization.planId === "free" ? "text-muted-foreground" : "text-primary")} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Current Network License</p>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-xl font-bold">
+                    {organization.planId === "free" ? "Free Tier" : "Pro Plan Active"}
+                  </h3>
+                  {organization.planId !== "free" && (
+                    <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent">
+                      {organization.planId.includes("yearly") ? "ANNUAL" : "MONTHLY"}
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-tight text-foreground">
-              AI-powered physics<br />
-              <span className="text-primary italic">for less than a textbook.</span>
-            </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed max-w-lg">
-              One flat subscription. Unlimited students. Zero markup on AI. 
-              While competitors charge <span className="text-foreground font-bold">$5–$12 per student per month</span>, 
-              Scorpio charges <span className="text-emerald-500 font-bold">$4.99 total</span>.
-            </p>
-            <div className="flex flex-wrap items-center gap-4 pt-1">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> No per-student fees
+            {organization.planId === "free" ? (
+              <div className="mt-4 sm:mt-0 text-sm text-red-500 font-medium flex items-center gap-2">
+                <Lock className="h-4 w-4" /> Limited Features
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Cancel anytime
+            ) : (
+              <Button variant="outline" asChild className="mt-4 sm:mt-0 border-border">
+                <Link href="https://polar.sh/scorpio/portal" target="_blank">
+                  Manage Billing Portal
+                </Link>
+              </Button>
+            )}
+
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-6xl mx-auto">
+
+          {/* Left Column: Context / Image */}
+          <div className="lg:col-span-6 space-y-8">
+            <div className="relative rounded-3xl overflow-hidden border border-border shadow-2xl group bg-muted/40 pb-0">
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
+              {/* Using the plan.jpg image here */}
+              <Image
+                src="/plan.jpg"
+                alt="Platform Preview"
+                width={800}
+                height={600}
+                className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out border-b border-border"
+              />
+              <div className="absolute bottom-6 left-6 right-6 z-20">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-background/95 backdrop-blur-md p-5 rounded-2xl border border-border shadow-lg">
+                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                    <Users className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-foreground">One Network. Infinite Seats.</h4>
+                    <p className="text-sm text-muted-foreground mt-0.5">Every student and teacher included.</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Zero AI markup
-              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { title: "Zero Markup Guarantee", desc: "Pay exactly what Google charges for AI, roughly $0.08 per 250 students." },
+                { title: "Real-time Mastery Tracking", desc: "Pinpoint struggling concepts instantly across your entire cohort." },
+                { title: "Automated Workflows", desc: "Free up hours of grading and curriculum alignment every single week." },
+                { title: "Hard Spend Caps", desc: "Set definitive budget ceilings so you never encounter surprise billing." }
+              ].map((feature, idx) => (
+                <div key={idx} className="p-6 rounded-2xl border border-border bg-card hover:bg-muted/40 transition-colors shadow-sm">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500 mb-4" />
+                  <h4 className="text-base font-bold mb-2">{feature.title}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 p-5 rounded-2xl border border-border/50 bg-muted/10 backdrop-blur-sm shrink-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Current License</p>
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "h-3 w-3 rounded-full shrink-0",
-                organization.planId === "free" ? "bg-muted-foreground/30" : "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse"
-              )} />
-              <p className="text-2xl font-black">
-                {organization.planId === "free" ? "Free Tier" : "Standard Plan"}
-              </p>
-              {organization.planId !== "free" && (
-                <Badge variant="outline" className="text-[10px] font-mono py-0.5 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
-                  {organization.planId.includes("yearly") ? "ANNUAL" : "MONTHLY"}
-                </Badge>
-              )}
-            </div>
-            {organization.planId === "free" && (
-              <p className="text-xs text-muted-foreground">Upgrade below to unlock all features →</p>
+          {/* Right Column: Pricing Switcher / Form */}
+          <div className="lg:col-span-6 sticky top-24">
+            {organization.planId === "free" ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-8 md:p-10 rounded-[2.5rem] border border-border bg-card shadow-2xl relative overflow-hidden"
+              >
+                <div className="absolute -top-10 -right-10 p-6 pointer-events-none opacity-[0.03] dark:opacity-10">
+                  <ShieldCheck className="w-64 h-64 text-foreground" />
+                </div>
+
+                <h3 className="text-3xl font-extrabold mb-3 relative z-10 tracking-tight">Upgrade Network</h3>
+                <p className="text-muted-foreground text-base mb-10 relative z-10">
+                  Unlock the full power of Scorpio for your entire department.
+                </p>
+
+                {/* Billing Cycle Toggle */}
+                <div className="flex p-1.5 bg-muted rounded-3xl mb-10 relative z-10 overflow-x-auto">
+                  <button
+                    onClick={() => setBillingCycle("monthly")}
+                    className={cn(
+                      "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
+                      billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle("yearly")}
+                    className={cn(
+                      "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-1.5",
+                      billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Annual <Badge variant="secondary" className="dark:bg-green-700 bg-green-500 text-white">Save 50%</Badge>
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle("enterprise")}
+                    className={cn(
+                      "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
+                      billingCycle === "enterprise" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Enterprise
+                  </button>
+                </div>
+
+                {billingCycle === "enterprise" ? (
+                  <div className="relative z-10 h-full flex flex-col pt-2 pb-6">
+                    <div className="mb-8 text-center flex-1">
+                      <h4 className="text-3xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500 tracking-tight">Custom Scale</h4>
+                      <p className="text-muted-foreground text-[15px] leading-relaxed mx-auto">
+                        For deployments across multiple networks, we offer custom authentication integrations, dedicated infrastructure SLAs, and volume discounts.
+                      </p>
+                    </div>
+
+                    <ul className="space-y-4 mb-10 bg-background/50 p-6 rounded-2xl border border-border/50 hidden sm:block">
+                      {[
+                        "Custom SSO Integrations",
+                        "Dedicated Infrastructure",
+                        "Volume Pricing Tiers",
+                        "10+ Network Scale"
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-4">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <Building2 className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                          <span className="text-sm font-semibold text-foreground">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      asChild
+                      className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground mt-auto"
+                    >
+                      <a href="mailto:rushil@scorpioedu.org">
+                        <div className="flex items-center justify-center gap-2">
+                          <span>Contact Sales via Email</span>
+                          <ArrowRight className="h-5 w-5" />
+                        </div>
+                      </a>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-10 relative z-10">
+                      <div className="flex items-end gap-2 mb-2">
+                        <span className="text-7xl font-black tracking-tighter hover:text-foreground/90 hover:scale-102 transition-all duration-300">
+                          $<AnimatedNumber value={billingCycle === "yearly" ? 2.49 : 4.99} />
+                        </span>
+                        <span className="text-muted-foreground font-medium pb-3 text-lg">/mo</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground font-medium"> Billed {billingCycle === "yearly" ? "annually - Save 50% ($29.88)" : "monthly"} as one subscription.</p>
+                    </div>
+
+                    <ul className="space-y-4 mb-10 relative z-10">
+                      {[
+                        "Everything in Free",
+                        "Unlimited Students & Courses",
+                        "All Integrations with Crux AI",
+                        "Teacher AI Dashboards",
+                        "Network Waypoint Syncing",
+                        "Comprehensive Control of Capacities & Limits",
+                        "Cancel Anytime"
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-4">
+                          <div className="h-6 w-6 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          </div>
+                          <span className="text-base font-medium text-foreground">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      onClick={handleCheckout}
+                      disabled={upgrading || !isOwner}
+                      className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground relative z-10"
+                    >
+                      {upgrading ? (
+                        <div className="flex items-center gap-3">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span>Preparing Checkout...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span>{billingCycle === "yearly" ? "Claim Annual Plan" : "Start Monthly Plan"}</span>
+                          <ArrowRight className="h-5 w-5" />
+                        </div>
+                      )}
+                    </Button>
+
+                    {!isOwner && (
+                      <p className="text-sm text-center text-muted-foreground mt-5 font-medium flex items-center justify-center gap-2 relative z-10">
+                        <Lock className="h-4 w-4" /> Only network owners can edit billing
+                      </p>
+                    )}
+
+                    <p className="text-xs text-center text-muted-foreground/70 mt-8 relative z-10 leading-relaxed px-4">
+                      Payments are secure and encrypted. You can cancel your subscription at any time via the billing portal.
+                    </p>
+                  </>
+                )}
+              </motion.div>
+            ) : (
+              <div className="p-10 rounded-[2.5rem] border border-border bg-card shadow-xl relative overflow-hidden flex flex-col items-center text-center justify-center h-full min-h-[500px]">
+                <div className="h-32 w-32 bg-emerald-500/10 rounded-full flex items-center justify-center mb-8">
+                  <ShieldCheck className="h-16 w-16 text-emerald-500" />
+                </div>
+                <h3 className="text-3xl font-extrabold mb-4 tracking-tight">Subscription Active</h3>
+                <p className="text-muted-foreground mb-10 text-lg">
+                  Your network is fully unlocked. All premium features, analytics, and scaling tools are available to your department.
+                </p>
+                <div className="grid grid-cols-2 gap-4 w-full text-left mb-10">
+                  <div className="p-5 bg-muted/50 rounded-2xl border border-border/50">
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-2">Seats</p>
+                    <p className="font-black text-2xl">Unlimited</p>
+                  </div>
+                  <div className="p-5 bg-muted/50 rounded-2xl border border-border/50">
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-2">AI Markup</p>
+                    <p className="font-black text-2xl">0%</p>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full h-14 rounded-2xl border-border hover:bg-muted text-base font-bold shadow-sm" asChild>
+                  <Link href="https://polar.sh/scorpio/portal" target="_blank">
+                    Open Billing Dashboard
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>
+
       </div>
 
-      {/* ── Section 1: Plans ─────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6">
-        {organization.planId === "free" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-            {/* Monthly */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative p-8 border border-border bg-card rounded-2xl flex flex-col gap-6 hover:border-primary/40 transition-all duration-300 hover:shadow-xl shadow-sm"
-            >
-              <div>
-                <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-widest border-border/50 px-2.5 py-0.5 mb-4">Monthly</Badge>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black tracking-tighter">$4.99</span>
-                  <span className="text-muted-foreground text-base font-medium">/mo</span>
-                </div>
-                <p className="text-muted-foreground text-sm mt-2 leading-relaxed">Flexible access, cancel anytime.</p>
-              </div>
-              <ul className="space-y-3">
-                {["Teacher AI Dashboard", "Network Waypoints", "Real-time Mastery Views", "Priority Support"].map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 font-medium">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />{f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className="cursor-pointer w-full bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 font-black py-6 text-base rounded-xl shadow-md"
-                onClick={() => handleUpgrade("standard_monthly")}
-                disabled={upgrading || !isOwner}
-              >
-                {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <>Start Monthly <ArrowRight className="h-4 w-4 ml-2 opacity-50 inline" /></>}
-              </Button>
-              {!isOwner && <p className="text-[10px] text-center text-muted-foreground font-medium uppercase tracking-widest italic">Only owners can manage billing</p>}
-            </motion.div>
 
-            {/* Yearly */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08 }}
-              className="relative p-8 border-2 border-primary bg-primary/[0.02] rounded-2xl flex flex-col gap-6 overflow-hidden transition-all hover:scale-[1.01] duration-300 shadow-lg shadow-primary/5"
-            >
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] px-4 py-1.5 font-black uppercase tracking-widest rounded-bl-xl">
-                Best Value
-              </div>
-              <div>
-                <Badge className="bg-primary hover:bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest border-none px-2.5 py-0.5 mb-4">Yearly</Badge>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black tracking-tighter">$29.88</span>
-                  <span className="text-muted-foreground text-base font-medium">/yr</span>
-                </div>
-                <p className="text-sm text-primary font-bold mt-2 flex items-center gap-1.5">
-                  <Zap className="h-4 w-4" /> $2.49/mo — save $30 a year
-                </p>
-              </div>
-              <ul className="space-y-3">
-                {["Everything in Monthly", "Priority AI Processing", "Extended Usage History", "Dept-wide Discount"].map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-sm font-bold text-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />{f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className="cursor-pointer w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 text-base rounded-xl shadow-xl shadow-primary/20"
-                onClick={() => handleUpgrade("standard_yearly")}
-                disabled={upgrading || !isOwner}
-              >
-                {upgrading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <>Claim Annual Plan <ArrowRight className="h-4 w-4 ml-2 inline" /></>}
-              </Button>
-              {!isOwner && <p className="text-[10px] text-center text-muted-foreground font-medium uppercase tracking-widest italic">Only owners can manage billing</p>}
-            </motion.div>
-          </div>
-        ) : (
-          <div className="space-y-4 max-w-3xl">
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6">
-              <div className="h-14 w-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-                <ShieldCheck className="h-7 w-7 text-white" />
-              </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h4 className="text-lg font-black tracking-tight">Subscription Active</h4>
-                <p className="text-muted-foreground text-sm mt-0.5">All network features are unlocked for your department.</p>
-              </div>
-              <Button asChild className="cursor-pointer w-full sm:w-auto px-6 py-5 rounded-xl bg-zinc-900 text-white hover:bg-black font-bold shadow-lg text-sm">
-                <Link href="https://polar.sh/scorpio/portal" target="_blank">
-                  Polar Portal
-                </Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-5 bg-muted/30 border border-border/50 rounded-xl space-y-1.5">
-                <h5 className="font-black text-xs uppercase tracking-widest opacity-40">Invoice History</h5>
-                <p className="text-sm text-muted-foreground">Available in the Polar portal.</p>
-              </div>
-              <div className="p-5 bg-muted/30 border border-border/50 rounded-xl space-y-1.5">
-                <h5 className="font-black text-xs uppercase tracking-widest opacity-40">License Seats</h5>
-                <p className="text-sm text-muted-foreground">Covers all current and future network members.</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* ── Section 2: Social proof bar ───────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 mt-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 rounded-2xl border border-border/40 bg-muted/10">
-          {[
-            { value: "98%",    label: "cheaper than industry average at scale" },
-            { value: "$0.08",  label: "effective per-student cost at 250 students" },
-            { value: "∞",      label: "students on one flat subscription" },
-            { value: "0×",     label: "markup on Google DeepMind AI costs" },
-          ].map((stat) => (
-            <div key={stat.label} className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-foreground tracking-tighter">{stat.value}</span>
-              <span className="text-xs text-muted-foreground max-w-[140px] leading-tight">{stat.label}</span>
-            </div>
-          ))}
+      {/* Cost Comparison Chart */}
+      <div className="max-w-6xl mx-auto px-6 mt-24 pb-24">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">See the Difference</h2>
+          <p className="text-muted-foreground text-xl max-w-3xl mx-auto font-medium leading-relaxed">
+            Our pricing model is fundamentally different from traditional EdTech. Stop paying per-seat premiums for fundamental learning tools.
+          </p>
         </div>
-      </div>
-
-      {/* ── Section 3: Info strip ─────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 mt-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Why Upgrade */}
-          <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              <h4 className="font-black text-sm">What You Unlock</h4>
-            </div>
-            {[
-              { title: "Always-on AI Tutor",   desc: "No throttling during finals, midterms, or late-night study sessions." },
-              { title: "Department Waypoints", desc: "One curriculum, synchronized instantly across every teacher in your network." },
-              { title: "Mastery Analytics",    desc: "See exactly who's falling behind before it becomes a grade problem." },
-              { title: "Hard Spend Caps",      desc: "Set monthly AI cost ceilings so you never get a surprise bill." },
-            ].map((item, i) => (
-              <div key={i} className="space-y-0.5">
-                <h5 className="font-bold text-xs text-foreground">{item.title}</h5>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Zero Markup */}
-          <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-primary" />
-              <h4 className="font-black text-sm">Zero Markup. Seriously.</h4>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Most EdTech companies mark up API costs 300–500%. We charge you exactly what Google charges us — every dollar goes directly to your students' learning.
-            </p>
-            <div className="flex gap-6 pt-1">
-              <div>
-                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.15</p>
-                <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Input</p>
-              </div>
-              <div className="w-px bg-border self-stretch" />
-              <div>
-                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.60</p>
-                <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Output</p>
-              </div>
-            </div>
-            <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Google DeepMind Gemini 2.5 Flash rates</p>
-          </div>
-
-          {/* Enterprise */}
-          <div className="relative p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
-            <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-            <div className="relative z-10 space-y-3">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-amber-500" />
-                <h4 className="font-black text-foreground text-sm">Scaling Beyond One School?</h4>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
-              <Button variant="outline" className="w-full bg-transparent border-white/20 text-foreground hover:bg-white hover:text-foreground font-black uppercase tracking-widest text-[10px] py-4 rounded-xl">
-              <Link href={"/contact"} className="flex items-center gap-2 justify-center">
-                Contact Us
-              </Link>
-              </Button>
-            </div>
-          </div>
+        <div className="bg-card border border-border shadow-2xl rounded-[3rem] p-4 md:p-8">
+          <CostComparisonChart />
         </div>
-      </div>
-
-      {/* ── Section 3: Cost Comparison ───────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 mt-12 pb-20">
-        <CostComparisonChart />
       </div>
     </div>
   );
