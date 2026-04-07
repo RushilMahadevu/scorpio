@@ -21,6 +21,7 @@ import { LoadingScreen } from "@/components/loading-screen";
 import { LandingChatbot } from "@/components/landing-chatbot";
 import { LandingFAQ } from "@/components/landing-faq";
 import { Comparison } from "@/components/landing/comparison";
+import { LayerEfficacyChart } from "@/components/landing/layer-efficacy-chart";
 import { SystemAccordion } from "@/components/system-accordion";
 import { FloatingPrompts } from "@/components/ui/floating-prompts";
 import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
@@ -696,7 +697,7 @@ export default function Home() {
                           viewport={{ once: true }}
                         >
                           Physics is being <span className="text-red-500 dark:text-red-400 italic">erased</span><br />
-                          by "Answer Engines."
+                          by &quot;Answer Engines.&quot;
                         </motion.h2>
                         <motion.p
                           className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed"
@@ -823,6 +824,9 @@ export default function Home() {
                   {/* Research Section (Relocated Content) */}
                   <section id="efficacy">
                     <Comparison />
+                    <div className="container mx-auto px-4 sm:px-6 pb-24 md:pb-32">
+                      <LayerEfficacyChart />
+                    </div>
                   </section>
 
 
