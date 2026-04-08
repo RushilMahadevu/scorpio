@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
 import { generatePracticeProblem } from '@/lib/ai/practice';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   if (!adminDb) {
@@ -13,6 +14,12 @@ export async function POST(req: NextRequest) {
 
     if (!topic || !difficulty || !studentId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    // 1. Check Rate Limit to prevent spam
+    const rateLimitCheck = await checkRateLimit(req, studentId, "practice", { windowMs: 60000, maxRequests: 10 });
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({ error: rateLimitCheck.error }, { status: 429 });
     }
 
     // 2. Resolve Organization/Teacher for budget
@@ -46,7 +53,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "The monthly practice limit for your network has been reached." }, { status: 403 });
     }
 
-    const budgetCheck = await checkBudget(organizationId, "practice");
+    const budgetCheck = await checkBudget(organizationId, "practice", studentId);
     if (!budgetCheck.allowed) {
         return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
@@ -56,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Record Usage and Increment Practice Count
     if (result.usage) {
-        await recordUsage(organizationId, "practice", result.usage.inputTokens, result.usage.outputTokens);
+        await recordUsage(organizationId, "practice", result.usage.inputTokens, result.usage.outputTokens, studentId);
     }
 
     // Increment Practice Usage Current

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 import { getNotebookAssistantResponse } from "@/lib/ai/notebook";
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   if (!adminDb) {
@@ -13,6 +14,12 @@ export async function POST(req: NextRequest) {
 
     if (!messages || !studentId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    // 1. Check Rate Limit
+    const rateLimitCheck = await checkRateLimit(req, studentId, "notebook", { windowMs: 60000, maxRequests: 20 });
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({ error: rateLimitCheck.error }, { status: 429 });
     }
 
     // 1. Resolve Organization for budget
@@ -45,7 +52,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "The monthly notebook AI limit for your network has been reached." }, { status: 403 });
     }
 
-    const budgetCheck = await checkBudget(organizationId, "notebook");
+    const budgetCheck = await checkBudget(organizationId, "notebook", studentId);
     if (budgetCheck.allowed) {
         // 3. Generate AI Response using centralized gemini helper
         const result = await getNotebookAssistantResponse(messages, notebookContent);
@@ -57,7 +64,8 @@ export async function POST(req: NextRequest) {
               organizationId, 
               "notebook", 
               result.usage.inputTokens, 
-              result.usage.outputTokens
+              result.usage.outputTokens,
+              studentId
             );
         }
 

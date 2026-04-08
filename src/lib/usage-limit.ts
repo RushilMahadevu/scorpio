@@ -54,19 +54,48 @@ export async function checkBudget(
       };
     }
 
-    // 3. Per-Student Tutor Limit Enforcement
-    if (type === "tutor" && userId) {
+    // 3. Per-Student Capacity Enforcements
+    if (userId) {
       const userDoc = await adminDb.collection("users").doc(userId).get();
       const userData = userDoc.data();
-      
-      const teacherAllowance = data?.aiTutorLimitPerStudent || 0;
-      const studentUsage = userData?.tutorUsageCurrent || 0;
 
-      if (teacherAllowance > 0 && studentUsage >= teacherAllowance) {
-        return { 
-          allowed: false, 
-          error: `You have used all ${teacherAllowance} of your AI Tutor messages for this period. Contact your teacher to increase your allowance.` 
-        };
+      // Tutor Limit
+      if (type === "tutor") {
+        const teacherAllowance = data?.aiTutorLimitPerStudent || 0;
+        const studentUsage = userData?.tutorUsageCurrent || 0;
+
+        if (teacherAllowance > 0 && studentUsage >= teacherAllowance) {
+          return { 
+            allowed: false, 
+            error: `You have used all ${teacherAllowance} of your AI Tutor messages for this period. Contact your teacher to increase your allowance.` 
+          };
+        }
+      }
+
+      // Practice Limit
+      if (type === "practice") {
+        const practiceAllowance = data?.practiceLimitPerStudent || 0;
+        const practiceUsage = userData?.practiceUsageCurrent || 0;
+
+        if (practiceAllowance > 0 && practiceUsage >= practiceAllowance) {
+          return { 
+            allowed: false, 
+            error: `You have used all ${practiceAllowance} of your generated practice problems for this period.` 
+          };
+        }
+      }
+
+      // Notebook Limit
+      if (type === "notebook") {
+        const notebookAllowance = data?.aiNotebookLimitPerStudent || 0;
+        const notebookUsage = userData?.aiNotebookUsageCurrent || 0;
+
+        if (notebookAllowance > 0 && notebookUsage >= notebookAllowance) {
+          return { 
+            allowed: false, 
+            error: `You have reached your limit of ${notebookAllowance} AI notebook interactions for this period.` 
+          };
+        }
       }
     }
 
@@ -101,7 +130,7 @@ export async function recordUsage(
     await adminDb.runTransaction(async (transaction) => {
       // ALL reads must come before any writes in a Firestore transaction
       const orgDoc = await transaction.get(orgRef);
-      const userDoc = (type === "tutor" && userRef) ? await transaction.get(userRef) : null;
+      const userDoc = (["tutor", "practice", "notebook"].includes(type) && userRef) ? await transaction.get(userRef) : null;
 
       if (!orgDoc.exists) return;
 
@@ -118,11 +147,23 @@ export async function recordUsage(
       }, { merge: true });
 
       // 2. Update Student Specific Message Count
-      if (type === "tutor" && userRef) {
-        transaction.set(userRef, {
-          tutorUsageCurrent: (userData?.tutorUsageCurrent || 0) + 1,
-          lastTutorUsageAt: new Date()
-        }, { merge: true });
+      if (userRef && userData) {
+        if (type === "tutor") {
+          transaction.set(userRef, {
+            tutorUsageCurrent: (userData.tutorUsageCurrent || 0) + 1,
+            lastTutorUsageAt: new Date()
+          }, { merge: true });
+        } else if (type === "practice") {
+          transaction.set(userRef, {
+            practiceUsageCurrent: (userData.practiceUsageCurrent || 0) + 1,
+            lastPracticeUsageAt: new Date()
+          }, { merge: true });
+        } else if (type === "notebook") {
+          transaction.set(userRef, {
+            aiNotebookUsageCurrent: (userData.aiNotebookUsageCurrent || 0) + 1,
+            lastAiNotebookUsageAt: new Date()
+          }, { merge: true });
+        }
       }
 
       // 3. Log into analytics

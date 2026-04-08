@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateAssignmentQuestions } from "@/lib/ai/assignment";
 import { adminDb } from "@/lib/firebase-admin";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,6 +10,12 @@ export async function POST(req: NextRequest) {
 
     if (!topic || !userId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // 1. Check Rate Limit
+    const rateLimitCheck = await checkRateLimit(req, userId, "generate", { windowMs: 60000, maxRequests: 5 });
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json({ error: rateLimitCheck.error }, { status: 429 });
     }
 
     if (!adminDb) {

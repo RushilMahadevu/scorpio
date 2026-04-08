@@ -3,6 +3,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import chatbotConfig from '@/lib/chatbot-config.json';
 import { getNavigationResponse } from '@/lib/ai/chatbot';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,34 +43,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: budgetCheck.error }, { status: 403 });
     }
 
-    // --- Rate Limiting (Legacy User-Level) ---
-    const userUsageRef = adminDb.collection('usage').doc(userId);
-    const userUsageDoc = await userUsageRef.get();
-    const now = Date.now();
+    // --- Rate Limiting ---
     const { windowMs, maxRequests } = chatbotConfig.rateLimit;
-
-    let usage = { count: 0, windowStart: now };
-    if (userUsageDoc.exists) {
-      const data = userUsageDoc.data();
-      if (data) {
-        usage = { count: data.count, windowStart: data.windowStart };
-      }
-    }
-
-    if (now - usage.windowStart > windowMs) {
-      usage.count = 0;
-      usage.windowStart = now;
-    }
-
-    if (usage.count >= maxRequests) {
+    const rateLimitCheck = await checkRateLimit(req, userId, "chat", { windowMs, maxRequests });
+    
+    if (!rateLimitCheck.allowed) {
       return NextResponse.json({ 
-        error: `Rate limit exceeded. Max ${maxRequests} requests per hour.` 
+        error: rateLimitCheck.error || `Rate limit exceeded. Max ${maxRequests} requests allowed.` 
       }, { status: 429 });
     }
-
-    // Increment usage
-    usage.count++;
-    await userUsageRef.set(usage);
 
     // AI Response using centralized logic in gemini.ts ---
     const features = userRole === 'teacher' ? chatbotConfig.teacherFeatures : chatbotConfig.studentFeatures;
@@ -89,7 +71,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       text: result.text,
-      remainingRequests: maxRequests - usage.count,
       suggestedPrompts: userRole === 'teacher' 
         ? (chatbotConfig as any).teacherSuggestedPrompts 
         : (chatbotConfig as any).studentSuggestedPrompts
