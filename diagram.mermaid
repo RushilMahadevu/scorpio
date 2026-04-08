@@ -1,0 +1,64 @@
+    %% Styles
+    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b
+    classDef crux fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#4a148c
+    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+    classDef external fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,color:#1b5e20
+
+    subgraph Client ["Frontend (Next.js 16)"]
+        UI[User Interface / React Components]
+        Editor[Rich Text Editor / Math Builder]
+        Context[Auth & State Contexts]
+        Listen["Firestore Real-time Listeners (onSnapshot)"]
+    end
+
+    subgraph Crux ["Crux AI Engine (Pedagogical Layer)"]
+        Sanitize[PII Scrubber / FERPA Compliance]
+        Layer1[Layer 1: Domain Constraint]
+        La        La        La        La        La          La        La        La        La        La          La        La  ra        La        La        La        La        La          La        La        Or        La        La        La        La        La   frastructure (Firebase)"]
+        Auth[Firebase Auth]
+        Firestore[(Cloud Firestore - NoSQL)]
+        Storage[Firebase Storage - Assets]
+        Functions[Cloud Functions - Background Tasks]
+        Event["EventArc V2 / Triggers"]
+    end
+
+    subgraph External ["External Services"]
+        Gemini[Google Gemini 2.5 Flash]
+        Polar[Polar.sh - Subscriptions]
+        Resend[Resend API - Email]
+        Vertex[Vertex AI - Enterprise ML]
+    end
+
+    %% Apply Classes
+    class UI,Editor,Context,Listen client
+    class Sanitize,Layer1,Layer2,Layer3,Layer4,Logic,Compose crux
+    class Auth,Firestore,Storage,Functions,Event backend
+    class Gemini,Polar,Resend,Vertex external
+
+    %% Interactions
+    UI --> Editor
+    Editor --> Sanitize
+    Sanitize --> Layer1
+    Layer1 --> Layer2
+    Layer2 --> Layer3
+    Layer3 --> Layer4
+    Layer4 --> Logic
+    Logic --> Compose
+    Compose --> Gemini
+    Gemini --> UI
+
+    UI --> Auth
+    Auth --> Firestore
+    UI --> Context
+    Context <--> Listen
+    Listen <--> Firestore
+
+    Firestore -- "Event Trigger" --> Event
+    Event --> Functions
+    Functions --> Resend
+    Functions -- "AI Grading" --> Gemini
+    Functions -- "Enterprise Inference" --> Vertex
+    
+    UI --> Polar
+    Polar -- "Webhook" --> Functions
+    Functions --> Firestore
