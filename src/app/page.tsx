@@ -639,39 +639,46 @@ export default function Home() {
 
                   </section>
 
-                  {/* Container Scroll Section - Only on Desktop */}
-                  {!isMobile && (
-                    <div id="mission-control" className="flex flex-col pt-0 md:pt-10">
-                      <ContainerScroll
-                        titleComponent={
-                          <div className="flex flex-col items-center justify-center mb-0 md:mb-10">
-                            <Link href="/signup" className="mb-4">
-                              <Badge className="h-8 px-4 rounded-full flex items-center justify-center gap-2 border-primary/20 bg-primary/10 hover:bg-primary/20 backdrop-blur-md" variant="secondary">
-                                <Sparkles className="h-3.5 w-3.5 text-primary fill-primary" />
-                                <span className="text-primary font-medium">Precise AI Tracking</span>
-                              </Badge>
-                            </Link>
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center text-foreground/90 pb-4 leading-tight">
-                              Your Network <br />
-                              <span className="text-4xl sm:text-5xl md:text-7xl lg:text-[6rem] font-black mt-1 leading-none text-primary">
-                                Granular Analytics
-                              </span>
-                            </h1>
-                          </div>
-                        }
+                  {/* Partnered Schools Section */}
+                  <section className="container mx-auto px-4 sm:px-6 py-12 md:py-24 relative z-10 border-y border-border/5 bg-background/5">
+                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
+                      <motion.div 
+                        className="text-left space-y-4 md:w-1/2"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
                       >
-                        <Image
-                          src="/mc.png"
-                          alt="Scorpio Teacher Dashboard showing assignments and student progress"
-                          height={1280}
-                          width={2650}
-                          className="mx-auto rounded-2xl object-contain h-full w-full bg-zinc-900"
-                          draggable={false}
-                          priority
-                        />
-                      </ContainerScroll>
+                        <h3 className="text-2xl md:text-4xl font-black tracking-tight text-foreground">
+                          Trusted by innovative schools.
+                        </h3>
+                        <p className="text-muted-foreground font-medium text-base md:text-lg leading-relaxed">
+                          Scorpio is partnering with forward-thinking institutions to bring rigorous, Socratic AI into the physics curriculum.
+                        </p>
+                      </motion.div>
+                      <motion.div 
+                        className="md:w-1/2 flex justify-center md:justify-end items-center"
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <Link 
+                          href="https://www.sageridge.org/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex justify-center items-center transition-transform duration-300 hover:scale-105 opacity-90 hover:opacity-100"
+                        >
+                          <Image
+                            src="/school-logos/SageRidgeSchool.svg"
+                            alt="Sage Ridge School"
+                            width={240}
+                            height={100}
+                            className="object-contain dark:brightness-0 dark:invert transition-all"
+                          />
+                        </Link>
+                      </motion.div>
                     </div>
-                  )}
+                  </section>
 
 
 
