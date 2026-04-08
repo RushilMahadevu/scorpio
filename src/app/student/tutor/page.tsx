@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, User, Lightbulb, Calculator, Lock, Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, MoreHorizontal } from "lucide-react";
+import { Send, User, Lightbulb, Calculator, Lock, Plus, MessagesSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -391,7 +391,7 @@ export default function TutorPage() {
 
   return (
     <div className="h-[calc(100vh-8.5rem)] flex flex-col overflow-hidden">
-      
+
       <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-3xl font-bold">AI Physics Tutor</h1>
@@ -524,7 +524,7 @@ export default function TutorPage() {
                       {editingTitleId === session.id ? (
                         /* --- Inline Rename Row --- */
                         <div className="flex items-center gap-2 rounded-xl px-3 py-2 border border-primary/30 bg-primary/5">
-                          <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
+                          <MessagesSquare className="h-4 w-4 shrink-0 text-primary" />
                           <Input
                             value={editingTitleText}
                             onChange={(e) => setEditingTitleText(e.target.value)}
@@ -558,7 +558,7 @@ export default function TutorPage() {
                             className="flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer"
                             onClick={() => { switchSession(session); setSidebarOpen(false); }}
                           >
-                            <MessageSquare className={cn(
+                            <MessagesSquare className={cn(
                               "h-4 w-4 shrink-0",
                               session.id === activeSessionId ? "text-primary" : "text-muted-foreground/60"
                             )} />
@@ -672,88 +672,88 @@ export default function TutorPage() {
               <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden relative">
                 <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
                   <div className="p-4">
-                  {messages.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-zinc-900 flex items-center justify-center shadow-xl border border-white/5 opacity-50 grayscale hover:grayscale-0 transition-all duration-300">
-                        <CruxLogo size={40} className="text-white" />
-                      </div>
-                      <p>Start a conversation by asking a question!</p>
-                      <div className="mt-4 space-y-2">
-                        <p className="text-sm">Try asking:</p>
-                        <div className="flex flex-wrap gap-2 justify-center">
-                          <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("What is Newton's first law?")}>
-                            What is Newton's first law?
-                          </Badge>
-                          <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("How do I calculate kinetic energy?")}>
-                            How do I calculate kinetic energy?
-                          </Badge>
-                          <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Explain electromagnetic induction")}>
-                            Explain electromagnetic induction
-                          </Badge>
+                    {messages.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        <div className="mx-auto mb-4 h-20 w-20 rounded-full bg-zinc-900 flex items-center justify-center shadow-xl border border-white/5 opacity-50 grayscale hover:grayscale-0 transition-all duration-300">
+                          <CruxLogo size={40} className="text-white" />
+                        </div>
+                        <p>Start a conversation by asking a question!</p>
+                        <div className="mt-4 space-y-2">
+                          <p className="text-sm">Try asking:</p>
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("What is Newton's first law?")}>
+                              What is Newton's first law?
+                            </Badge>
+                            <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("How do I calculate kinetic energy?")}>
+                              How do I calculate kinetic energy?
+                            </Badge>
+                            <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Explain electromagnetic induction")}>
+                              Explain electromagnetic induction
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {messages.map((message, idx) => {
-                        const isLastAssistant =
-                          message.role === "assistant" && idx === messages.length - 1 && message.id === typingId;
-                        return (
-                          <div
-                            key={message.id}
-                            className={cn(
-                              "flex gap-3",
-                              message.role === "assistant" ? "flex-row" : "flex-row-reverse self-end"
-                            )}
-                          >
+                    ) : (
+                      <div className="space-y-4">
+                        {messages.map((message, idx) => {
+                          const isLastAssistant =
+                            message.role === "assistant" && idx === messages.length - 1 && message.id === typingId;
+                          return (
                             <div
+                              key={message.id}
                               className={cn(
-                                "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full mt-1 border border-white/5",
-                                message.role === "assistant"
-                                  ? "bg-zinc-900 text-white shadow-md"
-                                  : "bg-muted"
+                                "flex gap-3",
+                                message.role === "assistant" ? "flex-row" : "flex-row-reverse self-end"
                               )}
                             >
-                              {message.role === "assistant" ? <CruxLogo size={14} className="text-white" /> : <User className="h-4 w-4" />}
-                            </div>
-                            <div
-                              className={cn(
-                                "rounded-2xl px-4 py-2.5 max-w-[85%] shadow-sm overflow-hidden",
-                                message.role === "assistant"
-                                  ? "bg-muted/60 text-foreground"
-                                  : "bg-primary text-primary-foreground"
-                              )}
-                            >
-                              {message.role === "assistant" ? (
-                                isLastAssistant ? (
-                                  <Typewriter text={message.content} onDone={() => setTypingId(null)} />
+                              <div
+                                className={cn(
+                                  "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full mt-1 border border-white/5",
+                                  message.role === "assistant"
+                                    ? "bg-zinc-900 text-white shadow-md"
+                                    : "bg-muted"
+                                )}
+                              >
+                                {message.role === "assistant" ? <CruxLogo size={14} className="text-white" /> : <User className="h-4 w-4" />}
+                              </div>
+                              <div
+                                className={cn(
+                                  "rounded-2xl px-4 py-2.5 max-w-[85%] shadow-sm overflow-hidden",
+                                  message.role === "assistant"
+                                    ? "bg-muted/60 text-foreground"
+                                    : "bg-primary text-primary-foreground"
+                                )}
+                              >
+                                {message.role === "assistant" ? (
+                                  isLastAssistant ? (
+                                    <Typewriter text={message.content} onDone={() => setTypingId(null)} />
+                                  ) : (
+                                    <MarkdownRenderer>{message.content}</MarkdownRenderer>
+                                  )
                                 ) : (
-                                  <MarkdownRenderer>{message.content}</MarkdownRenderer>
-                                )
-                              ) : (
-                                <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{message.content}</p>
-                              )}
+                                  <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{message.content}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {loading && (
+                          <div className="flex gap-3 animate-pulse">
+                            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-zinc-900 text-white border border-white/5 shadow-sm">
+                              <CruxLogo size={14} className="text-white" />
+                            </div>
+                            <div className="rounded-2xl px-4 py-2 bg-muted/40 border border-muted-foreground/10">
+                              <div className="flex gap-1 items-center h-5">
+                                <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce" />
+                              </div>
                             </div>
                           </div>
-                        );
-                      })}
-                      {loading && (
-                        <div className="flex gap-3 animate-pulse">
-                          <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-zinc-900 text-white border border-white/5 shadow-sm">
-                            <CruxLogo size={14} className="text-white" />
-                          </div>
-                          <div className="rounded-2xl px-4 py-2 bg-muted/40 border border-muted-foreground/10">
-                            <div className="flex gap-1 items-center h-5">
-                              <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                              <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                              <span className="w-1 h-1 bg-primary/40 rounded-full animate-bounce" />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  )}
+                        )}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
 

@@ -44,7 +44,7 @@ import {
   NotebookPen,
   Type,
   Hash,
-  Files,
+  Layers,
   Plus,
   MoreVertical,
   X,
@@ -649,7 +649,7 @@ export default function NotebookPage() {
           <div className="h-full flex flex-col bg-zinc-50/30 dark:bg-zinc-950/40 border-r border-zinc-200/50 dark:border-zinc-800/50">
             <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
               <Label className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] flex items-center gap-2">
-                <Files className="h-3 w-3" /> My Library
+                <Layers className="h-3 w-3" /> My Library
               </Label>
               <Button
                 variant="ghost"

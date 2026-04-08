@@ -29,7 +29,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowLeft, Send, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Lightbulb, User, ChevronRight, ChevronLeft, Lock } from "lucide-react";
+import { ArrowLeft, Send, MessagesSquare, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Lightbulb, User, ChevronRight, ChevronLeft, Lock, BarChart3 } from "lucide-react";
 import { CruxLogo } from "@/components/ui/crux-logo";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -104,26 +104,6 @@ function AssignmentDetailContent() {
   const lastUploadClickTime = useRef<number>(0);
 
   useEffect(() => {
-    const handleBlur = () => {
-      // strict check for false
-      if (assignment?.enableTabDetection === false) return; 
-
-      if (ignoreNextBlurRef.current) {
-        ignoreNextBlurRef.current = false;
-        return;
-      }
-
-      // Check if blur is within 30 seconds of clicking upload button
-      const now = Date.now();
-      const timeSinceUploadClick = now - lastUploadClickTime.current;
-      if (timeSinceUploadClick < 30000) { // 30 seconds in milliseconds
-        return; // Ignore blur during file upload buffer period
-      }
-
-      setUnfocusCount((count) => count + 1);
-      setShowUnfocusPopup(true);
-    };
-
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (assignment?.lockdownMode && hasStarted && !submitted) {
         e.preventDefault();
@@ -154,25 +134,23 @@ function AssignmentDetailContent() {
 
     // Discourage browser back button in lockdown
     const handlePopState = (e: PopStateEvent) => {
-        if (assignment?.lockdownMode && hasStarted && !submitted) {
-            window.history.pushState(null, "", window.location.href);
-            toast.error("Navigation is locked. Please complete and submit your assignment before leaving.");
-        }
+      if (assignment?.lockdownMode && hasStarted && !submitted) {
+        window.history.pushState(null, "", window.location.href);
+        toast.error("Navigation is locked. Please complete and submit your assignment before leaving.");
+      }
     };
 
     if (assignment?.lockdownMode && hasStarted && !submitted) {
-        window.history.pushState(null, "", window.location.href);
-        window.addEventListener('popstate', handlePopState);
+      window.history.pushState(null, "", window.location.href);
+      window.addEventListener('popstate', handlePopState);
     }
 
-    window.addEventListener('blur', handleBlur);
     window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('copy', handleCopy);
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     return () => {
-      window.removeEventListener('blur', handleBlur);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('copy', handleCopy);
       document.removeEventListener('contextmenu', handleContextMenu);
@@ -184,7 +162,7 @@ function AssignmentDetailContent() {
   useEffect(() => {
     async function fetchAssignment() {
       if (!id || !user) return;
-      
+
       try {
         const docSnap = await getDoc(doc(db, "assignments", id));
         if (docSnap.exists()) {
@@ -208,29 +186,29 @@ function AssignmentDetailContent() {
 
           // --- LEGACY RESOLUTION START ---
           if (studentTeacherId && !studentCourseId) {
-             const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", studentTeacherId.trim())));
-             if (!codeMatch.empty) {
-                const courseDoc = codeMatch.docs[0];
-                const courseData = courseDoc.data();
-                studentCourseId = courseDoc.id;
-                studentTeacherId = courseData.teacherId;
-             }
+            const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", studentTeacherId.trim())));
+            if (!codeMatch.empty) {
+              const courseDoc = codeMatch.docs[0];
+              const courseData = courseDoc.data();
+              studentCourseId = courseDoc.id;
+              studentTeacherId = courseData.teacherId;
+            }
           }
           // --- LEGACY RESOLUTION END ---
-          
+
           if (data.courseId) {
             // Strict Course Check
             if (studentCourseId !== data.courseId) {
-               console.log("Unauthorized: Student not in this course");
-               setLoading(false);
-               return;
+              console.log("Unauthorized: Student not in this course");
+              setLoading(false);
+              return;
             }
           } else if (data.teacherId) {
             // Legacy Teacher Check
             if (studentTeacherId !== data.teacherId) {
-               console.log("Unauthorized: Student linked to different teacher");
-               setLoading(false);
-               return;
+              console.log("Unauthorized: Student linked to different teacher");
+              setLoading(false);
+              return;
             }
           }
 
@@ -263,15 +241,15 @@ function AssignmentDetailContent() {
           if (!submissionsSnap.empty) {
             const existingData = submissionsSnap.docs[0].data();
             setExistingSubmission({ ...existingData, id: submissionsSnap.docs[0].id });
-            
+
             if (existingData.status === 'draft') {
-                setSubmitted(false);
-                setHasStarted(true);
+              setSubmitted(false);
+              setHasStarted(true);
             } else {
-                setSubmitted(true);
-                setHasStarted(true); // Already submitted means started
+              setSubmitted(true);
+              setHasStarted(true); // Already submitted means started
             }
-            
+
             // Populate answers from existing submission
             const existingAnswers: Record<string, string> = {};
             existingData.answers?.forEach((ans: any) => {
@@ -286,7 +264,7 @@ function AssignmentDetailContent() {
                 const startTime = parseInt(storedStart);
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const remaining = (assignmentData.timeLimit * 60) - elapsed;
-                
+
                 if (remaining > 0) {
                   setTimeLeft(remaining);
                   setHasStarted(true);
@@ -349,10 +327,10 @@ function AssignmentDetailContent() {
 
   const handleStartAssignment = () => {
     if (!assignment || !user) return;
-    
+
     const now = Date.now();
     localStorage.setItem(`assignment_start_${assignment.id}_${user.uid}`, now.toString());
-    
+
     if (assignment.timeLimit) {
       setTimeLeft(assignment.timeLimit * 60);
       setTimerActive(true);
@@ -379,92 +357,92 @@ function AssignmentDetailContent() {
   // Auto-scroll to bottom of AI messages
   useEffect(() => {
     if (scrollRef.current) {
-        // Use scrollTo on the parent to avoid document-level jumping with scrollIntoView
-        const container = scrollRef.current.parentElement;
-        if (container) {
-          container.scrollTo({
-            top: container.scrollHeight,
-            behavior: 'smooth'
-          });
-        }
+      // Use scrollTo on the parent to avoid document-level jumping with scrollIntoView
+      const container = scrollRef.current.parentElement;
+      if (container) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [aiMessages, aiLoading]);
 
   const handleAiSendMessage = async () => {
     if (!aiInput.trim() || aiLoading || !assignment) return;
-    
+
     // Explicitly define the message structure to match ChatMessage interface
-    const userMessage: ChatMessage = { 
-      id: crypto.randomUUID(), 
-      role: "user", 
-      content: aiInput 
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: aiInput
     };
-    
+
     setAiMessages(prev => [...prev, userMessage]);
     setAiInput("");
     setAiLoading(true);
 
     try {
-        // Construct comprehensive context
-        const assignmentContext = `ASSIGNMENT TITLE: ${assignment.title}
+      // Construct comprehensive context
+      const assignmentContext = `ASSIGNMENT TITLE: ${assignment.title}
 ASSIGNMENT DESCRIPTION: ${assignment.description}
 
 ASSIGNMENT QUESTIONS:
 ${assignment.questions.map((q, i) => {
-  const optionsStr = (q.type === 'multiple-choice' && q.options) 
-    ? `\nOptions: ${q.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(", ")}` 
-    : "";
-  return `QUESTION ${i + 1}:
+        const optionsStr = (q.type === 'multiple-choice' && q.options)
+          ? `\nOptions: ${q.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(", ")}`
+          : "";
+        return `QUESTION ${i + 1}:
 Type: ${q.type}
 Text: ${q.text || "[This question has no text description. Refer to the assignment title/description.]"}${optionsStr}`;
-}).join("\n\n")}`;
-        
-        // Include current student answers in context if they exist
-        const studentAnswersContext = Object.keys(answers).length > 0 
-          ? `\n\nSTUDENT'S CURRENT ANSWERS (DRAFT):\n${assignment.questions.map((q, i) => answers[q.id] ? `Question ${i+1} Answer: ${answers[q.id]}` : "").filter(Boolean).join("\n")}`
-          : "";
-        
-        const fullContext = assignmentContext + studentAnswersContext;
-        
-        // Map local ChatMessage to the format our API expects
-        const historyForAi = aiMessages.map(m => ({ role: m.role, content: m.content }));
-        
-        const response = await fetch("/api/student/tutor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: userMessage.content,
-            userId: user?.uid,
-            role: "student",
-            mode: "tutor",
-            chatHistory: historyForAi,
-            assignmentContext: fullContext
-          })
-        });
+      }).join("\n\n")}`;
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "AI service failed");
-        }
+      // Include current student answers in context if they exist
+      const studentAnswersContext = Object.keys(answers).length > 0
+        ? `\n\nSTUDENT'S CURRENT ANSWERS (DRAFT):\n${assignment.questions.map((q, i) => answers[q.id] ? `Question ${i + 1} Answer: ${answers[q.id]}` : "").filter(Boolean).join("\n")}`
+        : "";
 
-        const data = await response.json();
-        const responseText = data.response || "No response received.";
-        
-        const aiResponse: ChatMessage = { 
-          id: crypto.randomUUID(), 
-          role: "assistant", 
-          content: responseText 
-        };
-        setAiMessages(prev => [...prev, aiResponse]);
+      const fullContext = assignmentContext + studentAnswersContext;
+
+      // Map local ChatMessage to the format our API expects
+      const historyForAi = aiMessages.map(m => ({ role: m.role, content: m.content }));
+
+      const response = await fetch("/api/student/tutor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userMessage.content,
+          userId: user?.uid,
+          role: "student",
+          mode: "tutor",
+          chatHistory: historyForAi,
+          assignmentContext: fullContext
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "AI service failed");
+      }
+
+      const data = await response.json();
+      const responseText = data.response || "No response received.";
+
+      const aiResponse: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: responseText
+      };
+      setAiMessages(prev => [...prev, aiResponse]);
     } catch (error: any) {
-        console.error("AI Error:", error);
-        setAiMessages(prev => [...prev, { 
-          id: crypto.randomUUID(), 
-          role: "assistant", 
-          content: error.message || "I'm having trouble connecting right now. Please try again." 
-        }]);
+      console.error("AI Error:", error);
+      setAiMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: error.message || "I'm having trouble connecting right now. Please try again."
+      }]);
     } finally {
-        setAiLoading(false);
+      setAiLoading(false);
     }
   };
 
@@ -472,11 +450,11 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
     const files = Array.from(e.target.files || []);
     const validFiles: File[] = [];
     const invalidFiles: string[] = [];
-    
+
     files.forEach(file => {
       const isValidType = file.type === "application/pdf" || file.type.startsWith("image/");
       const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit (images will be compressed)
-      
+
       if (!isValidType) {
         invalidFiles.push(`${file.name}: Invalid type (PDF or images only)`);
       } else if (!isValidSize) {
@@ -485,11 +463,11 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         validFiles.push(file);
       }
     });
-    
+
     if (invalidFiles.length > 0) {
       toast.error("Some files were not added:\n" + invalidFiles.join("\n"));
     }
-    
+
     setUploadedFiles([...uploadedFiles, ...validFiles]);
     // Reset upload progress for new files
     setUploadProgress({});
@@ -516,52 +494,52 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
     ignoreNextBlurRef.current = true;
     setSubmitting(true);
     try {
-        // Fetch student name from profile or students collection
-        let studentName = profile?.displayName || user.displayName || "";
-        if (!studentName) {
-          try {
-            const studentDoc = await getDoc(doc(db, "students", user.uid));
-            if (studentDoc.exists()) {
-              studentName = studentDoc.data().name || studentName;
-            }
-          } catch (error) {
-            console.error("Error fetching student name:", error);
+      // Fetch student name from profile or students collection
+      let studentName = profile?.displayName || user.displayName || "";
+      if (!studentName) {
+        try {
+          const studentDoc = await getDoc(doc(db, "students", user.uid));
+          if (studentDoc.exists()) {
+            studentName = studentDoc.data().name || studentName;
           }
+        } catch (error) {
+          console.error("Error fetching student name:", error);
         }
+      }
 
-        const answersArray = assignment.questions.map((q) => ({
-            questionId: q.id,
-            questionText: q.text,
-            answer: answers[q.id] || "",
-        }));
+      const answersArray = assignment.questions.map((q) => ({
+        questionId: q.id,
+        questionText: q.text,
+        answer: answers[q.id] || "",
+      }));
 
-        const submissionData = {
-            assignmentId: assignment.id,
-            studentId: user.uid,
-            studentName: studentName,
-            studentEmail: user.email,
-            answers: answersArray,
-            status: 'draft',
-            teacherId: assignment.teacherId,
-            courseId: assignment.courseId,
-            updatedAt: new Date(),
-        };
+      const submissionData = {
+        assignmentId: assignment.id,
+        studentId: user.uid,
+        studentName: studentName,
+        studentEmail: user.email,
+        answers: answersArray,
+        status: 'draft',
+        teacherId: assignment.teacherId,
+        courseId: assignment.courseId,
+        updatedAt: new Date(),
+      };
 
 
-        if (existingSubmission?.id) {
-            // Update existing draft
-            await setDoc(doc(db, "submissions", existingSubmission.id), submissionData, { merge: true });
-        } else {
-            // Create new draft
-            const docRef = await addDoc(collection(db, "submissions"), submissionData);
-            setExistingSubmission({ ...submissionData, id: docRef.id });
-        }
-        toast.success("Draft saved!");
+      if (existingSubmission?.id) {
+        // Update existing draft
+        await setDoc(doc(db, "submissions", existingSubmission.id), submissionData, { merge: true });
+      } else {
+        // Create new draft
+        const docRef = await addDoc(collection(db, "submissions"), submissionData);
+        setExistingSubmission({ ...submissionData, id: docRef.id });
+      }
+      toast.success("Draft saved!");
     } catch (error) {
-        console.error("Error saving draft:", error);
-        toast.error("Failed to save draft.");
+      console.error("Error saving draft:", error);
+      toast.error("Failed to save draft.");
     } finally {
-        setSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -677,7 +655,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                 {assignment.timeLimit ? `${assignment.timeLimit} Minutes` : "No Time Limit"}
               </span>
             </div>
-            
+
             <div className="flex flex-col items-center gap-4 p-4 bg-muted rounded-lg">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <CheckCircle className="h-5 w-5" />
@@ -724,7 +702,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                   <span>Strict Integrity Lock Active</span>
                 </div>
                 <p className="text-xs text-red-600/80 leading-relaxed text-center">
-                  Starting this assignment will trigger **Fullscreen Mode**. Standard navigation is disabled. 
+                  Starting this assignment will trigger **Fullscreen Mode**. Standard navigation is disabled.
                   Any attempt to exit fullscreen, switch tabs, or copy/paste will be logged as a potential violation.
                 </p>
               </div>
@@ -742,9 +720,9 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
 
   return (
     <div className="flex h-[100dvh] w-full bg-background overflow-hidden relative">
-      
+
       <Dialog open={showUnfocusPopup}>
-        <DialogContent 
+        <DialogContent
           className={`sm:max-w-md border-2 ${unfocusCount <= 1 ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30" : "border-red-500 bg-red-50 dark:bg-red-950/30"}`}
           showCloseButton={false}
           onPointerDownOutside={(e) => e.preventDefault()}
@@ -771,9 +749,9 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-center mt-6">
-            <Button 
+            <Button
               size="lg"
-              variant={unfocusCount <= 1 ? "default" : "destructive"} 
+              variant={unfocusCount <= 1 ? "default" : "destructive"}
               onClick={() => setShowUnfocusPopup(false)}
               className="w-full sm:w-auto px-10 shadow-lg font-bold uppercase tracking-wide cursor-pointer"
             >
@@ -784,336 +762,341 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
       </Dialog>
 
       <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-        <ResizablePanel 
+        <ResizablePanel
           id="main-content"
           order={1}
-          defaultSize={aiHelperOpen && !isMobile ? 70 : 100} 
+          defaultSize={aiHelperOpen && !isMobile ? 70 : 100}
           className="h-full flex flex-col min-w-0"
         >
           <div className="flex-1 overflow-y-auto relative scroll-smooth">
             <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 pb-20">
               <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
-            {!assignment.lockdownMode || !hasStarted || submitted ? (
-              <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Link>
-            ) : (
-              <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 uppercase ring-4 ring-white shadow-sm">
-                <Lock className="h-3 w-3" />
-                Integrity Lock
-              </div>
-            )}
-        
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end hidden sm:flex">
-            <span className="text-xs text-muted-foreground">Progress</span>
-            <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
-              <div 
-              className="h-full bg-emerald-600 transition-all duration-500" 
-              style={{ width: `${calculateProgress()}%` }}
-              />
-            </div>
-          </div>
-          
-          {timeLeft !== null && !submitted && (
-            <div className="flex flex-col items-end gap-1">
-              {inGracePeriod && (
-                <span className="text-xs text-orange-600 font-semibold">GRACE PERIOD</span>
-              )}
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md font-mono font-bold text-sm ${inGracePeriod ? 'bg-orange-100 text-orange-600' : timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
-                <Clock className="h-3.5 w-3.5" />
-                {formatTime(timeLeft)}
-              </div>
-            </div>
-          )}
-
-          {assignment?.allowAIHelp && !submitted && (
-            <Button
-              variant={aiHelperOpen ? "default" : "outline"}
-              size="sm"
-              onClick={() => setAiHelperOpen(!aiHelperOpen)}
-              className={`cursor-pointer transition-all duration-300 ${
-                aiHelperOpen 
-                  ? "bg-black hover:bg-zinc-900 text-white shadow-md ring-2 ring-zinc-500/20 ring-offset-2" 
-                  : "border-zinc-300 hover:border-zinc-500 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
-              }`}
-            >
-              <Sparkles className={`h-4 w-4 mr-1.5 ${aiHelperOpen ? "animate-pulse" : ""}`} />
-              <span className="hidden xs:inline">AI Tutor</span>
-              <span className="xs:hidden">AI</span>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>{assignment.title}</CardTitle>
-              <CardDescription>{assignment.description}</CardDescription>
-            </div>
-            {submitted && (
-              <div className="flex flex-col items-end gap-2">
-                <Badge className={existingSubmission?.graded ? "bg-green-500" : "bg-blue-500"}>
-                  {existingSubmission?.graded ? (
-                    <>
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Graded
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="h-3 w-3 mr-1" />
-                      Submitted
-                    </>
-                  )}
-                </Badge>
-                {existingSubmission?.graded && existingSubmission?.score !== undefined && (
-                  <div className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
-                    {existingSubmission.score}%
+                {!assignment.lockdownMode || !hasStarted || submitted ? (
+                  <div className="flex items-center gap-4">
+                    <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back
+                    </Link>
+                    <Link href="/student/grades">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Grades
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 uppercase ring-4 ring-white shadow-sm">
+                    <Lock className="h-3 w-3" />
+                    Integrity Lock
                   </div>
                 )}
-              </div>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Due: {new Date(assignment.dueDate).toLocaleDateString()}
-          </p>
-        </CardHeader>
-      </Card>
 
-      <div className="space-y-4">
-        {assignment.questions.map((question, index) => (
-          <Card key={question.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  <Label className="text-base">Question {index + 1}</Label>
-                  {existingSubmission?.graded && (
-                    <Badge variant="secondary" className="text-[10px] font-bold">
-                       {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score ?? 0} / {question.points ?? 10} PTS
-                    </Badge>
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col items-end hidden sm:flex">
+                    <span className="text-xs text-muted-foreground">Progress</span>
+                    <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-600 transition-all duration-500"
+                        style={{ width: `${calculateProgress()}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {timeLeft !== null && !submitted && (
+                    <div className="flex flex-col items-end gap-1">
+                      {inGracePeriod && (
+                        <span className="text-xs text-orange-600 font-semibold">GRACE PERIOD</span>
+                      )}
+                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md font-mono font-bold text-sm ${inGracePeriod ? 'bg-orange-100 text-orange-600' : timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
+                        <Clock className="h-3.5 w-3.5" />
+                        {formatTime(timeLeft)}
+                      </div>
+                    </div>
+                  )}
+
+                  {assignment?.allowAIHelp && !submitted && (
+                    <Button
+                      variant={aiHelperOpen ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setAiHelperOpen(!aiHelperOpen)}
+                      className={`cursor-pointer transition-all duration-300 ${aiHelperOpen
+                        ? "bg-black hover:bg-zinc-900 text-white shadow-md ring-2 ring-zinc-500/20 ring-offset-2"
+                        : "border-zinc-300 hover:border-zinc-500 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                        }`}
+                    >
+                      <Sparkles className={`h-4 w-4 mr-1.5 ${aiHelperOpen ? "animate-pulse" : ""}`} />
+                      <span className="hidden xs:inline">AI Tutor</span>
+                      <span className="xs:hidden">AI</span>
+                    </Button>
                   )}
                 </div>
-                <Badge variant="outline">{question.points || 10} pts</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <MarkdownRenderer className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
-                {question.text}
-              </MarkdownRenderer>
-              
-              <div className="pt-2">
-                {question.type === "multiple-choice" && question.options ? (
-                <RadioGroup
-                  value={answers[question.id] || ""}
-                  onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
-                  disabled={submitted}
-                >
-                  {question.options.map((option, optionIndex) => (
-                    <div key={optionIndex} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option} id={`${question.id}-${optionIndex}`} />
-                      <Label htmlFor={`${question.id}-${optionIndex}`}>{option}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              ) : question.type === "true-false" ? (
-                <RadioGroup
-                  value={answers[question.id] || ""}
-                  onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
-                  disabled={submitted}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="True" id={`${question.id}-true`} />
-                    <Label htmlFor={`${question.id}-true`}>True</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="False" id={`${question.id}-false`} />
-                    <Label htmlFor={`${question.id}-false`}>False</Label>
-                  </div>
-                </RadioGroup>
-              ) : question.type === "short-answer" ? (
-                <MathInputField
-                  value={answers[question.id] || ""}
-                  onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
-                  placeholder="Type your answer here..."
-                  disabled={submitted}
-                  rows={2}
-                />
-              ) : (
-                <MathInputField
-                  value={answers[question.id] || ""}
-                  onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
-                  placeholder="Type your answer here..."
-                  disabled={submitted}
-                  rows={4}
-                />
-              )}
               </div>
 
-              {/* AI Feedback Section */}
-              {existingSubmission?.graded && (
-                <div className="mt-8 pt-6 border-t space-y-4">
-                  {/* Feedback Block */}
-                  {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.feedback && (
-                    <div className="bg-muted/30 rounded-xl p-5 border">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">AI Feedback</span>
-                      </div>
-                      <div className="text-sm leading-relaxed text-foreground italic">
-                        "{existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.feedback}"
-                      </div>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle>{assignment.title}</CardTitle>
+                      <CardDescription>{assignment.description}</CardDescription>
                     </div>
-                  )}
-                  
-                  {/* Correct Reference Section */}
-                  {(question.correctAnswer || existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score < (question.points || 10)) && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-600" />
-                        <Label className="text-[10px] uppercase font-bold tracking-widest text-emerald-700 dark:text-emerald-500">Correct Answer / Explanation</Label>
-                      </div>
-                      <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground bg-muted/20 p-4 rounded-lg border">
-                        <MarkdownRenderer>{question.correctAnswer || "No explanation provided."}</MarkdownRenderer>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {!submitted && assignment.requireWorkSubmission && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Upload Your Work {assignment.requireWorkSubmission && <span className="text-red-500">*</span>}
-            </CardTitle>
-            <CardDescription>
-              {inGracePeriod 
-                ? "Time's up! You have 5 minutes to upload your work before automatic submission."
-                : "Upload PDFs or images of your work. Required to submit this assignment."
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                id="workFiles"
-                accept="application/pdf,image/*"
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={submitted}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  lastUploadClickTime.current = Date.now();
-                  document.getElementById('workFiles')?.click();
-                }}
-                disabled={submitted}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Choose Files
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                PDF or Images (Max 10MB each, images will be compressed)
-              </span>
-            </div>
-
-            {uploadedFiles.length > 0 && (
-              <div className="space-y-2">
-                <Label>Uploaded Files ({uploadedFiles.length})</Label>
-                <div className="space-y-2">
-                  {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-secondary rounded-md">
-                      <div className="flex items-center gap-2 flex-1">
-                        {file.type === "application/pdf" ? (
-                          <FileText className="h-4 w-4" />
-                        ) : (
-                          <ImageIcon className="h-4 w-4" />
+                    {submitted && (
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge className={existingSubmission?.graded ? "bg-green-500" : "bg-blue-500"}>
+                          {existingSubmission?.graded ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Graded
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="h-3 w-3 mr-1" />
+                              Submitted
+                            </>
+                          )}
+                        </Badge>
+                        {existingSubmission?.graded && existingSubmission?.score !== undefined && (
+                          <div className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
+                            {existingSubmission.score}%
+                          </div>
                         )}
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm truncate block">{file.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({(file.size / 1024).toFixed(1)} KB)
-                          </span>
-                          {submitting && uploadProgress[index] !== undefined && (
-                            <div className="mt-1">
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div
-                                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                                  style={{ width: `${uploadProgress[index]}%` }}
-                                ></div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                  </p>
+                </CardHeader>
+              </Card>
+
+              <div className="space-y-4">
+                {assignment.questions.map((question, index) => (
+                  <Card key={question.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-base">Question {index + 1}</Label>
+                          {existingSubmission?.graded && (
+                            <Badge variant="secondary" className="text-[10px] font-bold">
+                              {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score ?? 0} / {question.points ?? 10} PTS
+                            </Badge>
+                          )}
+                        </div>
+                        <Badge variant="outline">{question.points || 10} pts</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <MarkdownRenderer className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
+                        {question.text}
+                      </MarkdownRenderer>
+
+                      <div className="pt-2">
+                        {question.type === "multiple-choice" && question.options ? (
+                          <RadioGroup
+                            value={answers[question.id] || ""}
+                            onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+                            disabled={submitted}
+                          >
+                            {question.options.map((option, optionIndex) => (
+                              <div key={optionIndex} className="flex items-center space-x-2">
+                                <RadioGroupItem value={option} id={`${question.id}-${optionIndex}`} />
+                                <Label htmlFor={`${question.id}-${optionIndex}`}>{option}</Label>
                               </div>
-                              <span className="text-xs text-muted-foreground mt-1">
-                                {uploadProgress[index] < 100 ? 'Uploading...' : 'Complete'}
-                              </span>
+                            ))}
+                          </RadioGroup>
+                        ) : question.type === "true-false" ? (
+                          <RadioGroup
+                            value={answers[question.id] || ""}
+                            onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+                            disabled={submitted}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="True" id={`${question.id}-true`} />
+                              <Label htmlFor={`${question.id}-true`}>True</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="False" id={`${question.id}-false`} />
+                              <Label htmlFor={`${question.id}-false`}>False</Label>
+                            </div>
+                          </RadioGroup>
+                        ) : question.type === "short-answer" ? (
+                          <MathInputField
+                            value={answers[question.id] || ""}
+                            onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+                            placeholder="Type your answer here..."
+                            disabled={submitted}
+                            rows={2}
+                          />
+                        ) : (
+                          <MathInputField
+                            value={answers[question.id] || ""}
+                            onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+                            placeholder="Type your answer here..."
+                            disabled={submitted}
+                            rows={4}
+                          />
+                        )}
+                      </div>
+
+                      {existingSubmission?.graded && (
+                        <div className="mt-8 pt-6 border-t space-y-4">
+                          {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.feedback && (
+                            <div className="bg-muted/30 rounded-xl p-5 border">
+                              <div className="flex items-center gap-2 mb-2">
+                                <MessagesSquare className="h-4 w-4 text-primary" />
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Feedback</span>
+                              </div>
+                              <div className="text-sm leading-relaxed text-foreground italic">
+                                "{existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.feedback}"
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Correct Reference Section */}
+                          {(question.correctAnswer || existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score < (question.points || 10)) && (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-emerald-600" />
+                                <Label className="text-[10px] uppercase font-bold tracking-widest text-emerald-700 dark:text-emerald-500">Correct Answer / Explanation</Label>
+                              </div>
+                              <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground bg-muted/20 p-4 rounded-lg border">
+                                <MarkdownRenderer>{question.correctAnswer || "No explanation provided."}</MarkdownRenderer>
+                              </div>
                             </div>
                           )}
                         </div>
-                      </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {!submitted && assignment.requireWorkSubmission && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Upload className="h-5 w-5" />
+                      Upload Your Work {assignment.requireWorkSubmission && <span className="text-red-500">*</span>}
+                    </CardTitle>
+                    <CardDescription>
+                      {inGracePeriod
+                        ? "Time's up! You have 5 minutes to upload your work before automatic submission."
+                        : "Upload PDFs or images of your work. Required to submit this assignment."
+                      }
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="file"
+                        id="workFiles"
+                        accept="application/pdf,image/*"
+                        multiple
+                        onChange={handleFileChange}
+                        className="hidden"
+                        disabled={submitted}
+                      />
                       <Button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                        disabled={submitted || submitting}
+                        variant="outline"
+                        onClick={() => {
+                          lastUploadClickTime.current = Date.now();
+                          document.getElementById('workFiles')?.click();
+                        }}
+                        disabled={submitted}
                       >
-                        <X className="h-4 w-4" />
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose Files
                       </Button>
+                      <span className="text-sm text-muted-foreground">
+                        PDF or Images (Max 10MB each, images will be compressed)
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
-      {!submitted && (
-        <div className="flex flex-col gap-4">
-          {submitError && (
-            <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 text-sm text-center">
-              Submission failed: {submitError}
-            </div>
-          )}
-          {!assignment.lockdownMode && (
-            <Button 
-              onClick={handleSaveDraft} 
-              disabled={submitting} 
-              variant="outline"
-              className="w-full"
-            >
-              Save Draft
-            </Button>
-          )}
-          <Button 
-            onClick={handleSubmit} 
-            disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)} 
-            className="w-full"
-          >
-            {submitting ? (
-              Object.keys(uploadProgress).length > 0 ? 
-                `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
-                "Submitting..."
-            ) : (
-              <>
-                <Send className="h-4 w-4 mr-2" />
-                Submit Assignment
-              </>
-            )}
-          </Button>
-        </div>
-      )}
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Uploaded Files ({uploadedFiles.length})</Label>
+                        <div className="space-y-2">
+                          {uploadedFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-secondary rounded-md">
+                              <div className="flex items-center gap-2 flex-1">
+                                {file.type === "application/pdf" ? (
+                                  <FileText className="h-4 w-4" />
+                                ) : (
+                                  <ImageIcon className="h-4 w-4" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-sm truncate block">{file.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    ({(file.size / 1024).toFixed(1)} KB)
+                                  </span>
+                                  {submitting && uploadProgress[index] !== undefined && (
+                                    <div className="mt-1">
+                                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                        <div
+                                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                          style={{ width: `${uploadProgress[index]}%` }}
+                                        ></div>
+                                      </div>
+                                      <span className="text-xs text-muted-foreground mt-1">
+                                        {uploadProgress[index] < 100 ? 'Uploading...' : 'Complete'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile(index)}
+                                disabled={submitted || submitting}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {!submitted && (
+                <div className="flex flex-col gap-4">
+                  {submitError && (
+                    <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 text-sm text-center">
+                      Submission failed: {submitError}
+                    </div>
+                  )}
+                  {!assignment.lockdownMode && (
+                    <Button
+                      onClick={handleSaveDraft}
+                      disabled={submitting}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Save Draft
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)}
+                    className="w-full"
+                  >
+                    {submitting ? (
+                      Object.keys(uploadProgress).length > 0 ?
+                        `Uploading... (${Math.round(Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.keys(uploadProgress).length)}%)` :
+                        "Submitting..."
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Submit Assignment
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </ResizablePanel>
@@ -1121,129 +1104,127 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         {!isMobile && aiHelperOpen && (
           <>
             <ResizableHandle withHandle className="bg-zinc-200 dark:bg-zinc-800" />
-            <ResizablePanel 
+            <ResizablePanel
               id="ai-tutor-panel"
               order={2}
-              defaultSize={30} 
-              minSize={20} 
+              defaultSize={30}
+              minSize={20}
               className="bg-zinc-50/50 dark:bg-zinc-950/20 flex flex-col h-full overflow-hidden"
             >
-               {/* Desktop Sidebar Content */}
-               <div className="p-4 h-16 border-b flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
-                      <CruxLogo className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xs tracking-tight leading-none uppercase">Physics Tutor</h3>
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Socratic Mode</span>
-                      </div>
+              {/* Desktop Sidebar Content */}
+              <div className="p-4 h-16 border-b flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
+                    <CruxLogo className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xs tracking-tight leading-none uppercase">Physics Tutor</h3>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Socratic Mode</span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)} className="h-8 w-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                    <X className="h-4 w-4" />
-                  </Button>
-               </div>
-               
-               <div className="flex-1 overflow-y-auto px-4 pt-4">
-                  <div className="space-y-6 pb-10">
-                    {aiMessages.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-                        <div className="w-16 h-16 rounded-[2rem] bg-white dark:bg-zinc-900 border shadow-sm flex items-center justify-center mb-6">
-                          <Lightbulb className="h-8 w-8 text-zinc-400" />
-                        </div>
-                        <h4 className="font-bold text-lg mb-2">Need a hint?</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed max-w-[240px]">
-                          Instead of answers, I'll ask questions to help you unlock the logic behind these physics problems.
-                        </p>
-                        <div className="mt-8 w-full space-y-2">
-                           <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("How do I start thinking about Question 1?"); handleAiSendMessage(); }}>
-                              <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
-                              Approach to Question 1
-                           </Button>
-                           <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("What are the key principles for this topic?"); handleAiSendMessage(); }}>
-                              <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
-                              Key Principles
-                           </Button>
-                        </div>
-                      </div>
-                    )}
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)} className="h-8 w-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
 
-                    {aiMessages.map((msg) => (
-                      <motion.div
-                        initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        key={msg.id}
-                        className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
-                      >
-                        <div className={`flex items-start gap-3 max-w-[95%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                          <div className={`mt-1 h-7 w-7 rounded-full shrink-0 flex items-center justify-center shadow-sm ${
-                            msg.role === 'user' ? 'bg-zinc-900 text-white' : 'bg-white border dark:bg-zinc-800'
-                          }`}>
-                            {msg.role === 'user' ? <User className="h-4 w-4" /> : <CruxLogo className="h-4 w-4 text-zinc-400" />}
-                          </div>
-                          <div
-                            className={`rounded-2xl px-4 py-3 shadow-sm border ${
-                              msg.role === 'user'
-                                ? 'bg-zinc-900 text-white border-transparent rounded-tr-none'
-                                : 'bg-white dark:bg-zinc-900 text-foreground border-zinc-100 dark:border-zinc-800 rounded-tl-none'
-                            }`}
-                          >
-                             <MarkdownRenderer className="text-sm leading-relaxed prose-sm dark:prose-invert prose-p:my-0.5 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800">{msg.content}</MarkdownRenderer>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                    
-                    {aiLoading && (
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 h-7 w-7 rounded-full bg-white border dark:bg-zinc-800 flex items-center justify-center">
-                          <CruxLogo className="h-4 w-4 text-zinc-400" />
-                        </div>
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center justify-center shadow-sm">
-                          <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce"></div>
-                          </div>
-                        </div>
+              <div className="flex-1 overflow-y-auto px-4 pt-4">
+                <div className="space-y-6 pb-10">
+                  {aiMessages.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center px-6">
+                      <div className="w-16 h-16 rounded-[2rem] bg-white dark:bg-zinc-900 border shadow-sm flex items-center justify-center mb-6">
+                        <Lightbulb className="h-8 w-8 text-zinc-400" />
                       </div>
-                    )}
-                    <div ref={scrollRef} />
-                  </div>
-               </div>
+                      <h4 className="font-bold text-lg mb-2">Need a hint?</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed max-w-[240px]">
+                        Instead of answers, I'll ask questions to help you unlock the logic behind these physics problems.
+                      </p>
+                      <div className="mt-8 w-full space-y-2">
+                        <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("How do I start thinking about Question 1?"); handleAiSendMessage(); }}>
+                          <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
+                          Approach to Question 1
+                        </Button>
+                        <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("What are the key principles for this topic?"); handleAiSendMessage(); }}>
+                          <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
+                          Key Principles
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
-               <div className="p-4 bg-white dark:bg-zinc-900 border-t">
-                  <div className="relative flex items-end gap-2">
-                    <Textarea
-                      value={aiInput}
-                      onChange={(e) => setAiInput(e.target.value)}
-                      placeholder="Ask for guidance..."
-                      disabled={aiLoading}
-                      rows={1}
-                      className="min-h-[48px] max-h-[160px] pr-12 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 resize-none py-3.5 focus-visible:ring-zinc-900"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleAiSendMessage();
-                        }
-                      }}
-                    />
-                    <Button 
-                      onClick={handleAiSendMessage}
-                      disabled={aiLoading || !aiInput.trim()} 
-                      size="icon"
-                      className="absolute right-1.5 bottom-1.5 h-9 w-9 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-md active:scale-95"
+                  {aiMessages.map((msg) => (
+                    <motion.div
+                      initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      key={msg.id}
+                      className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                     >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <p className="text-[8px] text-center mt-3 uppercase tracking-[0.2em] font-black text-zinc-300 dark:text-zinc-600">
-                    AI Pedagogical Protocol Active
-                  </p>
-               </div>
+                      <div className={`flex items-start gap-3 max-w-[95%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`mt-1 h-7 w-7 rounded-full shrink-0 flex items-center justify-center shadow-sm ${msg.role === 'user' ? 'bg-zinc-900 text-white' : 'bg-white border dark:bg-zinc-800'
+                          }`}>
+                          {msg.role === 'user' ? <User className="h-4 w-4" /> : <CruxLogo className="h-4 w-4 text-zinc-400" />}
+                        </div>
+                        <div
+                          className={`rounded-2xl px-4 py-3 shadow-sm border ${msg.role === 'user'
+                            ? 'bg-zinc-900 text-white border-transparent rounded-tr-none'
+                            : 'bg-white dark:bg-zinc-900 text-foreground border-zinc-100 dark:border-zinc-800 rounded-tl-none'
+                            }`}
+                        >
+                          <MarkdownRenderer className="text-sm leading-relaxed prose-sm dark:prose-invert prose-p:my-0.5 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800">{msg.content}</MarkdownRenderer>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {aiLoading && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 h-7 w-7 rounded-full bg-white border dark:bg-zinc-800 flex items-center justify-center">
+                        <CruxLogo className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center justify-center shadow-sm">
+                        <div className="flex gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                          <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                          <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={scrollRef} />
+                </div>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-zinc-900 border-t">
+                <div className="relative flex items-end gap-2">
+                  <Textarea
+                    value={aiInput}
+                    onChange={(e) => setAiInput(e.target.value)}
+                    placeholder="Ask for guidance..."
+                    disabled={aiLoading}
+                    rows={1}
+                    className="min-h-[48px] max-h-[160px] pr-12 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 resize-none py-3.5 focus-visible:ring-zinc-900"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAiSendMessage();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={handleAiSendMessage}
+                    disabled={aiLoading || !aiInput.trim()}
+                    size="icon"
+                    className="absolute right-1.5 bottom-1.5 h-9 w-9 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-md active:scale-95"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-[8px] text-center mt-3 uppercase tracking-[0.2em] font-black text-zinc-300 dark:text-zinc-600">
+                  AI Pedagogical Protocol Active
+                </p>
+              </div>
             </ResizablePanel>
           </>
         )}
@@ -1267,45 +1248,45 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 right-0 w-[85%] bg-background z-[101] shadow-2xl flex flex-col"
             >
-                <div className="p-4 border-b flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
-                      <CruxLogo className="h-5 w-5" />
-                    </div>
-                    <span className="font-bold text-sm uppercase tracking-tight">AI Advisor</span>
+              <div className="p-4 border-b flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
+                    <CruxLogo className="h-5 w-5" />
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)}>
-                    <X className="h-4 w-4" />
+                  <span className="font-bold text-sm uppercase tracking-tight">AI Advisor</span>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-8">
+                <div className="space-y-6 pb-10">
+                  {aiMessages.map((msg) => (
+                    <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm border ${msg.role === 'user' ? 'bg-zinc-900 text-white rounded-tr-none border-transparent' : 'bg-white dark:bg-zinc-800 text-foreground rounded-tl-none border-zinc-100 dark:border-zinc-700'}`}>
+                        <MarkdownRenderer>{msg.content}</MarkdownRenderer>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={scrollRef} />
+                </div>
+              </div>
+
+              <div className="p-4 border-t bg-zinc-50 dark:bg-zinc-900 pb-10">
+                <div className="flex gap-2">
+                  <Input
+                    value={aiInput}
+                    onChange={(e) => setAiInput(e.target.value)}
+                    placeholder="Ask a question..."
+                    className="rounded-full bg-white dark:bg-black p-6 shadow-md border-zinc-200"
+                    onKeyDown={(e) => e.key === 'Enter' && handleAiSendMessage()}
+                  />
+                  <Button onClick={handleAiSendMessage} className="rounded-full h-12 w-12 p-0 bg-zinc-900 dark:bg-white">
+                    <Send className="h-5 w-5" />
                   </Button>
                 </div>
-                
-                <div className="flex-1 overflow-y-auto px-4 py-8">
-                   <div className="space-y-6 pb-10">
-                      {aiMessages.map((msg) => (
-                        <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                          <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm border ${msg.role === 'user' ? 'bg-zinc-900 text-white rounded-tr-none border-transparent' : 'bg-white dark:bg-zinc-800 text-foreground rounded-tl-none border-zinc-100 dark:border-zinc-700'}`}>
-                             <MarkdownRenderer>{msg.content}</MarkdownRenderer>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={scrollRef} />
-                   </div>
-                </div>
-
-                <div className="p-4 border-t bg-zinc-50 dark:bg-zinc-900 pb-10">
-                   <div className="flex gap-2">
-                      <Input 
-                        value={aiInput}
-                        onChange={(e) => setAiInput(e.target.value)}
-                        placeholder="Ask a question..."
-                        className="rounded-full bg-white dark:bg-black p-6 shadow-md border-zinc-200"
-                        onKeyDown={(e) => e.key === 'Enter' && handleAiSendMessage()}
-                      />
-                      <Button onClick={handleAiSendMessage} className="rounded-full h-12 w-12 p-0 bg-zinc-900 dark:bg-white">
-                        <Send className="h-5 w-5" />
-                      </Button>
-                   </div>
-                </div>
+              </div>
             </motion.div>
           </>
         )}
