@@ -575,7 +575,7 @@ export default function TeacherVault() {
         description="It looks like you're trying to leave the Vault Controls. Your unsaved changes will be lost. Are you sure you want to leave?"
         onConfirm={confirmNavigation}
         confirmText="Leave Page"
-        cancelText="Stay Here"
+        cancelText="Stay in Vault Controls"
       />
     </>
   );
