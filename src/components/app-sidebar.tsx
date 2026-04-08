@@ -67,10 +67,7 @@ function SidebarContent({
       <div className="px-4 py-6 border-b border-border/40 flex-shrink-0 flex flex-col items-center">
         <motion.div
           layout
-          className={cn(
-            "flex items-center gap-3 w-full px-2",
-            isCollapsed ? "justify-center" : "justify-start"
-          )}
+          className="flex items-center gap-3 w-full px-2 justify-start"
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -115,11 +112,10 @@ function SidebarContent({
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors group",
+                    "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors group w-full",
                     isActive
                       ? "bg-muted text-primary shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                    isCollapsed ? "justify-center w-10 mx-auto px-0" : "w-full"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <item.icon className={cn(
@@ -146,7 +142,8 @@ function SidebarContent({
       <div className="px-3 mb-2">
         <div className={cn(
           "flex items-center gap-3 w-full transition-all duration-300",
-          isCollapsed ? "justify-center" : "px-3 py-1.5 bg-muted/40 rounded-lg"
+          "justify-start px-3 py-1.5 rounded-lg",
+          !isCollapsed && "bg-muted/40"
         )}>
           {RoleIcon && (
             <RoleIcon className={cn(
@@ -173,14 +170,13 @@ function SidebarContent({
             <TooltipTrigger asChild>
               <div
                 className={cn(
-                  "flex items-center justify-center p-2.5 rounded-xl transition shadow-sm border border-transparent min-w-[40px] h-10 overflow-hidden",
-                  isCollapsed ? "" : "px-3",
+                  "flex items-center justify-start p-2.5 rounded-xl transition shadow-sm border border-transparent min-w-[40px] h-10 overflow-hidden px-3 w-full",
                   autoRedirect ? "opacity-40 cursor-help bg-muted/30" : "hover:bg-background hover:border-border/50 bg-background/50"
                 )}
               >
                 {!autoRedirect ? (
-                  <Link href="/" className="flex items-center gap-2 w-full justify-center group" prefetch={false}>
-                    <PlaneLanding className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <Link href="/" className="flex items-center gap-2 w-full justify-start group" prefetch={false}>
+                    <PlaneLanding className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
                     {!isCollapsed && (
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap group-hover:text-foreground transition-colors p-0.5">
                         Landing Page
@@ -188,8 +184,8 @@ function SidebarContent({
                     )}
                   </Link>
                 ) : (
-                  <div className="flex items-center gap-2 w-full justify-center">
-                    <DoorClosedLocked className="h-4 w-4 text-muted-foreground/60" />
+                  <div className="flex items-center gap-2 w-full justify-start">
+                    <DoorClosedLocked className="h-4 w-4 text-muted-foreground/60 shrink-0" />
                     {!isCollapsed && (
                       <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] whitespace-nowrap">
                         Landing Page Locked
@@ -215,7 +211,7 @@ function SidebarContent({
         </TooltipProvider>
 
         <div className="space-y-2">
-          <div className={cn("flex items-center justify-between min-h-[32px]", isCollapsed ? "justify-center" : "px-2")}>
+          <div className="flex items-center justify-between min-h-[32px] px-2">
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
@@ -241,7 +237,7 @@ function SidebarContent({
             </Button>
           </div>
 
-          <div className={cn("flex items-center justify-between min-h-[32px]", isCollapsed ? "justify-center" : "px-2")}>
+          <div className="flex items-center justify-between min-h-[32px] px-2">
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span

@@ -23,14 +23,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { CruxLogo } from "@/components/ui/crux-logo";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PlusCircle, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileText, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, Info, CheckCircle2 } from "lucide-react";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { PlusCircle, AppWindow, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileDown, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, Info, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -523,7 +523,7 @@ function CreateAssignmentForm() {
                   className="cursor-pointer"
                   disabled={isFreePlan}
                 >
-                  <FileText className="h-4 w-4 mr-2" />
+                  <FileDown className="h-4 w-4 mr-2" />
                   Import from Text
                   {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
                 </Button>
@@ -946,7 +946,7 @@ function CreateAssignmentForm() {
                     <Checkbox className="cursor-pointer" id="enableTabDetection" checked={enableTabDetection} onCheckedChange={(checked) => setEnableTabDetection(!!checked)} />
                     <div className="flex items-center gap-1.5">
                       <Label htmlFor="enableTabDetection" className="text-xs font-bold flex items-center gap-1.5">
-                        <ShieldCheck className="h-3 w-3" /> Switch Detection
+                        <AppWindow className="h-3 w-3" /> Detect Tab Switching
                       </Label>
                       <Tooltip>
                         <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
@@ -973,7 +973,7 @@ function CreateAssignmentForm() {
                     <Checkbox className="cursor-pointer" id="allowAIHelp" checked={allowAIHelp} disabled={isFreePlan} onCheckedChange={(checked) => setAllowAIHelp(!!checked)} />
                     <div className="flex items-center gap-1.5">
                       <Label htmlFor="allowAIHelp" className="text-xs font-bold flex items-center gap-1.5">
-                        <Sparkles className="h-3 w-3" /> Enable AI Tutor
+                        <CruxLogo className="h-3 w-3" size={16} /> Enable AI Tutor
                       </Label>
                       <Tooltip>
                         <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
@@ -1039,7 +1039,7 @@ function CreateAssignmentForm() {
                   <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="mt-1" />
                   <div className="flex-grow">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="visible-network" className={`cursor-pointer font-bold block text-sm ${!profile?.organizationId ? 'text-muted-foreground' : ''}`}>Department Network</Label>
+                      <Label htmlFor="visible-network" className={`cursor-pointer font-bold block text-sm ${!profile?.organizationId ? 'text-muted-foreground' : ''}`}>Network</Label>
                       {!profile?.organizationId && <Badge variant="secondary" className="text-[10px]">LOCKED</Badge>}
                     </div>
                     <span className="text-xs text-muted-foreground">Shared with colleagues in {profile?.organizationId || "your school"}.</span>

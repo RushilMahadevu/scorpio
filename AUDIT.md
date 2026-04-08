@@ -8,13 +8,6 @@ Items are grouped by severity and area.
 
 ## 🔴 Critical Fixes (Must Fix)
 
-### 2. Missing Server-Side Rate Limiting on AI Endpoints
-**Files:** `src/app/api/practice/generate/route.ts`, `src/app/api/ai/generate/route.ts`, `src/app/api/notebook/chat/route.ts`
-
-While `src/app/api/chat/route.ts` correctly implements a `rateLimit` check, other intensive generative AI endpoints do not. A single malicious or buggy client could spam requests to these endpoints, rapidly exhausting the Gemini quota and causing unexpected billing spikes. Implement strict IP/user-based rate limits across *all* LLM interactions.
-
----
-
 ### 3. Assignment Deadline Enforcement is Incomplete
 **File:** `src/app/student/assignment-view/page.tsx` (Lines 879-881)
 

@@ -63,6 +63,7 @@ yarn-error.log*
 .stylelintcache
 .cache/
 DEMO.md
+GROUNDING_SKILL.md
 /scripts/
 src/app/admin/
 service-account*.json

@@ -3,7 +3,8 @@
     "instructions": [
         "CONTRIBUTING.md",
         "LAYERING.MD",
-        "PROJECT_AUDIT.md"
+        "AUDIT.md",
+        "GROUNDING_SKILL.md"
     ],
     "permission": {
         "edit": "allow",
