@@ -29,6 +29,7 @@ import { Logo } from "@/components/ui/logo";
 import { CruxLogo } from "@/components/ui/crux-logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 
 import {
@@ -154,9 +155,9 @@ export default function Home() {
 
   const stats = [
     { value: "0%", label: "Direct Answer Rate", sublabel: "Verified by Ph.D. Audit" },
-    { value: "+0.67", label: "Pedagogical Uplift", sublabel: "125-Response Ablation Study" },
-    { value: "100%", label: "Cost Transparency", sublabel: "Zero-Markup Pass-through" },
-    { value: "4-Layer", label: "Constraint Architecture", sublabel: "Inference-Time Scaffolding" }
+    { value: "100%", label: "Socratic Guidance", sublabel: "Forces Productive Struggle" },
+    { value: "100%", label: "Guided Derivations", sublabel: "Focuses on the Process" },
+    { value: "Verifiable", label: "Learning Process", sublabel: "No Bypassing Allowed" }
   ];
 
   const onLoadingFinish = useCallback(() => setIsLoaded(true), []);
@@ -457,7 +458,7 @@ export default function Home() {
                         className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors"
                         initial={{ opacity: 0, y: -20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ delay: 0.15, duration: 0.6, type: "spring", bounce: 0.3 }}
+                        transition={{ delay: 0.4, duration: 0.6, type: "spring", bounce: 0.3 }}
                         whileHover={{ scale: 1.02 }}
                       >
                         <div className="relative flex h-2.5 w-2.5 items-center justify-center">
@@ -474,18 +475,17 @@ export default function Home() {
                             className="w-32 h-32 bg-primary/20 blur-3xl rounded-full"
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.1, duration: 1.2, ease: "easeOut" }}
+                            transition={{ delay: 0.3, duration: 1.2, ease: "easeOut" }}
                           />
                         </div>
                         <motion.div
                           className="relative cursor-pointer"
                           onClick={() => setLogoRotation(prev => prev + 360)}
-                          animate={{ rotate: logoRotation, y: [0, -8, 0] }}
+                          animate={{ rotate: logoRotation }}
                           whileHover={{ scale: 1.08 }}
                           whileTap={{ scale: 0.94 }}
                           transition={{
                             rotate: { type: "spring", stiffness: 60, damping: 12 },
-                            y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
                             default: { duration: 2, ease: [0.16, 1, 0.3, 1] }
                           }}
                         >
@@ -509,7 +509,7 @@ export default function Home() {
                             opacity: 1,
                             transition: {
                               staggerChildren: isMobile ? 0 : 0.12,
-                              delayChildren: isMobile ? 0.05 : 0.4
+                              delayChildren: isMobile ? 0.2 : 0.8
                             }
                           }
                         }}
@@ -547,13 +547,13 @@ export default function Home() {
                         className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium text-center"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
+                        transition={{ delay: 1.2, duration: 1, ease: "easeOut" }}
                       >
                         <TooltipProvider delayDuration={0}>
                           Powered by{" "}
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-foreground font-black tracking-tight cursor-help border-b border-dotted border-foreground/30">Crux</span>
+                              <span className="text-foreground cursor-help border-b border-dotted border-foreground/30">Crux</span>
                             </TooltipTrigger>
                             <TooltipContent className="p-4 bg-background border border-border shadow-2xl max-w-xs" side="top">
                               <div className="flex flex-col gap-3 text-left">
@@ -569,32 +569,7 @@ export default function Home() {
                               </div>
                             </TooltipContent>
                           </Tooltip>
-                          , Scorpio is the first AI-native{" "}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-foreground font-bold cursor-help border-b border-dotted border-foreground/30">LMS</span>
-                            </TooltipTrigger>
-                            <TooltipContent className="px-3 py-2 bg-background border border-border" side="top">
-                              <span className="text-xs font-medium text-foreground">Learning Management System</span>
-                            </TooltipContent>
-                          </Tooltip>{" "}
-                          that makes bypassing the physics learning process{" "}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-foreground font-black cursor-help border-b border-dotted border-foreground/30 text-nowrap">structurally impossible.</span>
-                            </TooltipTrigger>
-                            <TooltipContent className="p-4 bg-background border border-border shadow-2xl max-w-[240px]" side="top">
-                              <div className="space-y-2 text-left">
-                                <div className="flex items-center gap-2">
-                                  <Layers className="h-4 w-4 text-primary" />
-                                  <span className="font-bold text-sm text-foreground">4-Layer Constraint</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  Every response must pass through: Schema Validation, Pedagogical Alignment, Symbolic Verification, and Socratic Scaffolding.
-                                </p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
+                          , Scorpio is an AI physics platform that guides students through the productive struggle. We help them find the answer, but we make bypassing the learning process structurally impossible.
                         </TooltipProvider>
                       </motion.p>
 
@@ -603,7 +578,7 @@ export default function Home() {
                         className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative pt-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: isMobile ? 0.4 : 1.1, duration: 1, ease: "easeOut" }}
+                        transition={{ delay: isMobile ? 0.8 : 1.5, duration: 1, ease: "easeOut" }}
                       >
 
                         <Link href="/request-access" className="w-full sm:w-auto flex-1 group">
@@ -631,7 +606,7 @@ export default function Home() {
                         animate="visible"
                         variants={{
                           hidden: {},
-                          visible: { transition: { staggerChildren: 0.08, delayChildren: isMobile ? 0.5 : 1.1 } }
+                          visible: { transition: { staggerChildren: 0.08, delayChildren: isMobile ? 1.0 : 1.8 } }
                         }}
                       >
                         {stats.map((stat, i) => (
@@ -744,7 +719,7 @@ export default function Home() {
                             color: "red"
                           },
                           {
-                            title: "Institutional Rot",
+                            title: "Academic Dishonesty",
                             desc: "Degrees lose value when procedural mastery can be faked. Scorpio restores the integrity of the physics curriculum.",
                             icon: Shield,
                             color: "red"
