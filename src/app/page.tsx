@@ -106,6 +106,23 @@ export default function Home() {
     restDelta: 0.001
   });
 
+  // Re-sync scroll progress on mount to handle hydration mismatch
+  useEffect(() => {
+    const syncScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const initialProgress = scrollHeight > 0 ? window.scrollY / scrollHeight : 0;
+      scrollYProgress.set(initialProgress);
+      scaleX.set(initialProgress);
+    };
+    
+    // Initial sync
+    syncScroll();
+    
+    // Secondary sync after a short delay to ensure layout is complete
+    const timeout = setTimeout(syncScroll, 100);
+    return () => clearTimeout(timeout);
+  }, [scrollYProgress, scaleX]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -387,19 +404,14 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                {/* Scroll Progress Bar - only visible when scrolled to avoid initial hydration/spring glitches */}
-                <AnimatePresence>
-                  {isScrolled && (
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary origin-left z-50"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      style={{ scaleX, originX: 0 }}
-                    />
-                  )}
-
-                </AnimatePresence>
+                {/* Scroll Progress Bar */}
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary origin-left z-50"
+                  style={{ scaleX, originX: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isScrolled ? 1 : 0 }}
+                  transition={{ duration: 0.3 }}
+                />
               </motion.header>
 
 
