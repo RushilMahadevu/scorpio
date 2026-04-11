@@ -7,11 +7,11 @@
 [![Gemini 2.5](https://img.shields.io/badge/Gemini_2.5_Flash-AI-8E75B2?style=flat&logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 [![Polar](https://img.shields.io/badge/Polar-Subscription-blue?style=flat)](https://polar.sh/)
 
-![Scorpio Header](./public/og-image-pink.png)
+![Scorpio Header](./public/og-image.png)
 
-> **Transforming Physics Education through AI-Driven Socratic Tutoring.**
+> **Empower Thinking. Stop AI Solvers.**
 
-Scorpio is a research-driven educational platform engineered to transform physics instruction. By integrating a novel **4-layer AI constraint architecture** through its specialized pedagogical AI, **Crux**, with a high-performance, space-themed interface, Scorpio bridges the gap between traditional Learning Management Systems (LMS) and the dynamic cognitive requirements of physics problem-solving.
+Scorpio is a Socratic AI platform built to empower the physics classroom. By integrating a novel **4-layer AI constraint architecture** through its specialized pedagogical AI, **Crux**, with a high-performance, space-themed interface, Scorpio bridges the gap between traditional teacher tools and the dynamic cognitive requirements of physics problem-solving.
 
 ---
 

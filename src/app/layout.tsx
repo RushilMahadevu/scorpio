@@ -35,23 +35,24 @@ const robotoMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorpio • The Verifiable AI Physics LMS",
+    default: "Scorpio • Socratic AI for Physics",
     template: "%s • Scorpio",
   },
-  description: "The only AI Physics LMS that prevents cheating. Our 4-layer constraint architecture enforces step-by-step derivation and genuine student understanding.",
+  description: "The Socratic AI platform built to empower the physics classroom. Restore integrity, stop the solvers, and reclaim the derivation process.",
   keywords: [
+    "Physics Teacher Tool",
+    "Socratic AI",
+    "Physics Education",
     "Physics LMS",
-    "AI LMS",
+    "Socratic LMS",
+    "Stop AI Cheating",
+    "Physics Classroom AI",
+    "Socratic Method AI",
     "AI Physics Tutor",
-    "AI Physics Learning",
-    "AI Physics Education",
-    "Anti-Cheating Physics Platform",
-    "Verifiable AI",
-    "Academic Integrity Software",
-    "Physics Education Technology",
-    "Step-by-Step Derivation Tool",
-    "Scorpio Education",
-    "AI Physics Teacher Tools"
+    "Academic Integrity",
+    "Physics Scaffolding",
+    "Classroom Empowerment",
+    "Scorpio Physics"
   ],
   icons: [
     { rel: "icon", url: "/favicon.ico" },
@@ -62,16 +63,16 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
-    title: "Scorpio • The Verifiable AI Physics LMS",
-    description: "Enforce the struggle with the only LMS that prevents AI cheating. Research-grade constraint architecture for genuine physics mastery.",
+    title: "Scorpio • Empower Thinking. Stop AI Solvers.",
+    description: "The Socratic AI for physics classrooms. Restore integrity, stop the solvers, and reclaim the derivation process.",
     url: "https://scorpioedu.org",
     siteName: "Scorpio",
     images: [
       {
-        url: "/og-image-pink.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Scorpio - The Verifiable AI Physics LMS",
+        alt: "Scorpio - Socratic AI for Physics",
       },
     ],
     locale: "en_US",

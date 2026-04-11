@@ -515,23 +515,23 @@ export default function Home() {
                         }}
                       >
                         <motion.h1
-                          className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6.5rem] font-black tracking-[-0.04em] text-foreground leading-[0.9] drop-shadow-2xl"
+                          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.05em] text-foreground leading-[0.95] drop-shadow-2xl"
                           variants={{
                             hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
                             visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
                           }}
                         >
-                          The World&apos;s Only
+                          Empower Thinking
                         </motion.h1>
                         <motion.h1
-                          className="text-4xl sm:text-6xl md:text-[5rem] lg:text-[6.5rem] font-black tracking-[-0.04em] leading-[0.9]"
+                          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.05em] leading-[0.95]"
                           variants={{
                             hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
                             visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
                           }}
                         >
                           <span className="relative inline-block pb-1">
-                            <span className="relative z-10 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">AI Physics LMS</span>
+                            <span className="relative z-10 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">Stop AI Solvers</span>
                             <motion.span
                               className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 rounded-full"
                               initial={{ scaleX: 0, opacity: 0 }}
@@ -569,7 +569,7 @@ export default function Home() {
                               </div>
                             </TooltipContent>
                           </Tooltip>
-                          , Scorpio is an AI physics platform that guides students through the productive struggle. We help them find the answer, but we make bypassing the learning process structurally impossible.
+                          , Scorpio is the Socratic AI platform built to empower the physics classroom. We guide every student through the derivation process, making bypasses impossible and deep thinking inevitable.
                         </TooltipProvider>
                       </motion.p>
 
