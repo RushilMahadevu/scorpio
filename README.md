@@ -18,7 +18,7 @@ Scorpio is a Socratic AI platform built to empower the physics classroom. By int
 ## 🏗️ Technical Architecture
 
 Scorpio's architecture is built for concurrency, type safety, and real-time synchronization.
-
+ 
 ### 🔄 System Data Flow
 ```mermaid
 graph TD
