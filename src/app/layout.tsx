@@ -1,14 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Sans, Roboto_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/auth-context";
-import { ThemeProvider } from "next-themes";
-import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
-import { AppearanceProvider } from "@/contexts/appearance-context";
-import { SmoothScroll } from "@/components/smooth-scroll";
-import { Toaster } from "sonner";
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Providers } from "@/components/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,10 +28,10 @@ const robotoMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorpio • Socratic AI for Physics",
+    default: "Scorpio • Socratic Guidance for Physics Education",
     template: "%s • Scorpio",
   },
-  description: "The Socratic AI platform built to empower the physics classroom. Restore integrity, stop the solvers, and reclaim the derivation process.",
+  description: "The Socratic AI Learning Management System (LMS) built to empower the physics classroom. Restore integrity, stop the solvers, and reclaim the derivation process.",
   keywords: [
     "Physics Teacher Tool",
     "Socratic AI",
@@ -63,8 +56,8 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://scorpioedu.org"),
   openGraph: {
-    title: "Scorpio • Empower Thinking. Stop AI Solvers.",
-    description: "The Socratic AI for physics classrooms. Restore integrity, stop the solvers, and reclaim the derivation process.",
+    title: "Scorpio • Socratic Guidance for Physics Education",
+    description: "The Socratic AI Learning Management System (LMS) for physics classrooms. Restore integrity, stop the solvers, and reclaim the derivation process.",
     url: "https://scorpioedu.org",
     siteName: "Scorpio",
     images: [
@@ -81,9 +74,14 @@ export const metadata: Metadata = {
   other: {
     "language": "en",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Scorpio",
+  },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -107,7 +105,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Scorpio",
               "url": "https://scorpioedu.org",
-              "logo": "https://scorpioedu.org/og-image-light.png",
+              "logo": "https://scorpioedu.org/og-image.png",
               "sameAs": []
             })
           }}
@@ -130,25 +128,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${ibmPlexSans.variable} ${robotoMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-        >
-          <AppearanceProvider>
-            <SpaceEffectsProvider>
-              <AuthProvider>
-                <SmoothScroll>
-                  {children}
-                </SmoothScroll>
-              </AuthProvider>
-              <Toaster position="top-center" richColors />
-              <Analytics />
-              <SpeedInsights />
-            </SpaceEffectsProvider>
-          </AppearanceProvider>
-        </ThemeProvider>
+      <body className={`${inter.variable} ${ibmPlexSans.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
