@@ -132,6 +132,27 @@ function AssignmentDetailContent() {
       }
     };
 
+    const handleBlur = () => {
+      if (!assignment?.enableTabDetection || !hasStarted || submitted) return;
+      
+      if (ignoreNextBlurRef.current) {
+        ignoreNextBlurRef.current = false;
+        return;
+      }
+
+      // Check if it's really a tab switch by checking visibilityState
+      // Also ignore if we recently clicked an upload button to avoid file picker false positives
+      const timeSinceUploadClick = Date.now() - lastUploadClickTime.current;
+      if (timeSinceUploadClick < 2000) {
+        return;
+      }
+
+      if (document.visibilityState === 'hidden' || !document.hasFocus()) {
+        setUnfocusCount((count) => count + 1);
+        setShowUnfocusPopup(true);
+      }
+    };
+
     // Discourage browser back button in lockdown
     const handlePopState = (e: PopStateEvent) => {
       if (assignment?.lockdownMode && hasStarted && !submitted) {
@@ -145,6 +166,11 @@ function AssignmentDetailContent() {
       window.addEventListener('popstate', handlePopState);
     }
 
+    if (assignment?.enableTabDetection && hasStarted && !submitted) {
+      window.addEventListener('blur', handleBlur);
+      document.addEventListener('visibilitychange', handleBlur);
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('copy', handleCopy);
     document.addEventListener('contextmenu', handleContextMenu);
@@ -156,6 +182,8 @@ function AssignmentDetailContent() {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('visibilitychange', handleBlur);
     };
   }, [ignoreNextBlurRef, assignment, submitted, hasStarted]);
 
