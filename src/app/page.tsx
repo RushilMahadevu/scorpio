@@ -55,7 +55,6 @@ function AnimatedNumber({ value }: { value: number }) {
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [logoRotation, setLogoRotation] = useState(0);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState<string>("home");
   const [isScrolled, setIsScrolled] = useState(false);
@@ -467,36 +466,6 @@ export default function Home() {
                         </div>
                         <span className="text-[11px] font-black tracking-[0.25em] text-foreground/90 uppercase">Audited by a Ph.D.</span>
                       </motion.div>
-
-                      {/* Logo */}
-                      <div className="flex justify-center relative">
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <motion.div
-                            className="w-32 h-32 bg-primary/20 blur-3xl rounded-full"
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.3, duration: 1.2, ease: "easeOut" }}
-                          />
-                        </div>
-                        <motion.div
-                          className="relative cursor-pointer"
-                          onClick={() => setLogoRotation(prev => prev + 360)}
-                          animate={{ rotate: logoRotation }}
-                          whileHover={{ scale: 1.08 }}
-                          whileTap={{ scale: 0.94 }}
-                          transition={{
-                            rotate: { type: "spring", stiffness: 60, damping: 12 },
-                            default: { duration: 2, ease: [0.16, 1, 0.3, 1] }
-                          }}
-                        >
-                          <Logo
-                            size={72}
-                            layoutId="hero-logo"
-                            className="text-foreground drop-shadow-[0_0_30px_rgba(var(--primary),0.3)] dark:drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300"
-                          />
-                        </motion.div>
-                      </div>
-
 
                       {/* Headline */}
                       <motion.div
