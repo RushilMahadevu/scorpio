@@ -651,6 +651,7 @@ export default function Home() {
                                 e.currentTarget.muted = true;
                               }}
                             >
+                              <source src="/demos/landing-demo.webm" type="video/webm" />
                               <source src="/demos/landing-demo.mp4" type="video/mp4" />
                               Your browser does not support the video tag.
                             </video>
@@ -854,6 +855,7 @@ export default function Home() {
                             className="w-full h-auto aspect-video cursor-pointer"
                             preload="metadata"
                           >
+                            <source src="/demos/scorpio-demo.webm" type="video/webm" />
                             <source src="/demos/scorpio-demo.mp4" type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
@@ -1343,6 +1345,7 @@ export default function Home() {
                   playsInline
                   className="w-full h-full object-cover"
                 >
+                  <source src="/demos/landing-demo.webm" type="video/webm" />
                   <source src="/demos/landing-demo.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
