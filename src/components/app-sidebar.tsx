@@ -71,7 +71,7 @@ function SidebarContent({
           whileHover={{ scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <motion.div 
+          <motion.div
             layout
             className="bg-primary/20 p-2 rounded-xl shadow-inner-sm flex-shrink-0"
           >
@@ -99,8 +99,8 @@ function SidebarContent({
           {navItems.map((item) => {
             const isRootRoute = item.href === "/teacher" || item.href === "/student" || item.href === "/admin";
             const isActive = pathname ? (
-              isRootRoute 
-                ? pathname === item.href 
+              isRootRoute
+                ? pathname === item.href
                 : pathname === item.href || pathname.startsWith(item.href + "/")
             ) : false;
             return (

@@ -39,9 +39,9 @@ export function LandingHeader() {
   return (
     <motion.header
       className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
-      initial={{ opacity: 0, y: -40 }}
+      initial={{ opacity: 1, y: 0 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0 }}
       onMouseLeave={() => setHoveredNav(null)}
     >
       <div className="flex items-center justify-between px-6 py-3.5 max-w-[1400px] mx-auto w-full">
