@@ -214,7 +214,7 @@ export default function RequestAccessPage() {
                 </Label>
                 <Input
                   id="req-name"
-                  placeholder="Dr. Julia Sterling"
+                  placeholder="Dr. William Adams"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -235,7 +235,7 @@ export default function RequestAccessPage() {
                 <Input
                   id="req-email"
                   type="email"
-                  placeholder="julia@stanford.edu"
+                  placeholder="William@stanford.edu"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

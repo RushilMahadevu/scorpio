@@ -484,133 +484,77 @@ export default function Home() {
                       )}
                     </div>
 
-                    {!isMobile && (
-                      <div className="hidden md:block">
-                        <FloatingPrompts />
+                    {/* Remove FloatingPrompts for a cleaner, linear-like look */}
+
+                    <div className="container mx-auto px-4 sm:px-8 max-w-[1400px] w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6 md:gap-10 relative z-20">
+
+                      {/* Left: Content */}
+                      <div className="flex flex-col items-center md:items-start text-center md:text-left max-w-2xl">
+                        {/* Badge */}
+                        <motion.div
+                          className="inline-flex items-center gap-3 mt-20 px-3 py-1 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors mb-6"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.4 }}
+                        >
+                          <div className="relative flex h-1.5 w-1.5 items-center justify-center">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
+                            <span className="relative inline-flex rounded-full h-1 w-1 bg-primary" />
+                          </div>
+                          <span className="text-[9px] font-black tracking-[0.2em] text-foreground/80 uppercase">Audited by a Ph.D.</span>
+                        </motion.div>
+
+                        {/* Headline */}
+                        <motion.div
+                          className="relative z-10 mb-6"
+                          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                        >
+                          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-[-0.05em] text-foreground leading-[1.05]">
+                            The operating system for physics teachers
+                          </h1>
+                        </motion.div>
+
+                        {/* Description */}
+                        <motion.p
+                          className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3, duration: 0.8 }}
+                        >
+                          We guide the students, you focus on teaching.
+                        </motion.p>
                       </div>
-                    )}
 
-                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-6 md:gap-8 relative z-10">
-
-                      {/* Badge */}
+                      {/* Right: Subtle CTAs */}
                       <motion.div
-                        className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors"
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ delay: 0.4, duration: 0.6, type: "spring", bounce: 0.3 }}
-                        whileHover={{ scale: 1.02 }}
+                        className="flex items-center gap-6 shrink-0 pb-2 md:pb-4 relative z-30"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4, duration: 0.8 }}
                       >
-                        <div className="relative flex h-2.5 w-2.5 items-center justify-center">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                        </div>
-                        <span className="text-[10px] font-black tracking-[0.25em] text-foreground/90 uppercase">Audited by a Ph.D.</span>
-                      </motion.div>
-
-                      {/* Headline */}
-                      <motion.div
-                        className="space-y-4 relative z-10 text-center"
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                          hidden: { opacity: 0 },
-                          visible: {
-                            opacity: 1,
-                            transition: {
-                              staggerChildren: isMobile ? 0 : 0.12,
-                              delayChildren: isMobile ? 0.2 : 0.8
-                            }
-                          }
-                        }}
-                      >
-                        <motion.h1
-                          className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] text-foreground leading-[0.9] drop-shadow-2xl"
-                          variants={{
-                            hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
-                            visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
-                          }}
-                        >
-                          Empower Thinking
-                        </motion.h1>
-                        <motion.h1
-                          className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] leading-[0.9]"
-                          variants={{
-                            hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
-                            visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
-                          }}
-                        >
-                          <span className="relative inline-block pb-1">
-                            <span className="relative z-10 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">Stop AI Solvers</span>
-                            <motion.span
-                              className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 rounded-full"
-                              initial={{ scaleX: 0, opacity: 0 }}
-                              animate={{ scaleX: 1, opacity: 1 }}
-                              transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
-                            />
-                          </span>
-                        </motion.h1>
-                      </motion.div>
-
-                      {/* Description */}
-                      <motion.p
-                        className="text-md md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium text-center"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1.2, duration: 1, ease: "easeOut" }}
-                      >
-                        <TooltipProvider delayDuration={0}>
-                          Powered by{" "}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-foreground cursor-help border-b border-dotted border-foreground/30">Crux</span>
-                            </TooltipTrigger>
-                            <TooltipContent className="p-4 bg-background border border-border shadow-2xl max-w-xs" side="top">
-                              <div className="flex flex-col gap-3 text-left">
-                                <div className="flex items-center gap-2">
-                                  <div className="p-1.5 rounded-lg bg-primary/10">
-                                    <CruxLogo size={18} className="text-primary" />
-                                  </div>
-                                  <span className="font-bold text-foreground text-sm">Crux AI</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  The engine behind Scorpio. A specialized AI architecture that enforces Socratic methodology through 4-layer inference-time constraints.
-                                </p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                          , Scorpio is the Socratic AI platform built to empower the physics classroom. We guide the students, you focus on teaching.
-                        </TooltipProvider>
-                      </motion.p>
-
-                      {/* CTAs */}
-                      <motion.div
-                        className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: isMobile ? 0.8 : 1.5, duration: 1, ease: "easeOut" }}
-                      >
-
-                        <Link href="/request-access" className="w-full sm:w-auto flex-1 group">
-                          <Button size="lg" className="w-full font-black text-sm px-8 h-12 rounded-full shadow-[0_0_40px_rgba(var(--primary),0.2)] hover:shadow-[0_0_60px_rgba(var(--primary),0.4)] transition-all duration-300 hover:scale-[1.1] cursor-pointer gap-2 relative overflow-hidden">
-                            <KeyRound className="h-4 w-4 relative z-10" />
-                            <span className="relative z-10">Request Access</span>
-                            <ArrowRight className="h-3.5 w-3.5 ml-0.5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Link href="/request-access">
+                          <Button variant="link" className="h-auto p-0 font-medium text-sm text-primary hover:text-primary/80 transition-all flex items-center gap-1.5 group">
+                            Request Access
+                            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                           </Button>
                         </Link>
+                        <div className="w-px h-4 bg-border/60 hidden md:block" />
                         <button
                           type="button"
                           onClick={() => { const el = document.getElementById("demos"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                          className="flex-1 w-full sm:w-auto font-bold text-sm px-8 h-12 rounded-full border border-border/60 bg-background/50 backdrop-blur-xl hover:bg-muted/50 cursor-pointer inline-flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.1] text-foreground/80 hover:text-foreground group"
+                          className=" cursor-pointer text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-2 group"
                         >
-                          <PlayCircle className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                           5-Minute Demo
                         </button>
                       </motion.div>
+                    </div>
 
-                      {/* Scroll-driven pitched card — starts angled, flattens as you scroll */}
+                    {/* Centered, Larger Video Container - Pushed UP */}
+                    <div className="container mx-auto px-4 sm:px-6 max-w-7xl w-full mt-4 md:mt-[-50px] relative z-10 flex justify-center">
                       <motion.div
-                        className="w-full mx-auto relative -mt-14 md:-mt-18"
+                        className="w-full relative"
                         style={{ perspective: "1200px" }}
                         initial={{ opacity: 0, y: 60 }}
                         animate={{ opacity: 1, y: 0 }}
