@@ -283,25 +283,27 @@ export function SettingsDialog() {
                   
                   <div className="space-y-4 pt-2">
                     <h4 className="text-sm font-medium">Platform Preferences</h4>
-                    <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                      <Checkbox 
-                        id="auto-redirect" 
-                        checked={profile?.preferences?.autoRedirectPortal ?? true}
-                        onCheckedChange={(checked) => handleAutoRedirectChange(checked === true)}
-                        className="mt-0.5 cursor-pointer"
-                      />
-                      <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAutoRedirectChange(!(profile?.preferences?.autoRedirectPortal ?? true))}>
-                        <Label 
-                          htmlFor="auto-redirect" 
-                          className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          Auto-Portal Redirect
-                        </Label>
-                        <p className="text-[11px] text-muted-foreground font-medium">
-                          Skip the landing page and jump straight to your {role || "portal"} when logged in.
-                        </p>
+                    {role !== "student" && (
+                      <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                        <Checkbox 
+                          id="auto-redirect" 
+                          checked={profile?.preferences?.autoRedirectPortal ?? true}
+                          onCheckedChange={(checked) => handleAutoRedirectChange(checked === true)}
+                          className="mt-0.5 cursor-pointer"
+                        />
+                        <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAutoRedirectChange(!(profile?.preferences?.autoRedirectPortal ?? true))}>
+                          <Label 
+                            htmlFor="auto-redirect" 
+                            className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            Auto-Portal Redirect
+                          </Label>
+                          <p className="text-[11px] text-muted-foreground font-medium">
+                            Skip the landing page and jump straight to your {role || "portal"} when logged in.
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                     {role === "teacher" && (
                       <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10 mt-2">
                         <Checkbox 

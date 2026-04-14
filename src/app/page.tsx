@@ -92,14 +92,14 @@ export default function Home() {
     }
   }, [theaterOpen]);
 
-  // Logged-in users should be able to view the landing page freely, 
-  // UNLESS they have the auto-redirect preference enabled.
+  // Students are ALWAYS forced to redirect to their portal.
+  // Teachers are redirected unless they disable the auto-redirect preference.
   useEffect(() => {
-    if (isLoaded && !authLoading && user && role && (profile?.preferences?.autoRedirectPortal ?? true)) {
-      if (role === "teacher") {
-        router.push("/teacher");
-      } else if (role === "student") {
+    if (isLoaded && !authLoading && user && role) {
+      if (role === "student") {
         router.push("/student");
+      } else if (role === "teacher" && (profile?.preferences?.autoRedirectPortal ?? true)) {
+        router.push("/teacher");
       }
     }
   }, [user, role, profile, authLoading, router, isLoaded]);

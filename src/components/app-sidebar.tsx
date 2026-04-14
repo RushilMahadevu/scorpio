@@ -53,10 +53,10 @@ function SidebarContent({
 }: SidebarContentProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { profile } = useAuth();
-
+  const { profile, role } = useAuth();
+  
   const autoRedirect = profile?.preferences?.autoRedirectPortal ?? true;
-
+  
   const handleLogout = async () => {
     await logout();
     router.push("/login");
@@ -165,50 +165,52 @@ function SidebarContent({
       </div>
 
       <div className="p-3 border-t border-border/40 space-y-3 bg-muted/10">
-        <TooltipProvider>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  "flex items-center justify-start p-2.5 rounded-xl transition shadow-sm border border-transparent min-w-[40px] h-10 overflow-hidden px-3 w-full",
-                  autoRedirect ? "opacity-40 cursor-help bg-muted/30" : "hover:bg-background hover:border-border/50 bg-background/50"
-                )}
-              >
-                {!autoRedirect ? (
-                  <Link href="/" className="flex items-center gap-2 w-full justify-start group" prefetch={false}>
-                    <PlaneLanding className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
-                    {!isCollapsed && (
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap group-hover:text-foreground transition-colors p-0.5">
-                        Landing Page
-                      </span>
-                    )}
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-2 w-full justify-start">
-                    <DoorClosedLocked className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-                    {!isCollapsed && (
-                      <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] whitespace-nowrap">
-                        Landing Page Locked
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </TooltipTrigger>
-            {autoRedirect && (
-              <TooltipContent side="right" className="max-w-[200px] text-xs font-bold p-3 bg-background border-border/50 text-foreground animate-in fade-in zoom-in-95 duration-200">
-                <p className="leading-relaxed">
-                  The landing page is disabled while <span className="text-primary italic">"Auto-Portal Redirect"</span> is ON. Disable it in settings to visit the PlaneLanding page.
-                </p>
-              </TooltipContent>
-            )}
-            {!autoRedirect && !isCollapsed && (
-              <TooltipContent side="right" className="text-[10px] font-black uppercase tracking-widest p-2">
-                Visit Landing Page
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+        {role !== "student" && (
+          <TooltipProvider>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <div
+                  className={cn(
+                    "flex items-center justify-start p-2.5 rounded-xl transition shadow-sm border border-transparent min-w-[40px] h-10 overflow-hidden px-3 w-full",
+                    autoRedirect ? "opacity-40 cursor-help bg-muted/30" : "hover:bg-background hover:border-border/50 bg-background/50"
+                  )}
+                >
+                  {!autoRedirect ? (
+                    <Link href="/" className="flex items-center gap-2 w-full justify-start group" prefetch={false}>
+                      <PlaneLanding className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                      {!isCollapsed && (
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap group-hover:text-foreground transition-colors p-0.5">
+                          Landing Page
+                        </span>
+                      )}
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-2 w-full justify-start">
+                      <DoorClosedLocked className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                      {!isCollapsed && (
+                        <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] whitespace-nowrap">
+                          Landing Page Locked
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </TooltipTrigger>
+              {autoRedirect && (
+                <TooltipContent side="right" className="max-w-[200px] text-xs font-bold p-3 bg-background border-border/50 text-foreground animate-in fade-in zoom-in-95 duration-200">
+                  <p className="leading-relaxed">
+                    The landing page is disabled while <span className="text-primary italic">"Auto-Portal Redirect"</span> is ON. Disable it in settings to visit the PlaneLanding page.
+                  </p>
+                </TooltipContent>
+              )}
+              {!autoRedirect && !isCollapsed && (
+                <TooltipContent side="right" className="text-[10px] font-black uppercase tracking-widest p-2">
+                  Visit Landing Page
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-center justify-between min-h-[32px] px-2">
