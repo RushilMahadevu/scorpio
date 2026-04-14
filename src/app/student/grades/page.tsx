@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Award, Activity, FileCheck, Clock, ChevronRight, Sparkles, Calendar } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 import {
   Dialog,
   DialogContent,
@@ -377,7 +378,9 @@ export default function StudentGradesPage() {
                                           </div>
 
                                           <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl text-lg font-bold text-foreground/90 border border-zinc-200 dark:border-white/5">
-                                            {q.questionText}
+                                            <MarkdownRenderer noProse>
+                                              {q.questionText}
+                                            </MarkdownRenderer>
                                           </div>
 
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
@@ -386,7 +389,11 @@ export default function StudentGradesPage() {
                                                 Your Answer
                                               </p>
                                               <div className="p-4 bg-zinc-100/50 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/5 font-medium text-sm">
-                                                {q.answer?.trim() ? q.answer : <span className="italic opacity-50">No answer provided</span>}
+                                                {q.answer?.trim() ? (
+                                                  <MarkdownRenderer noProse>
+                                                    {q.answer}
+                                                  </MarkdownRenderer>
+                                                ) : <span className="italic opacity-50">No answer provided</span>}
                                               </div>
                                             </div>
 
@@ -396,7 +403,9 @@ export default function StudentGradesPage() {
                                                   Feedback
                                                 </p>
                                                 <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 font-medium italic text-sm text-foreground/80">
-                                                  {q.feedback}
+                                                  <MarkdownRenderer noProse>
+                                                    {q.feedback}
+                                                  </MarkdownRenderer>
                                                 </div>
                                               </div>
                                             )}
