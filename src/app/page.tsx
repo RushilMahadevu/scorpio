@@ -651,8 +651,8 @@ export default function Home() {
                                 e.currentTarget.muted = true;
                               }}
                             >
-                              <source src="/demos/landing-demo.webm" type="video/webm" />
-                              <source src="/demos/landing-demo.mp4" type="video/mp4" />
+                              <source src="/demos/landing-demo-v2.webm" type="video/webm" />
+                              <source src="/demos/landing-demo-v2.mp4" type="video/mp4" />
                               Your browser does not support the video tag.
                             </video>
                           </div>
@@ -685,7 +685,7 @@ export default function Home() {
 
 
                   {/* Partnered Schools Section */}
-                  <section className="container mx-auto px-4 sm:px-6 py-12 md:py-24 relative z-10 border-y border-border/5 bg-background/5">
+                  <section className="container mx-auto px-4 sm:px-6 py-12 md:py-24 relative z-10">
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
                       <motion.div
                         className="text-left space-y-4 md:w-1/2"
@@ -1345,8 +1345,8 @@ export default function Home() {
                   playsInline
                   className="w-full h-full object-cover"
                 >
-                  <source src="/demos/landing-demo.webm" type="video/webm" />
-                  <source src="/demos/landing-demo.mp4" type="video/mp4" />
+                  <source src="/demos/landing-demo-v2.webm" type="video/webm" />
+                  <source src="/demos/landing-demo-v2.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>
