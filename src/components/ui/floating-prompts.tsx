@@ -69,7 +69,7 @@ const PromptCard = ({ icon: Icon, userText, aiText, delay, rotation, side, top }
         delay: delay,
         ease: [0.22, 1, 0.36, 1]
       }}
-      className={`absolute w-full max-w-[220px] xl:max-w-[310px] z-[30] pointer-events-auto group ${side === "left" ? "left-4 xl:left-8" : "right-4 xl:right-8"
+      className={`absolute w-full max-w-[180px] xl:max-w-[240px] z-[30] pointer-events-auto group ${side === "left" ? "left-4 xl:left-8" : "right-4 xl:right-8"
         }`}
       style={{ top, perspective: 1200 }}
       onMouseMove={handleMouseMove}
@@ -85,30 +85,30 @@ const PromptCard = ({ icon: Icon, userText, aiText, delay, rotation, side, top }
           rotate: { duration: 7, repeat: Infinity, ease: "easeInOut" }
         }}
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="relative p-4 xl:p-6 rounded-2xl bg-background/65 backdrop-blur-3xl border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-visible group-hover:scale-105 group-hover:bg-background/85 group-hover:border-primary/45 group-hover:shadow-[0_30px_80px_rgba(var(--primary),0.3)] transition-all duration-500 cursor-default"
+        className="relative p-3 xl:p-4 rounded-2xl bg-background/65 backdrop-blur-3xl border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-visible group-hover:scale-105 group-hover:bg-background/85 group-hover:border-primary/45 group-hover:shadow-[0_30px_80px_rgba(var(--primary),0.3)] transition-all duration-500 cursor-default"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
 
         <div style={{ transform: "translateZ(50px)" }} className="relative z-10">
-          <div className="flex items-start gap-4 mb-3 xl:mb-4">
-            <div className="h-9 w-9 xl:h-11 xl:w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 shadow-inner shadow-primary/20 border border-primary/10 transition-colors group-hover:bg-primary/15">
-              <Icon className="h-4 w-4 xl:h-5 xl:w-5 text-primary" />
+          <div className="flex items-start gap-2.5 mb-2 xl:mb-3">
+            <div className="h-7 w-7 xl:h-9 xl:w-9 rounded-[10px] bg-primary/10 flex items-center justify-center shrink-0 shadow-inner shadow-primary/20 border border-primary/10 transition-colors group-hover:bg-primary/15">
+              <Icon className="h-3.5 w-3.5 xl:h-4.5 xl:w-4.5 text-primary" />
             </div>
-            <div className="space-y-1 mt-0.5">
-              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 leading-none">Perspective</p>
-              <p className="text-xs xl:text-sm font-bold text-foreground leading-tight italic pr-2">"{userText}"</p>
+            <div className="space-y-0.5 mt-0.5">
+              <p className="text-[8px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 leading-none">Perspective</p>
+              <p className="text-[10px] xl:text-[12px] font-bold text-foreground leading-tight italic pr-2">"{userText}"</p>
             </div>
           </div>
         </div>
 
-        <div style={{ transform: "translateZ(30px)" }} className="relative z-10 pl-[48px] xl:pl-[56px]">
-          <div className="absolute left-[24px] xl:left-[28px] top-[-10px] bottom-0 w-[1.5px] bg-gradient-to-b from-primary/40 to-transparent" />
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-2">
-              <CruxLogo className="size-2 xl:size-3" />
-              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-primary leading-none font-mono">Crux</p>
+        <div style={{ transform: "translateZ(30px)" }} className="relative z-10 pl-[38px] xl:pl-[46px]">
+          <div className="absolute left-[18px] xl:left-[22px] top-[-10px] bottom-0 w-[1.5px] bg-gradient-to-b from-primary/40 to-transparent" />
+          <div className="space-y-1.5 pt-0.5">
+            <div className="flex items-center gap-1.5">
+              <CruxLogo className="size-2 xl:size-2.5" />
+              <p className="text-[8px] font-black uppercase tracking-[0.25em] text-primary leading-none font-mono">Crux</p>
             </div>
-            <div className="text-[12px] xl:text-[13.5px] font-medium text-muted-foreground/90 leading-relaxed pr-1">
+            <div className="text-[10.5px] xl:text-[12px] font-medium text-muted-foreground/90 leading-relaxed pr-1">
               {typeof aiText === 'string' ? aiText : aiText}
             </div>
           </div>
@@ -129,7 +129,7 @@ export const FloatingPrompts = () => {
       aiText: (
         <>
           I can't give you the answer, but let's look at the free-body diagram first. The sum of forces is:
-          <div className="mt-2.5 py-1.5 px-3 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-sm">
+          <div className="mt-2 py-1 px-2.5 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-xs">
             <InlineMath math="\sum F_y = N - mg \cos \theta = 0" />
           </div>
         </>
@@ -145,7 +145,7 @@ export const FloatingPrompts = () => {
       aiText: (
         <>
           Start with the balance of gravitational and centripetal force:
-          <div className="mt-2.5 py-1.5 px-3 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-sm">
+          <div className="mt-2 py-1 px-2.5 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-xs">
             <InlineMath math="v = \sqrt{\frac{GM}{r}}" />
           </div>
         </>
@@ -162,7 +162,7 @@ export const FloatingPrompts = () => {
       aiText: (
         <>
           Not always. Think about an object on a slope. The normal force component is restricted by:
-          <div className="mt-2.5 py-1.5 px-3 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-sm">
+          <div className="mt-2 py-1 px-2.5 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-xs">
             <InlineMath math="F_n = m \cdot g \cos(\phi)" />
           </div>
         </>
@@ -178,7 +178,7 @@ export const FloatingPrompts = () => {
       aiText: (
         <>
           Recall the condition for constructive interference. The path difference must satisfy:
-          <div className="mt-2.5 py-1.5 px-3 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-sm">
+          <div className="mt-2 py-1 px-2.5 bg-primary/8 rounded-lg border border-primary/20 overflow-x-hidden text-xs">
             <InlineMath math="\Delta L = n\lambda" />
           </div>
         </>

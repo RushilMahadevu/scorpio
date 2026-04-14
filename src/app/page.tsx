@@ -61,7 +61,9 @@ export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly" | "enterprise">("yearly");
+  const [theaterOpen, setTheaterOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -72,6 +74,21 @@ export default function Home() {
 
   const { user, role, profile, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Handle theater mode side effects (scroll lock + escape key)
+  useEffect(() => {
+    if (theaterOpen) {
+      document.body.style.overflow = "hidden";
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setTheaterOpen(false);
+      };
+      window.addEventListener("keydown", handleEsc);
+      return () => {
+        document.body.style.overflow = "unset";
+        window.removeEventListener("keydown", handleEsc);
+      };
+    }
+  }, [theaterOpen]);
 
   // Logged-in users should be able to view the landing page freely, 
   // UNLESS they have the auto-redirect preference enabled.
@@ -106,6 +123,13 @@ export default function Home() {
     restDelta: 0.001
   });
 
+  // Scroll-driven video pitch: starts tilted up (rotateX positive = top toward viewer),
+  // flattens to 0 as user scrolls into the page — classic SaaS hero reveal.
+  const videoPitchRaw = useTransform(scrollYProgress, [0, 0.12], [16, 0]);
+  const videoScaleRaw = useTransform(scrollYProgress, [0, 0.12], [0.92, 1]);
+  const videoPitch = useSpring(videoPitchRaw, { stiffness: 55, damping: 18 });
+  const videoScale = useSpring(videoScaleRaw, { stiffness: 55, damping: 18 });
+
   // Re-sync scroll progress on mount to handle hydration mismatch
   useEffect(() => {
     const syncScroll = () => {
@@ -114,14 +138,30 @@ export default function Home() {
       scrollYProgress.set(initialProgress);
       scaleX.set(initialProgress);
     };
-    
+
     // Initial sync
     syncScroll();
-    
+
     // Secondary sync after a short delay to ensure layout is complete
     const timeout = setTimeout(syncScroll, 100);
     return () => clearTimeout(timeout);
   }, [scrollYProgress, scaleX]);
+
+  useEffect(() => {
+    if (isLoaded && heroVideoRef.current) {
+      const playVideo = async () => {
+        try {
+          if (heroVideoRef.current) {
+            heroVideoRef.current.muted = true;
+            await heroVideoRef.current.play();
+          }
+        } catch (err) {
+          console.warn("Hero video autoplay was blocked or failed", err);
+        }
+      };
+      playVideo();
+    }
+  }, [isLoaded]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -426,7 +466,7 @@ export default function Home() {
 
                 <main className="relative z-10">
                   {/* Hero Section */}
-                  <section id="home" className="relative overflow-hidden min-h-[95vh] flex flex-col items-center justify-center pt-32 md:pt-40 pb-24">
+                  <section id="home" className="relative overflow-hidden min-h-screen flex flex-col items-center justify-start pt-24 md:pt-32 pb-16">
 
                     {/* Atmospheric background */}
                     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
@@ -450,7 +490,7 @@ export default function Home() {
                       </div>
                     )}
 
-                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-8 md:gap-10 relative z-10 -mt-2">
+                    <div className="container mx-auto px-4 sm:px-6 max-w-5xl w-full flex flex-col items-center gap-6 md:gap-8 relative z-10">
 
                       {/* Badge */}
                       <motion.div
@@ -464,7 +504,7 @@ export default function Home() {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                         </div>
-                        <span className="text-[11px] font-black tracking-[0.25em] text-foreground/90 uppercase">Audited by a Ph.D.</span>
+                        <span className="text-[10px] font-black tracking-[0.25em] text-foreground/90 uppercase">Audited by a Ph.D.</span>
                       </motion.div>
 
                       {/* Headline */}
@@ -484,7 +524,7 @@ export default function Home() {
                         }}
                       >
                         <motion.h1
-                          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.05em] text-foreground leading-[0.95] drop-shadow-2xl"
+                          className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] text-foreground leading-[0.9] drop-shadow-2xl"
                           variants={{
                             hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
                             visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
@@ -493,7 +533,7 @@ export default function Home() {
                           Empower Thinking
                         </motion.h1>
                         <motion.h1
-                          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.05em] leading-[0.95]"
+                          className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.05em] leading-[0.9]"
                           variants={{
                             hidden: { opacity: 0, y: 40, filter: "blur(10px)" },
                             visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
@@ -513,7 +553,7 @@ export default function Home() {
 
                       {/* Description */}
                       <motion.p
-                        className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium text-center"
+                        className="text-md md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium text-center"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 1.2, duration: 1, ease: "easeOut" }}
@@ -538,13 +578,13 @@ export default function Home() {
                               </div>
                             </TooltipContent>
                           </Tooltip>
-                          , Scorpio is the Socratic AI platform built to empower the physics classroom. We guide every student through the derivation process, making bypasses impossible and deep thinking inevitable.
+                          , Scorpio is the Socratic AI platform built to empower the physics classroom. We guide the students, you focus on teaching.
                         </TooltipProvider>
                       </motion.p>
 
                       {/* CTAs */}
                       <motion.div
-                        className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative pt-4"
+                        className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto z-20 relative"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: isMobile ? 0.8 : 1.5, duration: 1, ease: "easeOut" }}
@@ -564,41 +604,89 @@ export default function Home() {
                           className="flex-1 w-full sm:w-auto font-bold text-sm px-8 h-12 rounded-full border border-border/60 bg-background/50 backdrop-blur-xl hover:bg-muted/50 cursor-pointer inline-flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.1] text-foreground/80 hover:text-foreground group"
                         >
                           <PlayCircle className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                          Watch Demo
+                          5-Minute Demo
                         </button>
                       </motion.div>
 
-                      {/* Stats strip */}
+                      {/* Scroll-driven pitched card — starts angled, flattens as you scroll */}
                       <motion.div
-                        className="w-full grid grid-cols-2 md:grid-cols-4 gap-px bg-border/40 rounded-2xl overflow-hidden border border-border/40 mt-4"
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                          hidden: {},
-                          visible: { transition: { staggerChildren: 0.08, delayChildren: isMobile ? 1.0 : 1.8 } }
-                        }}
+                        className="w-full mx-auto relative -mt-14 md:-mt-18"
+                        style={{ perspective: "1200px" }}
+                        initial={{ opacity: 0, y: 60 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: isMobile ? 1.2 : 1.8, duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
                       >
-                        {stats.map((stat, i) => (
-                          <motion.div
-                            key={i}
-                            className="flex flex-col items-center justify-center gap-1 py-5 px-4 bg-background/70 backdrop-blur-sm hover:bg-muted/30 transition-colors group"
-                            variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45 } } }}
-                          >
-                            <span className="text-2xl font-black text-foreground tabular-nums">{stat.value}</span>
-                            <span className="text-[11px] font-bold text-foreground/75 leading-tight text-center">{stat.label}</span>
-                            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest text-center">{stat.sublabel}</span>
-                          </motion.div>
-                        ))}
+                        {/* Ambient glow */}
+                        <div className="absolute -inset-12 bg-primary/12 rounded-full blur-[90px] pointer-events-none" />
+                        <div className="absolute -inset-6 bg-primary/7 rounded-[50px] blur-[45px] pointer-events-none" />
+
+                        {/* Clickable pitched card */}
+                        <motion.div
+                          className="relative rounded-2xl overflow-hidden cursor-pointer group"
+                          style={{
+                            rotateX: videoPitch,
+                            scale: videoScale,
+                            transformOrigin: "bottom center",
+                            boxShadow: "0 60px 140px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.12)",
+                          }}
+                          onClick={() => setTheaterOpen(true)}
+                          whileHover={{ boxShadow: "0 60px 160px -20px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.18), inset 0 1px 0 rgba(255,255,255,0.15)" }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {/* Leading-edge rim light */}
+                          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent z-10 pointer-events-none" />
+                          <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/5 to-transparent z-10 pointer-events-none" />
+
+                          {/* Video — exact 1656×1080 ratio */}
+                          <div className="bg-black" style={{ aspectRatio: "1656/1080" }}>
+                            <video
+                              ref={heroVideoRef}
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                              preload="auto"
+                              className="w-full h-full object-cover"
+                              onLoadedMetadata={(e) => {
+                                e.currentTarget.muted = true;
+                              }}
+                            >
+                              <source src="/demos/landing-demo.mp4" type="video/mp4" />
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>
+
+                          {/* Hover theater overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 z-20 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 flex flex-col items-center gap-2">
+                              <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-4 shadow-2xl">
+                                <Maximize2 className="h-7 w-7 text-white" />
+                              </div>
+                              <span className="text-white/80 text-xs font-bold tracking-widest uppercase">Theater Mode</span>
+                            </div>
+                          </div>
+
+                          {/* Bottom vignette */}
+                          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-10" />
+                        </motion.div>
+
+                        {/* Ground plane shadow */}
+                        <div className="absolute inset-x-20 -bottom-8 h-16 bg-primary/20 blur-3xl rounded-full pointer-events-none" />
+                        <div className="absolute inset-x-32 -bottom-3 h-8 bg-black/60 blur-2xl rounded-full pointer-events-none" />
                       </motion.div>
 
                     </div>
 
+                    {/* Bottom blend — fades hero into the next section */}
+                    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background via-background/60 to-transparent pointer-events-none z-20" />
+
                   </section>
+
 
                   {/* Partnered Schools Section */}
                   <section className="container mx-auto px-4 sm:px-6 py-12 md:py-24 relative z-10 border-y border-border/5 bg-background/5">
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
-                      <motion.div 
+                      <motion.div
                         className="text-left space-y-4 md:w-1/2"
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -611,14 +699,14 @@ export default function Home() {
                           Scorpio is partnering with forward-thinking institutions to bring rigorous, Socratic AI into the physics curriculum.
                         </p>
                       </motion.div>
-                      <motion.div 
+                      <motion.div
                         className="md:w-1/2 flex justify-center md:justify-end items-center"
                         initial={{ opacity: 0, x: 20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
                       >
-                        <Link 
+                        <Link
                           href="https://www.sageridge.org/"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -762,10 +850,13 @@ export default function Home() {
                           viewport={{ once: true }}
                         >
                           <video
-                            src="/demos/scorpio-demo.mp4"
                             controls
                             className="w-full h-auto aspect-video cursor-pointer"
-                          />
+                            preload="metadata"
+                          >
+                            <source src="/demos/scorpio-demo.mp4" type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
                         </motion.div>
 
                         <motion.div
@@ -833,7 +924,7 @@ export default function Home() {
 
                       {/* Unified Billing Widget */}
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-6xl mx-auto">
-                        
+
                         {/* Left Column: Context / Image */}
                         <div className="lg:col-span-6 space-y-8">
                           <div className="relative rounded-3xl overflow-hidden border border-border shadow-2xl group bg-muted/40 pb-0">
@@ -1019,37 +1110,37 @@ export default function Home() {
                         viewport={{ once: true }}
                       >
                         <div className="space-y-6">
-                           <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
-                              <Zap className="h-4 w-4" />
-                              Zero Markup Pass-Through
-                           </div>
-                           <h3 className="text-3xl font-black tracking-tight text-foreground">One Platform. Zero EdTech Bloat.</h3>
-                           <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                              Most platforms markup AI costs 500%. We charge a flat fee for the infrastructure and pass raw compute costs directly to you. Every dollar goes into student mastery, not platform margins.
-                           </p>
-                           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {[
-                                "Google Gemini-Flash Rates",
-                                "FERPA & GDPR Infrastructure",
-                                "Department-Wide Syncing",
-                                "Priority Inference Tunnels"
-                              ].map(f => (
-                                <li key={f} className="flex items-center gap-2 text-sm font-bold text-foreground">
-                                   <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                   {f}
-                                </li>
-                              ))}
-                           </ul>
+                          <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
+                            <Zap className="h-4 w-4" />
+                            Zero Markup Pass-Through
+                          </div>
+                          <h3 className="text-3xl font-black tracking-tight text-foreground">One Platform. Zero EdTech Bloat.</h3>
+                          <p className="text-muted-foreground text-lg font-medium leading-relaxed">
+                            Most platforms markup AI costs 500%. We charge a flat fee for the infrastructure and pass raw compute costs directly to you. Every dollar goes into student mastery, not platform margins.
+                          </p>
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[
+                              "Google Gemini-Flash Rates",
+                              "FERPA & GDPR Infrastructure",
+                              "Department-Wide Syncing",
+                              "Priority Inference Tunnels"
+                            ].map(f => (
+                              <li key={f} className="flex items-center gap-2 text-sm font-bold text-foreground">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                           <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
-                              <p className="text-3xl font-black text-primary mb-1">$0.15</p>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Input</p>
-                           </div>
-                           <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
-                              <p className="text-3xl font-black text-primary mb-1">$0.60</p>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Output</p>
-                           </div>
+                          <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
+                            <p className="text-3xl font-black text-primary mb-1">$0.15</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Input</p>
+                          </div>
+                          <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
+                            <p className="text-3xl font-black text-primary mb-1">$0.60</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Output</p>
+                          </div>
                         </div>
                       </motion.div>
 
@@ -1061,10 +1152,10 @@ export default function Home() {
                         transition={{ duration: 0.6 }}
                       >
                         <div className="text-center mb-10">
-                           <h3 className="text-2xl font-bold mb-2 text-foreground italic">The scale difference.</h3>
+                          <h3 className="text-2xl font-bold mb-2 text-foreground italic">The scale difference.</h3>
                         </div>
                         <div className="bg-card/40 backdrop-blur-xl border border-border shadow-2xl rounded-[3rem] p-4 md:p-8">
-                           <CostComparisonChart />
+                          <CostComparisonChart />
                         </div>
                       </motion.div>
 
@@ -1199,6 +1290,67 @@ export default function Home() {
         </AnimatePresence>
       </div>
       {isLoaded && <LandingChatbot />}
+
+      {/* Theater modal — at root to escape filter/transform stacking contexts */}
+      <AnimatePresence>
+        {theaterOpen && (
+          <motion.div
+            className="fixed inset-0 z-[500] flex items-center justify-center p-4 md:p-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Direct Backdrop — handles click to close */}
+            <div
+              className="absolute inset-0 bg-black/98 backdrop-blur-2xl cursor-zoom-out"
+              onClick={() => setTheaterOpen(false)}
+            />
+
+            {/* Content Container */}
+            <motion.div
+              className="relative w-full max-w-[90vw] xl:max-w-7xl z-10"
+              initial={{ scale: 0.95, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 30 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-5 px-1">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <span className="text-[11px] font-black tracking-[0.25em] uppercase text-white/40">Scorpio Production Demo</span>
+                </div>
+
+                <button
+                  onClick={() => setTheaterOpen(false)}
+                  className="flex items-center gap-3 text-white/40 hover:text-white transition-all group cursor-pointer py-1"
+                >
+                  <span className="text-[10px] font-black tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity">Exit Theater</span>
+                  <div className="h-9 w-9 rounded-full bg-white/5 group-hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all group-active:scale-90">
+                    <X className="h-4 w-4" />
+                  </div>
+                </button>
+              </div>
+
+              <div
+                className="rounded-3xl overflow-hidden border border-white/10 shadow-[0_60px_150px_rgba(0,0,0,0.9)] bg-black"
+                style={{ aspectRatio: "1656/1080" }}
+              >
+                <video
+                  autoPlay
+                  controls
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src="/demos/landing-demo.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
