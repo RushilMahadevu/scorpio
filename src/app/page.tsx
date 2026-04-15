@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring, useMotionValue, useTrans
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X, Users, Building2
+  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X, Users, Building2, AlertCircle, Lightbulb, BarChart3
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -170,7 +170,7 @@ export default function Home() {
       setIsScrolled(window.scrollY > 20);
 
       // Determine active section for nav highlight
-      const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing"];
+      const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing", "faq", "cta"];
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -214,13 +214,15 @@ export default function Home() {
             <>
               {/* Sticky Blurred Header */}
               <motion.header
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-                  ? "py-3 bg-background/90 backdrop-blur-2xl border-b border-border/80 shadow-[0_8px_30px_-15px_rgba(0,0,0,0.2)]"
-                  : "py-6 bg-background/0 backdrop-blur-0 border-b border-transparent"
-                  }`}
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 flex flex-col justify-center h-24`}
                 onMouseLeave={() => setHoveredNav(null)}
               >
-                <div className="flex items-center justify-between px-8 max-w-[1500px] mx-auto w-full">
+                {/* Seamless Blur Background */}
+                <div
+                  className={`absolute inset-0 pointer-events-none transition-opacity duration-500 bg-background/50 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_40%,transparent_100%)] ${isScrolled ? "opacity-100" : "opacity-0"}`}
+                />
+                
+                <div className={`relative z-10 flex items-center justify-between px-8 mx-auto w-full max-w-[1500px]`}>
                   {/* Logo Section */}
                   <motion.div
                     initial={{ opacity: 0, filter: "blur(8px)", x: -10 }}
@@ -237,15 +239,13 @@ export default function Home() {
                   </motion.div>
 
                   {/* Unified Desktop Navigation Track */}
-                  <div className="hidden lg:flex items-center p-1.5 bg-muted/20 dark:bg-muted/10 backdrop-blur-xl rounded-full border border-border/50 absolute left-1/2 -translate-x-1/2 shadow-[inset_0_1px_4px_rgba(0,0,0,0.05)]">
+                  <div className={`hidden lg:flex items-center p-1.5 bg-transparent rounded-full border-transparent absolute left-1/2 -translate-x-1/2 transition-transform duration-500 origin-center`}>
                     <nav className="flex items-center gap-1">
                       {[
                         { id: "home", label: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-                        { id: "problem", label: "Problem", target: "problem" },
-                        { id: "solution", label: "Solution", target: "solution" },
-                        { id: "demos", label: "Demos", target: "demos" },
-                        { id: "efficacy", label: "Compare", target: "efficacy" },
+                        { id: "platform", label: "Platform", isDropdown: true },
                         { id: "pricing", label: "Pricing", target: "pricing" },
+                        { id: "faq", label: "FAQ", target: "faq" },
                         { id: "docs", label: "Docs", isDropdown: true },
                       ].map((item, i) => (
                         <motion.button
@@ -268,21 +268,14 @@ export default function Home() {
                             }
                             if (!item.isDropdown) setHoveredNav(null);
                           }}
-                          className={`relative h-11 px-6 text-[15px] font-medium transition-all duration-300 cursor-pointer rounded-full flex items-center gap-1.5 ${activeNav === item.id || hoveredNav === item.id
-                            ? "text-foreground"
+                          className={`relative h-11 px-6 text-[15px] font-medium transition-all duration-300 cursor-pointer rounded-full flex items-center gap-1.5 ${(hoveredNav ? hoveredNav === item.id : activeNav === item.id)
+                            ? "text-primary"
                             : "text-muted-foreground/60 hover:text-foreground"
                             }`}
                         >
-                          {((hoveredNav ? hoveredNav === item.id : activeNav === item.id) && !item.isDropdown) && (
-                            <motion.div
-                              layoutId="nav-pill"
-                              className="absolute inset-0 bg-background shadow-md border border-border/50 rounded-full -z-10"
-                              transition={{ type: "spring", stiffness: 450, damping: 30 }}
-                            />
-                          )}
                           {item.label}
                           {item.isDropdown && (
-                            <ChevronDown className={`h-4 w-4 opacity-50 transition-transform duration-300 ${hoveredNav === "docs" ? "rotate-180" : ""}`} />
+                            <ChevronDown className={`h-4 w-4 opacity-50 transition-transform duration-300 ${hoveredNav === item.id ? "rotate-180" : ""}`} />
                           )}
                         </motion.button>
                       ))}
@@ -294,15 +287,15 @@ export default function Home() {
                     initial={{ opacity: 0, filter: "blur(8px)", x: -10 }}
                     animate={{ opacity: 1, filter: "blur(0px)", x: 0 }}
                     transition={{ duration: 0.8, delay: 1.0, ease: "easeOut" }}
-                    className="flex items-center gap-5"
+                    className="flex items-center gap-4 md:gap-5"
                   >
                     <div className="hidden sm:block hover:bg-muted/30 p-1.5 rounded-full transition-colors order-first">
                       <ModeToggle />
                     </div>
 
-                    <div className="flex items-center p-1 bg-muted/20 dark:bg-muted/10 backdrop-blur-xl rounded-full border border-border/50 shadow-sm">
+                    <div className="flex items-center p-1 bg-transparent rounded-full border-transparent border shadow-none">
                       <Link href="/login" className="hidden sm:block">
-                        <Button variant="ghost" className="h-10 px-6 font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer text-[14px] rounded-full hover:bg-background/40">
+                        <Button variant="ghost" className="h-10 px-6 font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer text-[14px] rounded-full hover:bg-background/10">
                           Login
                         </Button>
                       </Link>
@@ -393,6 +386,71 @@ export default function Home() {
 
                 {/* Mega Menu Panel — lives inside header so no mouse-gap issues */}
                 <AnimatePresence>
+                  {hoveredNav === "platform" && (
+                    <motion.div
+                      key="platform"
+                      initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
+                      transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1200px] border border-border/20 rounded-[2.5rem] bg-background/10 backdrop-blur-[40px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]"
+                    >
+                      <div className="px-8 md:px-12 py-10 md:py-12 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                        {/* Left Column: Context */}
+                        <div className="md:col-span-1 space-y-6">
+                          <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 inline-flex shadow-sm">
+                            <Orbit className="h-7 w-7 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-black tracking-tight">The Scorpio Platform</h3>
+                          <p className="text-[15px] text-muted-foreground leading-relaxed font-medium">
+                            Explore how we solve the pedagogical gap in physics education.
+                          </p>
+                        </div>
+
+                        {/* Right Columns: Links */}
+                        <div className="md:col-span-3">
+                          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-8">Platform Overview</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {[
+                              { target: "problem", label: "The Problem", desc: "Why traditional physics tutors fail.", icon: AlertCircle },
+                              { target: "solution", label: "Our Solution", desc: "Socratic scaffolding in action.", icon: Lightbulb },
+                              { target: "demos", label: "System Demos", desc: "Scorpio in action.", icon: PlayCircle },
+                              { target: "efficacy", label: "Efficacy & Compare", desc: "Data-driven performance metrics.", icon: BarChart3 },
+                            ].map((item, i) => (
+                              <div
+                                key={item.target}
+                                onClick={() => {
+                                  const element = document.getElementById(item.target);
+                                  if (element) {
+                                    const y = element.getBoundingClientRect().top + window.pageYOffset;
+                                    window.scrollTo({ top: y, behavior: "smooth" });
+                                  }
+                                  setHoveredNav(null);
+                                  setActiveNav("platform");
+                                }}
+                              >
+                                <motion.div
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: i * 0.03 + 0.1 }}
+                                  className="flex items-start gap-4 p-5 rounded-[1.5rem] hover:bg-muted/80 transition-all group cursor-pointer border border-transparent hover:border-border/50 shadow-none hover:shadow-lg hover:shadow-black/5"
+                                >
+                                  <div className="h-10 w-10 rounded-[0.9rem] bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                    <item.icon className="h-5 w-5" />
+                                  </div>
+                                  <div className="min-w-0 pt-0.5">
+                                    <p className="text-[15px] font-black text-foreground group-hover:text-primary transition-colors leading-tight mb-1.5">{item.label}</p>
+                                    <p className="text-[11px] text-muted-foreground font-medium leading-snug">{item.desc}</p>
+                                  </div>
+                                </motion.div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {hoveredNav === "docs" && (
                     <motion.div
                       key="docs"
@@ -400,9 +458,9 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                       exit={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
                       transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                      className="absolute top-full left-0 right-0 border-b border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl"
+                      className="absolute top-full left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1200px] border border-border/20 rounded-[2.5rem] bg-background/10 backdrop-blur-[40px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]"
                     >
-                      <div className="container mx-auto px-10 py-12 max-w-[1300px] grid grid-cols-1 md:grid-cols-4 gap-12">
+                      <div className="px-8 md:px-12 py-10 md:py-12 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
                         {/* Left Column: Context */}
                         <div className="md:col-span-1 space-y-6">
                           <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 inline-flex shadow-sm">
@@ -457,14 +515,6 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                {/* Scroll Progress Bar */}
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary origin-left z-50"
-                  style={{ scaleX, originX: 0 }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isScrolled ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                />
               </motion.header>
 
 
@@ -539,7 +589,7 @@ export default function Home() {
                           transition={{ delay: 1.2, duration: 0.5, ease: "easeOut" }}
                         >
                           <TextAnimate animation="blurInUp" by="character" duration={1} delay={2} className="inline-block">
-                            We guide the students, you focus on teaching.
+                            Provide tutoring for every student. Designed for the AI Era.
                           </TextAnimate>
                         </motion.p>
                       </div>
@@ -569,7 +619,7 @@ export default function Home() {
                     </div>
 
                     {/* Centered, Larger Video Container - Pushed UP */}
-                    <div className="container mx-auto px-4 sm:px-6 max-w-7xl w-full mt-4 md:mt-[-50px] relative z-10 flex justify-center">
+                    <div className="container mx-auto px-4 sm:px-6 max-w-7xl w-full md:mt-[-50px] relative z-10 flex justify-center">
                       <motion.div
                         className="w-full relative"
                         style={{ perspective: "1600px" }}

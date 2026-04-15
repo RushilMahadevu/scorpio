@@ -48,7 +48,7 @@ interface TextAnimateProps extends Omit<MotionProps, "children"> {
   /**
    * The text content to animate
    */
-  children: string
+  children: React.ReactNode
   /**
    * The class name to be applied to the component
    */
@@ -345,20 +345,22 @@ const TextAnimateBase = ({
 }: TextAnimateProps) => {
   const MotionComponent = motionElements[Component]
 
+  const textContent = typeof children === "string" ? children : ""
+
   let segments: string[] = []
   switch (by) {
     case "word":
-      segments = children.split(/(\s+)/)
+      segments = textContent.split(/(\s+)/)
       break
     case "character":
-      segments = children.split("")
+      segments = textContent.split("")
       break
     case "line":
-      segments = children.split("\n")
+      segments = textContent.split("\n")
       break
     case "text":
     default:
-      segments = [children]
+      segments = [textContent]
       break
   }
 
