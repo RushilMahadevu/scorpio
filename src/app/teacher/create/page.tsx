@@ -53,6 +53,7 @@ function CollapsibleSection({ title, children, defaultOpen = false }: { title: s
   );
 }
 import { MathInputField } from "@/components/math-input";
+import { SmartDateTimePicker } from "@/components/ui/smart-datetime-picker";
 
 interface Question {
   id: string;
@@ -81,7 +82,7 @@ function CreateAssignmentForm() {
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [timeLimit, setTimeLimit] = useState<number | "">("");
   const [gradingType, setGradingType] = useState<"ai" | "manual">("manual");
   const [visibility, setVisibility] = useState<"private" | "network" | "global">("private");
@@ -369,7 +370,7 @@ function CreateAssignmentForm() {
         organizationId: profile?.organizationId || null,
         visibility,
         courseId: selectedCourseId,
-        dueDate: new Date(dueDate),
+        dueDate: dueDate || new Date(),
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
         gradingType,
         requireWorkSubmission,
@@ -626,14 +627,11 @@ function CreateAssignmentForm() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date <span className="text-destructive">*</span></Label>
-                  <Input
-                    id="dueDate"
-                    type="datetime-local"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    required
+                <div>
+                  <SmartDateTimePicker
+                    value={dueDate?.toISOString()}
+                    onChange={setDueDate}
+                    label="Due Date"
                   />
                 </div>
                 <div className="space-y-2">
@@ -1081,7 +1079,7 @@ function CreateAssignmentForm() {
                 <h2 className="text-3xl font-bold tracking-tight">{title || "Untitled Assignment"}</h2>
                 <p className="text-muted-foreground">{description || "No description provided."}</p>
                 <div className="flex gap-4 text-xs font-medium uppercase tracking-tighter text-muted-foreground pt-2">
-                  <span>Due: {dueDate ? new Date(dueDate).toLocaleString() : "Not set"}</span>
+                  <span>Due: {dueDate ? dueDate.toLocaleString() : "Not set"}</span>
                   {timeLimit && <span>Time Limit: {timeLimit} mins</span>}
                 </div>
               </div>

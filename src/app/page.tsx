@@ -221,7 +221,7 @@ export default function Home() {
                 <div
                   className={`absolute inset-0 pointer-events-none transition-opacity duration-500 bg-background/50 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_40%,transparent_100%)] ${isScrolled ? "opacity-100" : "opacity-0"}`}
                 />
-                
+
                 <div className={`relative z-10 flex items-center justify-between px-8 mx-auto w-full max-w-[1500px]`}>
                   {/* Logo Section */}
                   <motion.div
@@ -596,7 +596,7 @@ export default function Home() {
                           viewport={{ once: true }}
                         >
                           <TextAnimate animation="blurInUp" by="character" duration={.75} delay={1.8} className="inline-block" once>
-                             Deploy tutoring for every student. Designed for the AI Era.
+                            Deploy tutoring for every student. Designed for the AI Era.
                           </TextAnimate>
                         </motion.p>
                       </div>
