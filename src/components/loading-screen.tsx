@@ -155,9 +155,9 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
                   opacity: 0.4, 
                   transition: { delay: 0.8, duration: 0.4 }
                 }}
-                className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/60"
+                className="text-[10px] font-black tracking-[0.4em] text-foreground/60"
               >
-                Verifiable Physics
+                Physics LMS 
               </motion.div>
             </div>
           </div>

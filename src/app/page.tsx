@@ -573,11 +573,17 @@ export default function Home() {
                           initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                          viewport={{ once: true }}
                         >
                           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-[-0.05em] text-foreground leading-[1.05]">
-                            <TextAnimate animation="blurInUp" by="character" duration={1.5} delay={0.3} className="inline-block">
-                              The operating system for physics teachers
+                            <TextAnimate animation="blurIn" by="character" duration={.75} delay={0.3} className="block" once>
+                              The operating system
                             </TextAnimate>
+                            <span className="text-primary block">
+                              <TextAnimate animation="blurIn" by="character" duration={.75} delay={1.05} className="inline-block" once>
+                                for physics teachers
+                              </TextAnimate>
+                            </span>
                           </h1>
                         </motion.div>
 
@@ -586,10 +592,11 @@ export default function Home() {
                           className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
                           initial={{ opacity: 0, y: 15 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 1.2, duration: 0.5, ease: "easeOut" }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                          viewport={{ once: true }}
                         >
-                          <TextAnimate animation="blurInUp" by="character" duration={1} delay={2} className="inline-block">
-                            Provide tutoring for every student. Designed for the AI Era.
+                          <TextAnimate animation="blurInUp" by="character" duration={.75} delay={1.8} className="inline-block" once>
+                             Deploy tutoring for every student. Designed for the AI Era.
                           </TextAnimate>
                         </motion.p>
                       </div>
@@ -599,7 +606,7 @@ export default function Home() {
                         className="flex items-center gap-6 shrink-0 pb-2 md:pb-4 relative z-30"
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 3, duration: 0.5, ease: "easeOut" }}
+                        transition={{ delay: 2.55, duration: 1, ease: "easeOut" }}
                       >
                         <Link href="/request-access">
                           <Button variant="link" className="h-auto p-0 font-medium text-sm text-primary hover:text-primary/80 transition-all flex items-center gap-1.5 group">
@@ -625,7 +632,7 @@ export default function Home() {
                         style={{ perspective: "1600px" }}
                         initial={{ opacity: 0, y: 80 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 3.2, duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ delay: 3.3, duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
                       >
                         {/* Ambient glow */}
                         <div className="absolute -inset-12 bg-primary/12 rounded-full blur-[90px] pointer-events-none" />
