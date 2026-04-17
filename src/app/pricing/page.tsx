@@ -7,16 +7,12 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight, ArrowLeft, Sparkles,
   Info, BookOpen, Mail, Shield, FileText,
-  CheckCircle2, Zap, ShieldCheck, Globe, Lock, Building2, Users, KeyRound, Github
+  CheckCircle2, XCircle, Zap, KeyRound, Github,
+  ShieldCheck, Globe, Lock
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
-import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
-import { useMotionValue, useTransform, animate, motion as m } from "framer-motion";
 import dynamic from "next/dynamic";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
 import { LandingFAQ } from "@/components/landing-faq";
 
 
@@ -25,20 +21,7 @@ const CostComparisonChart = dynamic(() => import("@/components/admin/cost-compar
   loading: () => <div className="h-96 w-full flex items-center justify-center bg-muted/10 rounded-2xl animate-pulse" />,
 });
 
-function AnimatedNumber({ value }: { value: number }) {
-  const count = useMotionValue(value);
-  const rounded = useTransform(count, (latest) => latest.toFixed(2));
-
-  useEffect(() => {
-    const controls = animate(count, value, { duration: 0.5, ease: "easeOut" });
-    return controls.stop;
-  }, [value, count]);
-
-  return <m.span>{rounded}</m.span>;
-}
-
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly" | "enterprise">("yearly");
 
   return (
     <>
@@ -136,182 +119,214 @@ export default function PricingPage() {
           {/* Main Pricing Section */}
           <section className="container mx-auto px-6 pb-24 relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/3 rounded-full blur-[150px] pointer-events-none -z-10" />
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="max-w-6xl mx-auto space-y-12">
 
-              {/* Left Column: Context */}
-              <div className="lg:col-span-6 space-y-8">
-                <div className="relative rounded-3xl overflow-hidden border border-border shadow-2xl group bg-muted/40 pb-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
-                  <Image
-                    src="/plan.jpg"
-                    alt="Platform Preview"
-                    width={800}
-                    height={600}
-                    className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out border-b border-border"
-                    loading="eager"
-                  />
-                  <div className="absolute bottom-6 left-6 right-6 z-20">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-background/95 backdrop-blur-md p-5 rounded-2xl border border-border shadow-lg">
-                      <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                        <Users className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="text-base font-bold text-foreground">One Network. Infinite Seats.</h4>
-                        <p className="text-sm text-muted-foreground mt-0.5">Every student and teacher included.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    { title: "Zero Markup Guarantee", desc: "Pay exactly what Google charges for AI, roughly $0.08 per 250 students." },
-                    { title: "Real-time Mastery Tracking", desc: "Pinpoint struggling concepts instantly across your entire cohort." },
-                    { title: "Automated Workflows", desc: "Free up hours of grading and curriculum alignment every single week." },
-                    { title: "Hard Spend Caps", desc: "Set definitive budget ceilings so you never encounter surprise billing." },
-                  ].map((feature, idx) => (
-                    <div key={idx} className="p-6 rounded-2xl border border-border bg-card/30 backdrop-blur-sm hover:bg-muted/40 transition-colors shadow-sm">
-                      <CheckCircle2 className="h-6 w-6 text-emerald-500 mb-4" />
-                      <h4 className="text-base font-bold mb-2 text-foreground">{feature.title}</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Column: Billing Widget */}
-              <div className="lg:col-span-6 sticky top-24">
+              {/* 3-Card Grid */}
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+              >
+                {/* Free */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="p-8 md:p-10 rounded-[2.5rem] border border-border bg-card shadow-2xl relative overflow-hidden"
+                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                  className="relative p-8 border border-border bg-card/30 backdrop-blur-sm rounded-2xl flex flex-col gap-5 hover:border-primary/20 transition-all duration-300 shadow-sm"
                 >
-                  <div className="absolute -top-10 -right-10 p-6 pointer-events-none opacity-[0.03] dark:opacity-10">
-                    <ShieldCheck className="w-64 h-64 text-foreground" />
-                  </div>
-
-                  <h2 className="text-3xl font-extrabold mb-3 relative z-10 tracking-tight text-foreground">Global License</h2>
-                  <p className="text-muted-foreground text-base mb-10 relative z-10">
-                    Unlock the full power of Scorpio for your entire department.
-                  </p>
-
-                  {/* Billing Cycle Toggle */}
-                  <div className="flex p-1.5 bg-muted rounded-3xl mb-10 relative z-10 overflow-x-auto">
-                    <button
-                      onClick={() => setBillingCycle("monthly")}
-                      className={cn(
-                        "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
-                        billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      onClick={() => setBillingCycle("yearly")}
-                      className={cn(
-                        "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-1.5",
-                        billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      Annual <Badge variant="secondary" className="dark:bg-green-700 bg-green-500 text-white text-[10px]">Save 50%</Badge>
-                    </button>
-                    <button
-                      onClick={() => setBillingCycle("enterprise")}
-                      className={cn(
-                        "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
-                        billingCycle === "enterprise" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      Enterprise
-                    </button>
-                  </div>
-
-                  {billingCycle === "enterprise" ? (
-                    <div className="relative z-10 h-full flex flex-col pt-2 pb-6">
-                      <div className="mb-8 text-center flex-1">
-                        <h3 className="text-3xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500 tracking-tight">Custom Scale</h3>
-                        <p className="text-muted-foreground text-[15px] leading-relaxed mx-auto">
-                          For deployments across multiple networks, we offer custom authentication integrations, dedicated infrastructure SLAs, and volume discounts.
-                        </p>
-                      </div>
-
-                      <ul className="space-y-4 mb-10 bg-background/50 p-6 rounded-2xl border border-border/50">
-                        {[
-                          "Custom SSO Integrations",
-                          "Dedicated Infrastructure",
-                          "Volume Pricing Tiers",
-                          "10+ Network Scale",
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-center gap-4">
-                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                              <Building2 className="h-3.5 w-3.5 text-primary" />
-                            </div>
-                            <span className="text-sm font-semibold text-foreground">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <Button asChild className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground mt-auto">
-                        <a href="mailto:rushil@scorpioedu.org">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Contact Sales via Email</span>
-                            <ArrowRight className="h-5 w-5" />
-                          </div>
-                        </a>
-                      </Button>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/50 rounded-full px-2.5 py-0.5 mb-4">
+                      Free
                     </div>
-                  ) : (
-                    <>
-                      <div className="mb-10 relative z-10">
-                        <div className="flex items-end gap-2 mb-2">
-                          <span className="text-7xl font-black tracking-tighter text-foreground">
-                            $<AnimatedNumber value={billingCycle === "yearly" ? 2.49 : 4.99} />
-                          </span>
-                          <span className="text-muted-foreground font-medium pb-3 text-lg">/mo</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground font-medium">
-                          Billed {billingCycle === "yearly" ? "annually — Save 50% ($29.88/yr)" : "monthly"} as one subscription.
-                        </p>
-                      </div>
-
-                      <ul className="space-y-4 mb-10 relative z-10">
-                        {[
-                          "Everything in Free",
-                          "Unlimited Students & Courses",
-                          "All Integrations with Crux AI",
-                          "Teacher AI Dashboards",
-                          "Network Waypoint Syncing",
-                          "Comprehensive Control of Capacities & Limits",
-                          "Cancel Anytime",
-                        ].map((item, i) => (
-                          <li key={i} className="flex items-center gap-4">
-                            <div className="h-6 w-6 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                            </div>
-                            <span className="text-base font-medium text-foreground">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <Link href="/signup">
-                        <Button className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground relative z-10">
-                          <div className="flex items-center gap-2">
-                            <span>{billingCycle === "yearly" ? "Claim Annual Plan" : "Start Monthly Plan"}</span>
-                            <ArrowRight className="h-5 w-5" />
-                          </div>
-                        </Button>
-                      </Link>
-
-                      <p className="text-xs text-center text-muted-foreground/70 mt-8 relative z-10 leading-relaxed px-4">
-                        Payments are secure and encrypted. Institutions can cancel subscription at any time.
-                      </p>
-                    </>
-                  )}
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-black tracking-tighter">$0</span>
+                      <span className="text-muted-foreground text-base font-medium">/mo</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
+                      Get started with core tools. No credit card required.
+                    </p>
+                  </div>
+                  <ul className="space-y-2.5 flex-1 text-sm">
+                    {["Teacher & Student Accounts", "Basic Course Management", "1 Network Waypoint"].map((f) => (
+                      <li key={f} className="flex items-center gap-3 text-foreground/70 font-medium">
+                        <CheckCircle2 className="h-4 w-4 text-muted-foreground/50 shrink-0" />{f}
+                      </li>
+                    ))}
+                    {["Crux AI Tutor", "AI Grading", "Analytics"].map((f) => (
+                      <li key={f} className="flex items-center gap-3 text-muted-foreground/40 font-medium line-through">
+                        <XCircle className="h-4 w-4 text-muted-foreground/20 shrink-0" />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/signup">
+                    <Button variant="outline" className="cursor-pointer w-full font-black py-6 text-base rounded-xl">
+                      Start Free <ArrowRight className="h-4 w-4 ml-2 opacity-50 inline" />
+                    </Button>
+                  </Link>
                 </motion.div>
-              </div>
+
+                {/* Monthly */}
+                <motion.div
+                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                  className="relative p-8 border border-border bg-card/30 backdrop-blur-sm rounded-2xl flex flex-col gap-5 hover:border-primary/30 transition-all duration-300 shadow-sm"
+                >
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/50 rounded-full px-2.5 py-0.5 mb-4">
+                      Monthly
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-black tracking-tighter">$4.99</span>
+                      <span className="text-muted-foreground text-base font-medium">/mo</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
+                      Full access, cancel anytime.
+                    </p>
+                  </div>
+                  <ul className="space-y-2.5 flex-1 text-sm">
+                    {[
+                      "Everything in Free",
+                      "Unlimited Waypoints",
+                      "Crux AI Tutor",
+                      "AI Grading & Feedback",
+                      "Portfolio Analysis per Student",
+                      "Mastery Analytics",
+                      "Spend Caps & Controls",
+                      "Priority Support",
+                    ].map((f) => (
+                      <li key={f} className="flex items-center gap-3 text-foreground/80 font-medium">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/signup">
+                    <Button className="cursor-pointer w-full bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 font-black py-6 text-base rounded-xl shadow-md">
+                      Get Started <ArrowRight className="h-4 w-4 ml-2 opacity-50 inline" />
+                    </Button>
+                  </Link>
+                </motion.div>
+
+                {/* Annual — highlighted */}
+                <motion.div
+                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                  className="relative p-8 border-2 border-primary bg-primary/[0.02] rounded-2xl flex flex-col gap-5 overflow-hidden transition-all hover:scale-[1.01] duration-300 shadow-lg shadow-primary/5"
+                >
+                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] px-4 py-1.5 font-black uppercase tracking-widest rounded-bl-xl">
+                    Best Value
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary border border-primary/30 bg-primary/5 rounded-full px-2.5 py-0.5 mb-4">
+                      Annual
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-black tracking-tighter">$29.88</span>
+                      <span className="text-muted-foreground text-base font-medium">/yr</span>
+                    </div>
+                    <p className="text-sm text-primary font-bold mt-2 flex items-center gap-1.5">
+                      <Zap className="h-4 w-4" /> $2.49/mo — save $30 a year
+                    </p>
+                  </div>
+                  <ul className="space-y-2.5 flex-1 text-sm">
+                    {[
+                      "Everything in Monthly",
+                      "Unlimited Waypoints",
+                      "Crux AI Tutor",
+                      "AI Grading & Feedback",
+                      "Portfolio Analysis per Student",
+                      "Mastery Analytics",
+                      "Spend Caps & Controls",
+                      "Priority Support",
+                    ].map((f) => (
+                      <li key={f} className="flex items-center gap-3 text-foreground font-bold">
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/signup">
+                    <Button className="cursor-pointer w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 text-base rounded-xl shadow-xl shadow-primary/20">
+                      Claim Annual Plan <ArrowRight className="h-4 w-4 ml-2 inline" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              </motion.div>
+
+              {/* Free vs Standard Comparison Table */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="rounded-2xl border border-border/50 overflow-hidden bg-card/20 backdrop-blur-sm"
+              >
+                {/* Table header */}
+                <div className="grid grid-cols-[1fr_auto_auto] gap-0 border-b border-border/50 bg-muted/10">
+                  <div className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    Feature
+                  </div>
+                  <div className="w-28 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-muted-foreground border-l border-border/30">
+                    Free
+                  </div>
+                  <div className="w-32 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-primary border-l border-border/30 bg-primary/5">
+                    Standard
+                  </div>
+                </div>
+
+                {/* Rows */}
+                {([
+                  { label: "Teacher & Student Accounts",              free: true,  standard: true,  category: "Core" },
+                  { label: "Basic Course Management",                 free: true,  standard: true  },
+                  { label: "Limited Network (1 Waypoint)",            free: true,  standard: true  },
+                  { label: "Crux AI Tutor",                           free: false, standard: true,  category: "AI & Intelligence" },
+                  { label: "AI Assignment Help & Feedback",           free: false, standard: true  },
+                  { label: "AI-Assisted Grading",                     free: false, standard: true  },
+                  { label: "In-depth Portfolio Analysis per Student", free: false, standard: true  },
+                  { label: "Unlimited Waypoints",                     free: false, standard: true,  category: "Network & Analytics" },
+                  { label: "Mastery Analytics Dashboard",             free: false, standard: true  },
+                  { label: "Hard Spend Caps & Budget Controls",       free: false, standard: true  },
+                  { label: "Priority Support",                        free: false, standard: true,  category: "Support" },
+                ] as { label: string; free: boolean; standard: boolean; category?: string }[]).map((feat, i) => (
+                  <div key={i}>
+                    {feat.category && (
+                      <div className="px-6 py-2 bg-muted/20 border-b border-border/30">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          {feat.category}
+                        </span>
+                      </div>
+                    )}
+                    <div className={`grid grid-cols-[1fr_auto_auto] gap-0 border-b border-border/20 last:border-0 transition-colors ${i % 2 === 0 ? "bg-transparent" : "bg-muted/5"}`}>
+                      <div className="px-6 py-3.5 text-sm font-medium text-foreground/80">{feat.label}</div>
+                      <div className="w-28 px-4 py-3.5 flex items-center justify-center border-l border-border/30">
+                        {feat.free
+                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
+                          : <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                      </div>
+                      <div className="w-32 px-4 py-3.5 flex items-center justify-center border-l border-border/30 bg-primary/[0.02]">
+                        {feat.standard
+                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
+                          : <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* CTA row */}
+                <div className="grid grid-cols-[1fr_auto_auto] border-t border-border/40 bg-muted/10">
+                  <div className="px-6 py-5" />
+                  <div className="w-28 px-4 py-5 flex items-center justify-center border-l border-border/30">
+                    <Link href="/signup">
+                      <Button variant="outline" size="sm" className="cursor-pointer font-black text-xs rounded-xl px-4">Free</Button>
+                    </Link>
+                  </div>
+                  <div className="w-32 px-4 py-5 flex items-center justify-center border-l border-border/30 bg-primary/[0.02]">
+                    <Link href="/signup">
+                      <Button size="sm" className="cursor-pointer font-black text-xs rounded-xl bg-primary text-primary-foreground px-4">Get Started</Button>
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+
             </div>
           </section>
+
 
           {/* Zero Markup Deep-Dive */}
           <section className="container mx-auto px-6 pb-24">

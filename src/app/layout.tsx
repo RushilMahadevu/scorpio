@@ -96,39 +96,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* JSON-LD Structured Data for Organization */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "Scorpio",
-              "url": "https://scorpioedu.org",
-              "logo": "https://scorpioedu.org/og-image.png",
-              "sameAs": []
-            })
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              "name": "Scorpio",
-              "applicationCategory": "EducationalApplication",
-              "operatingSystem": "Any",
-              "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "USD"
-              }
-            })
-          }}
-        />
       </head>
-      <body className={`${inter.variable} ${ibmPlexSans.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
         <Providers>
           {children}
         </Providers>
