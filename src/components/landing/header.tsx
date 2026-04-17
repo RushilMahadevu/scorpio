@@ -80,6 +80,13 @@ export function LandingHeader() {
           >
             FAQ
           </button>
+          <Link
+            href="/pricing"
+            onMouseEnter={() => setHoveredNav(null)}
+            className="h-8 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-colors cursor-pointer flex items-center"
+          >
+            Pricing
+          </Link>
         </nav>
 
         {/* Actions */}
@@ -120,19 +127,19 @@ export function LandingHeader() {
                 </div>
                 <div className="space-y-1">
                   <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
-                  {[
-                    { id: "efficacy", label: "Compare", icon: Brain },
-                    { id: "mission", label: "Philosophy", icon: Orbit },
-                    { id: "activity", label: "Activity", icon: Activity },
-                    { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing },
-                    { id: "faq", label: "FAQ", icon: Brain /* MessageCircle was not in imports but Brain is safe placeholder */ },
-                  ].map((item) => (
-                    <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => scrollToElement(item.id)}>
-                      <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
-                      {item.label}
-                    </Button>
-                  ))}
-                </div>
+                    <Link key="pricing" href="/pricing" onClick={() => setMenuOpen(false)}>
+                      <Button variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]">
+                        <div className="p-2 bg-primary/5 rounded-lg"><ChartColumnIncreasing className="h-4 w-4 text-primary" /></div>
+                        Pricing
+                      </Button>
+                    </Link>
+                    { [{ id: "faq", label: "FAQ", icon: Brain }].map((item) => (
+                      <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => scrollToElement(item.id)}>
+                        <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
                 <div className="space-y-1">
                   <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Documentation</span>
                   {[
@@ -225,7 +232,6 @@ export function LandingHeader() {
                       { id: "efficacy", label: "Compare", desc: "Pedagogical methodology and learning outcomes.", icon: Brain },
                       { id: "mission", label: "Philosophy", desc: "The first principles behind constraint-led tutoring.", icon: Orbit },
                       { id: "activity", label: "Development", desc: "Live updates and platform evolution stats.", icon: Activity },
-                      { id: "pricing", label: "Cost & Scale", desc: "Institutional pricing and ROI analysis.", icon: ChartColumnIncreasing },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -241,6 +247,17 @@ export function LandingHeader() {
                         </div>
                       </button>
                     ))}
+                    <Link href="/pricing" onClick={() => setHoveredNav(null)}>
+                      <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer">
+                        <div className="h-8 w-8 rounded-lg bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors mt-0.5">
+                          <ChartColumnIncreasing className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors leading-tight">Cost &amp; Scale</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">Institutional pricing and ROI analysis.</p>
+                        </div>
+                      </div>
+                    </Link>
                   </div>
                 </div>
               )}
