@@ -25,6 +25,22 @@ export default function PricingPage() {
 
   return (
     <>
+      {/* ── Page-reveal wipe: sweeps out from top-right → bottom-left ────── */}
+      <motion.div
+        className="fixed inset-0 z-[200] pointer-events-none"
+        style={{ background: "hsl(var(--background))" }}
+        initial={{ clipPath: "polygon(100% 0%, 100% 0%, 100% 0%)" }}
+        animate={{ clipPath: "polygon(-50% 0%, 100% 0%, 100% 200%)" }}
+        transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1] }}
+      />
+      <motion.div
+        className="fixed inset-0 z-[199] pointer-events-none"
+        style={{ background: "hsl(var(--primary) / 0.08)" }}
+        initial={{ clipPath: "polygon(100% 0%, 100% 0%, 100% 0%)" }}
+        animate={{ clipPath: "polygon(-50% 0%, 100% 0%, 100% 200%)" }}
+        transition={{ duration: 0.65, delay: 0.06, ease: [0.76, 0, 0.24, 1] }}
+      />
+
       <div className="min-h-screen relative font-medium">
         <div className="absolute inset-0 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,transparent,black_10rem,black_calc(100%-10rem),transparent)]">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_20%,transparent_100%)]"></div>

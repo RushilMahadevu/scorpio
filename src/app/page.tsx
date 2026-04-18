@@ -28,6 +28,7 @@ import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 import { Logo } from "@/components/ui/logo";
 import { CruxLogo } from "@/components/ui/crux-logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { SiteHeader } from "@/components/landing/site-header";
 
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -57,13 +58,12 @@ function AnimatedNumber({ value }: { value: number }) {
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState<string>("home");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [theaterOpen, setTheaterOpen] = useState(false);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   const { user, role, profile, loading: authLoading } = useAuth();
@@ -99,13 +99,6 @@ export default function Home() {
 
 
 
-  const scheduleClose = useCallback(() => {
-    closeTimeoutRef.current = setTimeout(() => setHoveredNav(null), 180);
-  }, []);
-
-  const cancelClose = useCallback(() => {
-    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-  }, []);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -201,317 +194,7 @@ export default function Home() {
         <AnimatePresence>
           {isLoaded && (
             <>
-              {/* Sticky Blurred Header */}
-              <motion.header
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 flex flex-col justify-center h-24`}
-                onMouseLeave={() => setHoveredNav(null)}
-              >
-                {/* Seamless Blur Background */}
-                <div
-                  className={`absolute inset-0 pointer-events-none transition-opacity duration-500 bg-background/50 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_40%,transparent_100%)] ${isScrolled ? "opacity-100" : "opacity-0"}`}
-                />
-
-                <div className={`relative z-10 flex items-center justify-between px-8 mx-auto w-full max-w-[1500px]`}>
-                  {/* Logo Section */}
-                  <motion.div
-                    initial={{ opacity: 0, filter: "blur(8px)", x: -10 }}
-                    animate={{ opacity: 1, filter: "blur(0px)", x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-                  >
-                    <Link href="/" className="flex items-center gap-4 group shrink-0">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-700 opacity-0 group-hover:opacity-100" />
-                        <Logo size={24} className="text-foreground relative z-10 group-hover:rotate-[20deg] transition-transform duration-500" />
-                      </div>
-                      <span className="font-inter text-xl font-black tracking-tighter group-hover:text-primary transition-colors">Scorpio</span>
-                    </Link>
-                  </motion.div>
-
-                  {/* Unified Desktop Navigation Track */}
-                  <div className={`hidden lg:flex items-center p-1.5 bg-transparent rounded-full border-transparent absolute left-1/2 -translate-x-1/2 transition-transform duration-500 origin-center`}>
-                    <nav className="flex items-center gap-1">
-                      {[
-                        { id: "home", label: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-                        { id: "platform", label: "Platform", isDropdown: true },
-                        { id: "pricing", label: "Pricing", action: () => router.push("/pricing") },
-                        { id: "faq", label: "FAQ", target: "faq" },
-                        { id: "docs", label: "Docs", isDropdown: true },
-                      ].map((item, i) => (
-                        <motion.button
-                          key={item.id}
-                          initial={{ opacity: 0, filter: "blur(8px)", x: -10 }}
-                          animate={{ opacity: 1, filter: "blur(0px)", x: 0 }}
-                          transition={{ duration: 0.8, delay: 0.2 + i * 0.1, ease: "easeOut" }}
-                          onMouseEnter={() => setHoveredNav(item.id)}
-                          onClick={() => {
-                            if (!item.isDropdown) setActiveNav(item.id);
-                            if (item.action) {
-                              item.action();
-                            } else if (item.target) {
-                              const element = document.getElementById(item.target);
-                              if (element) {
-                                const yOffset = 0;
-                                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                                window.scrollTo({ top: y, behavior: "smooth" });
-                              }
-                            }
-                            if (!item.isDropdown) setHoveredNav(null);
-                          }}
-                          className={`relative h-11 px-6 text-[15px] font-medium transition-all duration-300 cursor-pointer rounded-full flex items-center gap-1.5 ${(hoveredNav ? hoveredNav === item.id : activeNav === item.id)
-                            ? "text-primary"
-                            : "text-muted-foreground/60 hover:text-foreground"
-                            }`}
-                        >
-                          {item.label}
-                          {item.isDropdown && (
-                            <ChevronDown className={`h-4 w-4 opacity-50 transition-transform duration-300 ${hoveredNav === item.id ? "rotate-180" : ""}`} />
-                          )}
-                        </motion.button>
-                      ))}
-                    </nav>
-                  </div>
-
-                  {/* Right-side Actions Group */}
-                  <motion.div
-                    initial={{ opacity: 0, filter: "blur(8px)", x: -10 }}
-                    animate={{ opacity: 1, filter: "blur(0px)", x: 0 }}
-                    transition={{ duration: 0.8, delay: 1.0, ease: "easeOut" }}
-                    className="flex items-center gap-4 md:gap-5"
-                  >
-                    <div className="hidden sm:block hover:bg-muted/30 p-1.5 rounded-full transition-colors order-first">
-                      <ModeToggle />
-                    </div>
-
-                    <div className="flex items-center p-1 bg-transparent rounded-full border-transparent border shadow-none">
-                      <Link href="/login" className="hidden sm:block">
-                        <Button variant="ghost" className="h-10 px-6 font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer text-[14px] rounded-full hover:bg-background/10">
-                          Login
-                        </Button>
-                      </Link>
-
-                      <div className="w-px h-5 bg-border/50 mx-1 hidden sm:block" />
-
-                      <Link href="/signup">
-                        <Button
-                          className="h-10 font-black px-8 rounded-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.03] active:scale-[0.97] transition-all shadow-[0_4px_15px_-4px_rgba(var(--primary),0.3)] text-[14px]"
-                        >
-                          Sign up
-                        </Button>
-                      </Link>
-                    </div>
-
-                    <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                      <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="lg:hidden h-11 w-11 hover:bg-muted/50 rounded-full border border-border/40 ml-1 shadow-sm" aria-label="Open menu">
-                          <Menu className="h-6 w-6" />
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-full max-w-[280px] sm:max-w-sm h-full flex flex-col z-50 p-0 bg-background shadow-2xl lg:hidden border-l border-border/40" hideClose>
-                        <div className="flex items-center justify-between px-6 py-6 border-b">
-                          <span className="font-extrabold text-xl">Menu</span>
-                          <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setMenuOpen(false)} className="rounded-full hover:bg-accent h-10 w-10">
-                            <span className="sr-only">Close menu</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </Button>
-                        </div>
-                        <nav className="flex flex-col space-y-6 px-6 py-8 flex-1 overflow-y-auto">
-                          <div className="space-y-1">
-                            <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Platform</span>
-                            {[
-                              { id: "home", label: "Home", icon: Globe, action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-                              { id: "problem", label: "Problem", icon: AlertTriangle },
-                              { id: "demos", label: "Demos", icon: PlayCircle },
-                            ].map((item) => (
-                              <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { if (item.action) { item.action(); } else { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); } setMenuOpen(false); }}>
-                                <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
-                                {item.label}
-                              </Button>
-                            ))}
-                          </div>
-                          <div className="space-y-1">
-                            <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Institutional</span>
-                            <Link key="pricing" href="/pricing" onClick={() => setMenuOpen(false)} className="w-full">
-                              <Button variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]">
-                                <div className="p-2 bg-primary/5 rounded-lg"><ChartColumnIncreasing className="h-4 w-4 text-primary" /></div>
-                                Pricing
-                              </Button>
-                            </Link>
-                            {[
-                              { id: "efficacy", label: "Compare", icon: Brain },
-                              { id: "faq", label: "FAQ", icon: MessageCircle },
-                            ].map((item) => (
-                              <Button key={item.id} variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]" onClick={() => { const el = document.getElementById(item.id); if (el) el.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); }}>
-                                <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
-                                {item.label}
-                              </Button>
-                            ))}
-                          </div>
-                          <div className="space-y-1">
-                            <span className="px-2 text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-3 block">Documentation</span>
-                            {[
-                              { label: "About Scorpio", href: "/about", icon: Info },
-                              { label: "Research & Methodology", href: "/research", icon: Brain },
-                              { label: "Request Access", href: "/request-access", icon: KeyRound },
-                              { label: "Contact Support", href: "/contact", icon: Mail },
-                              { label: "Privacy Policy", href: "/privacy", icon: Shield },
-                              { label: "Terms of Service", href: "/terms", icon: FileText },
-                            ].map((item) => (
-                              <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
-                                <Button variant="ghost" className="justify-start font-semibold text-muted-foreground hover:text-primary text-base px-2 py-3 rounded-xl w-full text-left flex items-center gap-4 transition-all hover:bg-primary/5 active:scale-[0.98]">
-                                  <div className="p-2 bg-primary/5 rounded-lg"><item.icon className="h-4 w-4 text-primary" /></div>
-                                  {item.label}
-                                </Button>
-                              </Link>
-                            ))}
-                          </div>
-                        </nav>
-                        <div className="px-6 pb-6 pt-4 border-t bg-muted/5">
-                          <div className="flex flex-col gap-2">
-                            <Link href="/login"><Button variant="outline" size="lg" className="w-full font-medium cursor-pointer">Login</Button></Link>
-                            <Link href="/signup"><Button size="lg" className="h-11 w-full font-semibold cursor-pointer">Sign up</Button></Link>
-                          </div>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-                  </motion.div>
-                </div>
-
-                {/* Mega Menu Panel — lives inside header so no mouse-gap issues */}
-                <AnimatePresence>
-                  {hoveredNav === "platform" && (
-                    <motion.div
-                      key="platform"
-                      initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
-                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
-                      transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1200px] border border-border/20 rounded-[2.5rem] bg-background/10 backdrop-blur-[40px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]"
-                    >
-                      <div className="px-8 md:px-12 py-10 md:py-12 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
-                        {/* Left Column: Context */}
-                        <div className="md:col-span-1 space-y-6">
-                          <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 inline-flex shadow-sm">
-                            <Orbit className="h-7 w-7 text-primary" />
-                          </div>
-                          <h3 className="text-xl font-black tracking-tight">The Scorpio Platform</h3>
-                          <p className="text-[15px] text-muted-foreground leading-relaxed font-medium">
-                            Explore how we solve the pedagogical gap in physics education.
-                          </p>
-                        </div>
-
-                        {/* Right Columns: Links */}
-                        <div className="md:col-span-3">
-                          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-8">Platform Overview</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {[
-                              { target: "problem", label: "The Problem", desc: "Why traditional physics tutors fail.", icon: AlertCircle },
-                              { target: "solution", label: "Our Solution", desc: "Socratic scaffolding in action.", icon: Lightbulb },
-                              { target: "demos", label: "System Demos", desc: "Scorpio in action.", icon: PlayCircle },
-                              { target: "efficacy", label: "Efficacy & Compare", desc: "Data-driven performance metrics.", icon: BarChart3 },
-                            ].map((item, i) => (
-                              <div
-                                key={item.target}
-                                onClick={() => {
-                                  const element = document.getElementById(item.target);
-                                  if (element) {
-                                    const y = element.getBoundingClientRect().top + window.pageYOffset;
-                                    window.scrollTo({ top: y, behavior: "smooth" });
-                                  }
-                                  setHoveredNav(null);
-                                  setActiveNav("platform");
-                                }}
-                              >
-                                <motion.div
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: i * 0.03 + 0.1 }}
-                                  className="flex items-start gap-4 p-5 rounded-[1.5rem] hover:bg-muted/80 transition-all group cursor-pointer border border-transparent hover:border-border/50 shadow-none hover:shadow-lg hover:shadow-black/5"
-                                >
-                                  <div className="h-10 w-10 rounded-[0.9rem] bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                                    <item.icon className="h-5 w-5" />
-                                  </div>
-                                  <div className="min-w-0 pt-0.5">
-                                    <p className="text-[15px] font-black text-foreground group-hover:text-primary transition-colors leading-tight mb-1.5">{item.label}</p>
-                                    <p className="text-[11px] text-muted-foreground font-medium leading-snug">{item.desc}</p>
-                                  </div>
-                                </motion.div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {hoveredNav === "docs" && (
-                    <motion.div
-                      key="docs"
-                      initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
-                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" }}
-                      transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1200px] border border-border/20 rounded-[2.5rem] bg-background/10 backdrop-blur-[40px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]"
-                    >
-                      <div className="px-8 md:px-12 py-10 md:py-12 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
-                        {/* Left Column: Context */}
-                        <div className="md:col-span-1 space-y-6">
-                          <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 inline-flex shadow-sm">
-                            <BookOpen className="h-7 w-7 text-primary" />
-                          </div>
-                          <h3 className="text-xl font-black tracking-tight">Scorpio Docs</h3>
-                          <p className="text-[15px] text-muted-foreground leading-relaxed font-medium">
-                            Comprehensive guides and institutional research documentation for the Scorpio ecosystem.
-                          </p>
-                          <div className="pt-2">
-                            <Link href="/about" onClick={() => setHoveredNav(null)}>
-                              <Button variant="link" className="p-0 h-auto text-primary text-sm font-bold gap-1 group">
-                                Explore Mission <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
-
-                        {/* Right Columns: Links */}
-                        <div className="md:col-span-3">
-                          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-8">Documentation Modules</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {[
-                              { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
-                              { href: "/research", label: "Research & Methodology", desc: "Deep dive into the Crux Socratic architecture.", icon: Brain },
-                              { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
-                              { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
-                              { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },
-                              { href: "/terms", label: "Terms of Service", desc: "Institutional and usage terms.", icon: FileText },
-                            ].map((item, i) => (
-                              <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>
-                                <motion.div
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: i * 0.03 + 0.1 }}
-                                  className="flex items-start gap-4 p-5 rounded-[1.5rem] hover:bg-muted/80 transition-all group cursor-pointer border border-transparent hover:border-border/50 shadow-none hover:shadow-lg hover:shadow-black/5"
-                                >
-                                  <div className="h-10 w-10 rounded-[0.9rem] bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                                    <item.icon className="h-5 w-5" />
-                                  </div>
-                                  <div className="min-w-0 pt-0.5">
-                                    <p className="text-[15px] font-black text-foreground group-hover:text-primary transition-colors leading-tight mb-1.5">{item.label}</p>
-                                    <p className="text-[11px] text-muted-foreground font-medium leading-snug">{item.desc}</p>
-                                  </div>
-                                </motion.div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-              </motion.header>
-
-
+              <SiteHeader activeSection={activeNav} />
 
               {/* Page wrapper with animation */}
               <motion.div
