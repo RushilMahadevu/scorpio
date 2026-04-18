@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-export type FontOption = "inter" | "ibm-plex-sans" | "verdana" | "roboto-mono" | "opendyslexic";
+export type FontOption = "inter" | "ibm-plex-sans" | "verdana" | "roboto-mono" | "pt-serif" | "atkinson";
 export type ThemeColor = "default" | "ocean" | "violet" | "rose" | "amber" | "emerald" | "midnight" | "custom";
 
 interface AppearanceContextType {
@@ -23,7 +23,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 
   React.useEffect(() => {
     const storedFont = localStorage.getItem("app-font") as FontOption;
-    if (storedFont && ["inter", "ibm-plex-sans", "verdana", "roboto-mono", "opendyslexic"].includes(storedFont)) {
+    if (storedFont && ["inter", "ibm-plex-sans", "verdana", "roboto-mono", "pt-serif", "atkinson"].includes(storedFont)) {
       setFontState(storedFont);
     }
     
@@ -68,7 +68,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     const html = document.documentElement;
     
     // Manage Font Classes
-    const fontClasses = ["font-inter", "font-ibm-plex-sans", "font-verdana", "font-roboto-mono", "font-opendyslexic"];
+    const fontClasses = ["font-inter", "font-ibm-plex-sans", "font-verdana", "font-roboto-mono", "font-pt-serif", "font-atkinson"];
     html.classList.remove(...fontClasses);
     html.classList.add(`font-${font}`);
     

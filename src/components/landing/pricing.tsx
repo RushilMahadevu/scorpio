@@ -15,23 +15,23 @@ const CostComparisonChart = dynamic(() => import("@/components/admin/cost-compar
 
 const FEATURES: { label: string; free: boolean; standard: boolean; category?: string }[] = [
   // Core
-  { label: "Teacher & Student Accounts",         free: true,  standard: true,  category: "Core" },
-  { label: "Basic Course Management",            free: true,  standard: true  },
-  { label: "Limited Network (1 Waypoint)",       free: true,  standard: true  },
+  { label: "Teacher & Student Accounts", free: true, standard: true, category: "Core" },
+  { label: "Basic Course Management", free: true, standard: true },
+  { label: "Limited Network (1 Waypoint)", free: true, standard: true },
 
   // AI
-  { label: "Crux AI Tutor",                      free: false, standard: true,  category: "AI & Intelligence" },
-  { label: "AI Assignment Help & Feedback",      free: false, standard: true  },
-  { label: "AI-Assisted Grading",                free: false, standard: true  },
+  { label: "Crux AI Tutor", free: false, standard: true, category: "AI & Intelligence" },
+  { label: "AI Assignment Help & Feedback", free: false, standard: true },
+  { label: "AI-Assisted Grading", free: false, standard: true },
   { label: "In-depth Portfolio Analysis per Student", free: false, standard: true },
 
   // Network
-  { label: "Unlimited Waypoints",                free: false, standard: true,  category: "Network & Analytics" },
-  { label: "Mastery Analytics Dashboard",        free: false, standard: true  },
-  { label: "Hard Spend Caps & Budget Controls",  free: false, standard: true  },
+  { label: "Unlimited Waypoints", free: false, standard: true, category: "Network & Analytics" },
+  { label: "Mastery Analytics Dashboard", free: false, standard: true },
+  { label: "Hard Spend Caps & Budget Controls", free: false, standard: true },
 
   // Support
-  { label: "Priority Support",                   free: false, standard: true,  category: "Support" },
+  { label: "Priority Support", free: false, standard: true, category: "Support" },
 ];
 
 function Check({ ok }: { ok: boolean }) {
@@ -91,10 +91,10 @@ export function Pricing() {
           transition={{ delay: 0.1 }}
         >
           {[
-            { value: "98%",   label: "cheaper than industry average at scale" },
+            { value: "98%", label: "cheaper than industry average at scale" },
             { value: "$0.08", label: "effective per-student cost at 250 students" },
-            { value: "∞",     label: "students on one flat subscription" },
-            { value: "0×",    label: "markup on Google DeepMind AI costs" },
+            { value: "∞", label: "students on one flat subscription" },
+            { value: "0×", label: "markup on Google DeepMind AI costs" },
           ].map((stat, i) => (
             <div key={i} className="flex items-baseline gap-2.5">
               <span className="text-3xl font-black tracking-tighter text-foreground">{stat.value}</span>
@@ -263,9 +263,8 @@ export function Pricing() {
                 </div>
               )}
               <div
-                className={`grid grid-cols-[1fr_auto_auto] gap-0 border-b border-border/20 last:border-0 transition-colors ${
-                  i % 2 === 0 ? "bg-transparent" : "bg-muted/5"
-                }`}
+                className={`grid grid-cols-[1fr_auto_auto] gap-0 border-b border-border/20 last:border-0 transition-colors ${i % 2 === 0 ? "bg-transparent" : "bg-muted/5"
+                  }`}
               >
                 <div className="px-6 py-3.5 text-sm font-medium text-foreground/80">
                   {feat.label}
@@ -314,10 +313,10 @@ export function Pricing() {
               <h4 className="font-black text-sm">What You Unlock</h4>
             </div>
             {[
-              { title: "Always-on Crux AI",     desc: "No throttling during finals, midterms, or late-night study sessions." },
-              { title: "Department Waypoints",   desc: "One curriculum, synchronized instantly across every teacher in your network." },
-              { title: "Mastery Analytics",      desc: "See exactly who's falling behind before it becomes a grade problem." },
-              { title: "Hard Spend Caps",        desc: "Set monthly AI cost ceilings so you never get a surprise bill." },
+              { title: "Always-on Crux AI", desc: "No throttling during finals, midterms, or late-night study sessions." },
+              { title: "Department Waypoints", desc: "One curriculum, synchronized instantly across every teacher in your network." },
+              { title: "Mastery Analytics", desc: "See exactly who's falling behind before it becomes a grade problem." },
+              { title: "Hard Spend Caps", desc: "Set monthly AI cost ceilings so you never get a surprise bill." },
             ].map((item, i) => (
               <div key={i} className="space-y-0.5">
                 <h5 className="font-bold text-xs text-foreground">{item.title}</h5>

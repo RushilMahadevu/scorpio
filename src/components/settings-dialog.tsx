@@ -610,6 +610,18 @@ export function SettingsDialog() {
                     </div>
                     <div
                       className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("pt-serif")}
+                    >
+                      <RadioGroupItem value="pt-serif" id="font-pt-serif" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'var(--font-pt-serif), serif' }}>
+                          <Label htmlFor="font-pt-serif" className="font-medium">PT Serif</Label>
+                          <p className="text-xs text-muted-foreground">Classic, elegant, and scholarly serif</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
                       onClick={() => setFont("roboto-mono")}
                     >
                       <RadioGroupItem value="roboto-mono" id="font-roboto-mono" />
@@ -622,13 +634,13 @@ export function SettingsDialog() {
                     </div>
                     <div
                       className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                      onClick={() => setFont("opendyslexic")}
+                      onClick={() => setFont("atkinson")}
                     >
-                      <RadioGroupItem value="opendyslexic" id="font-opendyslexic" />
+                      <RadioGroupItem value="atkinson" id="font-atkinson" />
                       <div className="flex items-center gap-2">
-                        <div style={{ fontFamily: 'OpenDyslexic, sans-serif' }}>
-                          <Label htmlFor="font-opendyslexic" className="font-medium">OpenDyslexic</Label>
-                          <p className="text-xs text-muted-foreground">Designed for readability</p>
+                        <div style={{ fontFamily: 'var(--font-atkinson), sans-serif' }}>
+                          <Label htmlFor="font-atkinson" className="font-medium">Atkinson Hyperlegible</Label>
+                          <p className="text-xs text-muted-foreground">High-contrast, dyslexic-friendly design</p>
                         </div>
                       </div>
                     </div>

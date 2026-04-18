@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, IBM_Plex_Sans, Roboto_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Sans, Roboto_Mono, PT_Serif, Atkinson_Hyperlegible } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -14,6 +14,22 @@ const inter = Inter({
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
   weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
+
+const ptSerif = PT_Serif({
+  variable: "--font-pt-serif",
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
+
+const atkinson = Atkinson_Hyperlegible({
+  variable: "--font-atkinson",
+  weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
   preload: true,
@@ -97,7 +113,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
       </head>
-      <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${ptSerif.variable} ${atkinson.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
         <Providers>
           {children}
         </Providers>

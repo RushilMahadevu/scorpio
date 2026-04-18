@@ -161,8 +161,9 @@ html.lenis {
   --font-inter: var(--font-inter);
   --font-ibm-plex-sans: var(--font-ibm-plex-sans);
   --font-roboto-mono: var(--font-roboto-mono);
+  --font-pt-serif: var(--font-pt-serif);
+  --font-atkinson: var(--font-atkinson);
   --font-verdana: Verdana, Geneva, sans-serif;
-  --font-opendyslexic: "OpenDyslexic", sans-serif;
   --font-sans: var(--font-ibm-plex-sans);
   --font-mono: var(--font-roboto-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -375,23 +376,13 @@ html.lenis {
     font-family: var(--font-roboto-mono), ui-monospace, SFMono-Regular, monospace;
   }
 
-  html.font-opendyslexic body {
-    font-family: "OpenDyslexic", sans-serif;
+  html.font-pt-serif body {
+    font-family: var(--font-pt-serif), Georgia, Cambria, "Times New Roman", Times, serif;
   }
-}
 
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Bold.otf') format('opentype');
-  font-weight: bold;
-  font-style: normal;
+  html.font-atkinson body {
+    font-family: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  }
 }
 
 /* Theme transition */

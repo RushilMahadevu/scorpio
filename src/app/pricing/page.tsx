@@ -272,17 +272,17 @@ export default function PricingPage() {
 
                 {/* Rows */}
                 {([
-                  { label: "Teacher & Student Accounts",              free: true,  standard: true,  category: "Core" },
-                  { label: "Basic Course Management",                 free: true,  standard: true  },
-                  { label: "Limited Network (1 Waypoint)",            free: true,  standard: true  },
-                  { label: "Crux AI Tutor",                           free: false, standard: true,  category: "AI & Intelligence" },
-                  { label: "AI Assignment Help & Feedback",           free: false, standard: true  },
-                  { label: "AI-Assisted Grading",                     free: false, standard: true  },
-                  { label: "In-depth Portfolio Analysis per Student", free: false, standard: true  },
-                  { label: "Unlimited Waypoints",                     free: false, standard: true,  category: "Network & Analytics" },
-                  { label: "Mastery Analytics Dashboard",             free: false, standard: true  },
-                  { label: "Hard Spend Caps & Budget Controls",       free: false, standard: true  },
-                  { label: "Priority Support",                        free: false, standard: true,  category: "Support" },
+                  { label: "Teacher & Student Accounts", free: true, standard: true, category: "Core" },
+                  { label: "Basic Course Management", free: true, standard: true },
+                  { label: "Limited Network (1 Waypoint)", free: true, standard: true },
+                  { label: "Crux AI Tutor", free: false, standard: true, category: "AI & Intelligence" },
+                  { label: "AI Assignment Help & Feedback", free: false, standard: true },
+                  { label: "AI-Assisted Grading", free: false, standard: true },
+                  { label: "In-depth Portfolio Analysis per Student", free: false, standard: true },
+                  { label: "Unlimited Waypoints", free: false, standard: true, category: "Network & Analytics" },
+                  { label: "Mastery Analytics Dashboard", free: false, standard: true },
+                  { label: "Hard Spend Caps & Budget Controls", free: false, standard: true },
+                  { label: "Priority Support", free: false, standard: true, category: "Support" },
                 ] as { label: string; free: boolean; standard: boolean; category?: string }[]).map((feat, i) => (
                   <div key={i}>
                     {feat.category && (
