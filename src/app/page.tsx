@@ -61,18 +61,10 @@ export default function Home() {
   const [activeNav, setActiveNav] = useState<string>("home");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const [theaterOpen, setTheaterOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const { user, role, profile, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -536,17 +528,7 @@ export default function Home() {
                     {/* Atmospheric background */}
                     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
                       {/* Reduced glow on mobile to save performance */}
-                      {isMobile ? (
-                        <>
-                          <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[80px] rounded-full" />
-                        </>
-                      ) : (
-                        <>
-                          <div className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 blur-[160px] rounded-full" />
-                          <div className="absolute top-[10%] left-[5%] w-[400px] h-[300px] bg-primary/5 blur-[120px] rounded-full" />
-                          <div className="absolute bottom-[10%] right-[5%] w-[450px] h-[350px] bg-primary/5 blur-[130px] rounded-full" />
-                        </>
-                      )}
+                      <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[80px] rounded-full" />
                     </div>
 
                     {/* Remove FloatingPrompts for a cleaner, linear-like look */}
@@ -590,7 +572,7 @@ export default function Home() {
                         </motion.div>
 
                         {/* Description */}
-                        <motion.p
+                        <motion.div
                           className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
                           initial={{ opacity: 0, y: 15 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -600,7 +582,7 @@ export default function Home() {
                           <TextAnimate animation="blurInUp" by="character" duration={.75} delay={1.8} className="inline-block" once>
                             Deploy tutoring for every student. Designed for the AI Era.
                           </TextAnimate>
-                        </motion.p>
+                        </motion.div>
                       </div>
 
                       {/* Right: Subtle CTAs */}
@@ -739,6 +721,8 @@ export default function Home() {
                             width={240}
                             height={100}
                             className="object-contain dark:brightness-0 dark:invert transition-all"
+                            style={{ width: "auto", height: "auto" }}
+                            priority
                           />
                         </Link>
                       </motion.div>
@@ -838,12 +822,10 @@ export default function Home() {
                     </div>
                   </section>
 
-                  {/* Solution Flowchart Section - Only on Desktop */}
-                  {!isMobile && (
-                    <div id="solution">
-                      <SolutionFlowchart />
-                    </div>
-                  )}
+                  {/* Solution Flowchart Section */}
+                  <div id="solution">
+                    <SolutionFlowchart />
+                  </div>
 
                   {/* See It Work Section (Merged Demo + Dashboard) */}
                   <section id="demos" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
