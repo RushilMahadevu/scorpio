@@ -12,7 +12,7 @@
 
 import { type LucideIcon } from "lucide-react";
 import { Cloud, Code, Cpu, Globe, Lock, Zap, AlertTriangle, Brain, Shield } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "framer-motion";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -32,25 +32,25 @@ export interface SpotlightItem {
 }
 
 const DEFAULT_ITEMS: SpotlightItem[] = [
-    {
-      title: "Solution Leakage",
-      description: "ChatGPT and Gemini prioritize the 'Final Answer,' effectively making homework a game of copy-paste instead of derivation.",
-      icon: AlertTriangle,
-      color: "#ef4444"
-    },
-    {
-      title: "The 'Black Box' Student",
-      description: "When students rely on unconstrained AI, instructors lose all insight into the actual learning gaps and misconceptions.",
-      icon: Brain,
-      color: "#ef4444"
-    },
-    {
-      title: "Academic Dishonesty",
-      description: "Degrees lose value when procedural mastery can be faked. Scorpio restores the integrity of the physics curriculum.",
-      icon: Shield,
-      color: "#ef4444"
-    },
-  ];
+  {
+    title: "Solution Leakage",
+    description: "ChatGPT and Gemini prioritize the 'Final Answer,' effectively making homework a game of copy-paste instead of derivation.",
+    icon: AlertTriangle,
+    color: "#ef4444"
+  },
+  {
+    title: "The 'Black Box' Student",
+    description: "When students rely on unconstrained AI, instructors lose all insight into the actual learning gaps and misconceptions.",
+    icon: Brain,
+    color: "#ef4444"
+  },
+  {
+    title: "Academic Dishonesty",
+    description: "Degrees lose value when procedural mastery can be faked. Scorpio restores the integrity of the physics curriculum.",
+    icon: Shield,
+    color: "#ef4444"
+  },
+];
 
 // ─── Card ────────────────────────────────────────────────────────────────────────
 
@@ -74,6 +74,12 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
   const rotateX = useSpring(rawRotateX, TILT_SPRING);
   const rotateY = useSpring(rawRotateY, TILT_SPRING);
   const glowOpacity = useSpring(0, GLOW_SPRING);
+
+  const mouseX = useTransform(normX, [0, 1], [0, 100]);
+  const mouseY = useTransform(normY, [0, 1], [0, 100]);
+
+  const spotlightBg = useMotionTemplate`radial-gradient(ellipse at ${mouseX}% ${mouseY}%, ${item.color}14, transparent 65%)`;
+  const focusBg = useMotionTemplate`radial-gradient(ellipse at ${mouseX}% ${mouseY}%, ${item.color}2e, transparent 65%)`;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = cardRef.current;
@@ -106,11 +112,11 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
       className={cn(
         "group relative flex flex-col gap-5 overflow-hidden rounded-[2rem] border p-8",
         // Light
-        "border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
+        "border-zinc-200/50 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
         // Dark
-        "dark:border-white/6 dark:bg-white/3 dark:shadow-none",
+        "dark:border-white/5 dark:bg-white/3 dark:shadow-none",
         "transition-[border-color] duration-300",
-        "hover:border-zinc-300 dark:hover:border-red-500/30"
+        "hover:border-zinc-300"
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -122,13 +128,13 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
         transformPerspective: 900,
       }}
       transition={{ duration: 0.18, ease: "easeOut" }}
+      whileHover={{ borderColor: `${item.color}50` }}
     >
-      {/* Static accent tint — always visible */}
-      <div
+      <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
-          background: `radial-gradient(ellipse at 20% 20%, ${item.color}14, transparent 65%)`,
+          background: spotlightBg,
         }}
       />
 
@@ -138,7 +144,7 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
         className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
           opacity: glowOpacity,
-          background: `radial-gradient(ellipse at 20% 20%, ${item.color}2e, transparent 65%)`,
+          background: focusBg,
         }}
       />
 
@@ -202,12 +208,12 @@ export default function SpotlightCards({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden px-0",
+        "relative w-full px-0",
         className
       )}
     >
       {/* Card grid */}
-      <div className={cn("relative grid grid-cols-1 md:grid-cols-3 gap-6", gridClassName)}>
+      <div className={cn("relative grid grid-cols-1 md:grid-cols-3 gap-6 p-4", gridClassName)}>
         {items.map((item) => (
           <Card
             dimmed={hoveredTitle !== null && hoveredTitle !== item.title}

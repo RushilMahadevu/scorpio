@@ -12,7 +12,7 @@
 
 import { type LucideIcon } from "lucide-react";
 import { Cloud, Code, Cpu, Globe, Lock, Zap } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate } from "motion/react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -99,6 +99,12 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
   const rotateY = useSpring(rawRotateY, TILT_SPRING);
   const glowOpacity = useSpring(0, GLOW_SPRING);
 
+  const mouseX = useTransform(normX, [0, 1], [0, 100]);
+  const mouseY = useTransform(normY, [0, 1], [0, 100]);
+
+  const spotlightBg = useMotionTemplate`radial-gradient(ellipse at ${mouseX}% ${mouseY}%, ${item.color}14, transparent 65%)`;
+  const focusBg = useMotionTemplate`radial-gradient(ellipse at ${mouseX}% ${mouseY}%, ${item.color}2e, transparent 65%)`;
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = cardRef.current;
     if (!el) {
@@ -130,11 +136,11 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
       className={cn(
         "group relative flex flex-col gap-5 overflow-hidden rounded-2xl border p-6",
         // Light
-        "border-zinc-200 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
+        "border-zinc-200/50 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
         // Dark
-        "dark:border-white/6 dark:bg-white/3 dark:shadow-none",
+        "dark:border-white/5 dark:bg-white/3 dark:shadow-none",
         "transition-[border-color] duration-300",
-        "hover:border-zinc-300 dark:hover:border-white/14"
+        "hover:border-zinc-300"
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -146,23 +152,22 @@ const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
         transformPerspective: 900,
       }}
       transition={{ duration: 0.18, ease: "easeOut" }}
+      whileHover={{ borderColor: `${item.color}50` }}
     >
-      {/* Static accent tint — always visible */}
-      <div
+      <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
-          background: `radial-gradient(ellipse at 20% 20%, ${item.color}14, transparent 65%)`,
+          background: spotlightBg,
         }}
       />
 
-      {/* Hover glow layer */}
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
           opacity: glowOpacity,
-          background: `radial-gradient(ellipse at 20% 20%, ${item.color}2e, transparent 65%)`,
+          background: focusBg,
         }}
       />
 
@@ -227,7 +232,7 @@ export default function SpotlightCards({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-2xl px-8 pt-9 pb-10",
+        "relative w-full rounded-2xl px-4 pt-9 pb-10",
         "bg-white dark:bg-[#06060f]",
         className
       )}
@@ -254,7 +259,7 @@ export default function SpotlightCards({
       </div>
 
       {/* Card grid */}
-      <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-3 p-4">
         {items.map((item) => (
           <Card
             dimmed={hoveredTitle !== null && hoveredTitle !== item.title}
