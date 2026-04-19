@@ -15,6 +15,7 @@ import {
   Sparkles,
   Layers
 } from "lucide-react";
+import SpotlightCards from "@/components/ui/spotlight-cards";
 
 const steps = [
   {
@@ -108,63 +109,18 @@ export function SolutionFlowchart() {
           {/* Connecting Lines (Desktop) */}
           <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent hidden lg:block -translate-y-1/2 -z-10" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 relative">
-            {steps.map((step, i) => (
-              <motion.div
-                key={step.id}
-                className="relative group"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15, duration: 0.6 }}
-              >
-                {/* Connector for mobile/tablet */}
-                {i < steps.length - 1 && (
-                  <div className="absolute left-1/2 -bottom-10 w-px h-10 bg-gradient-to-b from-border to-transparent lg:hidden -translate-x-1/2" />
-                )}
-
-                <div className={`p-8 rounded-[2.5rem] border ${step.borderColor} bg-card/40 backdrop-blur-xl hover:bg-card/60 transition-all duration-500 flex flex-col items-center text-center h-full group-hover:shadow-2xl ${step.glowColor}`}>
-
-                  {/* Icon Node */}
-                  <div className={`h-16 w-16 rounded-2xl ${step.bgColor} flex items-center justify-center mb-8 relative group-hover:scale-110 transition-transform duration-500`}>
-                    <step.icon className={`h-8 w-8 ${step.color}`} />
-
-                    {/* Pulsing ring */}
-                    <div className={`absolute inset-0 rounded-2xl ${step.bgColor} animate-ping opacity-20`} />
-                  </div>
-
-                  {/* Step indicator */}
-                  <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-3">
-                    Layer {i + 1}
-                  </div>
-
-                  <h3 className="text-xl font-extrabold tracking-tight mb-4 group-hover:text-primary transition-colors">
-                    {step.title}
-                  </h3>
-
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed mb-8">
-                    {step.description}
-                  </p>
-
-                  <ul className="space-y-3 w-full pt-6 border-t border-border/40">
-                    {step.features.map((feature, j) => (
-                      <li key={j} className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider text-foreground/70">
-                        <CheckCircle2 className={`h-3 w-3 ${step.color}`} />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Arrow between steps (Desktop) */}
-                {i < steps.length - 1 && (
-                  <div className="absolute top-1/2 -right-6 -translate-y-1/2 z-10 hidden lg:block text-muted-foreground/30">
-                    <ArrowRight className="h-6 w-6" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
+          <SpotlightCards
+            gridClassName="md:grid-cols-2 lg:grid-cols-4"
+            items={steps.map(step => ({
+              title: step.title,
+              description: step.description,
+              icon: step.icon as any,
+              color: step.id === "step-1" ? "#f87171" :
+                     step.id === "step-2" ? "#fb923c" :
+                     step.id === "step-3" ? "#60a5fa" :
+                     "#4ade80"
+            }))}
+          />
         </div>
 
         {/* The Differentiator Section */}

@@ -29,6 +29,7 @@ import { Logo } from "@/components/ui/logo";
 import { CruxLogo } from "@/components/ui/crux-logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/landing/site-header";
+import SpotlightCards from "@/components/ui/spotlight-cards";
 
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -449,45 +450,7 @@ export default function Home() {
                         </motion.p>
                       </div>
 
-                      <div className="grid md:grid-cols-3 gap-6">
-                        {[
-                          {
-                            title: "Solution Leakage",
-                            desc: "ChatGPT and Gemini prioritize the 'Final Answer,' effectively making homework a game of copy-paste instead of derivation.",
-                            icon: AlertTriangle,
-                            color: "red"
-                          },
-                          {
-                            title: "The 'Black Box' Student",
-                            desc: "When students rely on unconstrained AI, instructors lose all insight into the actual learning gaps and misconceptions.",
-                            icon: Brain,
-                            color: "red"
-                          },
-                          {
-                            title: "Academic Dishonesty",
-                            desc: "Degrees lose value when procedural mastery can be faked. Scorpio restores the integrity of the physics curriculum.",
-                            icon: Shield,
-                            color: "red"
-                          },
-                        ].map((item, i) => (
-                          <motion.div
-                            key={i}
-                            className="p-8 rounded-[2rem] border border-border/50 bg-card/30 backdrop-blur-xl hover:border-red-500/30 transition-all text-left space-y-5 group relative overflow-hidden"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                          >
-                            <div className="h-12 w-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 dark:text-red-400 group-hover:bg-red-900 group-hover:text-white transition-all duration-300">
-                              <item.icon className="h-6 w-6" />
-                            </div>
-                            <div className="space-y-2">
-                              <h3 className="text-xl font-black tracking-tight">{item.title}</h3>
-                              <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
+                      <SpotlightCards />
 
                       <motion.div
                         className="pt-4 flex justify-center"
