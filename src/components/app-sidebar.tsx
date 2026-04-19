@@ -10,7 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut,
-  LucideIcon,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,

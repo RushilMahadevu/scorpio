@@ -10,7 +10,7 @@
  * @github https://github.com/kokonut-labs/kokonutui
  */
 
-import type { LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import { Cloud, Code, Cpu, Globe, Lock, Zap } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
@@ -85,7 +85,7 @@ interface CardProps {
   onHoverEnd: () => void;
 }
 
-function Card({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) {
+const Card = ({ item, dimmed, onHoverStart, onHoverEnd }: CardProps) => {
   const Icon = item.icon;
   const cardRef = useRef<HTMLDivElement>(null);
 
