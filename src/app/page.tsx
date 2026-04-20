@@ -22,7 +22,7 @@ import { LandingChatbot } from "@/components/landing-chatbot";
 import { LandingFAQ } from "@/components/landing-faq";
 import { Comparison } from "@/components/landing/comparison";
 import { LayerEfficacyChart } from "@/components/landing/layer-efficacy-chart";
-import { SystemAccordion } from "@/components/system-accordion";
+
 import { FloatingPrompts } from "@/components/ui/floating-prompts";
 import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 import { Logo } from "@/components/ui/logo";
@@ -30,6 +30,7 @@ import { CruxLogo } from "@/components/ui/crux-logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/landing/site-header";
 import SpotlightCards from "@/components/ui/spotlight-cards";
+import { FeatureSection } from "@/components/feature-section";
 
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -283,13 +284,12 @@ export default function Home() {
                           </Button>
                         </Link>
                         <div className="w-px h-4 bg-primary/20 hidden md:block" />
-                        <button
-                          type="button"
-                          onClick={() => { const el = document.getElementById("demos"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
+                        <Link
+                          href="/demos"
                           className=" cursor-pointer text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-2 group"
                         >
                           5-Minute Demo
-                        </button>
+                        </Link>
                       </motion.div>
                     </div>
 
@@ -473,55 +473,17 @@ export default function Home() {
                     <SolutionFlowchart />
                   </div>
 
-                  {/* See It Work Section (Merged Demo + Dashboard) */}
-                  <section id="demos" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
+                  {/* Feature Section (Bento Grid) */}
+                  <section id="features" className="container mx-auto px-4 sm:px-6 py-16 md:py-32 relative">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[140px] pointer-events-none -z-10" />
 
                     <div className="max-w-6xl mx-auto space-y-16">
                       <div className="text-center space-y-4">
-                        <motion.div
-                          className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs font-bold tracking-[0.2em] uppercase text-primary"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                        >
-                          <MonitorPlay className="h-3.5 w-3.5" />
-                          <span>See It In Action</span>
-                        </motion.div>
-                        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">System Demonstrations.</h2>
-                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">Verify mastery through real-time observability and pedagogical scaffolding.</p>
+                        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Our <span className="text-primary">Features</span></h2>
+                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">Everything you need to scale verifiable Socratic learning in your institution.</p>
                       </div>
 
-                      <div className="grid lg:grid-cols-1 gap-6 lg:gap-12 items-center">
-                        <motion.div
-                          className="relative rounded-3xl overflow-hidden border border-border/60 bg-black/40 shadow-2xl"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                        >
-                          <video
-                            controls
-                            className="w-full h-auto aspect-video cursor-pointer"
-                            preload="metadata"
-                          >
-                            <source src="/demos/scorpio-demo.webm" type="video/webm" />
-                            <source src="/demos/scorpio-demo.mp4" type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
-                        </motion.div>
-
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          <div className="text-center space-y-4 mb-8">
-                            <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Scan Our Features.</h3>
-                            <p className="text-muted-foreground text-base max-w-xl mx-auto font-medium">Explore the unified ecosystem of features designed for physics education.</p>
-                          </div>
-                          <SystemAccordion />
-                        </motion.div>
-                      </div>
+                      <FeatureSection />
                     </div>
                   </section>
 

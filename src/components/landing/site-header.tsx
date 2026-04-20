@@ -17,6 +17,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Brain,
+  Sparkles,
   Calculator,
   KeyRound,
   MessageCircle,
@@ -216,8 +217,9 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
   }, [transitioning, router]);
 
   const navItems: NavItem[] = [
-    { id: "home", label: "Home", action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+    { id: "home", label: "Home", action: () => activeSection === "home" ? window.scrollTo({ top: 0, behavior: "smooth" }) : navigateWithTransition("/") },
     { id: "platform", label: "Platform", isDropdown: true },
+    { id: "demos", label: "Demos", isExternal: true, action: () => navigateWithTransition("/demos") },
     { id: "pricing", label: "Pricing", isExternal: true, action: () => navigateWithTransition("/pricing") },
     { id: "faq", label: "FAQ", target: "faq" },
     { id: "docs", label: "Docs", isDropdown: true },
@@ -226,7 +228,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
   const platformItems = [
     { target: "problem", label: "The Problem", desc: "Why traditional physics tutors fail.", icon: AlertCircle },
     { target: "solution", label: "Our Solution", desc: "Socratic scaffolding in action.", icon: Lightbulb },
-    { target: "demos", label: "System Demos", desc: "Scorpio in action.", icon: PlayCircle },
+    { target: "features", label: "Features", desc: "Key features of Scorpio.", icon: Sparkles },
     { target: "efficacy", label: "Efficacy & Compare", desc: "Data-driven performance metrics.", icon: BarChart3 },
   ];
 
@@ -241,140 +243,151 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
 
   return (
     <>
-    <motion.header
-      className="fixed top-0 left-0 right-0 z-50 flex flex-col justify-center"
-      onMouseLeave={scheduleClose}
-    >
-      {/* ── Backdrop ────────────────────────────────────────────────────────── */}
-      <div
-        className={cn(
-          "absolute inset-0 pointer-events-none transition-all duration-500",
-          "bg-background/60 backdrop-blur-2xl",
-          "[mask-image:linear-gradient(to_bottom,black_50%,transparent_100%)]",
-          isScrolled ? "opacity-100" : "opacity-0"
-        )}
-      />
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 flex flex-col justify-center"
+        onMouseLeave={scheduleClose}
+      >
+        {/* ── Backdrop ────────────────────────────────────────────────────────── */}
+        <div
+          className={cn(
+            "absolute inset-0 pointer-events-none transition-all duration-500",
+            "bg-background/60 backdrop-blur-2xl",
+            "[mask-image:linear-gradient(to_bottom,black_50%,transparent_100%)]",
+            isScrolled ? "opacity-100" : "opacity-0"
+          )}
+        />
 
-      {/* Hairline border that appears on scroll */}
-      <div
-        className={cn(
-          "absolute inset-x-0 bottom-0 h-px bg-border/30 transition-opacity duration-500",
-          isScrolled ? "opacity-100" : "opacity-0"
-        )}
-      />
+        {/* Hairline border that appears on scroll */}
+        <div
+          className={cn(
+            "absolute inset-x-0 bottom-0 h-px bg-border/30 transition-opacity duration-500",
+            isScrolled ? "opacity-100" : "opacity-0"
+          )}
+        />
 
-      {/* ── Inner Row ───────────────────────────────────────────────────────── */}
-      <div className={cn(
-        "relative z-10 flex items-center justify-between px-6 md:px-10 mx-auto w-full max-w-[1500px] transition-all duration-500 ease-in-out",
-        isScrolled ? "h-[50px]" : "h-[64px]"
-      )}>
+        {/* ── Inner Row ───────────────────────────────────────────────────────── */}
+        <div className={cn(
+          "relative z-10 flex items-center justify-between px-6 md:px-10 mx-auto w-full max-w-[1500px] transition-all duration-500 ease-in-out",
+          isScrolled ? "h-[50px]" : "h-[64px]"
+        )}>
 
-        {/* Logo */}
-        <motion.div
-          animate={{ 
-            opacity: 1, 
-            x: 0, 
-            filter: "blur(0px)",
-            scale: isScrolled ? 0.94 : 1 
-          }}
-          initial={{ opacity: 0, x: -10, filter: "blur(6px)" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/25 blur-xl rounded-full scale-0 group-hover:scale-150
+          {/* Logo */}
+          <motion.div
+            animate={{
+              opacity: 1,
+              x: 0,
+              filter: "blur(0px)",
+              scale: isScrolled ? 0.94 : 1
+            }}
+            initial={{ opacity: 0, x: -10, filter: "blur(6px)" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Link href="/" onClick={(e) => {
+              if (activeSection !== "home") {
+                e.preventDefault();
+                navigateWithTransition("/");
+              }
+            }} className="flex items-center gap-2.5 group shrink-0">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/25 blur-xl rounded-full scale-0 group-hover:scale-150
                               transition-transform duration-700 opacity-0 group-hover:opacity-100" />
-              <Logo
-                size={22}
-                className="text-foreground relative z-10 group-hover:rotate-[25deg] transition-transform duration-500"
-              />
-            </div>
-            <span className="font-black text-[15px] tracking-[-0.03em] text-foreground
+                <Logo
+                  size={22}
+                  className="text-foreground relative z-10 group-hover:rotate-[25deg] transition-transform duration-500"
+                />
+              </div>
+              <span className="font-black text-[15px] tracking-[-0.03em] text-foreground
                              group-hover:text-primary transition-colors duration-200 !font-inter">
-              Scorpio
-            </span>
-          </Link>
-        </motion.div>
-
-        {/* ── Desktop Nav ──────────────────────────────────────────────────── */}
-        <motion.nav
-          animate={{ scale: isScrolled ? 0.94 : 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2"
-          onMouseEnter={cancelClose}
-        >
-          {navItems.map((item, i) => (
-            <NavLink
-              key={item.id}
-              item={item}
-              isActive={!hoveredNav && activeNav === item.id}
-              isHovered={hoveredNav === item.id}
-              delay={0.1 + i * 0.07}
-              onMouseEnter={() => {
-                cancelClose();
-                setHoveredNav(item.id);
-              }}
-              onClick={() => {
-                if (!item.isDropdown) {
-                  setActiveNav(item.id);
-                  setHoveredNav(null);
-                }
-                if (item.action) item.action();
-                else if (item.target) scrollToSection(item.target);
-              }}
-            />
-          ))}
-        </motion.nav>
-
-        {/* ── Right Actions ────────────────────────────────────────────────── */}
-        <motion.div
-          animate={{ 
-            opacity: 1, 
-            x: 0, 
-            filter: "blur(0px)",
-            scale: isScrolled ? 0.94 : 1
-          }}
-          initial={{ opacity: 0, x: 10, filter: "blur(6px)" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center gap-2"
-        >
-          <div className="hidden sm:flex items-center">
-            <ModeToggle />
-          </div>
-
-          {/* Divider */}
-          <div className="hidden sm:block w-px h-4 bg-border/40 mx-1" />
-
-          <Link href="/login" className="hidden sm:block">
-            <button className="relative group px-3 py-1.5 text-[13px] font-medium text-muted-foreground
-                               hover:text-foreground transition-colors duration-200 cursor-pointer">
-              Login
-              <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
-                <span className="block h-full w-0 bg-foreground group-hover:w-full
-                                 transition-all duration-250 ease-out" />
+                Scorpio
               </span>
-            </button>
-          </Link>
+            </Link>
+          </motion.div>
 
-          <Link href="/signup">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="relative h-8 px-4 text-[13px] font-semibold rounded-full
+          {/* ── Desktop Nav ──────────────────────────────────────────────────── */}
+          <motion.nav
+            animate={{ scale: isScrolled ? 0.94 : 1 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2"
+            onMouseEnter={cancelClose}
+          >
+            {navItems.map((item, i) => (
+              <NavLink
+                key={item.id}
+                item={item}
+                isActive={!hoveredNav && activeNav === item.id}
+                isHovered={hoveredNav === item.id}
+                delay={0.1 + i * 0.07}
+                onMouseEnter={() => {
+                  cancelClose();
+                  setHoveredNav(item.id);
+                }}
+                onClick={() => {
+                  if (!item.isDropdown) {
+                    setActiveNav(item.id);
+                    setHoveredNav(null);
+                  }
+                  if (item.action) item.action();
+                  else if (item.target) {
+                    if (activeSection === "home") {
+                      scrollToSection(item.target);
+                    } else {
+                      navigateWithTransition("/#" + item.target);
+                    }
+                  }
+                }}
+              />
+            ))}
+          </motion.nav>
+
+          {/* ── Right Actions ────────────────────────────────────────────────── */}
+          <motion.div
+            animate={{
+              opacity: 1,
+              x: 0,
+              filter: "blur(0px)",
+              scale: isScrolled ? 0.94 : 1
+            }}
+            initial={{ opacity: 0, x: 10, filter: "blur(6px)" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="flex items-center gap-2"
+          >
+            <div className="hidden sm:flex items-center">
+              <ModeToggle />
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block w-px h-4 bg-border/40 mx-1" />
+
+            <Link href="/login" className="hidden sm:block">
+              <button className="relative group px-3 py-1.5 text-[13px] font-medium text-muted-foreground
+                               hover:text-foreground transition-colors duration-200 cursor-pointer">
+                Login
+                <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
+                  <span className="block h-full w-0 bg-foreground group-hover:w-full
+                                 transition-all duration-250 ease-out" />
+                </span>
+              </button>
+            </Link>
+
+            <Link href="/signup">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="relative h-8 px-4 text-[13px] font-semibold rounded-full
                          bg-foreground text-background cursor-pointer overflow-hidden
                          shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]
                          transition-shadow duration-200 hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]"
-            >
-              {/* Shimmer sweep */}
-              <span className="absolute inset-0 translate-x-[-110%] group-hover:translate-x-[110%]
+              >
+                {/* Shimmer sweep */}
+                <span className="absolute inset-0 translate-x-[-110%] group-hover:translate-x-[110%]
                                bg-gradient-to-r from-transparent via-white/20 to-transparent
                                transition-transform duration-700 ease-out pointer-events-none" />
-              Sign up
-            </motion.button>
-          </Link>
-        </motion.div>
+                Sign up
+              </motion.button>
+            </Link>
+          </motion.div>
 
-        {/* Mobile hamburger */}
+          {/* Mobile hamburger */}
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <Button
@@ -409,13 +422,16 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                 {[
                   {
                     label: "Platform", items: [
-                      { id: "home", label: "Home", icon: Globe, action: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+                      { id: "home", label: "Home", icon: Globe, action: () => {
+                          if (activeSection === "home") window.scrollTo({ top: 0, behavior: "smooth" });
+                          else navigateWithTransition("/");
+                      }},
                       { id: "problem", label: "Problem", icon: AlertTriangle },
-                      { id: "demos", label: "Demos", icon: PlayCircle },
                     ]
                   },
                   {
                     label: "Institutional", items: [
+                      { id: "demos", label: "Demos", icon: PlayCircle, href: "/demos" },
                       { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing, href: "/pricing" },
                       { id: "efficacy", label: "Compare", icon: Brain },
                       { id: "faq", label: "FAQ", icon: MessageCircle },
@@ -433,9 +449,15 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                                    font-medium text-muted-foreground hover:text-foreground
                                    hover:bg-muted/50 transition-all duration-150 cursor-pointer text-left"
                         onClick={() => {
-                          if (item.href) router.push(item.href);
+                          if (item.href) {
+                            if (activeSection !== "home") navigateWithTransition(item.href);
+                            else router.push(item.href);
+                          }
                           else if (item.action) item.action();
-                          else scrollToSection(item.id);
+                          else {
+                            if (activeSection === "home") scrollToSection(item.id);
+                            else navigateWithTransition("/#" + item.id);
+                          }
                           setMenuOpen(false);
                         }}
                       >
@@ -478,127 +500,142 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
           </Sheet>
         </div>
 
-      {/* ── Mega Menus ──────────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {hoveredNav === "platform" && (
-          <motion.div
-            key="platform-menu"
-            initial={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            onMouseEnter={cancelClose}
-            onMouseLeave={scheduleClose}
-            className="absolute top-full left-1/2 -translate-x-1/2 mt-1
+        {/* ── Mega Menus ──────────────────────────────────────────────────────── */}
+        <AnimatePresence>
+          {hoveredNav === "platform" && (
+            <motion.div
+              key="platform-menu"
+              initial={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              onMouseEnter={cancelClose}
+              onMouseLeave={scheduleClose}
+              className="absolute top-full left-1/2 -translate-x-1/2 mt-1
                        w-[calc(100%-3rem)] max-w-[880px]
                        bg-background/80 backdrop-blur-2xl border border-border/30
                        rounded-2xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.4)]
                        overflow-hidden"
-          >
-            {/* Top accent line */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            >
+              {/* Top accent line */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-            <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8">
-              {/* Left */}
-              <div className="space-y-4">
-                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Orbit className="h-4.5 w-4.5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-black tracking-tight text-foreground">The Platform</h3>
-                  <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
-                    Explore how Scorpio solves the pedagogical gap in physics education.
-                  </p>
-                </div>
-                <div className="pt-1">
-                  <button
-                    onClick={() => { scrollToSection("solution"); setHoveredNav(null); }}
-                    className="group flex items-center gap-1 text-[12px] font-semibold text-primary
+              <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8">
+                {/* Left */}
+                <div className="space-y-4">
+                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Orbit className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-black tracking-tight text-foreground">The Platform</h3>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
+                      Explore how Scorpio solves the pedagogical gap in physics education.
+                    </p>
+                  </div>
+                  <div className="pt-1">
+                    <button
+                      onClick={() => {
+                        setHoveredNav(null);
+                        if (activeSection === "home") {
+                          scrollToSection("solution");
+                        } else {
+                          navigateWithTransition("/#solution");
+                        }
+                      }}
+                      className="group flex items-center gap-1 text-[12px] font-semibold text-primary
                                hover:text-primary/80 transition-colors cursor-pointer"
-                  >
-                    Explore system
-                    <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                    >
+                      Explore system
+                      <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Grid */}
-              <div className="grid grid-cols-2 gap-2">
-                {platformItems.map((item, i) => (
-                  <MegaMenuCard
-                    key={item.target}
-                    icon={item.icon}
-                    label={item.label}
-                    desc={item.desc}
-                    delay={i * 0.04}
-                    onClick={() => {
-                      scrollToSection(item.target);
-                      setHoveredNav(null);
-                      setActiveNav("platform");
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {hoveredNav === "docs" && (
-          <motion.div
-            key="docs-menu"
-            initial={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            onMouseEnter={cancelClose}
-            onMouseLeave={scheduleClose}
-            className="absolute top-full left-1/2 -translate-x-1/2 mt-1
-                       w-[calc(100%-3rem)] max-w-[880px]
-                       bg-background/80 backdrop-blur-2xl border border-border/30
-                       rounded-2xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.4)]
-                       overflow-hidden"
-          >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
-            <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8">
-              {/* Left */}
-              <div className="space-y-4">
-                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="h-4.5 w-4.5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-black tracking-tight text-foreground">Documentation</h3>
-                  <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
-                    Comprehensive guides and institutional research for the Scorpio ecosystem.
-                  </p>
-                </div>
-                <Link href="/about" onClick={() => setHoveredNav(null)}>
-                  <button className="group flex items-center gap-1 text-[12px] font-semibold text-primary
-                                     hover:text-primary/80 transition-colors cursor-pointer">
-                    Explore mission
-                    <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </Link>
-              </div>
-
-              {/* Grid */}
-              <div className="grid grid-cols-2 gap-2">
-                {docsItems.map((item, i) => (
-                  <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>
+                {/* Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  {platformItems.map((item, i) => (
                     <MegaMenuCard
+                      key={item.target || item.href}
                       icon={item.icon}
                       label={item.label}
                       desc={item.desc}
                       delay={i * 0.04}
+                      onClick={() => {
+                        setHoveredNav(null);
+                        if (item.href) {
+                          navigateWithTransition(item.href);
+                        } else if (item.target) {
+                          if (activeSection === "home") {
+                            scrollToSection(item.target);
+                            setActiveNav("platform");
+                          } else {
+                            navigateWithTransition("/#" + item.target);
+                          }
+                        }
+                      }}
                     />
-                  </Link>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+            </motion.div>
+          )}
+
+          {hoveredNav === "docs" && (
+            <motion.div
+              key="docs-menu"
+              initial={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8, scale: 0.98, filter: "blur(8px)" }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              onMouseEnter={cancelClose}
+              onMouseLeave={scheduleClose}
+              className="absolute top-full left-1/2 -translate-x-1/2 mt-1
+                       w-[calc(100%-3rem)] max-w-[880px]
+                       bg-background/80 backdrop-blur-2xl border border-border/30
+                       rounded-2xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.4)]
+                       overflow-hidden"
+            >
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+
+              <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8">
+                {/* Left */}
+                <div className="space-y-4">
+                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <BookOpen className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-black tracking-tight text-foreground">Documentation</h3>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed mt-1">
+                      Comprehensive guides and institutional research for the Scorpio ecosystem.
+                    </p>
+                  </div>
+                  <Link href="/about" onClick={() => setHoveredNav(null)}>
+                    <button className="group flex items-center gap-1 text-[12px] font-semibold text-primary
+                                     hover:text-primary/80 transition-colors cursor-pointer">
+                      Explore mission
+                      <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </Link>
+                </div>
+
+                {/* Grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  {docsItems.map((item, i) => (
+                    <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>
+                      <MegaMenuCard
+                        icon={item.icon}
+                        label={item.label}
+                        desc={item.desc}
+                        delay={i * 0.04}
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
 
       {/* ── Cinematic Page Transition Overlay ────────────────────────────── */}
       <AnimatePresence>

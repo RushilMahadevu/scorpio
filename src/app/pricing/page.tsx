@@ -2,10 +2,10 @@
 
 
 import { motion } from "framer-motion";
-import { ModeToggle } from "@/components/mode-toggle";
+import { SiteHeader } from "@/components/landing/site-header";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight, ArrowLeft, Sparkles,
+  ArrowRight, Sparkles,
   Info, BookOpen, Mail, Shield, FileText,
   CheckCircle2, XCircle, Zap, KeyRound, Github,
   ShieldCheck, Globe, Lock
@@ -47,31 +47,10 @@ export default function PricingPage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
         </div>
 
-        {/* Minimal Header */}
-        <motion.header
-          className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/30"
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <div className="flex items-center justify-between px-6 py-4 max-w-[1400px] mx-auto w-full">
-            <Link href="/">
-              <Button variant="ghost" className="cursor-pointer flex items-center gap-2 text-muted-foreground hover:text-foreground font-semibold text-sm h-9 px-3 rounded-full group">
-                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-                Back
-              </Button>
-            </Link>
+        {/* Global Site Header */}
+        <SiteHeader activeSection="pricing" />
 
-            <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 hover:opacity-70 transition-opacity">
-              <Logo size={18} className="text-foreground" />
-              <span className="text-lg font-black tracking-tighter">Explore our Pricing</span>
-            </Link>
-
-            <ModeToggle />
-          </div>
-        </motion.header>
-
-        <main className="relative z-10">
+        <main className="relative z-10 pt-16">
 
           {/* Hero */}
           <section className="container mx-auto px-6 pt-24 pb-16 text-center relative">
