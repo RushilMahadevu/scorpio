@@ -54,6 +54,14 @@ type NavItem = {
   isExternal?: boolean;
 };
 
+type MenuItem = {
+  label: string;
+  desc: string;
+  icon: any;
+  target?: string;
+  href?: string;
+};
+
 // ─── Nav Link with Left→Right Underline ────────────────────────────────────────
 
 function NavLink({
@@ -225,14 +233,14 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
     { id: "docs", label: "Docs", isDropdown: true },
   ];
 
-  const platformItems = [
+  const platformItems: MenuItem[] = [
     { target: "problem", label: "The Problem", desc: "Why traditional physics tutors fail.", icon: AlertCircle },
     { target: "solution", label: "Our Solution", desc: "Socratic scaffolding in action.", icon: Lightbulb },
     { target: "features", label: "Features", desc: "Key features of Scorpio.", icon: Sparkles },
     { target: "efficacy", label: "Efficacy & Compare", desc: "Data-driven performance metrics.", icon: BarChart3 },
   ];
 
-  const docsItems = [
+  const docsItems: MenuItem[] = [
     { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
     { href: "/research", label: "Research & Methodology", desc: "Deep dive into the Crux Socratic architecture.", icon: Brain },
     { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
@@ -475,7 +483,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                     Docs
                   </p>
                   {docsItems.map((item) => (
-                    <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+                    <Link key={item.label} href={item.href || "#"} onClick={() => setMenuOpen(false)}>
                       <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/50
                                       transition-colors duration-150 cursor-pointer">
                         <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
@@ -621,7 +629,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                 {/* Grid */}
                 <div className="grid grid-cols-2 gap-2">
                   {docsItems.map((item, i) => (
-                    <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>
+                    <Link key={item.label} href={item.href || "#"} onClick={() => setHoveredNav(null)}>
                       <MegaMenuCard
                         icon={item.icon}
                         label={item.label}
