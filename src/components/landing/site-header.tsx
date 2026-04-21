@@ -8,7 +8,7 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
@@ -193,11 +193,13 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const router = useRouter();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (y) => {
-    setIsScrolled(y > 16);
+    setIsScrolled(y > 20);
   });
 
   const scheduleClose = useCallback(() => {
@@ -218,14 +220,24 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
 
   // Cinematic page-transition handler for external routes
   const navigateWithTransition = useCallback((href: string) => {
-    if (transitioning) return;
+    if (transitioning || pathname === href) return;
     setTransitioning(true);
     // Give the overlay animation time to cover the screen before pushing
     setTimeout(() => router.push(href), 520);
-  }, [transitioning, router]);
+  }, [transitioning, router, pathname]);
 
   const navItems: NavItem[] = [
-    { id: "home", label: "Home", action: () => activeSection === "home" ? window.scrollTo({ top: 0, behavior: "smooth" }) : navigateWithTransition("/") },
+    { 
+      id: "home", 
+      label: "Home", 
+      action: () => {
+        if (isHomePage) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          navigateWithTransition("/");
+        }
+      }
+    },
     { id: "platform", label: "Platform", isDropdown: true },
     { id: "demos", label: "Demos", isExternal: true, action: () => navigateWithTransition("/demos") },
     { id: "pricing", label: "Pricing", isExternal: true, action: () => navigateWithTransition("/pricing") },
@@ -275,47 +287,56 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
 
         {/* ── Inner Row ───────────────────────────────────────────────────────── */}
         <div className={cn(
-          "relative z-10 flex items-center justify-between px-6 md:px-10 mx-auto w-full max-w-[1500px] transition-all duration-500 ease-in-out",
+          "relative z-10 grid grid-cols-[1fr_auto_1fr] items-center px-6 md:px-10 mx-auto w-full max-w-[1500px] transition-all duration-500 ease-in-out",
           isScrolled ? "h-[50px]" : "h-[64px]"
         )}>
 
-          {/* Logo */}
-          <motion.div
-            animate={{
-              opacity: 1,
-              x: 0,
-              filter: "blur(0px)",
-              scale: isScrolled ? 0.94 : 1
-            }}
-            initial={{ opacity: 0, x: -10, filter: "blur(6px)" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Link href="/" onClick={(e) => {
-              if (activeSection !== "home") {
-                e.preventDefault();
-                navigateWithTransition("/");
-              }
-            }} className="flex items-center gap-2.5 group shrink-0">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/25 blur-xl rounded-full scale-0 group-hover:scale-150
-                              transition-transform duration-700 opacity-0 group-hover:opacity-100" />
-                <Logo
-                  size={22}
-                  className="text-foreground relative z-10 group-hover:rotate-[25deg] transition-transform duration-500"
-                />
-              </div>
-              <span className="font-black text-[15px] tracking-[-0.03em] text-foreground
-                             group-hover:text-primary transition-colors duration-200 !font-inter">
-                Scorpio
-              </span>
-            </Link>
-          </motion.div>
+          {/* Logo Area */}
+          <div className="flex justify-start">
+            <motion.div
+              animate={{
+                opacity: 1,
+                x: 0,
+                filter: "blur(0px)",
+                scale: isScrolled ? 0.94 : 1
+              }}
+              initial={{ opacity: 0, x: -10, filter: "blur(6px)" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Link 
+                href="/" 
+                onClick={(e) => {
+                  if (isHomePage) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  } else {
+                    e.preventDefault();
+                    navigateWithTransition("/");
+                  }
+                }} 
+                className="flex items-center gap-2.5 group shrink-0"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/25 blur-xl rounded-full scale-0 group-hover:scale-150
+                                transition-transform duration-700 opacity-0 group-hover:opacity-100" />
+                  <Logo
+                    size={22}
+                    className="text-foreground relative z-10 group-hover:rotate-[25deg] transition-transform duration-500"
+                  />
+                </div>
+                <span className="font-black text-[15px] tracking-[-0.03em] text-foreground
+                               group-hover:text-primary transition-colors duration-200 !font-inter">
+                  Scorpio
+                </span>
+              </Link>
+            </motion.div>
+          </div>
 
           {/* ── Desktop Nav ──────────────────────────────────────────────────── */}
           <motion.nav
             animate={{ scale: isScrolled ? 0.94 : 1 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2"
+            className="hidden lg:flex items-center justify-center h-full"
             onMouseEnter={cancelClose}
           >
             {navItems.map((item, i) => (
@@ -330,16 +351,18 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                   setHoveredNav(item.id);
                 }}
                 onClick={() => {
-                  if (!item.isDropdown) {
+                  if (item.isDropdown) {
+                    setHoveredNav(hoveredNav === item.id ? null : item.id);
+                  } else {
                     setActiveNav(item.id);
                     setHoveredNav(null);
-                  }
-                  if (item.action) item.action();
-                  else if (item.target) {
-                    if (activeSection === "home") {
-                      scrollToSection(item.target);
-                    } else {
-                      navigateWithTransition("/#" + item.target);
+                    if (item.action) item.action();
+                    else if (item.target) {
+                      if (isHomePage) {
+                        scrollToSection(item.target);
+                      } else {
+                        navigateWithTransition("/#" + item.target);
+                      }
                     }
                   }
                 }}
@@ -348,168 +371,181 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
           </motion.nav>
 
           {/* ── Right Actions ────────────────────────────────────────────────── */}
-          <motion.div
-            animate={{
-              opacity: 1,
-              x: 0,
-              filter: "blur(0px)",
-              scale: isScrolled ? 0.94 : 1
-            }}
-            initial={{ opacity: 0, x: 10, filter: "blur(6px)" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center gap-2"
-          >
-            <div className="hidden sm:flex items-center">
-              <ModeToggle />
-            </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block w-px h-4 bg-border/40 mx-1" />
-
-            <Link href="/login" className="hidden sm:block">
-              <button className="relative group px-3 py-1.5 text-[13px] font-medium text-muted-foreground
-                               hover:text-foreground transition-colors duration-200 cursor-pointer">
-                Login
-                <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
-                  <span className="block h-full w-0 bg-foreground group-hover:w-full
-                                 transition-all duration-250 ease-out" />
-                </span>
-              </button>
-            </Link>
-
-            <Link href="/signup">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="relative h-8 px-4 text-[13px] font-semibold rounded-full
-                         bg-foreground text-background cursor-pointer overflow-hidden
-                         shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]
-                         transition-shadow duration-200 hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]"
-              >
-                {/* Shimmer sweep */}
-                <span className="absolute inset-0 translate-x-[-110%] group-hover:translate-x-[110%]
-                               bg-gradient-to-r from-transparent via-white/20 to-transparent
-                               transition-transform duration-700 ease-out pointer-events-none" />
-                Sign up
-              </motion.button>
-            </Link>
-          </motion.div>
-
-          {/* Mobile hamburger */}
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden h-9 w-9 rounded-full hover:bg-muted/60 border border-border/30 ml-1"
-                aria-label="Open menu"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-
-            <SheetContent
-              side="right"
-              className="w-full max-w-[300px] h-full flex flex-col z-50 p-0 bg-background/95
-                         backdrop-blur-2xl shadow-2xl lg:hidden border-l border-border/30"
-              hideClose
+          <div className="flex justify-end items-center gap-2">
+            <motion.div
+              animate={{
+                opacity: 1,
+                x: 0,
+                filter: "blur(0px)",
+                scale: isScrolled ? 0.94 : 1
+              }}
+              initial={{ opacity: 0, x: 10, filter: "blur(6px)" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center gap-2"
             >
-              <div className="flex items-center justify-between px-6 py-5 border-b border-border/30">
-                <span className="font-black text-base tracking-tight">Menu</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setMenuOpen(false)}
-                  className="rounded-full h-8 w-8 hover:bg-muted/60"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+              <div className="hidden sm:flex items-center">
+                <ModeToggle />
               </div>
 
-              <nav className="flex flex-col gap-6 px-5 py-7 flex-1 overflow-y-auto">
-                {[
-                  {
-                    label: "Platform", items: [
-                      { id: "home", label: "Home", icon: Globe, action: () => {
-                          if (activeSection === "home") window.scrollTo({ top: 0, behavior: "smooth" });
-                          else navigateWithTransition("/");
-                      }},
-                      { id: "problem", label: "Problem", icon: AlertTriangle },
-                    ]
-                  },
-                  {
-                    label: "Institutional", items: [
-                      { id: "demos", label: "Demos", icon: PlayCircle, href: "/demos" },
-                      { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing, href: "/pricing" },
-                      { id: "efficacy", label: "Compare", icon: Brain },
-                      { id: "faq", label: "FAQ", icon: MessageCircle },
-                    ]
-                  },
-                ].map(({ label, items }) => (
-                  <div key={label} className="space-y-1">
+              {/* Divider */}
+              <div className="hidden sm:block w-px h-4 bg-border/40 mx-1" />
+
+              <Link href="/login" className="hidden sm:block">
+                <button className="relative group px-3 py-1.5 text-[13px] font-medium text-muted-foreground
+                                 hover:text-foreground transition-colors duration-200 cursor-pointer">
+                  Login
+                  <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
+                    <span className="block h-full w-0 bg-foreground group-hover:w-full
+                                   transition-all duration-250 ease-out" />
+                  </span>
+                </button>
+              </Link>
+
+              <Link href="/signup">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="relative h-8 px-4 text-[13px] font-semibold rounded-full
+                           bg-foreground text-background cursor-pointer overflow-hidden
+                           shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]
+                           transition-shadow duration-200 hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.4)]"
+                >
+                  {/* Shimmer sweep */}
+                  <span className="absolute inset-0 translate-x-[-110%] group-hover:translate-x-[110%]
+                                 bg-gradient-to-r from-transparent via-white/20 to-transparent
+                                 transition-transform duration-700 ease-out pointer-events-none" />
+                  Sign up
+                </motion.button>
+              </Link>
+
+              {/* Mobile hamburger */}
+              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="lg:hidden h-9 w-9 rounded-full hover:bg-muted/60 border border-border/30 ml-1"
+                    aria-label="Open menu"
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+
+                <SheetContent
+                  side="right"
+                  className="w-full max-w-[300px] h-full flex flex-col z-50 p-0 bg-background/95
+                             backdrop-blur-2xl shadow-2xl lg:hidden border-l border-border/30"
+                  hideClose
+                >
+                  <div className="flex items-center justify-between px-6 py-5 border-b border-border/30">
+                    <span className="font-black text-base tracking-tight">Menu</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMenuOpen(false)}
+                      className="rounded-full h-8 w-8 hover:bg-muted/60"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <nav className="flex flex-col gap-6 px-5 py-7 flex-1 overflow-y-auto">
+                    {[
+                      {
+                        label: "Platform", items: platformItems.map(item => ({
+                          id: item.target || item.label.toLowerCase(),
+                          label: item.label,
+                          icon: item.icon,
+                          action: () => {
+                            if (item.href) navigateWithTransition(item.href);
+                            else if (item.target) {
+                              if (isHomePage) scrollToSection(item.target);
+                              else navigateWithTransition("/#" + item.target);
+                            }
+                          }
+                        }))
+                      },
+                      {
+                        label: "Institutional", items: [
+                          { id: "demos", label: "Demos", icon: PlayCircle, href: "/demos" },
+                          { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing, href: "/pricing" },
+                          { id: "efficacy", label: "Compare", icon: Brain, action: () => {
+                            if (isHomePage) scrollToSection("efficacy");
+                            else navigateWithTransition("/#efficacy");
+                          }},
+                          { id: "faq", label: "FAQ", icon: MessageCircle, action: () => {
+                            if (isHomePage) scrollToSection("faq");
+                            else navigateWithTransition("/#faq");
+                          }},
+                        ]
+                      },
+                    ].map(({ label, items }) => (
+                      <div key={label} className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/50 px-2 mb-2">
+                          {label}
+                        </p>
+                        {items.map((item: any) => (
+                          <button
+                            key={item.id}
+                            className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg text-[13.5px]
+                                       font-medium text-muted-foreground hover:text-foreground
+                                       hover:bg-muted/50 transition-all duration-150 cursor-pointer text-left"
+                            onClick={() => {
+                              if (item.href) {
+                                if (!isHomePage) navigateWithTransition(item.href);
+                                else router.push(item.href);
+                              }
+                              else if (item.action) item.action();
+                              else {
+                                if (isHomePage) scrollToSection(item.id);
+                                else navigateWithTransition("/#" + item.id);
+                              }
+                              setMenuOpen(false);
+                            }}
+                          >
+                            <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
+                              <item.icon className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    )) }
+
+                  <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/50 px-2 mb-2">
-                      {label}
+                      Docs
                     </p>
-                    {items.map((item: any) => (
-                      <button
-                        key={item.id}
-                        className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg text-[13.5px]
-                                   font-medium text-muted-foreground hover:text-foreground
-                                   hover:bg-muted/50 transition-all duration-150 cursor-pointer text-left"
-                        onClick={() => {
-                          if (item.href) {
-                            if (activeSection !== "home") navigateWithTransition(item.href);
-                            else router.push(item.href);
-                          }
-                          else if (item.action) item.action();
-                          else {
-                            if (activeSection === "home") scrollToSection(item.id);
-                            else navigateWithTransition("/#" + item.id);
-                          }
-                          setMenuOpen(false);
-                        }}
-                      >
-                        <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
-                          <item.icon className="h-3.5 w-3.5 text-primary" />
+                    {docsItems.map((item) => (
+                      <Link key={item.label} href={item.href || "#"} onClick={() => setMenuOpen(false)}>
+                        <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/50
+                                        transition-colors duration-150 cursor-pointer">
+                          <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
+                            <item.icon className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                          <span className="text-[13.5px] font-medium text-muted-foreground">{item.label}</span>
                         </div>
-                        {item.label}
-                      </button>
+                      </Link>
                     ))}
                   </div>
-                ))}
+                </nav>
 
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/50 px-2 mb-2">
-                    Docs
-                  </p>
-                  {docsItems.map((item) => (
-                    <Link key={item.label} href={item.href || "#"} onClick={() => setMenuOpen(false)}>
-                      <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/50
-                                      transition-colors duration-150 cursor-pointer">
-                        <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
-                          <item.icon className="h-3.5 w-3.5 text-primary" />
-                        </div>
-                        <span className="text-[13.5px] font-medium text-muted-foreground">{item.label}</span>
-                      </div>
-                    </Link>
-                  ))}
+                <div className="px-5 pb-6 pt-4 border-t border-border/30 grid grid-cols-2 gap-2">
+                  <Link href="/login">
+                    <Button variant="outline" className="w-full font-semibold text-[13px] h-9">Login</Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button className="w-full font-semibold text-[13px] h-9">Sign up</Button>
+                  </Link>
                 </div>
-              </nav>
-
-              <div className="px-5 pb-6 pt-4 border-t border-border/30 grid grid-cols-2 gap-2">
-                <Link href="/login">
-                  <Button variant="outline" className="w-full font-semibold text-[13px] h-9">Login</Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="w-full font-semibold text-[13px] h-9">Sign up</Button>
-                </Link>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </motion.div>
         </div>
+      </div>
 
-        {/* ── Mega Menus ──────────────────────────────────────────────────────── */}
-        <AnimatePresence>
+      {/* ── Mega Menus ──────────────────────────────────────────────────────── */}
+      <AnimatePresence>
           {hoveredNav === "platform" && (
             <motion.div
               key="platform-menu"
@@ -544,7 +580,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                     <button
                       onClick={() => {
                         setHoveredNav(null);
-                        if (activeSection === "home") {
+                        if (isHomePage) {
                           scrollToSection("solution");
                         } else {
                           navigateWithTransition("/#solution");
@@ -573,7 +609,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                         if (item.href) {
                           navigateWithTransition(item.href);
                         } else if (item.target) {
-                          if (activeSection === "home") {
+                          if (isHomePage) {
                             scrollToSection(item.target);
                             setActiveNav("platform");
                           } else {
