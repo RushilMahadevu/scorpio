@@ -513,15 +513,13 @@ export function SettingsDialog() {
                         <RadioGroup
                           value={String(spacyLevel)}
                           onValueChange={v => setSpacyLevel(Number(v))}
-                          className="grid grid-cols-5 gap-2"
+                          className="grid grid-cols-4 gap-2"
                         >
-                          {[0, 10, 25, 40, 50].map((level) => (
+                          {[10, 25, 40, 50].map((level) => (
                             <div key={level} className="flex flex-col items-center gap-1">
                               <RadioGroupItem value={String(level)} id={`spacy-${level}`} className="cursor-pointer" />
                               <Label htmlFor={`spacy-${level}`} className="text-xs text-center cursor-pointer">
-                                {level === 0
-                                  ? "Off"
-                                  : level === 10
+                                {level === 10
                                   ? "Low"
                                   : level === 25
                                   ? "Med"

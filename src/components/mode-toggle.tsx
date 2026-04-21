@@ -25,7 +25,7 @@ export function ModeToggle() {
     nebulaBrightness,
     setNebulaBrightness
   } = useSpaceEffects()
-  const { font, setFont, themeColor, setThemeColor } = useAppearance()
+  const { font, setFont, themeColor, setThemeColor, customColor, setCustomColor } = useAppearance()
   const [showNote, setShowNote] = React.useState(false)
 
   const handleThemeChange = (newTheme: string) => {
@@ -45,15 +45,21 @@ export function ModeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem className="cursor-pointer" onClick={() => handleThemeChange("dark")}>
-          Dark <span className="ml-2 text-xs text-muted-foreground">(Recommended)</span>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem className="cursor-pointer flex flex-col items-start gap-0.5 py-2" onClick={() => handleThemeChange("dark")}>
+          <div className="flex items-center justify-between w-full">
+            <span>Dark</span>
+            <span className="text-[10px] text-muted-foreground">(Recommended)</span>
+          </div>
+          <span className="text-[10px] text-muted-foreground font-normal">Perfect for late-night studying</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={() => handleThemeChange("light")}>
-          Light
+        <DropdownMenuItem className="cursor-pointer flex flex-col items-start gap-0.5 py-2" onClick={() => handleThemeChange("light")}>
+          <span>Light</span>
+          <span className="text-[10px] text-muted-foreground font-normal">Classic bright interface</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={() => handleThemeChange("system")}>
-          System
+        <DropdownMenuItem className="cursor-pointer flex flex-col items-start gap-0.5 py-2" onClick={() => handleThemeChange("system")}>
+          <span>System</span>
+          <span className="text-[10px] text-muted-foreground font-normal">Follow your device settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={toggleSpaceEffects} onSelect={(e) => e.preventDefault()}>
@@ -63,8 +69,8 @@ export function ModeToggle() {
         {spaceEffectsEnabled && (
           <div className="px-4 py-2 border-t mt-2" onClick={(e) => e.stopPropagation()}>
             <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Spacy Level</div>
-            <div className="grid grid-cols-5 gap-1.5 mb-4">
-              {[0, 5, 12, 25, 40].map((level) => (
+            <div className="grid grid-cols-4 gap-1.5 mb-4">
+              {[10, 25, 40, 50].map((level) => (
                 <button
                   key={level}
                   onClick={(e) => {
@@ -76,7 +82,7 @@ export function ModeToggle() {
                     : "bg-background hover:bg-muted border-border"
                     }`}
                 >
-                  {level}
+                  {level === 10 ? "Low" : level === 25 ? "Med" : level === 40 ? "High" : "Max"}
                 </button>
               ))}
             </div>
@@ -111,8 +117,9 @@ export function ModeToggle() {
                 { id: "ibm-plex-sans", label: "IBM Plex (Default)", font: "var(--font-ibm-plex-sans)" },
                 { id: "inter", label: "Inter", font: "var(--font-inter)" },
                 { id: "verdana", label: "Verdana", font: "Verdana, sans-serif" },
+                { id: "pt-serif", label: "PT Serif", font: "var(--font-pt-serif), serif" },
                 { id: "roboto-mono", label: "Roboto Mono", font: "var(--font-roboto-mono)" },
-                { id: "opendyslexic", label: "OpenDyslexic", font: "OpenDyslexic, sans-serif" }
+                { id: "atkinson", label: "Atkinson", font: "var(--font-atkinson), sans-serif" }
               ].map((f) => (
                 <button
                   key={f.id}
@@ -121,7 +128,7 @@ export function ModeToggle() {
                     setFont(f.id as FontOption);
                   }}
                   style={{ fontFamily: f.font }}
-                  className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors cursor-pointer flex items-center justify-between ${font === f.id
+                  className={`w-full text-left px-2 py-1.5 text-[11px] rounded transition-colors cursor-pointer flex items-center justify-between ${font === f.id
                     ? "bg-primary/10 text-primary font-bold"
                     : "hover:bg-muted text-muted-foreground"
                     }`}
@@ -155,12 +162,37 @@ export function ModeToggle() {
                     setThemeColor(t.value as ThemeColor);
                   }}
                   title={t.name}
-                  className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
+                  disabled={t.value === "midnight" && theme === "light"}
+                  className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"} ${t.value === "midnight" && theme === "light" ? "opacity-50 grayscale pointer-events-none" : ""
                     }`}
                 >
                   <div className={`h-4 w-4 rounded-full ${t.color} shadow-xs group-hover:scale-110 transition-transform`} />
                 </button>
               ))}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setThemeColor("custom");
+                }}
+                className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === "custom" ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
+                  }`}
+                title="Custom Color"
+              >
+                <div 
+                  className="h-4 w-4 rounded-full shadow-xs group-hover:scale-110 transition-transform relative overflow-hidden" 
+                  style={{ backgroundColor: customColor }}
+                >
+                  <input
+                    type="color"
+                    value={customColor}
+                    onChange={(e) => {
+                      setCustomColor(e.target.value)
+                      setThemeColor("custom")
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </div>
+              </button>
             </div>
           </div>
         )}
