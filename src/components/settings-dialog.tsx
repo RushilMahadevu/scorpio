@@ -751,5 +751,3 @@ export function SettingsDialog() {
     </Dialog>
   )
 }
-  )
-}
