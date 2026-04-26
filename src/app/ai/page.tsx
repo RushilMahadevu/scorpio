@@ -121,12 +121,14 @@ export default function AIPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [questionsLeft, setQuestionsLeft] = useState(LIMIT);
   const [visitorId, setVisitorId] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Restore session on mount
   useEffect(() => {
+    setMounted(true);
     const id = getOrCreateVisitorId();
     setVisitorId(id);
 
@@ -249,7 +251,9 @@ export default function AIPage() {
   };
 
   const isLimitReached = questionsLeft <= 0;
-  const isEmpty = messages.length === 0;
+  const isEmpty = mounted && messages.length === 0;
+
+  if (!mounted) return null; // Avoid hydration mismatch for dynamic visitor state
 
   return (
     <div className="min-h-screen flex flex-col relative">

@@ -392,12 +392,10 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
               <div className="hidden sm:block w-px h-4 bg-border/40 mx-1" />
 
               <Link href="/login" className="hidden sm:block">
-                <button className="relative group px-3 py-1.5 text-[13px] font-medium text-muted-foreground
-                                 hover:text-foreground transition-colors duration-200 cursor-pointer">
+                <button className="relative group px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer">
                   Login
                   <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
-                    <span className="block h-full w-0 bg-foreground group-hover:w-full
-                                   transition-all duration-250 ease-out" />
+                    <span className="block h-full w-0 bg-foreground group-hover:w-full transition-all duration-250 ease-out" />
                   </span>
                 </button>
               </Link>
