@@ -26,7 +26,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     if (storedFont && ["inter", "ibm-plex-sans", "verdana", "roboto-mono", "pt-serif", "atkinson"].includes(storedFont)) {
       setFontState(storedFont);
     }
-    
+
     const storedTheme = localStorage.getItem("app-theme-color") as ThemeColor;
     if (storedTheme && ["default", "ocean", "violet", "rose", "amber", "emerald", "midnight", "custom"].includes(storedTheme)) {
       setThemeColorState(storedTheme);
@@ -46,7 +46,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
   const setThemeColor = (newTheme: ThemeColor) => {
     setThemeColorState(newTheme);
     localStorage.setItem("app-theme-color", newTheme);
-    
+
     // Smooth transition for all elements when changing theme
     const html = document.documentElement;
     html.classList.add("theme-transition-all");
@@ -66,12 +66,12 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
   // Synchronize classes with state
   React.useEffect(() => {
     const html = document.documentElement;
-    
+
     // Manage Font Classes
     const fontClasses = ["font-inter", "font-ibm-plex-sans", "font-verdana", "font-roboto-mono", "font-pt-serif", "font-atkinson"];
     html.classList.remove(...fontClasses);
     html.classList.add(`font-${font}`);
-    
+
     // Manage Theme Classes
     const themeClasses = ["theme-default", "theme-ocean", "theme-violet", "theme-rose", "theme-amber", "theme-emerald", "theme-midnight", "theme-custom"];
     html.classList.remove(...themeClasses);

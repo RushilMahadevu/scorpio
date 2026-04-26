@@ -1,18 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { 
-  Moon, 
-  Sun, 
-  Sparkles, 
-  User, 
-  LogOut, 
-  SlidersHorizontal as SettingsIcon, 
-  Palette, 
-  Info, 
-  RotateCcwKey, 
-  Mails, 
-  Shield, 
+import {
+  Moon,
+  Sun,
+  Sparkles,
+  User,
+  LogOut,
+  SlidersHorizontal as SettingsIcon,
+  Palette,
+  Info,
+  RotateCcwKey,
+  Mails,
+  Shield,
   FileText,
   CreditCard,
   Building2,
@@ -67,7 +67,7 @@ export function SettingsDialog() {
   const [newEmail, setNewEmail] = React.useState("")
   const [emailChangeOpen, setEmailChangeOpen] = React.useState(false)
   const [alertMessage, setAlertMessage] = React.useState("")
-  
+
   const [alertType, setAlertType] = React.useState<"success" | "error">("success")
 
   const handleAutoRedirectChange = async (checked: boolean) => {
@@ -128,9 +128,9 @@ export function SettingsDialog() {
     try {
       setAlertMessage("Deleting account and data...")
       setAlertType("success")
-      
+
       await deleteFullAccount(user.uid, role || "student")
-      
+
       setAlertMessage("Account deleted successfully. Goodbye.")
       toast.success("Account deleted successfully.")
       setTimeout(() => {
@@ -149,7 +149,7 @@ export function SettingsDialog() {
     if (name && typeof name === 'string' && name.trim()) {
       return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     }
-    
+
     if (email && typeof email === 'string' && email.trim()) {
       const emailName = email.split("@")[0]
       if (emailName) {
@@ -160,7 +160,7 @@ export function SettingsDialog() {
         }
       }
     }
-    
+
     return "U"
   }
 
@@ -280,20 +280,20 @@ export function SettingsDialog() {
                     Change Email
                   </Button>
                   <Separator className="my-2" />
-                  
+
                   <div className="space-y-4 pt-2">
                     <h4 className="text-sm font-medium">Platform Preferences</h4>
                     {role !== "student" && (
                       <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                        <Checkbox 
-                          id="auto-redirect" 
+                        <Checkbox
+                          id="auto-redirect"
                           checked={profile?.preferences?.autoRedirectPortal ?? true}
                           onCheckedChange={(checked) => handleAutoRedirectChange(checked === true)}
                           className="mt-0.5 cursor-pointer"
                         />
                         <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAutoRedirectChange(!(profile?.preferences?.autoRedirectPortal ?? true))}>
-                          <Label 
-                            htmlFor="auto-redirect" 
+                          <Label
+                            htmlFor="auto-redirect"
                             className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                           >
                             Auto-Portal Redirect
@@ -306,15 +306,15 @@ export function SettingsDialog() {
                     )}
                     {role === "teacher" && (
                       <div className="flex items-start space-x-3 p-3 bg-primary/5 rounded-lg border border-primary/10 mt-2">
-                        <Checkbox 
-                          id="disable-emails" 
+                        <Checkbox
+                          id="disable-emails"
                           checked={profile?.preferences?.disableAssignmentEmails ?? true}
                           onCheckedChange={(checked) => handleAssignmentEmailsChange(checked === true)}
                           className="mt-0.5 cursor-pointer"
                         />
                         <div className="grid gap-1.5 leading-none cursor-pointer" onClick={() => handleAssignmentEmailsChange(!(profile?.preferences?.disableAssignmentEmails ?? true))}>
-                          <Label 
-                            htmlFor="disable-emails" 
+                          <Label
+                            htmlFor="disable-emails"
                             className="text-sm font-black leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                           >
                             Disable Assignment Emails
@@ -339,11 +339,11 @@ export function SettingsDialog() {
                   </Button>
 
                   <Separator className="my-2" />
-                  
+
                   <div className="space-y-2 mt-4">
                     <h4 className="text-sm font-medium text-destructive">Danger Zone</h4>
                     <p className="text-[10px] text-muted-foreground leading-snug">
-                       Once you delete your account, there is no going back. All submissions, uploaded work files, and profile data will be permanently purged.
+                      Once you delete your account, there is no going back. All submissions, uploaded work files, and profile data will be permanently purged.
                     </p>
                     <Button
                       variant="ghost"
@@ -445,9 +445,8 @@ export function SettingsDialog() {
                     <button
                       key={t.value}
                       onClick={() => setThemeColor(t.value as ThemeColor)}
-                      className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${
-                        themeColor === t.value ? "border-primary bg-primary/5" : "border-transparent"
-                      } ${t.value === "midnight" && theme === "light" ? "opacity-50 grayscale pointer-events-none" : ""}`}
+                      className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${themeColor === t.value ? "border-primary bg-primary/5" : "border-transparent"
+                        } ${t.value === "midnight" && theme === "light" ? "opacity-50 grayscale pointer-events-none" : ""}`}
                       title={t.name}
                       disabled={t.value === "midnight" && theme === "light"}
                     >
@@ -457,13 +456,12 @@ export function SettingsDialog() {
                   ))}
                   <button
                     onClick={() => setThemeColor("custom")}
-                    className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${
-                      themeColor === "custom" ? "border-primary bg-primary/5" : "border-transparent"
-                    }`}
+                    className={`group relative flex flex-col items-center gap-1.5 p-1 rounded-lg border-2 transition-all hover:bg-muted/50 cursor-pointer ${themeColor === "custom" ? "border-primary bg-primary/5" : "border-transparent"
+                      }`}
                     title="Custom Color"
                   >
-                    <div 
-                      className="h-6 w-6 rounded-full shadow-sm group-hover:scale-110 transition-transform relative overflow-hidden" 
+                    <div
+                      className="h-6 w-6 rounded-full shadow-sm group-hover:scale-110 transition-transform relative overflow-hidden"
                       style={{ backgroundColor: customColor }}
                     >
                       <input
@@ -522,10 +520,10 @@ export function SettingsDialog() {
                                 {level === 10
                                   ? "Low"
                                   : level === 25
-                                  ? "Med"
-                                  : level === 40
-                                  ? "High"
-                                  : "Max"}
+                                    ? "Med"
+                                    : level === 40
+                                      ? "High"
+                                      : "Max"}
                               </Label>
                             </div>
                           ))}
@@ -540,11 +538,10 @@ export function SettingsDialog() {
                             <div key={level} className="flex flex-col items-center">
                               <button
                                 onClick={() => setNebulaBrightness(level)}
-                                className={`w-full py-2 px-1 text-[10px] font-medium rounded-md border transition-all cursor-pointer ${
-                                  nebulaBrightness === level
+                                className={`w-full py-2 px-1 text-[10px] font-medium rounded-md border transition-all cursor-pointer ${nebulaBrightness === level
                                     ? "bg-primary text-primary-foreground border-primary"
                                     : "bg-background hover:bg-muted border-border"
-                                }`}
+                                  }`}
                               >
                                 {level === 0 ? "Off" : level === 10 ? "Dim" : level === 20 ? "Mid" : "High"}
                               </button>
@@ -565,9 +562,9 @@ export function SettingsDialog() {
                   <h4 className="text-sm font-medium">Typography</h4>
                 </div>
                 <div className="space-y-3">
-                  <RadioGroup 
-                    value={font} 
-                    onValueChange={(v) => setFont(v as FontOption)} 
+                  <RadioGroup
+                    value={font}
+                    onValueChange={(v) => setFont(v as FontOption)}
                     className="grid grid-cols-1 gap-2"
                   >
                     <div
@@ -752,5 +749,7 @@ export function SettingsDialog() {
         </DialogContent>
       </Dialog>
     </Dialog>
+  )
+}
   )
 }

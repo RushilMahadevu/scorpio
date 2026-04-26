@@ -32,7 +32,6 @@ import { SiteHeader } from "@/components/landing/site-header";
 import SpotlightCards from "@/components/ui/spotlight-cards";
 import { FeatureSection } from "@/components/feature-section";
 
-
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 
 import {

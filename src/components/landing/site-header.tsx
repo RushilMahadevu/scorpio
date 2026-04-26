@@ -227,9 +227,9 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
   }, [transitioning, router, pathname]);
 
   const navItems: NavItem[] = [
-    { 
-      id: "home", 
-      label: "Home", 
+    {
+      id: "home",
+      label: "Home",
       action: () => {
         if (isHomePage) {
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -240,6 +240,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
     },
     { id: "platform", label: "Platform", isDropdown: true },
     { id: "demos", label: "Demos", isExternal: true, action: () => navigateWithTransition("/demos") },
+    { id: "ai", label: "Try AI", isExternal: true, action: () => navigateWithTransition("/ai") },
     { id: "pricing", label: "Pricing", isExternal: true, action: () => navigateWithTransition("/pricing") },
     { id: "faq", label: "FAQ", target: "faq" },
     { id: "docs", label: "Docs", isDropdown: true },
@@ -303,8 +304,8 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
               initial={{ opacity: 0, x: -10, filter: "blur(6px)" }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 onClick={(e) => {
                   if (isHomePage) {
                     e.preventDefault();
@@ -313,7 +314,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                     e.preventDefault();
                     navigateWithTransition("/");
                   }
-                }} 
+                }}
                 className="flex items-center gap-2.5 group shrink-0"
               >
                 <div className="relative">
@@ -468,15 +469,20 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                       {
                         label: "Institutional", items: [
                           { id: "demos", label: "Demos", icon: PlayCircle, href: "/demos" },
+                          { id: "ai", label: "Try AI", icon: Sparkles, href: "/ai" },
                           { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing, href: "/pricing" },
-                          { id: "efficacy", label: "Compare", icon: Brain, action: () => {
-                            if (isHomePage) scrollToSection("efficacy");
-                            else navigateWithTransition("/#efficacy");
-                          }},
-                          { id: "faq", label: "FAQ", icon: MessageCircle, action: () => {
-                            if (isHomePage) scrollToSection("faq");
-                            else navigateWithTransition("/#faq");
-                          }},
+                          {
+                            id: "efficacy", label: "Compare", icon: Brain, action: () => {
+                              if (isHomePage) scrollToSection("efficacy");
+                              else navigateWithTransition("/#efficacy");
+                            }
+                          },
+                          {
+                            id: "faq", label: "FAQ", icon: MessageCircle, action: () => {
+                              if (isHomePage) scrollToSection("faq");
+                              else navigateWithTransition("/#faq");
+                            }
+                          },
                         ]
                       },
                     ].map(({ label, items }) => (
@@ -510,42 +516,42 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                           </button>
                         ))}
                       </div>
-                    )) }
-
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/50 px-2 mb-2">
-                      Docs
-                    </p>
-                    {docsItems.map((item) => (
-                      <Link key={item.label} href={item.href || "#"} onClick={() => setMenuOpen(false)}>
-                        <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/50
-                                        transition-colors duration-150 cursor-pointer">
-                          <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
-                            <item.icon className="h-3.5 w-3.5 text-primary" />
-                          </div>
-                          <span className="text-[13.5px] font-medium text-muted-foreground">{item.label}</span>
-                        </div>
-                      </Link>
                     ))}
+
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/50 px-2 mb-2">
+                        Docs
+                      </p>
+                      {docsItems.map((item) => (
+                        <Link key={item.label} href={item.href || "#"} onClick={() => setMenuOpen(false)}>
+                          <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/50
+                                        transition-colors duration-150 cursor-pointer">
+                            <div className="h-7 w-7 rounded-md bg-muted/80 flex items-center justify-center shrink-0">
+                              <item.icon className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            <span className="text-[13.5px] font-medium text-muted-foreground">{item.label}</span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </nav>
+
+                  <div className="px-5 pb-6 pt-4 border-t border-border/30 grid grid-cols-2 gap-2">
+                    <Link href="/login">
+                      <Button variant="outline" className="w-full font-semibold text-[13px] h-9">Login</Button>
+                    </Link>
+                    <Link href="/signup">
+                      <Button className="w-full font-semibold text-[13px] h-9">Sign up</Button>
+                    </Link>
                   </div>
-                </nav>
-
-                <div className="px-5 pb-6 pt-4 border-t border-border/30 grid grid-cols-2 gap-2">
-                  <Link href="/login">
-                    <Button variant="outline" className="w-full font-semibold text-[13px] h-9">Login</Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button className="w-full font-semibold text-[13px] h-9">Sign up</Button>
-                  </Link>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </motion.div>
+                </SheetContent>
+              </Sheet>
+            </motion.div>
+          </div>
         </div>
-      </div>
 
-      {/* ── Mega Menus ──────────────────────────────────────────────────────── */}
-      <AnimatePresence>
+        {/* ── Mega Menus ──────────────────────────────────────────────────────── */}
+        <AnimatePresence>
           {hoveredNav === "platform" && (
             <motion.div
               key="platform-menu"
