@@ -88,10 +88,10 @@ export default function Home() {
   // Students are ALWAYS forced to redirect to their portal.
   // Teachers are redirected unless they disable the auto-redirect preference.
   useEffect(() => {
-    if (isLoaded && !authLoading && user && role) {
+    if (!authLoading && user && role) {
       if (role === "student") {
         router.push("/student");
-      } else if (role === "teacher" && (profile?.preferences?.autoRedirectPortal ?? true)) {
+      } else if (isLoaded && role === "teacher" && (profile?.preferences?.autoRedirectPortal ?? true)) {
         router.push("/teacher");
       }
     }
@@ -189,7 +189,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen relative font-medium scroll-smooth">
-        <LoadingScreen onFinish={onLoadingFinish} />
+        {(!user || role !== "student") && <LoadingScreen onFinish={onLoadingFinish} />}
         <SpaceBackground />
 
         <AnimatePresence>
