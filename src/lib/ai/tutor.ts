@@ -24,11 +24,25 @@ export async function explainPhysicsConcept(
 ): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
+    const scrubbedMessage = scrubPII(concept, studentNames);
     const historyContext = chatHistory.length > 0 
-      ? `Previous conversation:\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content, studentNames) })))}\n\n` 
+      ? `=== PREVIOUS CONVERSATION HISTORY ===\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content, studentNames) })))}\n=====================================\n\n` 
       : "";
     
-    const prompt = `${constraints}\n\n${historyContext}Explain the physics concept: "${scrubPII(concept, studentNames)}" in simple terms suitable for a high school student. Keep it concise. If this relates to our previous conversation, build on that context.`;
+    const prompt = `${constraints}
+
+${historyContext}Student's latest message: "${scrubbedMessage}"
+
+Instructions for your response:
+1. Context & Conversational Continuity:
+   - Always interpret the student's message in the context of the previous conversation.
+   - If the student sends an affirmation, agreement, or continuation (e.g. "yeah lets do it", "sure", "yes", "continue", "sounds good"), seamlessly advance the topic without meta-commenting on their phrasing or stating that their phrase is not a physics concept.
+   - If you previously offered choices (e.g. "Would you like to explore examples or discuss Faraday's Law?"), and the student responds generally (e.g. "yeah lets do it"), immediately pick the most natural next step (e.g. introduce Faraday's Law with a clear, engaging physical example) and explain it.
+   - If the student asks a specific physics question or names a new concept, provide a clear, concise explanation suitable for high school and AP physics students.
+2. Pedagogical Style & Notation:
+   - Explain physics concepts with intuitive physical intuition, clear step-by-step logic, and proper LaTeX notation ($...$ or $$...$$) for formulas and variables.
+   - Keep responses concise and engaging.
+   - End with a thought-provoking check for understanding or offer a natural next concept/example.`;
     
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -63,20 +77,28 @@ export async function helpSolveProblem(
 ): Promise<{ text: string, usage?: { inputTokens: number, outputTokens: number } }> {
   try {
     const constraints = CONSTRAINT_LEVELS[constraintLevel];
+    const scrubbedMessage = scrubPII(problem, studentNames);
     const historyContext = chatHistory.length > 0 
-      ? `Previous conversation:\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content, studentNames) })))}\n\n` 
+      ? `=== PREVIOUS CONVERSATION HISTORY ===\n${formatChatHistory(chatHistory.map(m => ({ ...m, content: scrubPII(m.content, studentNames) })))}\n=====================================\n\n` 
       : "";
     
     const context = assignmentContext ? `=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===\n${scrubPII(assignmentContext, studentNames)}\n==========================================\n\n` : "";
-    const prompt = `${constraints}\n\n${context}${historyContext}The student is asking: "${scrubPII(problem, studentNames)}". 
-    
-    IMPORTANT: You have full access to the "=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===" above. 
-    - If the student asks about "Question 1" and the text for that question is empty in the context, check the assignment title and description.
-    - If you genuinely cannot find information about a specific question in the provided context, ask the student to clarify or paste the question text.
-    - If asked about concepts or formulas, refer to the context first before explaining.
-    - NEVER say "I cannot see the assignment" or "I don't have access to the text" if the information IS provided in the context above.
-    
-    Help the student think through the problem step-by-step using the Socratic method. Do not just give the answer.`;
+    const prompt = `${constraints}
+
+${context}${historyContext}Student's latest message: "${scrubbedMessage}"
+
+Instructions for your response:
+1. Socratic Guidance:
+   - Guide the student through the physics problem step-by-step using the Socratic method. Never give away the final numerical answer directly.
+   - If the student gave an answer or attempted a step, evaluate their reasoning with encouragement and guide them to the next step.
+   - If they say "yes", "continue", "I'm ready", or ask what to do next, provide the next guiding question or hint.
+2. Assignment Context:
+   - You have full access to the "=== STUDENT'S CURRENT ASSIGNMENT CONTEXT ===" if provided above.
+   - If the student asks about "Question 1" and the text for that question is in the context, refer directly to it.
+   - NEVER say "I cannot see the assignment" or "I don't have access to the text" if the information IS provided in the context above.
+3. Notation & Conciseness:
+   - Format equations, symbols, and units in proper LaTeX ($...$ or $$...$$).
+   - Keep your guidance concise and focused on the student's immediate blocker.`;
     
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
