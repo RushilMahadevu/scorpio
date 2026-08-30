@@ -61,7 +61,7 @@ export async function generatePracticeProblem(
     if (!text) {
       // Check if it was blocked by safety
       const safetyRatings = response.promptFeedback?.safetyRatings;
-      if (safetyRatings?.some(r => r.blocked)) {
+      if (safetyRatings?.some((r: any) => r.blocked)) {
         throw new Error("AI output blocked for safety reasons. Please adjust your research topic.");
       }
       throw new Error("AI returned an empty data stream.");
