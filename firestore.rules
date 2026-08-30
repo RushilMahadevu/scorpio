@@ -6,7 +6,8 @@ service cloud.firestore {
     function isTeacher() {
       return request.auth != null && (
         request.auth.token.role == 'teacher' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher'
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher')
       );
     }
 
@@ -15,13 +16,9 @@ service cloud.firestore {
       return request.auth != null && (
         request.auth.token.organizationId == orgId ||
         request.auth.token.orgId == orgId ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId)
       );
-    }
-
-    // Helper function to check if the user is the specific student
-    function isStudent(userId) {
-      return request.auth != null && request.auth.uid == userId;
     }
 
     // Unified Users collection - allows users to see peers in their network
@@ -30,14 +27,24 @@ service cloud.firestore {
         request.auth.uid == userId || 
         isTeacher() ||
         // Allow students to read their teacher's profile to resolve Organization ID
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId == userId ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId == userId) ||
         // Allow students to read their teacher's profile via course lookup
-        get(/databases/$(database)/documents/courses/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId)).data.teacherId == userId
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId != null &&
+         exists(/databases/$(database)/documents/courses/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId)) &&
+         get(/databases/$(database)/documents/courses/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId)).data.teacherId == userId)
       );
       allow write: if request.auth != null && (
         request.auth.uid == userId ||
         isTeacher()
       );
+    }
+
+    // Students collection (legacy support)
+    match /students/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isTeacher());
+      allow write: if request.auth != null && (request.auth.uid == userId || isTeacher());
     }
 
     // Teachers collection
@@ -52,7 +59,11 @@ service cloud.firestore {
         resource.data.visibility == 'global' || 
         (resource.data.visibility == 'network' && isMemberOf(resource.data.organizationId)) ||
         resource.data.teacherId == request.auth.uid ||
-        resource.data.courseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId
+        isTeacher() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          resource.data.courseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId ||
+          resource.data.teacherId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId
+        ))
       );
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;

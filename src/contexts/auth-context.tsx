@@ -55,6 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setRole(userData.role);
               setProfile(userData);
               setLoading(false);
+
+              // Auto-sync session cookie for middleware
+              firebaseUser.getIdToken().then((idToken) => {
+                fetch('/api/auth/session', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ idToken, role: userData.role, organizationId: userData.organizationId }),
+                }).catch(() => {});
+              }).catch(() => {});
             } else {
               // Fallback to legacy check if unified doc doesn't exist yet
               // Check if teacher
@@ -73,6 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 await setDoc(doc(db, "users", firebaseUser.uid), newProfile, { merge: true });
                 setRole("teacher");
                 setProfile(newProfile as UserProfile);
+
+                firebaseUser.getIdToken().then((idToken) => {
+                  fetch('/api/auth/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, role: "teacher" }),
+                  }).catch(() => {});
+                }).catch(() => {});
               } else {
                 // Check if student
                 const studentDoc = await getDoc(doc(db, "students", firebaseUser.uid));
@@ -92,6 +109,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   await setDoc(doc(db, "users", firebaseUser.uid), newProfile, { merge: true });
                   setRole("student");
                   setProfile(newProfile as UserProfile);
+
+                  firebaseUser.getIdToken().then((idToken) => {
+                    fetch('/api/auth/session', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ idToken, role: "student" }),
+                    }).catch(() => {});
+                  }).catch(() => {});
                 } else {
                   setRole(null);
                   setLoading(false);
@@ -108,6 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRole(null);
           setProfile(null);
           setLoading(false);
+          // Clean up session cookie on logout
+          fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
         }
       } catch (error: any) {
         if (error?.code !== 'permission-denied') {

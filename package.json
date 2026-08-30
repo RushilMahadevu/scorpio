@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "TURBOPACK=0 next build",
     "start": "next start",
     "lint": "eslint",

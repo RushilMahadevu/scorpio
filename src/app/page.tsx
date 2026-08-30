@@ -85,17 +85,8 @@ export default function Home() {
     }
   }, [theaterOpen]);
 
-  // Students are ALWAYS forced to redirect to their portal.
-  // Teachers are redirected unless they disable the auto-redirect preference.
-  useEffect(() => {
-    if (!authLoading && user && role) {
-      if (role === "student") {
-        router.push("/student");
-      } else if (isLoaded && role === "teacher" && (profile?.preferences?.autoRedirectPortal ?? true)) {
-        router.push("/teacher");
-      }
-    }
-  }, [user, role, profile, authLoading, router, isLoaded]);
+  // Auto-redirect was removed to allow users to view the homepage even when logged in.
+  // Logged-in users can use the header 'Go to Dashboard' link to enter their portal.
 
 
 
@@ -189,7 +180,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen relative font-medium scroll-smooth">
-        {(!user || role !== "student") && <LoadingScreen onFinish={onLoadingFinish} />}
+        <LoadingScreen onFinish={onLoadingFinish} />
         <SpaceBackground />
 
         <AnimatePresence>

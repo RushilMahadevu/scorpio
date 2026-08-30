@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getGenerativeModel } from "firebase/ai";
-import { genAI } from "@/lib/firebase";
 
-const model = getGenerativeModel(genAI, { 
-  model: "gemini-2.0-flash", // Using standard stable flash
-});
+function resolveApiKey(): string {
+  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+  if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) return process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  throw new Error("Gemini API key is not configured");
+}
 
 export async function POST(req: Request) {
   try {
@@ -22,13 +22,31 @@ export async function POST(req: Request) {
       - Example: "Newton's Second Law Help", "Kinematics Problem Set", "Refraction Concept", "Calculus in Physics".
 
       USER: ${userMessage}
-      AI: ${aiResponse.slice(0, 300)}...
+      AI: ${(aiResponse || "").slice(0, 300)}...
 
       TITLE:`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const title = response.text().trim().replace(/^["']|["']$/g, '');
+    const apiKey = resolveApiKey();
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 50 },
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => "");
+      console.warn("Title generation API returned error:", errBody);
+      return NextResponse.json({ title: "New Chat" });
+    }
+
+    const data = await res.json();
+    const rawTitle = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const title = rawTitle.trim().replace(/^["']|["']$/g, "");
 
     return NextResponse.json({ title: title || "New Chat" });
   } catch (error: any) {

@@ -1,4 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch, deleteDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage";
@@ -16,6 +17,37 @@ const firebaseConfig = {
 
 // Initialize Firebase (prevent multiple instances)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+// Initialize App Check (client-side only, before Firebase AI / Vertex AI initialization)
+let appCheck: any = null;
+if (typeof window !== "undefined") {
+  if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN) {
+    // @ts-ignore
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN =
+      process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN === "true"
+        ? true
+        : (process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN || true);
+  }
+
+  const recaptchaKey =
+    process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
+    "6LdmeKAtAAAAAHANc81x3a4H6BMtVuXetMvGLTL8";
+
+  if (recaptchaKey) {
+    try {
+      const isEnterprise = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER !== "v3";
+      appCheck = initializeAppCheck(app, {
+        provider: isEnterprise
+          ? new ReCaptchaEnterpriseProvider(recaptchaKey)
+          : new ReCaptchaV3Provider(recaptchaKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+    } catch (e) {
+      console.warn("[Firebase App Check] Initialization failed:", e);
+    }
+  }
+}
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -456,5 +488,5 @@ export const signInWithGoogleForTeacher = async () => {
   return result.user;
 };
 
-export { auth, db, storage, genAI };
+export { auth, db, storage, genAI, appCheck };
 export default app;
