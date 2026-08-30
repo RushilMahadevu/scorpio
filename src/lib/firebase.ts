@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, ReCaptchaV3Provider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, ReCaptchaV3Provider, getToken } from "firebase/app-check";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, writeBatch, deleteDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage";
@@ -42,6 +42,17 @@ if (typeof window !== "undefined") {
           : new ReCaptchaV3Provider(recaptchaKey),
         isTokenAutoRefreshEnabled: true,
       });
+
+      // Immediately request token to warm up App Check and register executes in Google Cloud Console
+      getToken(appCheck, false)
+        .then((tok) => {
+          if (tok?.token) {
+            console.log("[Firebase App Check] Token generated successfully.");
+          }
+        })
+        .catch((e) => {
+          console.warn("[Firebase App Check] Initial token fetch error:", e);
+        });
     } catch (e) {
       console.warn("[Firebase App Check] Initialization failed:", e);
     }
