@@ -14,7 +14,9 @@ function resolveApiKey(): string {
       if (key) return key;
     }
   } catch {}
-  return "AIzaSyCc0D0j5X4HekaSvXpCa8hFPfZKdn6nQUA";
+  throw new Error(
+    "Gemini API key is not configured. Set GEMINI_API_KEY or NEXT_PUBLIC_FIREBASE_API_KEY environment variable."
+  );
 }
 
 async function callGeminiDirect(request: any) {
