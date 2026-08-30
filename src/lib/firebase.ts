@@ -31,7 +31,7 @@ if (typeof window !== "undefined") {
 
   const recaptchaKey =
     process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
-    "6LdmeKAtAAAAAHANc81x3a4H6BMtVuXetMvGLTL8";
+    "6LdmeKAtAAAAAJl2vM5DGedgtV3rH2Y0d_F3JR-u";
 
   if (recaptchaKey) {
     try {
