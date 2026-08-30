@@ -16,7 +16,13 @@ function FrozenRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function PageTransition({ children }: { children: React.ReactNode }) {
+export function PageTransition({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -30,7 +36,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
           duration: 0.35,
           ease: [0.22, 1, 0.36, 1] 
         }}
-        className="w-full relative"
+        className={className || "w-full relative"}
       >
         <FrozenRoute>{children}</FrozenRoute>
       </motion.div>

@@ -19,25 +19,31 @@ export default function StudentLayout({
   const pathname = usePathname();
 
   const isAssignmentView = pathname?.includes("assignment-view");
+  const isTutor = pathname?.includes("/student/tutor");
+  const isFullScreen = isAssignmentView || isTutor;
   
   return (
     <ProtectedRoute allowedRole="student">
       <SpaceBackground />
-      <div className="flex h-screen">
-        {!isAssignmentView && (
+      <div className="flex h-screen overflow-hidden">
+        {!isFullScreen && (
           <StudentSidebar
             isCollapsed={isCollapsed}
             onToggle={() => setIsCollapsed(!isCollapsed)}
           />
         )}
-        <main className={`flex-1 bg-background/50 ${isAssignmentView ? "overflow-hidden w-screen fixed inset-0 z-50" : "overflow-auto"}`}>
-          <div className={isAssignmentView ? "h-full w-full" : "p-8 max-w-7xl mx-auto w-full"}>
-            <PageTransition>
-              {children}
-            </PageTransition>
-          </div>
+        <main className={`flex-1 min-w-0 flex flex-col ${isFullScreen ? "overflow-hidden w-screen fixed inset-0 z-50 bg-background" : "overflow-auto bg-background/50"}`}>
+          {isFullScreen ? (
+            children
+          ) : (
+            <div className="p-8 max-w-7xl mx-auto w-full">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </div>
+          )}
         </main>
-        {!isAssignmentView && <NavigationChatbot userRole="student" />}
+        {!isFullScreen && <NavigationChatbot userRole="student" />}
       </div>
     </ProtectedRoute>
   );
