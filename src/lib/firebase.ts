@@ -62,9 +62,27 @@ if (typeof window !== "undefined") {
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-const genAI = getAI(app, {
-  backend: new GoogleAIBackend(),
-  useLimitedUseAppCheckTokens: true,
+
+let _genAI: any = null;
+export function getGenAIInstance() {
+  if (!_genAI) {
+    _genAI = getAI(app, {
+      backend: new GoogleAIBackend(),
+      useLimitedUseAppCheckTokens: true,
+    });
+  }
+  return _genAI;
+}
+
+const genAI = new Proxy({} as ReturnType<typeof getAI>, {
+  get(target, prop, receiver) {
+    const instance = getGenAIInstance();
+    const val = Reflect.get(instance, prop, receiver);
+    if (typeof val === "function") {
+      return val.bind(instance);
+    }
+    return val;
+  }
 });
 
 // --- File Upload Helpers ---
