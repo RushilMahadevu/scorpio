@@ -62,7 +62,10 @@ if (typeof window !== "undefined") {
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-const genAI = getAI(app, { backend: new GoogleAIBackend() });
+const genAI = getAI(app, {
+  backend: new GoogleAIBackend(),
+  useLimitedUseAppCheckTokens: true,
+});
 
 // --- File Upload Helpers ---
 export type WorkFile = {
