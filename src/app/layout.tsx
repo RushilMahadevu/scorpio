@@ -118,7 +118,7 @@ export default function RootLayout({
           src="https://tweakcn.com/live-preview.min.js"
         />
       </head>
-      <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${ptSerif.variable} ${atkinson.variable} ${robotoMono.variable} font-sans antialiased bg-background text-foreground`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${ptSerif.variable} ${atkinson.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
         <Providers>
           {children}
         </Providers>

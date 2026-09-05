@@ -164,9 +164,8 @@ html.lenis {
   --font-pt-serif: var(--font-pt-serif);
   --font-atkinson: var(--font-atkinson);
   --font-verdana: Verdana, Geneva, sans-serif;
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-mono: var(--font-roboto-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -203,9 +202,6 @@ html.lenis {
 }
 
 :root {
-  --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-pt-serif), Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: var(--font-roboto-mono), ui-monospace, SFMono-Regular, monospace;
   --radius: 0.5rem;
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.09 0 0);
@@ -357,46 +353,35 @@ html.lenis {
   }
 
   body {
-    @apply bg-background text-foreground overflow-x-hidden font-sans;
-    font-family: var(--font-sans);
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 
   html {
     @apply overflow-x-hidden;
   }
 
-  html.font-inter {
-    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  html.font-inter body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   }
 
-  html.font-ibm-plex-sans {
-    --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  html.font-ibm-plex-sans body {
+    font-family: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, sans-serif;
   }
 
-  html.font-verdana {
-    --font-sans: Verdana, Geneva, sans-serif;
+  html.font-verdana body {
+    font-family: Verdana, Geneva, sans-serif;
   }
 
-  html.font-roboto-mono {
-    --font-sans: var(--font-roboto-mono), ui-monospace, SFMono-Regular, monospace;
+  html.font-roboto-mono body {
+    font-family: var(--font-roboto-mono), ui-monospace, SFMono-Regular, monospace;
   }
 
-  html.font-pt-serif {
-    --font-sans: var(--font-pt-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+  html.font-pt-serif body {
+    font-family: var(--font-pt-serif), Georgia, Cambria, "Times New Roman", Times, serif;
   }
 
-  html.font-atkinson {
-    --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
-  }
-
-  /* Tweakcn live-preview typography overrides */
-  html[style*="--font-sans"],
-  html[style*="--font-sans"] body,
-  html[style*="--font-sans"] input,
-  html[style*="--font-sans"] button,
-  html[style*="--font-sans"] textarea,
-  html[style*="--font-sans"] select {
-    font-family: var(--font-sans) !important;
+  html.font-atkinson body {
+    font-family: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
   }
 }
 
