@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
@@ -30,25 +30,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PlusCircle, AppWindow, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileDown, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, Info, CheckCircle2 } from "lucide-react";
+import { PlusCircle, AppWindow, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileDown, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 // Collapsible section for advanced options
-function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+function CollapsibleSection({ title, children, defaultOpen = false, openWhen = false, accent = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean; openWhen?: boolean; accent?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => {
+    if (openWhen) setOpen(true);
+  }, [openWhen]);
+
   return (
-    <div className="border rounded mb-4">
+    <div className={`rounded-xl border mb-6 ${accent ? "border-primary/30 bg-primary/[0.03] shadow-sm" : ""}`}>
       <button
         type="button"
-        className="w-full flex items-center justify-between px-4 py-2 bg-muted hover:bg-muted/70 font-medium text-left cursor-pointer"
+        className={`w-full flex items-center justify-between rounded-t-xl px-5 py-4 font-medium text-left cursor-pointer transition-colors ${accent ? "bg-primary/10 text-primary hover:bg-primary/15" : "bg-muted hover:bg-muted/70"}`}
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
         <span>{title}</span>
         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
-      {open && <div className="p-4">{children}</div>}
+      {open && <div className="space-y-6 p-6">{children}</div>}
     </div>
   );
 }
@@ -401,7 +405,7 @@ function CreateAssignmentForm() {
     <TooltipProvider delayDuration={100}>
       <div className="max-w-3xl mx-auto space-y-6">
         
-        {/* Header: Title and AI button */}
+        {/* Header: Title and preview */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-1">Create Assignment</h1>
@@ -411,23 +415,6 @@ function CreateAssignmentForm() {
           <div className="flex flex-wrap gap-2">
             {/* Generate with AI Dialog */}
             <Dialog open={aiOpen} onOpenChange={setAiOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="cursor-pointer"
-                  disabled={isFreePlan}
-                  onClick={(e) => {
-                    if (isFreePlan) {
-                      e.preventDefault();
-                      toast.error("AI Generation requires a Standard subscription.");
-                    }
-                  }}
-                >
-                  <ListFilterPlus className="h-4 w-4 mr-2" />
-                  Generate with AI
-                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
-                </Button>
-              </DialogTrigger>
               <DialogContent className="max-w-3xl">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
@@ -520,17 +507,6 @@ function CreateAssignmentForm() {
 
             {/* Import from Text Dialog */}
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="cursor-pointer"
-                  disabled={isFreePlan}
-                >
-                  <FileDown className="h-4 w-4 mr-2" />
-                  Import from Text
-                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
-                </Button>
-              </DialogTrigger>
               <DialogContent className="max-w-5xl w-full">
                 <DialogHeader>
                   <DialogTitle>Import Questions from Text</DialogTitle>
@@ -682,11 +658,42 @@ function CreateAssignmentForm() {
 
           {/* ── 2. Questions ── */}
           <Card>
-            <CardHeader>
-              <CardTitle>Questions</CardTitle>
-              <CardDescription>Add and configure the questions students will answer.</CardDescription>
+            <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle>Questions</CardTitle>
+                <CardDescription>Add and configure what students will answer.</CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setAiOpen(true)} disabled={isFreePlan}>
+                  <ListFilterPlus className="mr-2 h-4 w-4" />
+                  Generate
+                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={isFreePlan}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Import
+                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {questions.length === 0 && (
+                <div className="rounded-lg border border-dashed bg-muted/20 px-6 py-8 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-sm">
+                    <PlusCircle className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold">Add your first question</h3>
+                  <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
+                    Write one yourself, or use Generate and Import above to bring in existing content.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <Button type="button" size="sm" onClick={addQuestion}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Write a question
+                    </Button>
+                  </div>
+                </div>
+              )}
               {questions.map((question, index) => (
                 <Card key={question.id} className="p-4">
                   <div className="space-y-4">
@@ -812,6 +819,11 @@ function CreateAssignmentForm() {
             </CardContent>
           </Card>
 
+          <CollapsibleSection
+            title="Advanced settings: grading, security & visibility"
+            openWhen={questions.length > 0}
+            accent
+          >
           {/* ── 3. Grading ── */}
           <Card>
             <CardHeader>
@@ -1054,6 +1066,8 @@ function CreateAssignmentForm() {
                 </div>
               </RadioGroup>
             </div>
+          </CollapsibleSection>
+
           </CollapsibleSection>
 
           <div className="flex gap-4">

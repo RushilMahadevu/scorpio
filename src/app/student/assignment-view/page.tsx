@@ -20,20 +20,16 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { motion, AnimatePresence } from "framer-motion";
-import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowLeft, Send, MessagesSquare, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, BookOpen, AlertCircle, Save, Lightbulb, User, ChevronRight, ChevronLeft, Lock, BarChart3 } from "lucide-react";
+import { ArrowLeft, Send, MessagesSquare, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, AlertCircle, Save, Lightbulb, User, ChevronRight, Lock } from "lucide-react";
 import { CruxLogo } from "@/components/ui/crux-logo";
-import Link from "next/link";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MathInputField } from "@/components/math-input";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { helpSolveProblem } from "@/lib/ai/tutor";
@@ -100,6 +96,7 @@ function AssignmentDetailContent() {
   // Tab unfocus tracking
   const [unfocusCount, setUnfocusCount] = useState(0);
   const [showUnfocusPopup, setShowUnfocusPopup] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const ignoreNextBlurRef = useState({ current: false })[0];
   const lastUploadClickTime = useRef<number>(0);
 
@@ -518,7 +515,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
   };
 
   const handleSaveDraft = async () => {
-    if (!assignment || !user) return;
+    if (!assignment || !user) return false;
     ignoreNextBlurRef.current = true;
     setSubmitting(true);
     try {
@@ -563,11 +560,27 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         setExistingSubmission({ ...submissionData, id: docRef.id });
       }
       toast.success("Draft saved!");
+      return true;
     } catch (error) {
       console.error("Error saving draft:", error);
       toast.error("Failed to save draft.");
+      return false;
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleBackClick = () => {
+    if (submitted || !hasStarted) {
+      router.push("/student/assignments");
+      return;
+    }
+    setShowLeaveDialog(true);
+  };
+
+  const handleSaveAndLeave = async () => {
+    if (await handleSaveDraft()) {
+      router.push("/student/assignments");
     }
   };
 
@@ -684,7 +697,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
       <div className="max-w-2xl mx-auto mt-10">
         <Card className="text-center p-6">
           <CardHeader>
-            <CardTitle className="text-2xl">{assignment.title}</CardTitle>
+            <CardTitle className="text-2xl leading-tight text-card-foreground">{assignment.title}</CardTitle>
             <CardDescription className="text-lg mt-2">{assignment.description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -761,7 +774,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
   }
 
   return (
-    <div className="flex h-[100dvh] w-full bg-background overflow-hidden relative">
+    <div className="flex h-[100dvh] w-full bg-muted/20 overflow-hidden relative">
 
       <Dialog open={showUnfocusPopup}>
         <DialogContent
@@ -803,6 +816,24 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         </DialogContent>
       </Dialog>
 
+      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save your progress?</DialogTitle>
+            <DialogDescription>Save a draft before leaving?</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="ghost" onClick={() => router.push("/student/assignments")}>
+              Leave without saving
+            </Button>
+            <Button onClick={handleSaveAndLeave} disabled={submitting}>
+              <Save className="mr-2 h-4 w-4" />
+              Save draft & leave
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <ResizablePanelGroup direction="horizontal" className="h-full w-full">
         <ResizablePanel
           id="main-content"
@@ -811,27 +842,20 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
           className="h-full flex flex-col min-w-0"
         >
           <div className="flex-1 overflow-y-auto relative scroll-smooth">
-            <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 pb-20">
-              <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
-                {!assignment.lockdownMode || !hasStarted || submitted ? (
-                  <div className="flex items-center gap-4">
-                    <Link href="/student/assignments" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back
-                    </Link>
-                    <Link href="/student/grades">
-                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        Grades
-                      </Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 uppercase ring-4 ring-white shadow-sm">
-                    <Lock className="h-3 w-3" />
-                    Integrity Lock
-                  </div>
-                )}
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-20">
+              <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 py-3 border-b rounded-b-lg shadow-sm">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="sm" onClick={handleBackClick} className="px-2 text-sm text-muted-foreground hover:text-foreground">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  {assignment.lockdownMode && hasStarted && !submitted && (
+                    <div className="flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-red-600">
+                      <Lock className="h-3 w-3" />
+                      Locked
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col items-end hidden sm:flex">
@@ -867,23 +891,22 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                         }`}
                     >
                       <Sparkles className={`h-4 w-4 mr-1.5 ${aiHelperOpen ? "animate-pulse" : ""}`} />
-                      <span className="hidden xs:inline">Tutor</span>
-                      <span className="xs:hidden">AI</span>
+                      <span>Tutor</span>
                     </Button>
                   )}
                 </div>
               </div>
 
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle>{assignment.title}</CardTitle>
-                      <CardDescription>{assignment.description}</CardDescription>
+              <Card className="overflow-hidden border-border bg-card text-card-foreground shadow-sm">
+                <CardHeader className="bg-transparent pb-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <CardTitle className="break-words pl-0 text-2xl leading-tight tracking-tight text-card-foreground">{assignment.title}</CardTitle>
+                      <CardDescription className="mt-2 max-w-2xl leading-relaxed">{assignment.description}</CardDescription>
                     </div>
                     {submitted && (
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge className={existingSubmission?.graded ? "bg-green-500" : "bg-blue-500"}>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <Badge className={existingSubmission?.graded ? "bg-emerald-500 text-white" : "bg-secondary text-secondary-foreground"}>
                           {existingSubmission?.graded ? (
                             <>
                               <CheckCircle className="h-3 w-3 mr-1" />
@@ -897,23 +920,35 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           )}
                         </Badge>
                         {existingSubmission?.graded && existingSubmission?.score !== undefined && (
-                          <div className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
+                          <div className="text-2xl font-black tracking-tighter text-card-foreground">
                             {existingSubmission.score}%
                           </div>
                         )}
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <Badge variant="outline" className="bg-muted/50">
+                      <Clock className="mr-1.5 h-3.5 w-3.5" />
+                      Due {new Date(assignment.dueDate).toLocaleDateString()}
+                    </Badge>
+                    <Badge variant="outline" className="bg-muted/50">
+                      <FileText className="mr-1.5 h-3.5 w-3.5" />
+                      {assignment.questions.length} questions
+                    </Badge>
+                    {assignment.timeLimit && (
+                      <Badge variant="outline" className="bg-muted/50">
+                        {assignment.timeLimit} minute limit
+                      </Badge>
+                    )}
+                  </div>
                 </CardHeader>
               </Card>
 
               <div className="space-y-4">
                 {assignment.questions.map((question, index) => (
-                  <Card key={question.id}>
-                    <CardHeader>
+                  <Card key={question.id} className="overflow-hidden border-border/70 shadow-sm">
+                    <CardHeader className="bg-muted/20 border-b pb-4">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2">
                           <Label className="text-base">Question {index + 1}</Label>
@@ -926,7 +961,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                         <Badge variant="outline">{question.points || 10} pts</Badge>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-6 pt-6">
                       <MarkdownRenderer className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
                         {question.text}
                       </MarkdownRenderer>
@@ -1154,16 +1189,16 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               className="bg-zinc-50/50 dark:bg-zinc-950/20 flex flex-col h-full overflow-hidden"
             >
               {/* Desktop Sidebar Content */}
-              <div className="p-4 h-16 border-b flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+              <div className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <CruxLogo className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-xs tracking-tight leading-none uppercase">Physics Tutor</h3>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Socratic Mode</span>
+                    <h3 className="text-sm font-semibold tracking-tight">Study Tutor</h3>
+                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span>Hints, not answers</span>
                     </div>
                   </div>
                 </div>
@@ -1175,20 +1210,20 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               <div className="flex-1 overflow-y-auto px-4 pt-4">
                 <div className="space-y-6 pb-10">
                   {aiMessages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-                      <div className="w-16 h-16 rounded-[2rem] bg-white dark:bg-zinc-900 border shadow-sm flex items-center justify-center mb-6">
-                        <Lightbulb className="h-8 w-8 text-zinc-400" />
+                    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <Lightbulb className="h-6 w-6" />
                       </div>
-                      <h4 className="font-bold text-lg mb-2">Need a hint?</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed max-w-[240px]">
-                        Instead of answers, I'll ask questions to help you unlock the logic behind these physics problems.
+                      <h4 className="mb-2 text-base font-semibold">What are you working on?</h4>
+                      <p className="max-w-[250px] text-sm leading-relaxed text-muted-foreground">
+                        Ask for a starting point, a concept refresher, or help checking your reasoning.
                       </p>
-                      <div className="mt-8 w-full space-y-2">
-                        <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("How do I start thinking about Question 1?"); handleAiSendMessage(); }}>
+                      <div className="mt-7 w-full space-y-2">
+                        <Button variant="outline" size="sm" className="h-auto w-full justify-start border-primary/20 px-3 py-2.5 text-xs font-medium hover:bg-primary/5" onClick={() => { setAiInput("How do I start thinking about Question 1?"); handleAiSendMessage(); }}>
                           <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
                           Approach to Question 1
                         </Button>
-                        <Button variant="outline" size="sm" className="w-full justify-start text-[11px] h-auto py-2.5 px-3 border-zinc-200 hover:bg-white dark:hover:bg-zinc-900 transition-all font-medium" onClick={() => { setAiInput("What are the key principles for this topic?"); handleAiSendMessage(); }}>
+                        <Button variant="outline" size="sm" className="h-auto w-full justify-start border-primary/20 px-3 py-2.5 text-xs font-medium hover:bg-primary/5" onClick={() => { setAiInput("What are the key principles for this topic?"); handleAiSendMessage(); }}>
                           <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
                           Key Principles
                         </Button>
@@ -1264,7 +1299,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                   </Button>
                 </div>
                 <p className="text-[8px] text-center mt-3 uppercase tracking-[0.2em] font-black text-zinc-300 dark:text-zinc-600">
-                  AI Pedagogical Protocol Active
+                  Guided tutoring active
                 </p>
               </div>
             </ResizablePanel>
@@ -1288,14 +1323,17 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-[85%] bg-background z-[101] shadow-2xl flex flex-col"
+              className="fixed inset-y-0 right-0 z-[101] flex w-[85%] flex-col bg-background shadow-2xl"
             >
-              <div className="p-4 border-b flex items-center justify-between shrink-0">
+              <div className="flex h-16 shrink-0 items-center justify-between border-b px-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <CruxLogo className="h-5 w-5" />
                   </div>
-                  <span className="font-bold text-sm uppercase tracking-tight">AI Advisor</span>
+                  <div>
+                    <span className="block text-sm font-semibold tracking-tight">Study Tutor</span>
+                    <span className="text-[11px] text-muted-foreground">Hints, not answers</span>
+                  </div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)}>
                   <X className="h-4 w-4" />
@@ -1315,16 +1353,16 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                 </div>
               </div>
 
-              <div className="p-4 border-t bg-zinc-50 dark:bg-zinc-900 pb-10">
+              <div className="border-t bg-muted/20 p-4 pb-10">
                 <div className="flex gap-2">
                   <Input
                     value={aiInput}
                     onChange={(e) => setAiInput(e.target.value)}
                     placeholder="Ask a question..."
-                    className="rounded-full bg-white dark:bg-black p-6 shadow-md border-zinc-200"
+                    className="rounded-xl bg-background px-4 py-6 shadow-none"
                     onKeyDown={(e) => e.key === 'Enter' && handleAiSendMessage()}
                   />
-                  <Button onClick={handleAiSendMessage} className="rounded-full h-12 w-12 p-0 bg-zinc-900 dark:bg-white">
+                  <Button onClick={handleAiSendMessage} disabled={aiLoading || !aiInput.trim()} className="h-12 w-12 shrink-0 rounded-xl p-0">
                     <Send className="h-5 w-5" />
                   </Button>
                 </div>
