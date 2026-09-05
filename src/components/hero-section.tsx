@@ -26,7 +26,7 @@ export default function HeroSection() {
           transition={{ delay: 0.2, duration: 0.6 }}
         >
           <Sparkles className="h-4 w-4" />
-          <span className="text-sm tracking-wide font-medium">Research-Grade AI Tutoring Platform</span>
+          <span className="text-sm tracking-wide font-medium">Research-Grade Physics Learning Platform</span>
         </motion.div>
 
         <motion.div
@@ -67,7 +67,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
         >
-          Built for Sage Ridge School, Scorpio delivers research-grade AI tutoring to every physics student while freeing teachers from hours of manual grading and feedback.
+          Built for Sage Ridge School, Scorpio gives every physics student guided practice while freeing teachers from hours of manual grading and feedback.
         </motion.p>
 
         {/* Stats with Improved Typography */}

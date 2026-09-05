@@ -335,7 +335,7 @@ export default function GradeSubmissionPage() {
             ) : (
               <CruxLogo size={16} className="text-foreground" />
             )}
-            Re-grade with Crux AI
+            Re-grade with Tutor
           </Button>
           <Button 
             onClick={handleSave} 

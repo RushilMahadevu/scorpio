@@ -66,7 +66,7 @@ const teacherQuickActions: QuickAction[] = [
 
 const studentSuggested = [
   "How do I start an assignment?",
-  "What is Crux?",
+  "What is Tutor?",
   "How does Practice work?",
   "Where are my grades?",
 ];
@@ -140,11 +140,11 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
     const firstName = profile?.displayName?.split(' ')[0] || (userRole === 'teacher' ? 'Teacher' : 'there');
     const roleBlurb = userRole === 'teacher'
       ? `I can help you navigate [Assignments](/teacher/assignments), [Create Assignment](/teacher/create), [Gradebook](/teacher/grades), [Network Limits](/teacher/network), [Waypoints](/teacher/waypoints), and more.`
-      : `I can help you navigate [Assignments](/student/assignments), your [AI Tutor](/student/tutor), [Practice](/student/practice), [Notebook](/student/notebook), and [Grades](/student/grades).`;
+      : `I can help you navigate [Assignments](/student/assignments), your [Tutor](/student/tutor), [Practice](/student/practice), [Notebook](/student/notebook), and [Grades](/student/grades).`;
 
     setMessages([{
       role: 'assistant',
-      content: `**Hi, ${firstName}!** 👋\n\nI'm **Crux**, your platform guide. ${roleBlurb}\n\nWhere would you like to go?`,
+      content: `**Hi, ${firstName}!** 👋\n\nI'm your Scorpio guide. ${roleBlurb}\n\nWhere would you like to go?`,
       isWelcome: true,
     }]);
   }, [profile?.displayName, userRole]);
@@ -598,7 +598,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                         sendMessage(input);
                       }
                     }}
-                    placeholder="Ask Crux where to find things..."
+                          placeholder="Ask Tutor where to find things..."
                     className="flex-1 bg-transparent border-0 resize-none p-0 text-xs focus-visible:ring-0 min-h-[20px] max-h-[60px]"
                     rows={1}
                     disabled={isLoading}

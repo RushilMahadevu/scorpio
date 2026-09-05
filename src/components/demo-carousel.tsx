@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Maximize } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const demoSlides = [
-  { src: "/demos/processed/ai-tutor-chat.mp4", title: "AI Tutor", desc: "Conversational tutor with reasoning." },
+  { src: "/demos/processed/ai-tutor-chat.mp4", title: "Tutor", desc: "Conversational tutor with reasoning." },
   { src: "/demos/processed/assignment-creation-teacher.mp4", title: "Assignments", desc: "Teachers build assignments." },
   { src: "/demos/processed/student-submission-math-file.mp4", title: "Submission", desc: "Students submit work easily." },
   { src: "/demos/processed/navigation-assistant.mp4", title: "Assistant", desc: "Smart guided navigation." }

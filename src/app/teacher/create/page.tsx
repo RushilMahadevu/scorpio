@@ -973,7 +973,7 @@ function CreateAssignmentForm() {
                     <Checkbox className="cursor-pointer" id="allowAIHelp" checked={allowAIHelp} disabled={isFreePlan} onCheckedChange={(checked) => setAllowAIHelp(!!checked)} />
                     <div className="flex items-center gap-1.5">
                       <Label htmlFor="allowAIHelp" className="text-xs font-bold flex items-center gap-1.5">
-                        <CruxLogo className="h-3 w-3" size={16} /> Enable AI Tutor
+                        <CruxLogo className="h-3 w-3" size={16} /> Enable Tutor
                       </Label>
                       <Tooltip>
                         <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>

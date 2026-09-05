@@ -30,10 +30,15 @@ export interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+export interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
 interface AppSidebarProps {
   roleLabel: string;
   roleIcon?: React.ComponentType<{ className?: string }>;
-  navItems: NavItem[];
+  navSections: NavSection[];
   isCollapsed: boolean;
   onToggle: () => void;
 }
@@ -45,7 +50,7 @@ interface SidebarContentProps extends AppSidebarProps {
 function SidebarContent({
   roleLabel,
   roleIcon: RoleIcon,
-  navItems,
+  navSections,
   isCollapsed,
   onNavigate,
   onToggle,
@@ -94,8 +99,15 @@ function SidebarContent({
       </div>
 
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
-          {navItems.map((item) => {
+        <nav className="space-y-5">
+          {navSections.map((section) => (
+            <div key={section.label} className="space-y-1">
+              {!isCollapsed && (
+                <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
+                  {section.label}
+                </div>
+              )}
+              {section.items.map((item) => {
             const isRootRoute = item.href === "/teacher" || item.href === "/student" || item.href === "/admin";
             const isActive = pathname ? (
               isRootRoute
@@ -133,8 +145,10 @@ function SidebarContent({
                   )}
                 </motion.div>
               </Link>
-            );
-          })}
+                );
+              })}
+            </div>
+          ))}
         </nav>
       </ScrollArea>
 
@@ -264,7 +278,7 @@ function SidebarContent({
 export function AppSidebar({
   roleLabel,
   roleIcon,
-  navItems,
+  navSections,
   isCollapsed,
   onToggle,
 }: AppSidebarProps) {
@@ -282,7 +296,7 @@ export function AppSidebar({
           <SidebarContent
             roleLabel={roleLabel}
             roleIcon={roleIcon}
-            navItems={navItems}
+            navSections={navSections}
             isCollapsed={isCollapsed}
             onToggle={onToggle}
           />
@@ -299,7 +313,7 @@ export function AppSidebar({
             <SidebarContent
               roleLabel={roleLabel}
               roleIcon={roleIcon}
-              navItems={navItems}
+              navSections={navSections}
               isCollapsed={false}
               onToggle={() => { }}
               onNavigate={() => setOpen(false)}

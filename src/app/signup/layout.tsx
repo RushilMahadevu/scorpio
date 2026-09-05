@@ -2,7 +2,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Sign Up",
-  description: "Create a Scorpio account to start mastering physics with verifiable AI tutoring.",
+  description: "Create a Scorpio account to start mastering physics with guided tutoring.",
 };
 
 export default function SignupLayout({

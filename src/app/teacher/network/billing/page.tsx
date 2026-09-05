@@ -342,7 +342,7 @@ export default function BillingPage() {
                       {[
                         "Everything in Free",
                         "Unlimited Students & Courses",
-                        "All Integrations with Crux AI",
+                        "All Tutor integrations",
                         "Teacher AI Dashboards",
                         "Network Waypoint Syncing",
                         "Comprehensive Control of Capacities & Limits",

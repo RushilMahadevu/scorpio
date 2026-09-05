@@ -90,7 +90,7 @@ export default function TermsPage() {
                   <strong>Platform Availability:</strong> We strive for 99.9% uptime, but Scorpio is provided "as is" without warranties of any kind regarding uninterrupted service during maintenance or third-party API outages.
                </p>
                <p>
-                  <strong>Termination:</strong> We reserve the right to suspend or terminate access to any user who violates these terms, specifically targeting those who attempt to disrupt the pedagogical integrity of the AI tutor.
+                  <strong>Termination:</strong> We reserve the right to suspend or terminate access to any user who violates these terms, specifically targeting those who attempt to disrupt the pedagogical integrity of the tutor.
                </p>
             </div>
             <div className="mt-10 pt-8 border-t border-primary/10 text-center">

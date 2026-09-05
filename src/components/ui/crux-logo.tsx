@@ -1,34 +1,35 @@
 "use client";
 
 import React from 'react';
-import { Icon } from 'lucide-react';
-import { starNorth } from '@lucide/lab';
 import { motion, HTMLMotionProps } from 'framer-motion';
+import { SquareUserRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface CruxLogoProps extends HTMLMotionProps<"div"> {
+interface TutorLogoProps extends HTMLMotionProps<"div"> {
   size?: number;
   className?: string;
 }
 
-export const CruxLogo: React.FC<CruxLogoProps> = ({ 
+export const TutorLogo: React.FC<TutorLogoProps> = ({
   size = 24, 
   className = '', 
   ...props 
 }) => {
   return (
     <motion.div
-      className={cn("flex items-center justify-center", className)}
+      className={cn("flex items-center justify-center text-current", className)}
       style={{ width: size, height: size }}
       role="img"
-      aria-label="Crux AI Logo"
+      aria-label="Tutor"
       {...props}
     >
-      <Icon 
-        iconNode={starNorth} 
+      <SquareUserRound
         size={size} 
-        strokeWidth={2.5}
+        strokeWidth={2.25}
       />
     </motion.div>
   );
 };
+
+/** @deprecated Use TutorLogo for user-facing surfaces. */
+export const CruxLogo = TutorLogo;

@@ -255,7 +255,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
 
   const docsItems: MenuItem[] = [
     { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
-    { href: "/research", label: "Research & Methodology", desc: "Deep dive into the Crux Socratic architecture.", icon: Brain },
+    { href: "/research", label: "Research & Methodology", desc: "Deep dive into Scorpio's guided learning approach.", icon: Brain },
     { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
     { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
     { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },

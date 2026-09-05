@@ -825,7 +825,7 @@ export default function NotebookPage() {
             <div className="h-full flex flex-col bg-zinc-50/10 dark:bg-zinc-950/20">
               <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
                 <Label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] flex items-center gap-2">
-                  <CruxLogo className="h-3 w-3" /> Study Copilot
+                  <CruxLogo className="h-3 w-3" /> Tutor Help
                 </Label>
                 <div className="flex items-center gap-1">
                   {orgData?.aiNotebookLimitPerStudent > 0 && (

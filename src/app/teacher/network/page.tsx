@@ -118,7 +118,7 @@ export default function NetworkPage() {
   // Limits Assistant
   const [limitsOpen, setLimitsOpen] = useState(false);
   const [limitsMessages, setLimitsMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
-    { role: "assistant", content: "Hi! I'm **Crux**. Ask me anything about your network's limits, budgets, or capacities — I'll explain what each setting does and suggest optimal values for your class size. 🎯" }
+    { role: "assistant", content: "Hi! I'm your Scorpio guide. Ask me anything about your network's limits, budgets, or capacities — I'll explain what each setting does and suggest optimal values for your class size. 🎯" }
   ]);
   const [limitsInput, setLimitsInput] = useState("");
   const [limitsLoading, setLimitsLoading] = useState(false);
@@ -197,7 +197,7 @@ export default function NetworkPage() {
       await updateDoc(doc(db, "organizations", organization.id), {
         aiTutorLimitPerStudent: perMember
       });
-      toast.success(`AI Tutor limit updated to ${perMember} messages/month per student.`);
+      toast.success(`Tutor limit updated to ${perMember} messages/month per student.`);
       setOrganization(prev => prev ? { ...prev, aiTutorLimitPerStudent: perMember } : null);
     } catch (e) {
       console.error(e);
@@ -1006,7 +1006,7 @@ export default function NetworkPage() {
                       onClick={() => setLimitsOpen(true)}
                     >
                       <CruxLogo size={14} className="text-purple-600 dark:text-purple-400" />
-                      Ask Crux
+                      Ask Tutor
                     </Button>
                   </div>
 
@@ -1455,7 +1455,7 @@ export default function NetworkPage() {
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-semibold flex items-center gap-2">
                             <CruxLogo size={16} className="text-purple-600 dark:text-purple-400" />
-                            AI Tutor Messages
+                            Tutor Messages
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-purple-500" />
@@ -1467,7 +1467,7 @@ export default function NetworkPage() {
                                     <p className="font-black text-sm uppercase tracking-widest">Personal Tutor</p>
                                   </div>
                                   <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
-                                    This is the message quota for each student's one-on-one AI Tutor in the Tutor tab. When a student hits this limit, they can read past chats but can't send new messages until the month resets.
+                                    This is the message quota for each student's one-on-one Tutor. When a student hits this limit, they can read past chats but can't send new messages until the month resets.
                                   </p>
                                 </div>
                                 <div className="p-5 space-y-3 bg-white dark:bg-zinc-950">
@@ -1483,7 +1483,7 @@ export default function NetworkPage() {
                           </Badge>
                         </div>
                         <CardDescription className="text-[11px]">
-                          How many messages each student can send to their personal AI Tutor per month.
+                          How many messages each student can send to their personal Tutor per month.
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1609,7 +1609,7 @@ export default function NetworkPage() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground mt-2 text-center font-medium opacity-60">
-                Crux has full access to your network snapshot.
+                Tutor has full access to your network snapshot.
               </p>
             </div>
           </DialogContent>

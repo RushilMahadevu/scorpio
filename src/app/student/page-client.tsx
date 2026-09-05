@@ -433,8 +433,8 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
               icon: PackageOpen
             },
             {
-              title: "8. AI Tutor & Learning Library",
-              description: "Access general conceptual help outside of specific assignments. If you're confused about a fundamental law of physics, use the AI Tutor for a deep-dive explanation or browse curated resources.",
+              title: "8. Tutor & Learning Library",
+              description: "Access general conceptual help outside of specific assignments. If you're confused about a fundamental law of physics, use Tutor for a deep-dive explanation or browse curated resources.",
               icon: CruxLogo
             },
             {
@@ -597,12 +597,12 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
           </CardContent>
         </Card>
 
-        {/* AI Tutor Card */}
+        {/* Tutor Card */}
         <Card className="rounded-3xl border border-zinc-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm shadow-sm ring-1 ring-black/5 dark:ring-white/5">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <CruxLogo className="h-5 w-5" />
-              AI Tutor
+              Tutor
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-between">

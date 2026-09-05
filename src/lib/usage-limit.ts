@@ -71,7 +71,7 @@ export async function checkBudget(
         if (teacherAllowance > 0 && studentUsage >= teacherAllowance) {
           return { 
             allowed: false, 
-            error: `You have used all ${teacherAllowance} of your AI Tutor messages for this period. Contact your teacher to increase your allowance.` 
+            error: `You have used all ${teacherAllowance} of your Tutor messages for this period. Contact your teacher to increase your allowance.`
           };
         }
       }

@@ -13,7 +13,7 @@ export default function AboutClient() {
   const capabilities = [
     {
       icon: Brain,
-      title: "Socratic AI Tutoring",
+      title: "Socratic Tutoring",
       description: "Moving beyond 'Answer Engines' to true pedagogical guidance. Our AI doesn't just solve problems; it helps students through the conceptual struggle.",
       tag: "Gemini 2.5 Flash"
     },

@@ -867,7 +867,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                         }`}
                     >
                       <Sparkles className={`h-4 w-4 mr-1.5 ${aiHelperOpen ? "animate-pulse" : ""}`} />
-                      <span className="hidden xs:inline">AI Tutor</span>
+                      <span className="hidden xs:inline">Tutor</span>
                       <span className="xs:hidden">AI</span>
                     </Button>
                   )}

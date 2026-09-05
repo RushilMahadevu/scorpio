@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!organizationId) {
-      return NextResponse.json({ error: "You must be enrolled in an active Scorpio Network to use the AI Tutor." }, { status: 403 });
+      return NextResponse.json({ error: "You must be enrolled in an active Scorpio Network to use Tutor." }, { status: 403 });
     }
 
     // 2.5 Resolve Student Names for PII Scrubbing

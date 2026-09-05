@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  X, Send, Bot, Sparkles, ArrowRight,
+  X, Send, Sparkles, ArrowRight,
   GraduationCap, BookOpen, BarChart2, Zap, Users, Brain
 } from 'lucide-react';
 import { MarkdownRenderer } from './markdown-renderer';
@@ -88,7 +88,7 @@ export function LandingChatbot() {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: `**Welcome to Crux!** 👋\n\nI'm the AI tutor embedded in Scorpio. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
+      content: `**Welcome to Scorpio Tutor!** 👋\n\nI'm the tutor built into Scorpio. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
       isWelcome: true,
     }]);
   }, []);
@@ -162,7 +162,7 @@ export function LandingChatbot() {
           'fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer',
           'h-14 w-14 bg-zinc-900 border border-white/10 shadow-xl hover:bg-zinc-800 hover:border-white/20 hover:scale-105'
         )}
-        aria-label="Ask Crux"
+        aria-label="Ask Tutor"
       >
         {isOpen
           ? <X className="h-5 w-5 text-white" />
@@ -196,7 +196,7 @@ export function LandingChatbot() {
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Crux</p>
+                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Tutor</p>
                 <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
                   Online · Product Guide
@@ -305,7 +305,7 @@ export function LandingChatbot() {
               {limitReached && (
                 <div className="ml-8 p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
                   <p className="text-xs font-semibold text-foreground">Ready to get full access?</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited AI tutoring, practice, and platform features.</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited Tutor help, practice, and platform features.</p>
                   <Link href="/signup" onClick={() => setIsOpen(false)}>
                     <Button size="sm" className="w-full rounded-xl font-bold text-xs cursor-pointer h-8 mt-1">
                       Sign up for free <ArrowRight className="h-3 w-3 ml-1" />
@@ -348,7 +348,7 @@ export function LandingChatbot() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
-                Crux · Product Guide · {remaining} messages left
+                Tutor · Product Guide · {remaining} messages left
               </p>
             </div>
           </motion.div>

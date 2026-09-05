@@ -140,7 +140,7 @@ export function LandingHero() {
                 size={56} 
                 className="text-primary animate-pulse shadow-[0_0_30px_rgba(var(--primary),0.4)]" 
               />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Crux Engine</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Tutor</span>
             </motion.div>
           </div>
         </div>
@@ -160,7 +160,7 @@ export function LandingHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65, duration: 0.8 }}
         >
-          The Physics LMS Powered by Crux
+          The Physics Learning Platform with Tutor
         </motion.p>
 
         <motion.p
@@ -175,7 +175,7 @@ export function LandingHero() {
         >
           The first verifiable framework for Socratic physics tutoring. 
           Enforce the struggle with a 4-layer constraint architecture 
-          powered by the <span className="text-primary font-bold">Crux Socratic Engine</span>.
+          supported by <span className="text-primary font-bold">Scorpio Tutor</span>.
         </motion.p>
 
 

@@ -163,8 +163,8 @@ export default function Home() {
   const features = [
     { icon: Brain, title: "Socratic Scaffolding", description: "Enforces the 'Struggle'—a 4-layer architecture ensuring pedagogical depth over simple answer-retrieval.", tag: "Pedagogical" },
     { icon: SquareFunction, title: "0.92 Notation Density", description: "Real-time, symbolic LaTeX rendering verified for professional academic standards and precision.", tag: "Mathematical" },
-    { icon: Orbit, title: "Inference-Time Scaffolding", description: "No fine-tuning, no black-box retraining. Every Socratic behaviour is enforced by Crux at inference-time — observable, auditable, reproducible.", tag: "Verifiable" },
-    { icon: Calculator, title: "Constraint-Led Derivation", description: "Students are guided through the derivation, not handed it. The Crux architecture makes bypassing the learning process structurally impossible.", tag: "Architecture" },
+    { icon: Orbit, title: "Inference-Time Scaffolding", description: "No fine-tuning, no black-box retraining. Every Socratic behaviour is enforced at inference-time — observable, auditable, reproducible.", tag: "Verifiable" },
+    { icon: Calculator, title: "Constraint-Led Derivation", description: "Students are guided through the derivation, not handed it. Scorpio's architecture keeps the learning process central.", tag: "Architecture" },
     { icon: ShieldUser, title: "Verifiable Integrity", description: "Rigid schema constraints block 'homework-solving' hacks and ensure academic honesty at scale.", tag: "Verifiable" }
   ];
 

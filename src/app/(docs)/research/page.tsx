@@ -109,10 +109,10 @@ export default function ResearchPage() {
     <div className="w-full space-y-10">
       <Alert className="bg-primary/5 border-primary/20">
         <Info className="h-4 w-4 text-primary" />
-        <AlertTitle className="text-primary font-bold">Terminology Update: <span className="text-red-700 dark:text-red-300">Scorpio</span> → <span className="text-green-700 dark:text-green-300">Crux</span></AlertTitle>
+        <AlertTitle className="text-primary font-bold">Terminology Update: <span className="text-red-700 dark:text-red-300">Crux</span> → <span className="text-green-700 dark:text-green-300">Tutor</span></AlertTitle>
         <AlertDescription className="text-sm text-muted-foreground italic">
           Scorpio is the name of our physics tutoring platform. 
-          The AI tutoring engine, formerly referred to as Scorpio, is now officially named Crux.
+          The tutoring experience is now called Tutor throughout the product. Scorpio remains the platform name.
         </AlertDescription>
       </Alert>
 
@@ -216,7 +216,7 @@ export default function ResearchPage() {
                   Infrastructure
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Always-on AI Tutor, Department Waypoints, and Mastery Analytics come standard with every organizational license.
+                  Always-on Tutor, Department Waypoints, and Mastery Analytics come standard with every organizational license.
                 </p>
               </div>
               <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">

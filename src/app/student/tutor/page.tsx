@@ -801,10 +801,10 @@ export default function TutorPage() {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold tracking-tight text-foreground leading-none">
-                  Crux Tutor
+                  Tutor
                 </span>
                 <span className="text-[10px] text-muted-foreground mt-0.5">
-                  Physics AI
+                  Physics learning guide
                 </span>
               </div>
             </div>
@@ -1231,7 +1231,7 @@ export default function TutorPage() {
                             <CruxLogo size={12} className="text-primary" />
                           </div>
                           <span className="text-xs font-semibold text-foreground">
-                            Crux
+                            Tutor
                           </span>
                           {message.type && (
                             <Badge

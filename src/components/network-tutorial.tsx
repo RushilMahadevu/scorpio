@@ -44,7 +44,7 @@ const steps: Step[] = [
   },
   {
     title: "Setting Student Limits",
-    description: "You have granular control over student AI usage. Set monthly message caps for the AI Tutor, Practice problems, and AI Notebooks to manage costs and focus.",
+    description: "You have granular control over student usage. Set monthly message caps for Tutor, Practice problems, and Notebooks to manage costs and focus.",
     icon: <BrainCircuit className="h-8 w-8 text-purple-500" />,
     color: "bg-purple-50 dark:bg-purple-950/20"
   },

@@ -13,18 +13,36 @@ import {
   PackageCheck,
   Presentation,
 } from "lucide-react";
-import { AppSidebar } from "./app-sidebar";
+import { AppSidebar, NavSection } from "./app-sidebar";
 
-const navItems = [
-  { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/teacher/network", label: "Network", icon: Building2 },
-  { href: "/teacher/students", label: "Students", icon: Users },
-  { href: "/teacher/grades", label: "Gradebook", icon: ChartColumnBig },
-  { href: "/teacher/assignments", label: "My Assignments", icon: FileText },
-  { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
-  { href: "/teacher/waypoints", label: "Waypoints", icon: Waypoints },
-  { href: "/teacher/vault", label: "Vault Controls", icon: PackageCheck },
-  { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },
+const navSections: NavSection[] = [
+  {
+    label: "Overview",
+    items: [{ href: "/teacher", label: "Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Classes",
+    items: [
+      { href: "/teacher/network", label: "Network", icon: Building2 },
+      { href: "/teacher/students", label: "Students", icon: Users },
+    ],
+  },
+  {
+    label: "Assessments",
+    items: [
+      { href: "/teacher/grades", label: "Gradebook", icon: ChartColumnBig },
+      { href: "/teacher/assignments", label: "My Assignments", icon: FileText },
+      { href: "/teacher/create", label: "Create Assignment", icon: PlusCircle },
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      { href: "/teacher/waypoints", label: "Waypoints", icon: Waypoints },
+      { href: "/teacher/vault", label: "Vault Controls", icon: PackageCheck },
+      { href: "/teacher/uploads", label: "Resource Uploads", icon: Upload },
+    ],
+  },
 ];
 
 export function TeacherSidebar({
@@ -38,7 +56,7 @@ export function TeacherSidebar({
     <AppSidebar
       roleLabel="Teacher"
       roleIcon={Presentation}
-      navItems={navItems}
+      navSections={navSections}
       isCollapsed={isCollapsed}
       onToggle={onToggle}
     />

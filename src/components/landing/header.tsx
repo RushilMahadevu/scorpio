@@ -202,7 +202,7 @@ export function LandingHeader() {
                       { id: "challenge", label: "The Challenge", desc: "Understanding the physics education gap.", icon: AlertTriangle },
                       { id: "comparison", label: "vs. Other Tools", desc: "Research-backed comparison against ChatGPT and Khanmigo.", icon: ChartColumnIncreasing },
                       { id: "math-fidelity", label: "Math Fidelity", desc: "Built-in LaTeX engine for complex derivations.", icon: SquareFunction },
-                      { id: "demos", label: "System Demos", desc: "Interactive overview of AI tutoring capabilities.", icon: PlayCircle },
+                      { id: "demos", label: "System Demos", desc: "Interactive overview of Tutor and classroom capabilities.", icon: PlayCircle },
                       { id: "workflow", label: "Workflow", desc: "End-to-end assignment and feedback loop.", icon: Zap },
                       { id: "waypoints", label: "Waypoints Network", desc: "Peer-validated physics modules shared across institutions.", icon: Waypoints },
                     ].map((item) => (

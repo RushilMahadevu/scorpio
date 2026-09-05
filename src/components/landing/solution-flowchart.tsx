@@ -91,7 +91,7 @@ export function SolutionFlowchart() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Why Crux is the <span className="text-primary italic">Solution</span>.
+            Why Tutor is the <span className="text-primary italic">Solution</span>.
           </motion.h2>
 
           <motion.p
@@ -137,7 +137,7 @@ export function SolutionFlowchart() {
                 What <span className="text-primary italic">Differentiates</span> Us.
               </h3>
               <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                Standard LLMs are trained to be helpful assistants. Crux is architected to be a rigorous physics mentor.
+                Standard chatbots are built to answer quickly. Tutor is designed to be a rigorous physics mentor.
               </p>
             </div>
 

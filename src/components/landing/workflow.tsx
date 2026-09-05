@@ -143,13 +143,13 @@ export function Workflow() {
                 </div>
                 <Image 
                   src="/demos/ai-tutor.png" 
-                  alt="Crux Tutor Chat" 
+                  alt="Scorpio Tutor Chat"
                   width={800} 
                   height={600} 
                   className="w-full h-[300px] object-cover object-top"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-20 lg:text-right">
-                   <p className="text-xs font-bold text-white uppercase tracking-widest">View AI Tutor Interface</p>
+                   <p className="text-xs font-bold text-white uppercase tracking-widest">View Tutor Interface</p>
                 </div>
               </motion.div>
             </DialogTrigger>
@@ -157,7 +157,7 @@ export function Workflow() {
               <DialogTitle className="sr-only">Conceptual Discovery Interface</DialogTitle>
               <Image 
                 src="/demos/ai-tutor.png" 
-                alt="Crux Tutor Full View" 
+                alt="Scorpio Tutor Full View"
                 width={1920} 
                 height={1080} 
                 className="max-w-full max-h-[90vh] w-auto h-auto rounded-xl shadow-2xl object-contain"
