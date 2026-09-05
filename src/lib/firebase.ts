@@ -532,7 +532,7 @@ export const signInWithGoogleForTeacher = async () => {
   const result = await signInWithPopup(auth, provider);
   
   // Unified Users collection sync (Phase 2.1)
-  const userData = {
+  const userData: any = {
     uid: result.user.uid,
     email: result.user.email,
     displayName: result.user.displayName || result.user.email || "Unknown Teacher",
@@ -540,7 +540,38 @@ export const signInWithGoogleForTeacher = async () => {
     lastLoginAt: new Date(),
   };
 
-  await setDoc(doc(db, "users", result.user.uid), userData, { merge: true });
+  const userDocRef = doc(db, "users", result.user.uid);
+  const userDocSnap = await getDoc(userDocRef);
+  let orgId = userDocSnap.exists() ? userDocSnap.data()?.organizationId : null;
+
+  if (!orgId) {
+    const orgRef = doc(collection(db, "organizations"));
+    orgId = orgRef.id;
+    const newOrg = {
+      id: orgId,
+      name: `${result.user.displayName || "Teacher"}'s Network`,
+      ownerId: result.user.uid,
+      ownerEmail: result.user.email || "",
+      subscriptionStatus: "active",
+      planId: "free",
+      aiUsageCurrent: 0,
+      aiBudgetLimit: 50, // $0.50 starting credit
+      practiceLimitPerStudent: 10,
+      practiceLimit: 0,
+      practiceUsageCurrent: 0,
+      baseMonthlyFee: 0,
+      createdAt: new Date(),
+    };
+    userData.organizationId = orgId;
+    await setDoc(userDocRef, userData, { merge: true });
+    try {
+      await setDoc(orgRef, newOrg);
+    } catch (e) {
+      console.error("Error auto-provisioning organization for google teacher:", e);
+    }
+  } else {
+    await setDoc(userDocRef, userData, { merge: true });
+  }
 
   // Legacy sync
   const teacherDocRef = doc(db, "teachers", result.user.uid);

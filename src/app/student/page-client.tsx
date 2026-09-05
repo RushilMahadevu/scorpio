@@ -293,6 +293,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
       const resetData = {
         teacherId: null,
         courseId: null,
+        organizationId: null,
       };
 
       // Source of truth: Remove from both collections to be thorough
