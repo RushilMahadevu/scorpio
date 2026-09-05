@@ -1,14 +1,32 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Submissions folder rules
+    // Helper function to verify teacher privileges
+    function isTeacher() {
+      return request.auth != null && (
+        request.auth.token.role == 'teacher' ||
+        firestore.exists(/databases/(default)/documents/teachers/$(request.auth.uid)) ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'teacher')
+      );
+    }
+
+    // Submissions folder rules: handwritten derivations, images, and PDFs
     match /submissions/{userId}/{allPaths=**} {
-      // Users can read/write their own files
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Teachers can read all submissions for grading
-      allow read: if request.auth != null && 
-        firestore.exists(/databases/(default)/documents/teachers/$(request.auth.uid));
+      // Students can read their own uploads; teachers can read all submissions for grading
+      allow read: if request.auth != null && (request.auth.uid == userId || isTeacher());
+
+      // Only the authenticated student or a teacher can write files; enforce size and file type constraints
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 25 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('image/.*') ||
+          request.resource.contentType == 'application/pdf' ||
+          request.resource.contentType.matches('text/.*')
+        );
+
+      // Students or teachers can delete their submissions
+      allow delete: if request.auth != null && (request.auth.uid == userId || isTeacher());
     }
   }
 }
