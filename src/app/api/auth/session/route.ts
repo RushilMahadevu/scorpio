@@ -50,9 +50,32 @@ export async function POST(req: NextRequest) {
         console.log(`Wrote organizationId ${bodyOrgId} to user doc for ${userId}`);
       }
 
+      let finalOrgId = resolvedOrgId;
+      if ((userData?.role === "teacher" || role === "teacher") && !finalOrgId) {
+        const orgRef = adminDb.collection("organizations").doc();
+        finalOrgId = orgRef.id;
+        await orgRef.set({
+          id: finalOrgId,
+          name: `${userData?.displayName || decodedToken.name || "Teacher"}'s Network`,
+          ownerId: userId,
+          ownerEmail: decodedToken.email || "",
+          subscriptionStatus: "active",
+          planId: "free",
+          aiUsageCurrent: 0,
+          aiBudgetLimit: 50, // $0.50 starting credit
+          practiceLimitPerStudent: 10,
+          practiceLimit: 0,
+          practiceUsageCurrent: 0,
+          baseMonthlyFee: 0,
+          createdAt: new Date(),
+        });
+        await userDocRef.set({ organizationId: finalOrgId }, { merge: true });
+        console.log(`Auto-provisioned default network ${finalOrgId} for teacher ${userId}`);
+      }
+
       const currentClaims = {
         role: userData?.role || role || "student",
-        organizationId: resolvedOrgId,
+        organizationId: finalOrgId,
       };
 
       // Only re-set if token claims are missing or out of sync

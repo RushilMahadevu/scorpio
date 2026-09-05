@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { explainPhysicsConcept, helpSolveProblem } from "@/lib/ai/tutor";
 import { adminDb } from "@/lib/firebase-admin";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
+import { verifyCallerIdentity } from "@/lib/auth-verify";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,6 +10,11 @@ export async function POST(req: NextRequest) {
 
     if (!message || !userId || role !== "student") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const authCheck = await verifyCallerIdentity(req, userId);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.error }, { status: 403 });
     }
 
     if (!adminDb) {

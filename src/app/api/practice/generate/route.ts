@@ -3,6 +3,7 @@ import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
 import { generatePracticeProblem } from '@/lib/ai/practice';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { verifyCallerIdentity } from '@/lib/auth-verify';
 
 export async function POST(req: NextRequest) {
   if (!adminDb) {
@@ -14,6 +15,11 @@ export async function POST(req: NextRequest) {
 
     if (!topic || !difficulty || !studentId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    const authCheck = await verifyCallerIdentity(req, studentId);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.error }, { status: 403 });
     }
 
     // 1. Check Rate Limit to prevent spam

@@ -35,10 +35,6 @@ export async function checkBudget(
     const data = orgDoc.data();
 
     // 1. Basic Subscription Checks
-    if (!data?.planId || data.planId === "free") {
-      return { allowed: false, error: "AI Features require a Standard subscription." };
-    }
-
     if (data?.subscriptionStatus === "canceled" || data?.subscriptionStatus === "revoked") {
       return { allowed: false, error: "Your subscription is no longer active." };
     }
@@ -47,7 +43,15 @@ export async function checkBudget(
     const budgetLimit = data?.aiBudgetLimit || 0;
     const currentUsage = data?.aiUsageCurrent || 0;
 
-    if (budgetLimit > 0 && currentUsage >= budgetLimit) {
+    // If free plan, allow AI usage if starter credit is available
+    if (!data?.planId || data.planId === "free") {
+      if (budgetLimit <= 0 || currentUsage >= budgetLimit) {
+        return { 
+          allowed: false, 
+          error: "Free starter AI budget reached. Upgrade to a Standard subscription in Network settings for unlimited AI access." 
+        };
+      }
+    } else if (budgetLimit > 0 && currentUsage >= budgetLimit) {
       return { 
         allowed: false, 
         error: `Monthly AI budget ($${(budgetLimit / 100).toFixed(2)}) reached. Please increase your limit in Network settings.` 

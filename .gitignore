@@ -27,6 +27,7 @@ service-account*.json
 firebase-debug.log*
 firestore-debug.log*
 ui-debug.log*
+IMPROVEMENTS.md
 
 # debug
 npm-debug.log*
@@ -64,7 +65,7 @@ yarn-error.log*
 .cache/
 DEMO.md
 GROUNDING_SKILL.md
+IMPROVEMENTS.md
 /scripts/
-src/app/admin/
 service-account*.json
 **/.DS_Store

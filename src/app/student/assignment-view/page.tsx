@@ -616,6 +616,19 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         }
       }
 
+      // Check due date enforcement
+      let isLate = false;
+      if (assignment.dueDate) {
+        const dueDate = assignment.dueDate instanceof Date 
+          ? assignment.dueDate 
+          : typeof (assignment.dueDate as any)?.toDate === 'function'
+          ? (assignment.dueDate as any).toDate() 
+          : new Date(assignment.dueDate);
+        if (new Date() > dueDate) {
+          isLate = true;
+        }
+      }
+
       // Remove forbidden fields for student update
       const submissionData: any = {
         assignmentId: assignment.id,
@@ -624,6 +637,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         studentEmail: user.email,
         answers: answersArray,
         submittedAt: new Date(),
+        isLate,
         graded: false,
         totalPoints: assignment.questions.reduce((acc, q) => acc + (q.points || 10), 0),
         earnedPoints: null,

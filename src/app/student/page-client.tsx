@@ -218,6 +218,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
       let newCourseName = "";
       let newCourseCode = "";
       let newSchoolId = "";
+      let newOrganizationId: string | null = null;
 
       if (!coursesSnap.empty) {
         const courseDoc = coursesSnap.docs[0];
@@ -227,6 +228,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         newCourseName = courseData.name;
         newCourseCode = courseData.code;
         newSchoolId = courseData.schoolId || "pilot_school";
+        newOrganizationId = courseData.organizationId || null;
       } else {
         throw new Error("Invalid class code.");
       }
@@ -245,21 +247,33 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
       // 1. Update legacy students collection (use setDoc with merge to avoid 'doc not found' error)
       await setDoc(doc(db, "students", user.uid), syncData, { merge: true });
 
-      // 2. Also sync to the unified users collection for Phase 2.1 features (like AI billing)
-      // Check if we can find the teacher's organizationId to inherit it
-      let organizationId = null;
-      try {
-        const teacherUserDoc = await getDoc(doc(db, "users", newTeacherId));
-        if (teacherUserDoc.exists()) {
-          organizationId = teacherUserDoc.data()?.organizationId;
-        }
-      } catch (e) { console.error("Could not fetch teacher organization", e); }
+      // 2. First sync to unified users collection with teacherId and courseId
+      // This satisfies the Firestore rule allowing the student to read the teacher doc
+      let organizationId = newOrganizationId;
 
       await setDoc(doc(db, "users", user.uid), {
         ...syncData,
         displayName: syncData.name, // Uniform naming across collections
         organizationId: organizationId || null
       }, { merge: true });
+
+      // 3. Now resolve organizationId from teacher doc if not directly on course
+      if (!organizationId && newTeacherId) {
+        try {
+          const teacherUserDoc = await getDoc(doc(db, "users", newTeacherId));
+          if (teacherUserDoc.exists()) {
+            const fetchedOrgId = teacherUserDoc.data()?.organizationId;
+            if (fetchedOrgId) {
+              organizationId = fetchedOrgId;
+              await setDoc(doc(db, "users", user.uid), {
+                organizationId: fetchedOrgId
+              }, { merge: true });
+            }
+          }
+        } catch (e) {
+          console.error("Could not fetch teacher organization", e);
+        }
+      }
 
       toast.success(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
       router.refresh(); // Refresh to pick up new claims without full reload

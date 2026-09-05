@@ -109,7 +109,14 @@ export default function SignupPage() {
     }
 
     try {
-      const userCredential = await register(email, password, role, name, role === "student" ? accessCode.trim() : undefined);
+      const userCredential = await register(
+        email, 
+        password, 
+        role, 
+        name, 
+        role === "student" ? accessCode.trim() : undefined,
+        role === "teacher" ? (codeOrganizationId || undefined) : undefined
+      );
       const idToken = await userCredential.user.getIdToken();
 
       // If this code was linked to an organization, update the user doc

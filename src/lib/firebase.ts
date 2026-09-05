@@ -275,7 +275,7 @@ export async function convertFilesToBase64(files: File[]): Promise<WorkFile[]> {
 
 
 // Auth functions
-export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string) => {
+export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string, organizationId?: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
   
@@ -300,6 +300,9 @@ export const register = async (email: string, password: string, role: "teacher" 
         const courseData = coursesSnap.docs[0].data();
         resolvedTeacherId = courseData.teacherId;
         resolvedCourseId = coursesSnap.docs[0].id;
+        if (courseData.organizationId) {
+          userData.organizationId = courseData.organizationId;
+        }
       }
     } catch (e) { console.error("Error resolving class code during registration", e); }
     
@@ -307,8 +310,42 @@ export const register = async (email: string, password: string, role: "teacher" 
     userData.courseId = resolvedCourseId;
   }
 
-  // Update unified collection
-  await setDoc(doc(db, "users", user.uid), userData);
+  if (role === "teacher") {
+    let orgId = organizationId || null;
+    if (!orgId) {
+      const orgRef = doc(collection(db, "organizations"));
+      orgId = orgRef.id;
+      const newOrg = {
+        id: orgId,
+        name: `${name}'s Network`,
+        ownerId: user.uid,
+        ownerEmail: user.email || "",
+        subscriptionStatus: "active",
+        planId: "free",
+        aiUsageCurrent: 0,
+        aiBudgetLimit: 50, // $0.50 starting credit
+        practiceLimitPerStudent: 10,
+        practiceLimit: 0,
+        practiceUsageCurrent: 0,
+        baseMonthlyFee: 0,
+        createdAt: new Date(),
+      };
+      userData.organizationId = orgId;
+      // Write user doc first so isTeacher() rule evaluates to true for creating organization doc
+      await setDoc(doc(db, "users", user.uid), userData);
+      try {
+        await setDoc(orgRef, newOrg);
+      } catch (orgErr) {
+        console.error("Error creating default organization for teacher:", orgErr);
+      }
+    } else {
+      userData.organizationId = orgId;
+      await setDoc(doc(db, "users", user.uid), userData);
+    }
+  } else {
+    // Update unified collection
+    await setDoc(doc(db, "users", user.uid), userData);
+  }
 
   // Sync back to legacy for compatibility if needed (Optional, but safer for now)
   const legacyCollection = role === "teacher" ? "teachers" : "students";

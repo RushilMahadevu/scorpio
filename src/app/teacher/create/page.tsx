@@ -95,7 +95,9 @@ function CreateAssignmentForm() {
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
 
-  const isFreePlan = authLoading || !organization || organization.planId === "free";
+  const isFreePlan = authLoading || !organization || (
+    organization.planId === "free" && (organization.aiBudgetLimit || 0) <= (organization.aiUsageCurrent || 0)
+  );
 
   useEffect(() => {
     async function fetchOrg() {
