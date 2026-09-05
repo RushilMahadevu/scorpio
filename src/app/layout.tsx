@@ -111,6 +111,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          async
+          crossOrigin="anonymous"
+          src="https://tweakcn.com/live-preview.min.js"
+        />
+      </head>
       <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${ptSerif.variable} ${atkinson.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
         <Providers>
           {children}
