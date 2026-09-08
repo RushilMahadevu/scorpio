@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import framer from "framer-motion";
@@ -197,11 +197,11 @@ export default function NetworkPage() {
       await updateDoc(doc(db, "organizations", organization.id), {
         aiTutorLimitPerStudent: perMember
       });
-      toast.success(`Tutor limit updated to ${perMember} messages/month per student.`);
+      toast.success(`Raise limit updated to ${perMember} messages/month per student.`);
       setOrganization(prev => prev ? { ...prev, aiTutorLimitPerStudent: perMember } : null);
     } catch (e) {
       console.error(e);
-      toast.error("Failed to update tutor limit.");
+      toast.error("Failed to update Raise limit.");
     } finally {
       setUpdatingTutor(false);
     }
@@ -1005,8 +1005,8 @@ export default function NetworkPage() {
                       className="h-9 text-[10px] font-black uppercase tracking-widest gap-2 cursor-pointer border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10 rounded-full px-5 self-start sm:self-auto"
                       onClick={() => setLimitsOpen(true)}
                     >
-                      <CruxLogo size={14} className="text-purple-600 dark:text-purple-400" />
-                      Ask Tutor
+                      <RaiseLogo size={14} className="text-purple-600 dark:text-purple-400" />
+                      Ask Raise
                     </Button>
                   </div>
 
@@ -1454,8 +1454,8 @@ export default function NetworkPage() {
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                            <CruxLogo size={16} className="text-purple-600 dark:text-purple-400" />
-                            Tutor Messages
+                            <RaiseLogo size={16} className="text-purple-600 dark:text-purple-400" />
+                            Raise Messages
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/40 cursor-help transition-all hover:text-purple-500" />
@@ -1463,11 +1463,11 @@ export default function NetworkPage() {
                               <TooltipContent className="max-w-[320px] p-0 overflow-hidden border-purple-200/50 shadow-2xl rounded-2xl">
                                 <div className="bg-purple-600 p-5 text-white">
                                   <div className="flex items-center gap-2 mb-1.5">
-                                    <CruxLogo size={20} />
-                                    <p className="font-black text-sm uppercase tracking-widest">Personal Tutor</p>
+                                    <RaiseLogo size={20} />
+                                    <p className="font-black text-sm uppercase tracking-widest">Personal Assistant (Raise)</p>
                                   </div>
                                   <p className="text-xs leading-relaxed opacity-90 font-medium font-sans">
-                                    This is the message quota for each student's one-on-one Tutor. When a student hits this limit, they can read past chats but can't send new messages until the month resets.
+                                    This is the message quota for each student's one-on-one Raise assistant. When a student hits this limit, they can read past chats but can't send new messages until the month resets.
                                   </p>
                                 </div>
                                 <div className="p-5 space-y-3 bg-white dark:bg-zinc-950">
@@ -1483,14 +1483,14 @@ export default function NetworkPage() {
                           </Badge>
                         </div>
                         <CardDescription className="text-[11px]">
-                          How many messages each student can send to their personal Tutor per month.
+                          How many messages each student can send to Raise per month.
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-3 bg-background/60 backdrop-blur-sm border rounded-xl shadow-sm col-span-2">
                             <p className="text-[9px] uppercase text-muted-foreground font-black tracking-widest mb-1.5 flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
-                              Tutor Message Allowance
+                              Raise Message Allowance
                             </p>
                             <div className="flex items-baseline gap-2">
                               <p className="text-2xl font-black font-mono text-zinc-900 dark:text-zinc-100">
@@ -1526,7 +1526,7 @@ export default function NetworkPage() {
                             </div>
                             <div className="p-3 bg-purple-500/5 rounded-xl border border-purple-500/10">
                               <p className="text-[10px] text-purple-600 dark:text-purple-400 font-bold flex justify-between items-center">
-                                <span>Network-wide tutor capacity</span>
+                                <span>Network-wide Raise capacity</span>
                                 <span className="font-black text-xs font-mono">{parseInt(tempTutorLimitPerStudent || "0") * studentCount} messages</span>
                               </p>
                               <p className="text-[9px] text-muted-foreground mt-1 flex items-center gap-1">
@@ -1554,7 +1554,7 @@ export default function NetworkPage() {
             <DialogHeader className="p-6 bg-zinc-50 dark:bg-zinc-900/50 border-b border-border/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-500/10 rounded-xl">
-                  <CruxLogo size={20} className="text-purple-500" />
+                  <RaiseLogo size={20} className="text-purple-500" />
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-black tracking-tight">Limits Assistant</DialogTitle>
@@ -1609,7 +1609,7 @@ export default function NetworkPage() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground mt-2 text-center font-medium opacity-60">
-                Tutor has full access to your network snapshot.
+                Raise has full access to your network snapshot.
               </p>
             </div>
           </DialogContent>

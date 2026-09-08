@@ -26,7 +26,7 @@ import { LayerEfficacyChart } from "@/components/landing/layer-efficacy-chart";
 import { FloatingPrompts } from "@/components/ui/floating-prompts";
 import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 import { Logo } from "@/components/ui/logo";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/landing/site-header";
 import SpotlightCards from "@/components/ui/spotlight-cards";

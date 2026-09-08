@@ -91,7 +91,7 @@ export function SolutionFlowchart() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Why Tutor is the <span className="text-primary italic">Solution</span>.
+            Why Raise is the <span className="text-primary italic">Solution</span>.
           </motion.h2>
 
           <motion.p
@@ -137,7 +137,7 @@ export function SolutionFlowchart() {
                 What <span className="text-primary italic">Differentiates</span> Us.
               </h3>
               <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                Standard chatbots are built to answer quickly. Tutor is designed to be a rigorous physics mentor.
+                Standard chatbots are built to answer quickly. Raise is designed to be a rigorous physics mentor.
               </p>
             </div>
 
@@ -199,7 +199,7 @@ export function SolutionFlowchart() {
                         transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                       />
                     </div>
-                    <span className="ml-2 text-[9px] font-mono text-muted-foreground/50 tracking-wider font-bold italic">crux-trace-scorpio.jsonl</span>
+                    <span className="ml-2 text-[9px] font-mono text-muted-foreground/50 tracking-wider font-bold italic">raise-trace-scorpio.jsonl</span>
                   </div>
                   <div className="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
                     <span className="text-[8px] font-mono text-primary animate-pulse uppercase tracking-tighter font-black">System_Active_v4.2</span>

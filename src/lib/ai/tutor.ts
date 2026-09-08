@@ -12,7 +12,7 @@ function formatChatHistory(messages: ChatMessage[]): string {
   const recentMessages = messages.slice(-CONTEXT_WINDOW_SIZE);
   
   return recentMessages
-    .map(msg => `${msg.role === "user" ? "Student" : "Tutor"}: ${msg.content}`)
+    .map(msg => `${msg.role === "user" ? "Student" : "Raise"}: ${msg.content}`)
     .join("\n\n");
 }
 

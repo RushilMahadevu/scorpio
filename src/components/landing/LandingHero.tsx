@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, KeyRound, PlayCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -136,11 +136,11 @@ export function LandingHero() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7, duration: 0.8 }}
             >
-              <CruxLogo 
+              <RaiseLogo 
                 size={56} 
                 className="text-primary animate-pulse shadow-[0_0_30px_rgba(var(--primary),0.4)]" 
               />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Tutor</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Raise</span>
             </motion.div>
           </div>
         </div>
@@ -160,7 +160,7 @@ export function LandingHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65, duration: 0.8 }}
         >
-          The Physics Learning Platform with Tutor
+          The Physics Learning Platform with Raise
         </motion.p>
 
         <motion.p
@@ -175,7 +175,7 @@ export function LandingHero() {
         >
           The first verifiable framework for Socratic physics tutoring. 
           Enforce the struggle with a 4-layer constraint architecture 
-          supported by <span className="text-primary font-bold">Scorpio Tutor</span>.
+          supported by <span className="text-primary font-bold">Raise</span>.
         </motion.p>
 
 

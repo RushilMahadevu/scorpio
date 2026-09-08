@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@afixt/a11y-calc": "^0.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@lucide/lab": "^0.1.2",
     "@polar-sh/nextjs": "^0.9.3",
@@ -60,6 +61,7 @@
     "katex": "^0.16.25",
     "lenis": "^1.3.17",
     "lucide-react": "^0.555.0",
+    "mathjs": "^15.2.0",
     "mathlive": "^0.109.0",
     "motion": "^12.38.0",
     "next": "^16.2.1",

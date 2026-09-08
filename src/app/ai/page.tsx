@@ -6,7 +6,7 @@ import { Send, ArrowRight, RefreshCw, CornerDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -279,11 +279,11 @@ export default function AIPage() {
               {/* Identity */}
               <div className="flex items-center gap-2.5 mb-8">
                 <div className="h-7 w-7 rounded-[7px] bg-foreground flex items-center justify-center">
-                  <CruxLogo size={14} className="text-background" />
+                  <RaiseLogo size={14} className="text-background" />
                 </div>
-                <span className="text-[14px] font-semibold text-foreground">Tutor</span>
+                <span className="text-[14px] font-semibold text-foreground">Raise</span>
                 <span className="text-[11px] font-medium text-muted-foreground border border-border rounded-md px-2 py-0.5 leading-none">
-                  Physics Tutor
+                  AI Learning Assistant
                 </span>
               </div>
 
@@ -292,7 +292,7 @@ export default function AIPage() {
                 Ask a physics question.
               </h1>
               <p className="text-[15px] text-muted-foreground leading-[1.7] mb-9 max-w-[500px]">
-                Tutor will guide you to the answer — it will not give it to you directly. This is the same approach used in partner physics classrooms.{" "}
+                Raise will guide you to the answer — it will not give it to you directly. This is the same approach used in partner physics classrooms.{" "}
                 <span className="text-foreground font-medium">{questionsLeft} questions available.</span>
               </p>
 
@@ -342,7 +342,7 @@ export default function AIPage() {
                 ) : (
                   <div className="flex gap-3 items-start">
                     <div className="h-6 w-6 rounded-[6px] bg-foreground flex items-center justify-center shrink-0 mt-[2px]">
-                      <CruxLogo size={12} className="text-background" />
+                      <RaiseLogo size={12} className="text-background" />
                     </div>
                     <div className="flex-1 min-w-0 pt-[1px]">
                       {/* Use MarkdownRenderer for full KaTeX support */}
@@ -378,7 +378,7 @@ export default function AIPage() {
                 className="flex gap-3 items-center"
               >
                 <div className="h-6 w-6 rounded-[6px] bg-foreground flex items-center justify-center shrink-0">
-                  <CruxLogo size={12} className="text-background" />
+                  <RaiseLogo size={12} className="text-background" />
                 </div>
                 <div className="flex items-center gap-[5px]">
                   <span className="h-[5px] w-[5px] rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -401,7 +401,7 @@ export default function AIPage() {
                       Demo limit reached
                     </p>
                     <p className="text-[13px] text-muted-foreground leading-relaxed">
-                      You've experienced how Tutor supports productive struggle. Ready to deploy this for your class?
+                      You&apos;ve experienced how Raise supports productive struggle. Ready to deploy this for your class?
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -486,7 +486,7 @@ export default function AIPage() {
           {/* Status row */}
           <div className="flex items-center justify-between mt-2 px-0.5">
             <p className="text-[11px] text-muted-foreground/40 font-medium">
-              Tutor · Socratic Learning · PhD-Verified
+              Raise · Socratic Learning · PhD-Verified
             </p>
             {isLimitReached ? (
               <button

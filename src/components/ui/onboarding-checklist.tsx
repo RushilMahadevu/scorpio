@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, ChevronRight, Sparkles, Building2, PlusCircle, Upload, School, FileText, FileCheck, PackageOpen, Bot } from "lucide-react";
+import { CheckCircle2, Circle, ChevronRight, Sparkles, Building2, PlusCircle, Upload, School, FileText, FileCheck, PackageOpen, Hand } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -68,8 +68,8 @@ const STUDENT_ITEMS: ChecklistItem[] = [
   },
   {
     id: "chat_tutor",
-    title: "AI Guidance",
-    icon: Bot,
+    title: "Raise Guidance",
+    icon: Hand,
     link: "/student/tutor",
     check: (data) => data.chatCount > 0 || !!data.profile?.onboarding?.chat_tutor,
   },

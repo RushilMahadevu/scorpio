@@ -23,14 +23,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PlusCircle, AppWindow, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileDown, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, CheckCircle2 } from "lucide-react";
+import { PlusCircle, AppWindow, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileDown, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, CheckCircle2, Calculator } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -93,6 +93,7 @@ function CreateAssignmentForm() {
   const [topic, setTopic] = useState<string>("other");
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
   const [allowAIHelp, setAllowAIHelp] = useState(false);
+  const [allowCalculator, setAllowCalculator] = useState(false);
   const [enableTabDetection, setEnableTabDetection] = useState(true);
   const [lockdownMode, setLockdownMode] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -128,6 +129,12 @@ function CreateAssignmentForm() {
           setTitle(`${assignment.title} (Copy)`);
           setDescription(assignment.description || "");
           setVisibility("private"); // Default to private for copies
+          if (assignment.allowCalculator !== undefined) {
+            setAllowCalculator(!!assignment.allowCalculator);
+          }
+          if (assignment.allowAIHelp !== undefined) {
+            setAllowAIHelp(!!assignment.allowAIHelp);
+          }
           if (assignment.questions) {
             setQuestions(assignment.questions.map((q: any) => ({
               ...q,
@@ -383,6 +390,7 @@ function CreateAssignmentForm() {
         enableTabDetection,
         lockdownMode,
         allowAIHelp,
+        allowCalculator,
         questions,
         createdAt: new Date(),
         type: "standard",
@@ -985,16 +993,16 @@ function CreateAssignmentForm() {
                     <Checkbox className="cursor-pointer" id="allowAIHelp" checked={allowAIHelp} disabled={isFreePlan} onCheckedChange={(checked) => setAllowAIHelp(!!checked)} />
                     <div className="flex items-center gap-1.5">
                       <Label htmlFor="allowAIHelp" className="text-xs font-bold flex items-center gap-1.5">
-                        <CruxLogo className="h-3 w-3" size={16} /> Enable Tutor
+                        <RaiseLogo className="h-3 w-3" size={16} /> Enable Raise
                       </Label>
                       <Tooltip>
                         <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-purple-200 shadow-2xl rounded-2xl">
                           <div className="bg-purple-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><CruxLogo className="h-3.5 w-3.5" />Guided Tutoring</p>
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><RaiseLogo className="h-3.5 w-3.5" />Guided Tutoring with Raise</p>
                           </div>
                           <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground">Students get conceptual hints without giving away final answers.</p>
+                            <p className="text-[11px] leading-relaxed text-muted-foreground">Students can raise their hand for conceptual hints without giving away final answers.</p>
                             <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 border-t pt-2">SOCRATIC METHOD:</p>
                             <p className="text-[10px] text-zinc-500 leading-tight">The AI guides students through step-by-step logic and terminology.</p>
                           </div>
@@ -1003,6 +1011,30 @@ function CreateAssignmentForm() {
                     </div>
                   </div>
                   <p className="text-[10px] text-muted-foreground leading-tight">Gives students conceptual hints ONLY. Never reveals answers.</p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <Checkbox className="cursor-pointer" id="allowCalculator" checked={allowCalculator} onCheckedChange={(checked) => setAllowCalculator(!!checked)} />
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="allowCalculator" className="text-xs font-bold flex items-center gap-1.5">
+                        <Calculator className="h-3 w-3 text-primary" /> Allow Calculator
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-sky-200 shadow-2xl rounded-2xl">
+                          <div className="bg-sky-600 p-4 text-white">
+                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><Calculator className="h-3.5 w-3.5" />Scientific Calculator</p>
+                          </div>
+                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
+                            <p className="text-[11px] leading-relaxed text-muted-foreground">Provides students with an integrated on-screen scientific calculator during the assignment.</p>
+                            <p className="text-[10px] text-zinc-500 leading-tight">Includes trig (DEG/RAD), logs, powers, roots, scientific notation, and quick physics constants ($g, c, h$, etc.).</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Enables an on-screen scientific physics calculator for students.</p>
                 </div>
 
                 <div className="flex flex-col gap-3">

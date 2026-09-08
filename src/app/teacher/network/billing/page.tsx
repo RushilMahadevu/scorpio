@@ -342,7 +342,7 @@ export default function BillingPage() {
                       {[
                         "Everything in Free",
                         "Unlimited Students & Courses",
-                        "All Tutor integrations",
+                        "All Raise integrations",
                         "Teacher AI Dashboards",
                         "Network Waypoint Syncing",
                         "Comprehensive Control of Capacities & Limits",

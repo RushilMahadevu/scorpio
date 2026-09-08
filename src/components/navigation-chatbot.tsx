@@ -4,16 +4,16 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  X, Send, Home, FileText, GraduationCap, BarChart,
+  X, Send, Home, FileText, BarChart,
   Upload, Users, BookOpen, Rocket, Zap,
   NotebookPen, BowArrow, Building2, LifeBuoy,
-  Compass, ArrowRight, Image as ImageIcon, Trash2
+  Compass, ArrowRight, Image as ImageIcon, Trash2, Hand
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { MarkdownRenderer } from './markdown-renderer';
 import { cn } from '@/lib/utils';
-import { CruxLogo } from './ui/crux-logo';
+import { RaiseLogo } from './ui/raise-logo';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
@@ -46,7 +46,7 @@ const studentQuickActions: QuickAction[] = [
   { icon: Home, label: 'Dashboard', path: '/student' },
   { icon: FileText, label: 'Assignments', path: '/student/assignments' },
   { icon: BarChart, label: 'Grades', path: '/student/grades' },
-  { icon: GraduationCap, label: 'Tutor', path: '/student/tutor' },
+  { icon: Hand, label: 'Raise', path: '/student/tutor' },
   { icon: BowArrow, label: 'Practice', path: '/student/practice' },
   { icon: NotebookPen, label: 'Notebook', path: '/student/notebook' },
   { icon: Upload, label: 'Submissions', path: '/student/submissions' },
@@ -66,7 +66,7 @@ const teacherQuickActions: QuickAction[] = [
 
 const studentSuggested = [
   "How do I start an assignment?",
-  "What is Tutor?",
+  "What is Raise?",
   "How does Practice work?",
   "Where are my grades?",
 ];
@@ -140,7 +140,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
     const firstName = profile?.displayName?.split(' ')[0] || (userRole === 'teacher' ? 'Teacher' : 'there');
     const roleBlurb = userRole === 'teacher'
       ? `I can help you navigate [Assignments](/teacher/assignments), [Create Assignment](/teacher/create), [Gradebook](/teacher/grades), [Network Limits](/teacher/network), [Waypoints](/teacher/waypoints), and more.`
-      : `I can help you navigate [Assignments](/student/assignments), your [Tutor](/student/tutor), [Practice](/student/practice), [Notebook](/student/notebook), and [Grades](/student/grades).`;
+      : `I can help you navigate [Assignments](/student/assignments), your [Raise](/student/tutor), [Practice](/student/practice), [Notebook](/student/notebook), and [Grades](/student/grades).`;
 
     setMessages([{
       role: 'assistant',
@@ -513,7 +513,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                     <div className={cn("flex gap-2", m.role === 'user' ? "justify-end" : "justify-start")}>
                       {m.role === 'assistant' && (
                         <div className="h-6 w-6 rounded-full bg-foreground text-background flex items-center justify-center shrink-0 mt-0.5">
-                          <CruxLogo size={12} className="currentColor" />
+                          <RaiseLogo size={12} className="currentColor" />
                         </div>
                       )}
                       <div className={cn(
@@ -575,7 +575,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 {isLoading && (
                   <div className="flex gap-2">
                     <div className="h-6 w-6 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
-                      <CruxLogo size={12} className="currentColor" />
+                      <RaiseLogo size={12} className="currentColor" />
                     </div>
                     <div className="bg-muted rounded-xl px-3 py-2 text-xs text-muted-foreground">
                       Typing...
@@ -598,7 +598,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                         sendMessage(input);
                       }
                     }}
-                          placeholder="Ask Tutor where to find things..."
+                          placeholder="Ask Raise where to find things..."
                     className="flex-1 bg-transparent border-0 resize-none p-0 text-xs focus-visible:ring-0 min-h-[20px] max-h-[60px]"
                     rows={1}
                     disabled={isLoading}

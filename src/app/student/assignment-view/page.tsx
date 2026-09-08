@@ -20,21 +20,23 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ArrowLeft, Send, MessagesSquare, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, Sparkles, AlertCircle, Save, Lightbulb, User, ChevronRight, Lock } from "lucide-react";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { ArrowLeft, Send, MessagesSquare, CheckCircle, Clock, AlertTriangle, Play, Upload, X, FileText, Image as ImageIcon, AlertCircle, Save, Lightbulb, User, ChevronRight, Lock, Hand, Calculator, Copy, Check, RotateCcw } from "lucide-react";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import { toast } from "sonner";
 import { MathInputField } from "@/components/math-input";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { helpSolveProblem } from "@/lib/ai/tutor";
 import "katex/dist/katex.min.css";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { cn } from "@/lib/utils";
+import { ScientificCalculator } from "@/components/calculator/scientific-calculator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Question {
   id: string;
@@ -55,6 +57,7 @@ interface Assignment {
   timeLimit?: number;
   requireWorkSubmission?: boolean;
   allowAIHelp?: boolean;
+  allowCalculator?: boolean;
   enableTabDetection?: boolean;
   lockdownMode?: boolean;
   type?: string;
@@ -247,6 +250,7 @@ function AssignmentDetailContent() {
             timeLimit: data.timeLimit,
             requireWorkSubmission: data.requireWorkSubmission || false,
             allowAIHelp: data.allowAIHelp || false,
+            allowCalculator: data.allowCalculator || false,
             enableTabDetection: data.enableTabDetection ?? true,
             lockdownMode: data.lockdownMode ?? true, // Default to true if not present
             type: data.type || "standard",
@@ -377,12 +381,14 @@ function AssignmentDetailContent() {
   const [aiMessages, setAiMessages] = useState<ChatMessage[]>([]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [focusedQuestionIndex, setFocusedQuestionIndex] = useState<number | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom of AI messages
   useEffect(() => {
     if (scrollRef.current) {
-      // Use scrollTo on the parent to avoid document-level jumping with scrollIntoView
       const container = scrollRef.current.parentElement;
       if (container) {
         container.scrollTo({
@@ -393,23 +399,48 @@ function AssignmentDetailContent() {
     }
   }, [aiMessages, aiLoading]);
 
-  const handleAiSendMessage = async () => {
-    if (!aiInput.trim() || aiLoading || !assignment) return;
+  const handleCopyMessage = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMessageId(id);
+    toast.success("Hint copied to clipboard");
+    setTimeout(() => setCopiedMessageId(null), 2000);
+  };
 
-    // Explicitly define the message structure to match ChatMessage interface
+  const handleResetChat = () => {
+    setAiMessages([]);
+    setAiInput("");
+    toast.info("Raise conversation reset");
+  };
+
+  const askRaiseAboutQuestion = (questionIndex: number, customPrompt?: string) => {
+    setFocusedQuestionIndex(questionIndex);
+    setAiHelperOpen(true);
+    const prompt = customPrompt || `I'm working on Question ${questionIndex + 1}. Can you provide a conceptual hint to help me get started?`;
+    handleAiSendMessage(prompt);
+  };
+
+  const handleAiSendMessage = async (customMessage?: string) => {
+    const textToSend = customMessage || aiInput;
+    if (!textToSend.trim() || aiLoading || !assignment) return;
+
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      content: aiInput
+      content: textToSend
     };
 
     setAiMessages(prev => [...prev, userMessage]);
-    setAiInput("");
+    if (!customMessage) setAiInput("");
     setAiLoading(true);
 
     try {
+      // Highlight focused question in the prompt context if one is selected
+      const focusedContext = focusedQuestionIndex !== null && assignment.questions[focusedQuestionIndex]
+        ? `\nCURRENT STUDENT FOCUS: Question ${focusedQuestionIndex + 1} (${assignment.questions[focusedQuestionIndex].points || 10} pts): "${assignment.questions[focusedQuestionIndex].text}"\n\n`
+        : "";
+
       // Construct comprehensive context
-      const assignmentContext = `ASSIGNMENT TITLE: ${assignment.title}
+      const assignmentContext = `${focusedContext}ASSIGNMENT TITLE: ${assignment.title}
 ASSIGNMENT DESCRIPTION: ${assignment.description}
 
 ASSIGNMENT QUESTIONS:
@@ -417,7 +448,8 @@ ${assignment.questions.map((q, i) => {
         const optionsStr = (q.type === 'multiple-choice' && q.options)
           ? `\nOptions: ${q.options.map((opt, idx) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(", ")}`
           : "";
-        return `QUESTION ${i + 1}:
+        const isFocused = i === focusedQuestionIndex ? " [CURRENTLY FOCUSED BY STUDENT]" : "";
+        return `QUESTION ${i + 1}${isFocused}:
 Type: ${q.type}
 Text: ${q.text || "[This question has no text description. Refer to the assignment title/description.]"}${optionsStr}`;
       }).join("\n\n")}`;
@@ -880,18 +912,34 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                     </div>
                   )}
 
+                  {assignment?.allowCalculator && !submitted && (
+                    <Button
+                      variant={calculatorOpen ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCalculatorOpen(!calculatorOpen)}
+                      className={`cursor-pointer transition-all duration-300 gap-1.5 ${
+                        calculatorOpen
+                          ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20 ring-offset-2"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      <Calculator className="h-4 w-4" />
+                      <span>Calculator</span>
+                    </Button>
+                  )}
+
                   {assignment?.allowAIHelp && !submitted && (
                     <Button
                       variant={aiHelperOpen ? "default" : "outline"}
                       size="sm"
                       onClick={() => setAiHelperOpen(!aiHelperOpen)}
-                      className={`cursor-pointer transition-all duration-300 ${aiHelperOpen
-                        ? "bg-black hover:bg-zinc-900 text-white shadow-md ring-2 ring-zinc-500/20 ring-offset-2"
+                      className={`cursor-pointer transition-all duration-300 gap-1.5 ${aiHelperOpen
+                        ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20 ring-offset-2"
                         : "border-zinc-300 hover:border-zinc-500 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                         }`}
                     >
-                      <Sparkles className={`h-4 w-4 mr-1.5 ${aiHelperOpen ? "animate-pulse" : ""}`} />
-                      <span>Tutor</span>
+                      <Hand className={`h-4 w-4 ${aiHelperOpen ? "animate-pulse" : ""}`} />
+                      <span>Raise hand</span>
                     </Button>
                   )}
                 </div>
@@ -958,7 +1006,21 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                             </Badge>
                           )}
                         </div>
-                        <Badge variant="outline">{question.points || 10} pts</Badge>
+                        <div className="flex items-center gap-2">
+                          {assignment.allowAIHelp && !submitted && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => askRaiseAboutQuestion(index)}
+                              className="h-7 px-2.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer gap-1.5 rounded-lg border border-primary/20 hover:border-primary/40"
+                              title="Ask Raise for a conceptual hint on this question"
+                            >
+                              <Hand className="h-3.5 w-3.5" />
+                              <span>Ask Raise</span>
+                            </Button>
+                          )}
+                          <Badge variant="outline">{question.points || 10} pts</Badge>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-6 pt-6">
@@ -1180,108 +1242,311 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
 
         {!isMobile && aiHelperOpen && (
           <>
-            <ResizableHandle withHandle className="bg-zinc-200 dark:bg-zinc-800" />
+            <ResizableHandle withHandle className="bg-border/60 hover:bg-primary/50 transition-colors" />
             <ResizablePanel
               id="ai-tutor-panel"
               order={2}
-              defaultSize={30}
-              minSize={20}
-              className="bg-zinc-50/50 dark:bg-zinc-950/20 flex flex-col h-full overflow-hidden"
+              defaultSize={32}
+              minSize={22}
+              className="bg-card/40 backdrop-blur-md border-l border-border/80 flex flex-col h-full overflow-hidden shadow-xl"
             >
-              {/* Desktop Sidebar Content */}
-              <div className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <CruxLogo className="h-5 w-5" />
+              {/* Desktop Header */}
+              <div className="flex h-16 shrink-0 items-center justify-between border-b bg-background/90 backdrop-blur-md px-4 gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
+                    <RaiseLogo className="h-5 w-5" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold tracking-tight">Study Tutor</h3>
-                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span>Hints, not answers</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-sm font-bold tracking-tight">Raise</h3>
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded-md">
+                        Socratic
+                      </span>
                     </div>
+                    <p className="text-[11px] text-muted-foreground truncate leading-tight">
+                      Hints & guidance, not answers
+                    </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)} className="h-8 w-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                  <X className="h-4 w-4" />
-                </Button>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Question Focus Selector */}
+                  <Select
+                    value={focusedQuestionIndex === null ? "all" : String(focusedQuestionIndex)}
+                    onValueChange={(val) => setFocusedQuestionIndex(val === "all" ? null : parseInt(val))}
+                  >
+                    <SelectTrigger className="h-8 text-xs font-semibold px-2.5 rounded-lg border-border/80 bg-muted/30 max-w-[130px] truncate">
+                      <SelectValue placeholder="All Questions" />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      <SelectItem value="all" className="text-xs font-medium">
+                        All Questions
+                      </SelectItem>
+                      {assignment.questions.map((q, i) => (
+                        <SelectItem key={q.id} value={String(i)} className="text-xs font-medium">
+                          Question {i + 1} ({q.points || 10} pts)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Reset conversation */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleResetChat}
+                          disabled={aiMessages.length === 0}
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        Clear chat history
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {/* Close */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setAiHelperOpen(false)}
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 pt-4">
-                <div className="space-y-6 pb-10">
-                  {aiMessages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <Lightbulb className="h-6 w-6" />
-                      </div>
-                      <h4 className="mb-2 text-base font-semibold">What are you working on?</h4>
-                      <p className="max-w-[250px] text-sm leading-relaxed text-muted-foreground">
-                        Ask for a starting point, a concept refresher, or help checking your reasoning.
+              {/* Active Focus Pill Indicator */}
+              {focusedQuestionIndex !== null && assignment.questions[focusedQuestionIndex] && (
+                <div className="px-4 py-2 bg-primary/5 border-b border-primary/10 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
+                    <span className="font-semibold text-primary truncate">
+                      Focusing Question {focusedQuestionIndex + 1}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setFocusedQuestionIndex(null)}
+                    className="text-[10px] text-muted-foreground hover:text-foreground underline cursor-pointer shrink-0 ml-2"
+                  >
+                    Clear focus
+                  </button>
+                </div>
+              )}
+
+              {/* Messages Container */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {aiMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center px-4 py-8 text-center space-y-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+                      <Lightbulb className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">Raise is ready to help</h4>
+                      <p className="text-xs text-muted-foreground max-w-[260px] mx-auto mt-1 leading-relaxed">
+                        Select a question below or ask a conceptual doubt. Raise guides your logic without giving away answers.
                       </p>
-                      <div className="mt-7 w-full space-y-2">
-                        <Button variant="outline" size="sm" className="h-auto w-full justify-start border-primary/20 px-3 py-2.5 text-xs font-medium hover:bg-primary/5" onClick={() => { setAiInput("How do I start thinking about Question 1?"); handleAiSendMessage(); }}>
-                          <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
-                          Approach to Question 1
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-auto w-full justify-start border-primary/20 px-3 py-2.5 text-xs font-medium hover:bg-primary/5" onClick={() => { setAiInput("What are the key principles for this topic?"); handleAiSendMessage(); }}>
-                          <ChevronRight className="h-3 w-3 mr-2 opacity-50" />
-                          Key Principles
-                        </Button>
+                    </div>
+
+                    {/* Question quick selector cards */}
+                    <div className="w-full space-y-2 pt-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 text-left px-1">
+                        Select question to explore:
+                      </p>
+                      <div className="grid grid-cols-1 gap-1.5 max-h-[190px] overflow-y-auto pr-1">
+                        {assignment.questions.map((q, i) => (
+                          <button
+                            key={q.id}
+                            onClick={() => askRaiseAboutQuestion(i)}
+                            className={cn(
+                              "w-full text-left p-2.5 rounded-xl border transition-all flex items-start justify-between gap-2 group cursor-pointer",
+                              focusedQuestionIndex === i
+                                ? "border-primary bg-primary/5 shadow-xs"
+                                : "border-border/60 hover:border-border hover:bg-muted/40"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-xs text-foreground">Question {i + 1}</span>
+                                <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                                  {q.points || 10} pts
+                                </Badge>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 font-normal">
+                                {q.text || "No description"}
+                              </p>
+                            </div>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-foreground shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
+                          </button>
+                        ))}
                       </div>
                     </div>
-                  )}
-
-                  {aiMessages.map((msg) => (
+                  </div>
+                ) : (
+                  aiMessages.map((msg) => (
                     <motion.div
-                      initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
-                      animate={{ opacity: 1, x: 0 }}
                       key={msg.id}
-                      className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className={cn("flex flex-col", msg.role === "user" ? "items-end" : "items-start")}
                     >
-                      <div className={`flex items-start gap-3 max-w-[95%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <div className={`mt-1 h-7 w-7 rounded-full shrink-0 flex items-center justify-center shadow-sm ${msg.role === 'user' ? 'bg-zinc-900 text-white' : 'bg-white border dark:bg-zinc-800'
-                          }`}>
-                          {msg.role === 'user' ? <User className="h-4 w-4" /> : <CruxLogo className="h-4 w-4 text-zinc-400" />}
-                        </div>
+                      <div className={cn("flex items-start gap-2.5 max-w-[95%]", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
                         <div
-                          className={`rounded-2xl px-4 py-3 shadow-sm border ${msg.role === 'user'
-                            ? 'bg-zinc-900 text-white border-transparent rounded-tr-none'
-                            : 'bg-white dark:bg-zinc-900 text-foreground border-zinc-100 dark:border-zinc-800 rounded-tl-none'
-                            }`}
+                          className={cn(
+                            "h-7 w-7 rounded-xl shrink-0 flex items-center justify-center shadow-xs mt-0.5",
+                            msg.role === "user"
+                              ? "bg-foreground text-background"
+                              : "bg-primary/10 text-primary border border-primary/20"
+                          )}
                         >
-                          <MarkdownRenderer className="text-sm leading-relaxed prose-sm dark:prose-invert prose-p:my-0.5 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800">{msg.content}</MarkdownRenderer>
+                          {msg.role === "user" ? <User className="h-3.5 w-3.5" /> : <RaiseLogo className="h-4 w-4" />}
+                        </div>
+
+                        <div
+                          className={cn(
+                            "rounded-2xl px-4 py-3 text-sm shadow-xs border relative group",
+                            msg.role === "user"
+                              ? "bg-zinc-900 text-white border-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-sm font-medium"
+                              : "bg-card/90 text-card-foreground border-border/80 rounded-tl-sm backdrop-blur-xs"
+                          )}
+                        >
+                          {msg.role === "user" ? (
+                            <div className="text-[13.5px] leading-relaxed text-white dark:text-zinc-900 whitespace-pre-wrap">
+                              {msg.content}
+                            </div>
+                          ) : (
+                            <MarkdownRenderer
+                              className={cn(
+                                "text-[13.5px] leading-relaxed text-foreground",
+                                "[&_.katex]:text-[0.95em]",
+                                "[&_p]:my-1 leading-relaxed text-foreground",
+                                "[&_strong]:font-bold text-foreground",
+                                "[&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs",
+                                "[&_ul]:my-1.5 [&_ul]:space-y-1",
+                                "[&_ol]:my-1.5 [&_ol]:space-y-1"
+                              )}
+                            >
+                              {msg.content}
+                            </MarkdownRenderer>
+                          )}
+
+                          {/* Assistant Message Actions Toolbar */}
+                          {msg.role === "assistant" && (
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
+                              <span className="font-semibold uppercase tracking-wider text-muted-foreground/60">
+                                Socratic Hint
+                              </span>
+                              <button
+                                onClick={() => handleCopyMessage(msg.id, msg.content)}
+                                className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer text-muted-foreground"
+                              >
+                                {copiedMessageId === msg.id ? (
+                                  <>
+                                    <Check className="h-3 w-3 text-emerald-500" />
+                                    <span className="text-emerald-500">Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy hint</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                  ))
+                )}
 
-                  {aiLoading && (
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 h-7 w-7 rounded-full bg-white border dark:bg-zinc-800 flex items-center justify-center">
-                        <CruxLogo className="h-4 w-4 text-zinc-400" />
+                {/* AI Loading indicator */}
+                {aiLoading && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-start gap-2.5"
+                  >
+                    <div className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
+                      <RaiseLogo className="h-4 w-4 animate-pulse" />
+                    </div>
+                    <div className="bg-card border border-border/70 rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs space-y-1.5">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                        <span>Raise is thinking through physical principles...</span>
                       </div>
-                      <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center justify-center shadow-sm">
-                        <div className="flex gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                          <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                          <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full animate-bounce"></div>
-                        </div>
+                      <div className="flex gap-1.5">
+                        <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce"></div>
                       </div>
                     </div>
-                  )}
-                  <div ref={scrollRef} />
-                </div>
+                  </motion.div>
+                )}
+                <div ref={scrollRef} />
               </div>
 
-              <div className="p-4 bg-white dark:bg-zinc-900 border-t">
-                <div className="relative flex items-end gap-2">
+              {/* ── Footer / Input Area ────────────────────────────────────── */}
+              <div className="p-3.5 bg-background/95 border-t border-border/80 space-y-2">
+                {/* Socratic Quick Prompt Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
+                  <button
+                    onClick={() => {
+                      const prompt = focusedQuestionIndex !== null
+                        ? `What fundamental physics principles or laws apply to Question ${focusedQuestionIndex + 1}?`
+                        : "What physics principles should I look for here?";
+                      handleAiSendMessage(prompt);
+                    }}
+                    disabled={aiLoading}
+                    className="shrink-0 px-2.5 py-1 rounded-full border border-border/70 hover:border-primary/40 bg-muted/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer font-medium"
+                  >
+                    📐 Physics laws?
+                  </button>
+                  <button
+                    onClick={() => {
+                      const prompt = focusedQuestionIndex !== null
+                        ? `Can you give me a first step hint for Question ${focusedQuestionIndex + 1}?`
+                        : "Can you give me a first step hint?";
+                      handleAiSendMessage(prompt);
+                    }}
+                    disabled={aiLoading}
+                    className="shrink-0 px-2.5 py-1 rounded-full border border-border/70 hover:border-primary/40 bg-muted/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer font-medium"
+                  >
+                    💡 First step hint
+                  </button>
+                  <button
+                    onClick={() => {
+                      const prompt = focusedQuestionIndex !== null
+                        ? `How do I sanity-check my approach and units for Question ${focusedQuestionIndex + 1}?`
+                        : "How do I check my approach and units?";
+                      handleAiSendMessage(prompt);
+                    }}
+                    disabled={aiLoading}
+                    className="shrink-0 px-2.5 py-1 rounded-full border border-border/70 hover:border-primary/40 bg-muted/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer font-medium"
+                  >
+                    🔍 Check approach
+                  </button>
+                </div>
+
+                {/* Textarea Input Container */}
+                <div className="relative flex items-end gap-2 bg-muted/30 border border-border/80 rounded-2xl p-1.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40 transition-all">
                   <Textarea
                     value={aiInput}
                     onChange={(e) => setAiInput(e.target.value)}
-                    placeholder="Ask for guidance..."
+                    placeholder={
+                      focusedQuestionIndex !== null
+                        ? `Ask Raise about Question ${focusedQuestionIndex + 1}...`
+                        : "Ask Raise for guidance..."
+                    }
                     disabled={aiLoading}
                     rows={1}
-                    className="min-h-[48px] max-h-[160px] pr-12 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 resize-none py-3.5 focus-visible:ring-zinc-900"
+                    className="min-h-[44px] max-h-[140px] pr-10 border-0 bg-transparent resize-none text-xs leading-relaxed focus-visible:ring-0 text-foreground placeholder:text-muted-foreground/50 p-2"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -1290,17 +1555,22 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                     }}
                   />
                   <Button
-                    onClick={handleAiSendMessage}
+                    onClick={() => handleAiSendMessage()}
                     disabled={aiLoading || !aiInput.trim()}
                     size="icon"
-                    className="absolute right-1.5 bottom-1.5 h-9 w-9 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-md active:scale-95"
+                    className="h-8 w-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs cursor-pointer shrink-0 mb-1 mr-1"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <p className="text-[8px] text-center mt-3 uppercase tracking-[0.2em] font-black text-zinc-300 dark:text-zinc-600">
-                  Guided tutoring active
-                </p>
+
+                <div className="flex items-center justify-between px-1 text-[10px] text-muted-foreground/60 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Raise Socratic Guidance active</span>
+                  </div>
+                  <span>Press ↵ to send</span>
+                </div>
               </div>
             </ResizablePanel>
           </>
@@ -1323,47 +1593,121 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 z-[101] flex w-[85%] flex-col bg-background shadow-2xl"
+              className="fixed inset-y-0 right-0 z-[101] flex w-[88%] max-w-[420px] flex-col bg-background shadow-2xl border-l border-border"
             >
+              {/* Mobile Header */}
               <div className="flex h-16 shrink-0 items-center justify-between border-b px-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <CruxLogo className="h-5 w-5" />
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <RaiseLogo className="h-5 w-5" />
                   </div>
-                  <div>
-                    <span className="block text-sm font-semibold tracking-tight">Study Tutor</span>
-                    <span className="text-[11px] text-muted-foreground">Hints, not answers</span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold tracking-tight">Raise</h3>
+                    <p className="text-[11px] text-muted-foreground truncate">Hints and guidance, not answers</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)}>
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleResetChat}
+                    disabled={aiMessages.length === 0}
+                    className="h-8 w-8"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setAiHelperOpen(false)} className="h-8 w-8">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 py-8">
-                <div className="space-y-6 pb-10">
-                  {aiMessages.map((msg) => (
-                    <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm border ${msg.role === 'user' ? 'bg-zinc-900 text-white rounded-tr-none border-transparent' : 'bg-white dark:bg-zinc-800 text-foreground rounded-tl-none border-zinc-100 dark:border-zinc-700'}`}>
-                        <MarkdownRenderer>{msg.content}</MarkdownRenderer>
+              {/* Mobile Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                {aiMessages.length === 0 ? (
+                  <div className="py-8 text-center space-y-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mx-auto">
+                      <Lightbulb className="h-6 w-6" />
+                    </div>
+                    <h4 className="text-sm font-bold">Raise is ready to help</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Tap a question or ask a conceptual hint below:
+                    </p>
+                    <div className="space-y-1.5 pt-2">
+                      {assignment.questions.map((q, i) => (
+                        <Button
+                          key={q.id}
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-start text-xs font-semibold h-9"
+                          onClick={() => askRaiseAboutQuestion(i)}
+                        >
+                          <ChevronRight className="h-3.5 w-3.5 mr-1 text-primary" />
+                          Question {i + 1} ({q.points || 10} pts)
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  aiMessages.map((msg) => (
+                    <div key={msg.id} className={cn("flex flex-col", msg.role === "user" ? "items-end" : "items-start")}>
+                      <div
+                        className={cn(
+                          "p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs border max-w-[92%]",
+                          msg.role === "user"
+                            ? "bg-zinc-900 text-white border-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-xs font-medium"
+                            : "bg-card text-card-foreground rounded-tl-xs border-border/80"
+                        )}
+                      >
+                        {msg.role === "user" ? (
+                          <div className="text-white dark:text-zinc-900 whitespace-pre-wrap">
+                            {msg.content}
+                          </div>
+                        ) : (
+                          <MarkdownRenderer>{msg.content}</MarkdownRenderer>
+                        )}
+                        {msg.role === "assistant" && (
+                          <div className="flex justify-end mt-2 pt-1 border-t border-border/40">
+                            <button
+                              onClick={() => handleCopyMessage(msg.id, msg.content)}
+                              className="text-[10px] text-muted-foreground flex items-center gap-1 hover:text-foreground"
+                            >
+                              <Copy className="h-3 w-3" /> Copy
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-                  <div ref={scrollRef} />
-                </div>
+                  ))
+                )}
+                {aiLoading && (
+                  <div className="p-3 rounded-2xl bg-card border text-xs text-muted-foreground">
+                    Raise is thinking...
+                  </div>
+                )}
+                <div ref={scrollRef} />
               </div>
 
-              <div className="border-t bg-muted/20 p-4 pb-10">
+              {/* Mobile Input */}
+              <div className="border-t bg-background p-3 pb-8 space-y-2">
                 <div className="flex gap-2">
                   <Input
                     value={aiInput}
                     onChange={(e) => setAiInput(e.target.value)}
-                    placeholder="Ask a question..."
-                    className="rounded-xl bg-background px-4 py-6 shadow-none"
+                    placeholder={
+                      focusedQuestionIndex !== null
+                        ? `Ask about Question ${focusedQuestionIndex + 1}...`
+                        : "Ask Raise..."
+                    }
+                    className="rounded-xl bg-muted/30 text-xs px-3 py-2 text-foreground"
                     onKeyDown={(e) => e.key === 'Enter' && handleAiSendMessage()}
                   />
-                  <Button onClick={handleAiSendMessage} disabled={aiLoading || !aiInput.trim()} className="h-12 w-12 shrink-0 rounded-xl p-0">
-                    <Send className="h-5 w-5" />
+                  <Button
+                    onClick={() => handleAiSendMessage()}
+                    disabled={aiLoading || !aiInput.trim()}
+                    className="h-10 w-10 shrink-0 rounded-xl p-0"
+                  >
+                    <Send className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -1371,6 +1715,14 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
           </>
         )}
       </AnimatePresence>
+
+      {/* Scientific Calculator Floating Widget */}
+      {assignment?.allowCalculator && (
+        <ScientificCalculator
+          isOpen={calculatorOpen}
+          onClose={() => setCalculatorOpen(false)}
+        />
+      )}
     </div>
   );
 }

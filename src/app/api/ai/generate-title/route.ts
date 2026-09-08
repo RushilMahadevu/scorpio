@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const { userMessage, aiResponse, context } = await req.json();
 
     const prompt = `
-      You are a specialized title generator for an AI ${context || "Tutor"}.
+      You are a specialized title generator for an AI ${context || "Raise"}.
       Based on the following first interaction between a student and the AI, generate a concise, descriptive title for the chat session.
       
       RULES:

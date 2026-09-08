@@ -31,7 +31,7 @@ export async function getNetworkLimitsHelp(
       ? ((ctx.practiceUsageCurrent / ctx.practiceLimit) * 100).toFixed(1)
       : "0";
 
-    const systemPrompt = `You are **Scorpio Tutor**, an expert assistant for physics teachers managing their Scorpio Network.
+    const systemPrompt = `You are **Raise**, an expert AI assistant for physics teachers managing their Scorpio Network.
 Your job is to answer questions about limits, budgets, and capacities — clearly, concisely, and in plain English.
 
 === CURRENT NETWORK SNAPSHOT ===
@@ -55,9 +55,9 @@ Plan: ${ctx.planId === "free" ? "Free (upgrade required for most features)" : ct
   • AI chat messages per student/month: ${ctx.aiNotebookLimitPerStudent}
   • Effect: Students are blocked from creating more notebooks or sending AI messages once their individual limits are hit.
 
-🤖 AI TUTOR CAPACITY (Physics Tutor Chat)
-  • AI tutor messages per student/month: ${ctx.aiTutorLimitPerStudent}
-  • Effect: Students cannot send new tutor messages once this individual monthly limit is reached.
+🤖 RAISE CAPACITY (Physics AI Assistant Chat)
+  • Raise messages per student/month: ${ctx.aiTutorLimitPerStudent}
+  • Effect: Students cannot send new Raise messages once this individual monthly limit is reached.
 
 👥 ENROLLMENT
   • Active students: ${ctx.studentCount}
@@ -72,7 +72,7 @@ RESPONSE GUIDELINES:
 - Always end with a short actionable tip if relevant.`;
 
     const chatHistoryContext = chatHistory.length > 0 
-      ? `Previous conversation history:\n${chatHistory.map(m => `${m.role === "user" ? "Teacher" : "Tutor"}: ${m.content}`).join("\n")}\n\n`
+      ? `Previous conversation history:\n${chatHistory.map(m => `${m.role === "user" ? "Teacher" : "Raise"}: ${m.content}`).join("\n")}\n\n`
       : "";
 
     const fullPrompt = `${systemPrompt}\n\n${chatHistoryContext}Teacher Question: ${message}`;
@@ -100,7 +100,7 @@ RESPONSE GUIDELINES:
 }
 
 /**
- * Generates a structured student portfolio based on the student's recent AI Tutor chat history.
+ * Generates a structured student portfolio based on the student's recent Raise chat history.
  */
 export async function generateStudentPortfolio(
   studentName: string,
@@ -116,7 +116,7 @@ export async function generateStudentPortfolio(
 }> {
   try {
     const systemPrompt = `You are an expert Physics Education Professor. 
-Your task is to analyze a student's recent interactions with an AI tutor and generate a structured portfolio summary.
+Your task is to analyze a student's recent interactions with Raise (an AI learning assistant) and generate a structured portfolio summary.
 
 Student Name: ${studentName}
 
@@ -136,7 +136,7 @@ IMPORTANT: Return ONLY a valid JSON object matching this structure:
 }`;
 
     const chatContext = chatHistory.length > 0 
-      ? `=== RECENT TUTOR SESSIONS ===\n${chatHistory.map(m => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`).join("\n\n")}`
+      ? `=== RECENT RAISE SESSIONS ===\n${chatHistory.map(m => `${m.role === "user" ? "Student" : "Raise"}: ${m.content}`).join("\n\n")}`
       : "No completely recent sessions available or student hasn't asked enough questions. Please infer based on lack of data (e.g., student hasn't engaged much).";
 
     const prompt = `${systemPrompt}\n\n${chatContext}`;
@@ -207,10 +207,10 @@ IMPORTANT: Return ONLY a valid JSON object matching this structure:
 
     return {
       portfolio: {
-        strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 5) : ["Engaging with the tutor"],
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 5) : ["Engaging with Raise"],
         weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses.slice(0, 5) : ["Needs more practice"],
         masteryLevel: masteryLevel as any,
-        aiSummary: parsed.aiSummary || "The student has primarily been using the tutor casually. More intensive sessions are needed for a deeper analysis.",
+        aiSummary: parsed.aiSummary || "The student has primarily been using Raise casually. More intensive sessions are needed for a deeper analysis.",
       },
       usage: {
         inputTokens: response.usageMetadata?.promptTokenCount || 0,

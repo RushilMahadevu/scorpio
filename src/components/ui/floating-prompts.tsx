@@ -5,7 +5,7 @@ import { MessageSquare, Sparkles, Brain, Calculator, GraduationCap } from "lucid
 import { useState, useEffect } from "react";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 
 interface PromptCardProps {
   icon: any;
@@ -105,8 +105,8 @@ const PromptCard = ({ icon: Icon, userText, aiText, delay, rotation, side, top }
           <div className="absolute left-[18px] xl:left-[22px] top-[-10px] bottom-0 w-[1.5px] bg-gradient-to-b from-primary/40 to-transparent" />
           <div className="space-y-1.5 pt-0.5">
             <div className="flex items-center gap-1.5">
-              <CruxLogo className="size-2 xl:size-2.5" />
-              <p className="text-[8px] font-black uppercase tracking-[0.25em] text-primary leading-none font-mono">Tutor</p>
+              <RaiseLogo className="size-2 xl:size-2.5" />
+              <p className="text-[8px] font-black uppercase tracking-[0.25em] text-primary leading-none font-mono">Raise</p>
             </div>
             <div className="text-[10.5px] xl:text-[12px] font-medium text-muted-foreground/90 leading-relaxed pr-1">
               {typeof aiText === 'string' ? aiText : aiText}

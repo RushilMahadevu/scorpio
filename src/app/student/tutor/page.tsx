@@ -42,7 +42,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { MarkdownRenderer } from "@/components/markdown-renderer"
-import { CruxLogo } from "@/components/ui/crux-logo"
+import { RaiseLogo } from "@/components/ui/raise-logo"
 import { cn } from "@/lib/utils"
 import { Organization } from "@/lib/types"
 import { db } from "@/lib/firebase"
@@ -652,7 +652,7 @@ export default function TutorPage() {
             body: JSON.stringify({
               userMessage: inputContent,
               aiResponse: assistantMessage.content,
-              context: "Physics Tutor",
+              context: "Raise",
             }),
           })
           if (titleRes.ok) {
@@ -740,10 +740,10 @@ export default function TutorPage() {
             </div>
             <div className="space-y-2">
               <CardTitle className="text-xl font-bold">
-                AI Physics Tutor Restricted
+                Raise AI Assistant Restricted
               </CardTitle>
               <CardDescription>
-                Your network is on the **Free tier**. AI-powered tutor features
+                Your network is on the **Free tier**. Raise features
                 require an active Department Network subscription.
               </CardDescription>
             </div>
@@ -797,11 +797,11 @@ export default function TutorPage() {
             </Button>
             <div className="flex items-center gap-2">
               <div className="bg-primary/10 border border-primary/25 size-8 rounded-lg flex items-center justify-center shadow-xs">
-                <CruxLogo size={16} className="text-primary" />
+                <RaiseLogo size={16} className="text-primary" />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold tracking-tight text-foreground leading-none">
-                  Tutor
+                  Raise
                 </span>
                 <span className="text-[10px] text-muted-foreground mt-0.5">
                   Physics learning guide
@@ -1014,7 +1014,7 @@ export default function TutorPage() {
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="font-semibold text-muted-foreground tracking-tight">
-                  Tutor Messages
+                  Raise Messages
                 </span>
                 <span className="font-mono text-xs font-semibold text-foreground">
                   {tutorUsage}{" "}
@@ -1167,7 +1167,7 @@ export default function TutorPage() {
               /* Empty State / Welcome Screen */
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary shadow-xs">
-                  <CruxLogo size={28} className="text-primary" />
+                  <RaiseLogo size={28} className="text-primary" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                   How can I help you in Physics today?
@@ -1228,10 +1228,10 @@ export default function TutorPage() {
                       <div className="group flex w-full flex-col gap-1.5">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs">
-                            <CruxLogo size={12} className="text-primary" />
+                            <RaiseLogo size={12} className="text-primary" />
                           </div>
                           <span className="text-xs font-semibold text-foreground">
-                            Tutor
+                            Raise
                           </span>
                           {message.type && (
                             <Badge
@@ -1383,7 +1383,7 @@ export default function TutorPage() {
             {isLoading && (
               <div className="flex w-full items-start gap-3 pl-1 animate-pulse">
                 <div className="flex size-6 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-xs">
-                  <CruxLogo size={12} className="text-primary" />
+                  <RaiseLogo size={12} className="text-primary" />
                 </div>
                 <div className="flex items-center gap-1.5 rounded-2xl bg-card/60 border border-border/40 px-4 py-2.5 text-xs text-muted-foreground">
                   <span className="size-1.5 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.3s]" />

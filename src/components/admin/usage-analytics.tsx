@@ -9,7 +9,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, Clock, FileText, MessageCircle, GraduationCap, ShieldAlert, TrendingUp, DollarSign, Zap,Component, BowArrow, Download, FileJson, FileSpreadsheet, ExternalLink, Printer, Notebook, PencilRuler, Sparkles, HelpCircle, BrainCircuit } from "lucide-react";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 import { 
   Dialog,
   DialogContent,
@@ -181,7 +181,7 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
   const getTypeIcon = (type: string) => {
     switch(type) {
       case "navigation": return <MessageCircle className="h-4 w-4 text-blue-500" />;
-      case "tutor": return <CruxLogo className="h-4 w-4 text-purple-500" size={17} />;
+      case "tutor": return <RaiseLogo className="h-4 w-4 text-purple-500" size={17} />;
       case "grading": return <GraduationCap className="h-4 w-4 text-emerald-500" />;
       case "practice": return <BowArrow className="h-4 w-4 text-indigo-500" />;
       case "parsing": return <FileText className="h-4 w-4 text-amber-500" />;

@@ -673,7 +673,7 @@ function PortfolioDialog({
             {name}'s AI Profile
           </DialogTitle>
           <DialogDescription className="text-white/45 text-xs font-medium mt-1">
-            Network-wide learning activity · Derived from Tutor sessions
+            Network-wide learning activity · Derived from Raise sessions
           </DialogDescription>
         </div>
 
@@ -741,7 +741,7 @@ function PortfolioDialog({
             <div className="space-y-1">
               <p className="text-sm font-bold">No portfolio evaluated</p>
               <p className="text-[12px] text-muted-foreground max-w-[280px] leading-relaxed">
-                Generate an AI portfolio to evaluate this student's understanding across all Tutor sessions.
+                Generate an AI portfolio to evaluate this student's understanding across all Raise sessions.
               </p>
             </div>
           </div>

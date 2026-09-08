@@ -11,11 +11,11 @@ import {
   BowArrow,
   NotebookPen
 } from "lucide-react";
-import { TutorLogo } from "./ui/crux-logo";
+import { RaiseLogo } from "./ui/raise-logo";
 import { AppSidebar, NavSection } from "./app-sidebar";
 
-const SidebarTutorIcon = ({ className }: { className?: string }) => (
-  <TutorLogo size={22} className={className} />
+const SidebarRaiseIcon = ({ className }: { className?: string }) => (
+  <RaiseLogo size={22} className={className} />
 );
 
 const navSections: NavSection[] = [
@@ -37,7 +37,7 @@ const navSections: NavSection[] = [
       { href: "/student/practice", label: "Practice", icon: BowArrow },
       { href: "/student/notebook", label: "Notebook", icon: NotebookPen },
       { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },
-      { href: "/student/tutor", label: "Tutor", icon: SidebarTutorIcon },
+      { href: "/student/tutor", label: "Raise", icon: SidebarRaiseIcon },
       { href: "/student/resources", label: "Resources", icon: Library },
     ],
   },

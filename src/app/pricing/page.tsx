@@ -147,7 +147,7 @@ export default function PricingPage() {
                         <CheckCircle2 className="h-4 w-4 text-muted-foreground/50 shrink-0" />{f}
                       </li>
                     ))}
-                    {["Scorpio Tutor", "Guided Grading", "Analytics"].map((f) => (
+                    {["Raise (AI Assistant)", "Guided Grading", "Analytics"].map((f) => (
                       <li key={f} className="flex items-center gap-3 text-muted-foreground/40 font-medium line-through">
                         <XCircle className="h-4 w-4 text-muted-foreground/20 shrink-0" />{f}
                       </li>
@@ -181,7 +181,7 @@ export default function PricingPage() {
                     {[
                       "Everything in Free",
                       "Unlimited Waypoints",
-                      "Scorpio Tutor",
+                      "Raise (AI Assistant)",
                       "AI Grading & Feedback",
                       "Portfolio Analysis per Student",
                       "Mastery Analytics",
@@ -224,7 +224,7 @@ export default function PricingPage() {
                     {[
                       "Everything in Monthly",
                       "Unlimited Waypoints",
-                      "Scorpio Tutor",
+                      "Raise (AI Assistant)",
                       "AI Grading & Feedback",
                       "Portfolio Analysis per Student",
                       "Mastery Analytics",
@@ -270,7 +270,7 @@ export default function PricingPage() {
                   { label: "Teacher & Student Accounts", free: true, standard: true, category: "Core" },
                   { label: "Basic Course Management", free: true, standard: true },
                   { label: "Limited Network (1 Waypoint)", free: true, standard: true },
-                  { label: "Scorpio Tutor", free: false, standard: true, category: "Learning Tools" },
+                  { label: "Raise (AI Assistant)", free: false, standard: true, category: "Learning Tools" },
                   { label: "AI Assignment Help & Feedback", free: false, standard: true },
                   { label: "AI-Assisted Grading", free: false, standard: true },
                   { label: "In-depth Portfolio Analysis per Student", free: false, standard: true },
@@ -401,7 +401,7 @@ export default function PricingPage() {
                   <h4 className="font-black text-sm">What You Unlock</h4>
                 </div>
                 {[
-                  { title: "Always-on Tutor", desc: "No throttling during finals, midterms, or late-night study sessions." },
+                  { title: "Always-on Raise", desc: "No throttling during finals, midterms, or late-night study sessions." },
                   { title: "Department Waypoints", desc: "One curriculum, synchronized instantly across every teacher in your network." },
                   { title: "Mastery Analytics", desc: "See exactly who's falling behind before it becomes a grade problem." },
                   { title: "Hard Spend Caps", desc: "Set monthly AI cost ceilings so you never get a surprise bill." },
@@ -419,7 +419,7 @@ export default function PricingPage() {
                   <h4 className="font-black text-sm">Zero Markup. Seriously.</h4>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Most EdTech companies mark up API costs 300–500%. We charge you exactly what Google charges us — every dollar goes directly to your students' learning.
+                  Most EdTech companies mark up API costs 300–500%. We charge you exactly what Google charges us — every dollar goes directly to your students&apos; learning.
                 </p>
                 <div className="flex gap-6 pt-1">
                   <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, NotebookPen, Edit3, Waypoints, PackageOpen } from "lucide-react";
+import { Hand, NotebookPen, Edit3, Waypoints, PackageOpen } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { useState } from "react";
@@ -8,10 +8,10 @@ import { useState } from "react";
 const items = [
   {
     id: 1,
-    title: "Research-Grade Tutor",
-    Icon: Bot,
+    title: "Raise: Socratic Assistant",
+    Icon: Hand,
     imgSrc: "/ai-tutor.png",
-    description: "A centralized tutoring system for students to access all 4 layers of the architecture, with seamless transitions and personalized guidance.",
+    description: "A centralized AI learning assistant for students to access all 4 layers of the architecture, with seamless transitions and personalized guidance.",
   },
   {
     id: 2,

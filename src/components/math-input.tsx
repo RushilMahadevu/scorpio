@@ -297,7 +297,7 @@ export function MathInputField({
           onInput={syncValue}
           onBlur={syncValue}
           className={cn(
-            "w-full rounded-lg border border-input bg-transparent px-3 py-2.5 outline-none",
+            "w-full rounded-lg border border-input bg-transparent px-3 py-2.5 outline-none text-foreground",
             "text-base md:text-sm leading-relaxed transition-[color,box-shadow] shadow-xs",
             "focus:ring-2 focus:ring-ring/50 focus:border-ring",
             "[&_.math-chip]:inline-flex [&_.math-chip]:items-center [&_.math-chip]:mx-0.5",

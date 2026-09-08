@@ -75,7 +75,7 @@ import { toast } from "sonner";
 import TurndownService from "turndown";
 import Showdown from "showdown";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { CruxLogo } from "@/components/ui/crux-logo";
+import { RaiseLogo } from "@/components/ui/raise-logo";
 
 const turndown = new TurndownService();
 const converter = new Showdown.Converter();
@@ -638,7 +638,7 @@ export default function NotebookPage() {
             )}
             onClick={() => setShowCopilot(!showCopilot)}
           >
-            <CruxLogo className={cn("h-4 w-4", showCopilot && "animate-pulse")} />
+            <RaiseLogo className={cn("h-4 w-4", showCopilot && "animate-pulse")} />
           </Button>
         </div>
       </div>
@@ -825,7 +825,7 @@ export default function NotebookPage() {
             <div className="h-full flex flex-col bg-zinc-50/10 dark:bg-zinc-950/20">
               <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
                 <Label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] flex items-center gap-2">
-                  <CruxLogo className="h-3 w-3" /> Tutor Help
+                  <RaiseLogo className="h-3 w-3" /> Raise Help
                 </Label>
                 <div className="flex items-center gap-1">
                   {orgData?.aiNotebookLimitPerStudent > 0 && (
@@ -876,10 +876,10 @@ export default function NotebookPage() {
                   {messages.length === 0 && (
                     <div className="text-center py-12 px-4 space-y-4">
                       <div className="inline-flex p-3 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
-                        <CruxLogo className="h-6 w-6 text-zinc-400" />
+                        <RaiseLogo className="h-6 w-6 text-zinc-400" />
                       </div>
                       <div>
-                        <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest mb-1">Notes Assistant Ready</h3>
+                        <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest mb-1">Raise Notes Assistant Ready</h3>
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
                           I can help you summarize your notes, suggest research topics,
                           or explain concepts you've written about.

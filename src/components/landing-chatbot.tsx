@@ -12,7 +12,7 @@ import { MarkdownRenderer } from './markdown-renderer';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-import { CruxLogo } from './ui/crux-logo';
+import { RaiseLogo } from './ui/raise-logo';
 
 const LIMIT = 10;
 const VISITOR_KEY = 'scorpio_landing_visitor_id';
@@ -88,7 +88,7 @@ export function LandingChatbot() {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: `**Welcome to Scorpio Tutor!** 👋\n\nI'm the tutor built into Scorpio. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
+      content: `**Welcome to Raise!** 👋\n\nI'm Scorpio's AI learning assistant. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
       isWelcome: true,
     }]);
   }, []);
@@ -132,7 +132,7 @@ export function LandingChatbot() {
           setRemaining(0);
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: `**You've reached the ${LIMIT}-message demo limit.**\n\nSign up to get unlimited access to all Scorpio features, including the full AI assistant.`,
+            content: `**You've reached the ${LIMIT}-message demo limit.**\n\nSign up to get unlimited access to all Scorpio features, including Raise.`,
           }]);
           return;
         }
@@ -162,11 +162,11 @@ export function LandingChatbot() {
           'fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer',
           'h-14 w-14 bg-zinc-900 border border-white/10 shadow-xl hover:bg-zinc-800 hover:border-white/20 hover:scale-105'
         )}
-        aria-label="Ask Tutor"
+        aria-label="Ask Raise for help"
       >
         {isOpen
           ? <X className="h-5 w-5 text-white" />
-          : <CruxLogo className="h-5 w-5 text-white" />
+          : <RaiseLogo className="h-5 w-5 text-white" />
         }
         {hasUnread && !isOpen && (
           <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />
@@ -191,15 +191,15 @@ export function LandingChatbot() {
             <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-zinc-50 dark:bg-zinc-900/60 shrink-0">
               <div className="relative">
                 <div className="h-9 w-9 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg border border-white/5">
-                  <CruxLogo size={18} className="text-white" />
+                  <RaiseLogo size={18} className="text-white" />
                 </div>
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Tutor</p>
+                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Raise</p>
                 <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
-                  Online · Product Guide
+                  Online · AI Learning Assistant
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -249,7 +249,7 @@ export function LandingChatbot() {
                 <div key={i} className={cn('flex gap-2.5', message.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {message.role === 'assistant' && (
                     <div className="h-6 w-6 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 mt-0.5 border border-white/5">
-                      <CruxLogo size={14} className="text-white" />
+                      <RaiseLogo size={14} className="text-white" />
                     </div>
                   )}
                   <div className={cn(
@@ -289,7 +289,7 @@ export function LandingChatbot() {
               {isLoading && (
                 <div className="flex gap-2.5">
                   <div className="h-6 w-6 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 border border-white/5">
-                    <CruxLogo size={14} className="text-white" />
+                    <RaiseLogo size={14} className="text-white" />
                   </div>
                   <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
                     <div className="flex gap-1 items-center h-4">
@@ -305,7 +305,7 @@ export function LandingChatbot() {
               {limitReached && (
                 <div className="ml-8 p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
                   <p className="text-xs font-semibold text-foreground">Ready to get full access?</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited Tutor help, practice, and platform features.</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited Raise help, practice, and platform features.</p>
                   <Link href="/signup" onClick={() => setIsOpen(false)}>
                     <Button size="sm" className="w-full rounded-xl font-bold text-xs cursor-pointer h-8 mt-1">
                       Sign up for free <ArrowRight className="h-3 w-3 ml-1" />
@@ -333,7 +333,7 @@ export function LandingChatbot() {
                       sendMessage(input);
                     }
                   }}
-                  placeholder={limitReached ? 'Demo limit reached — sign up for more' : 'Ask me anything about Scorpio...'}
+                  placeholder={limitReached ? 'Demo limit reached — sign up for more' : 'Ask Raise anything about Scorpio...'}
                   className="flex-1 bg-transparent border-0 resize-none p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 min-h-[24px] max-h-[80px] leading-relaxed"
                   rows={1}
                   disabled={isLoading || limitReached}
@@ -348,7 +348,7 @@ export function LandingChatbot() {
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
-                Tutor · Product Guide · {remaining} messages left
+                Raise · AI Learning Assistant · {remaining} messages left
               </p>
             </div>
           </motion.div>
