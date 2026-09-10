@@ -9,7 +9,8 @@ import {
   PackageOpen,
   ChartColumnBig,
   BowArrow,
-  NotebookPen
+  NotebookPen,
+  Leaf
 } from "lucide-react";
 import { RaiseLogo } from "./ui/raise-logo";
 import { AppSidebar, NavSection } from "./app-sidebar";
@@ -39,6 +40,12 @@ const navSections: NavSection[] = [
       { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },
       { href: "/student/tutor", label: "Raise", icon: SidebarRaiseIcon },
       { href: "/student/resources", label: "Resources", icon: Library },
+    ],
+  },
+  {
+    label: "Impact",
+    items: [
+      { href: "/sustainability", label: "Green Impact", icon: Leaf },
     ],
   },
 ];

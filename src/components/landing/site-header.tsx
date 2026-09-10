@@ -40,6 +40,7 @@ import {
   AlertTriangle,
   ChartColumnIncreasing,
   X,
+  Leaf,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -242,6 +243,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
     { id: "demos", label: "Demos", isExternal: true, action: () => navigateWithTransition("/demos") },
     { id: "ai", label: "Try AI", isExternal: true, action: () => navigateWithTransition("/ai") },
     { id: "pricing", label: "Pricing", isExternal: true, action: () => navigateWithTransition("/pricing") },
+    { id: "sustainability", label: "Sustainability", isExternal: true, action: () => navigateWithTransition("/sustainability") },
     { id: "faq", label: "FAQ", target: "faq" },
     { id: "docs", label: "Docs", isDropdown: true },
   ];
@@ -256,6 +258,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
   const docsItems: MenuItem[] = [
     { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
     { href: "/research", label: "Research & Methodology", desc: "Deep dive into Scorpio's guided learning approach.", icon: Brain },
+    { href: "/sustainability", label: "Sustainability & Climate", desc: "Honest lifecycle accounting & thermodynamic footprint.", icon: Leaf },
     { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
     { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
     { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },
@@ -469,6 +472,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
                           { id: "demos", label: "Demos", icon: PlayCircle, href: "/demos" },
                           { id: "ai", label: "Try AI", icon: Sparkles, href: "/ai" },
                           { id: "pricing", label: "Pricing", icon: ChartColumnIncreasing, href: "/pricing" },
+                          { id: "sustainability", label: "Sustainability", icon: Leaf, href: "/sustainability" },
                           {
                             id: "efficacy", label: "Compare", icon: Brain, action: () => {
                               if (isHomePage) scrollToSection("efficacy");

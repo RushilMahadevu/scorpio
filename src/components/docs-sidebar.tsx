@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BookOpen, FileText, Info, Mail, Shield } from "lucide-react";
+import { BookOpen, FileText, Info, Mail, Shield, Leaf } from "lucide-react";
 
 const items = [
   { title: "About", href: "/about", icon: Info },
   { title: "Research & Methodology", href: "/research", icon: BookOpen },
+  { title: "Sustainability & Green AI", href: "/sustainability", icon: Leaf },
   { title: "Privacy Policy", href: "/privacy", icon: Shield },
   { title: "Terms of Service", href: "/terms", icon: FileText },
   { title: "Contact Support", href: "/contact", icon: Mail },

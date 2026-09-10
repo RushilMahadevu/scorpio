@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useScroll, useSpring, useMotionValue, useTrans
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X, Users, Building2, AlertCircle, Lightbulb, BarChart3
+  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X, Users, Building2, AlertCircle, Lightbulb, BarChart3, Leaf
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -705,6 +705,13 @@ export default function Home() {
                         >
                           <BookOpen className="h-5 w-5" />
                           <span className="text-sm font-medium">Research & Methodology</span>
+                        </Link>
+                        <Link
+                          href="/sustainability"
+                          className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          <Leaf className="h-5 w-5 text-emerald-500" />
+                          <span className="text-sm font-medium">Sustainability</span>
                         </Link>
                         <Link
                           href="/privacy"

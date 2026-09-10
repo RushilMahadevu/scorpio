@@ -8,7 +8,7 @@ import {
   ArrowRight, Sparkles,
   Info, BookOpen, Mail, Shield, FileText,
   CheckCircle2, XCircle, Zap, KeyRound, Github,
-  ShieldCheck, Globe, Lock
+  ShieldCheck, Globe, Lock, Leaf
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
@@ -499,6 +499,7 @@ export default function PricingPage() {
                   { href: "https://github.com/RushilMahadevu/scorpio", icon: Github, label: "GitHub", external: true },
                   { href: "/about", icon: Info, label: "About" },
                   { href: "/research", icon: BookOpen, label: "Research" },
+                  { href: "/sustainability", icon: Leaf, label: "Sustainability" },
                   { href: "/request-access", icon: KeyRound, label: "Request Access" },
                   { href: "/privacy", icon: Shield, label: "Privacy" },
                   { href: "/terms", icon: FileText, label: "Terms" },

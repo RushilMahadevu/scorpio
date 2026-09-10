@@ -8,7 +8,7 @@ import {
   Brain, Calculator, Waypoints, ShieldUser, Users, FileUp, ArrowRight,
   Sparkles, Orbit, SquareFunction, Menu, Github, Info, BookOpen, Mail,
   Shield, FileText, Activity, PlayCircle, CheckCircle2, Zap, Presentation,
-  MonitorPlay, ShieldCheck, FileDown, Maximize2, Globe, ChartColumnIncreasing
+  MonitorPlay, ShieldCheck, FileDown, Maximize2, Globe, ChartColumnIncreasing, Leaf
 } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -545,6 +545,7 @@ export default function FeaturesPage() {
                 { href: "https://github.com/RushilMahadevu/scorpio", icon: Github, label: "GitHub", external: true },
                 { href: "/about", icon: Info, label: "About" },
                 { href: "/research", icon: BookOpen, label: "Research" },
+                { href: "/sustainability", icon: Leaf, label: "Sustainability" },
                 { href: "/privacy", icon: Shield, label: "Privacy" },
                 { href: "/terms", icon: FileText, label: "Terms" },
                 { href: "/contact", icon: Mail, label: "Contact" },

@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { SystemAccordion } from "@/components/system-accordion";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { Logo } from "@/components/ui/logo";
-import { Github, Info, BookOpen, Mail, Shield, FileText, KeyRound } from "lucide-react";
+import { Github, Info, BookOpen, Mail, Shield, FileText, KeyRound, Leaf } from "lucide-react";
 import Link from "next/link";
 
 export default function DemosPage() {
@@ -97,6 +97,10 @@ export default function DemosPage() {
                   <Link href="/research" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                     <BookOpen className="h-5 w-5" />
                     <span className="text-sm font-medium">Research & Methodology</span>
+                  </Link>
+                  <Link href="/sustainability" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                    <Leaf className="h-5 w-5 text-emerald-500" />
+                    <span className="text-sm font-medium">Sustainability</span>
                   </Link>
                   <Link href="/privacy" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                     <Shield className="h-5 w-5" />
