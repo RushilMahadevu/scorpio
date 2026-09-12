@@ -1,59 +1,47 @@
 "use client";
 
 import { SpaceBackground } from "@/components/ui/space-background";
-import { motion, AnimatePresence, useScroll, useSpring, useMotionValue, useTransform, animate } from "framer-motion";
-import { ModeToggle } from "@/components/mode-toggle";
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
-  Brain, Calculator, KeyRound, ShieldUser, MessageCircle, GraduationCap, ArrowRight, Sparkles, ChevronDown, Orbit, SquareFunction, Presentation, ChartColumnIncreasing, Menu, Github, Info, BookOpen, Mail, Shield, FileText, AlertTriangle, ShieldCheck, Maximize2, MonitorPlay, PlayCircle, CheckCircle2, Zap, Lock, Globe, Layers, X, Users, Building2, AlertCircle, Lightbulb, BarChart3, Leaf
+  ArrowRight, Github, Info, BookOpen, Mail, Shield, FileText, KeyRound, AlertTriangle, Maximize2, CheckCircle2, Zap, X, Leaf, Sparkles
 } from "lucide-react";
 import Link from "next/link";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import { LoadingScreen } from "@/components/loading-screen";
-import { LandingChatbot } from "@/components/landing-chatbot";
-import { LandingFAQ } from "@/components/landing-faq";
-import { Comparison } from "@/components/landing/comparison";
-import { LayerEfficacyChart } from "@/components/landing/layer-efficacy-chart";
-
-import { FloatingPrompts } from "@/components/ui/floating-prompts";
-import { SolutionFlowchart } from "@/components/landing/solution-flowchart";
 import { Logo } from "@/components/ui/logo";
-import { RaiseLogo } from "@/components/ui/raise-logo";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/landing/site-header";
 import SpotlightCards from "@/components/ui/spotlight-cards";
-import { FeatureSection } from "@/components/feature-section";
-
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 import { TextAnimate } from "@/components/ui/text-animate";
+import { TypingAnimation } from "@/components/ui/typing-animation";
 
-function AnimatedNumber({ value }: { value: number }) {
-  const count = useMotionValue(value);
-  const rounded = useTransform(count, (latest) => latest.toFixed(2));
+// Below-fold sections: lazy-loaded to keep initial bundle small
+const SolutionFlowchart = dynamic(
+  () => import("@/components/landing/solution-flowchart").then((m) => ({ default: m.SolutionFlowchart })),
+  { ssr: false }
+);
+const FeatureSection = dynamic(
+  () => import("@/components/feature-section").then((m) => ({ default: m.FeatureSection })),
+  { ssr: false }
+);
+const Comparison = dynamic(
+  () => import("@/components/landing/comparison").then((m) => ({ default: m.Comparison })),
+  { ssr: false }
+);
+const LandingFAQ = dynamic(
+  () => import("@/components/landing-faq").then((m) => ({ default: m.LandingFAQ })),
+  { ssr: false }
+);
+const LandingChatbot = dynamic(
+  () => import("@/components/landing-chatbot").then((m) => ({ default: m.LandingChatbot })),
+  { ssr: false }
+);
 
-  useEffect(() => {
-    const controls = animate(count, value, { duration: 0.5, ease: "easeOut" });
-    return controls.stop;
-  }, [value, count]);
 
-  return <motion.span>{rounded}</motion.span>;
-}
 
 
 
@@ -140,40 +128,34 @@ export default function Home() {
   }, [isLoaded]);
 
   useEffect(() => {
+    // rAF-throttled scroll handler: avoids per-frame getBoundingClientRect on 8 elements
+    let rafId: number;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 20);
 
-      // Determine active section for nav highlight
-      const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing", "faq", "cta"];
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            setActiveNav(section);
-            break;
+        // Determine active section for nav highlight
+        const sections = ["home", "problem", "solution", "demos", "efficacy", "pricing", "faq", "cta"];
+        for (const section of sections) {
+          const el = document.getElementById(section);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom >= 100) {
+              setActiveNav(section);
+              break;
+            }
           }
         }
-      }
+      });
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
-  const features = [
-    { icon: Brain, title: "Socratic Scaffolding", description: "Enforces the 'Struggle'—a 4-layer architecture ensuring pedagogical depth over simple answer-retrieval.", tag: "Pedagogical" },
-    { icon: SquareFunction, title: "0.92 Notation Density", description: "Real-time, symbolic LaTeX rendering verified for professional academic standards and precision.", tag: "Mathematical" },
-    { icon: Orbit, title: "Inference-Time Scaffolding", description: "No fine-tuning, no black-box retraining. Every Socratic behaviour is enforced at inference-time — observable, auditable, reproducible.", tag: "Verifiable" },
-    { icon: Calculator, title: "Constraint-Led Derivation", description: "Students are guided through the derivation, not handed it. Scorpio's architecture keeps the learning process central.", tag: "Architecture" },
-    { icon: ShieldUser, title: "Verifiable Integrity", description: "Rigid schema constraints block 'homework-solving' hacks and ensure academic honesty at scale.", tag: "Verifiable" }
-  ];
-
-  const stats = [
-    { value: "0%", label: "Direct Answer Rate", sublabel: "Verified by Ph.D. Audit" },
-    { value: "100%", label: "Socratic Guidance", sublabel: "Forces Productive Struggle" },
-    { value: "100%", label: "Guided Derivations", sublabel: "Focuses on the Process" },
-    { value: "Verifiable", label: "Learning Process", sublabel: "No Bypassing Allowed" }
-  ];
 
   const onLoadingFinish = useCallback(() => setIsLoaded(true), []);
 
@@ -217,7 +199,7 @@ export default function Home() {
                           className="inline-flex items-center gap-3 mt-20 px-3 py-1 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors mb-6"
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.4 }}
+                          transition={{ delay: 0.2, duration: 0.4 }}
                         >
                           <div className="relative flex h-1.5 w-1.5 items-center justify-center">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
@@ -227,37 +209,47 @@ export default function Home() {
                         </motion.div>
 
                         {/* Headline */}
-                        <motion.div
-                          className="relative z-10 mb-6"
-                          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                          viewport={{ once: true }}
-                        >
+                        <div className="relative z-10 mb-6">
                           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-[-0.05em] text-foreground leading-[1.05]">
-                            <TextAnimate animation="blurIn" by="character" duration={.75} delay={0.3} className="block" once>
+                            <TextAnimate
+                              as="span"
+                              animation="blurInUp"
+                              by="line"
+                              duration={0.65}
+                              delay={0.35}
+                              className="block"
+                              once
+                            >
                               The operating system
                             </TextAnimate>
                             <span className="text-primary block">
-                              <TextAnimate animation="blurIn" by="character" duration={.75} delay={1.05} className="inline-block" once>
+                              <TextAnimate
+                                as="span"
+                                animation="blurInUp"
+                                by="line"
+                                duration={0.65}
+                                delay={0.7}
+                                className="inline-block"
+                                once
+                              >
                                 for physics teachers
                               </TextAnimate>
                             </span>
                           </h1>
-                        </motion.div>
+                        </div>
 
-                        {/* Description */}
-                        <motion.div
-                          className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, ease: "easeOut" }}
-                          viewport={{ once: true }}
-                        >
-                          <TextAnimate animation="blurInUp" by="character" duration={.75} delay={1.8} className="inline-block" once>
+                        {/* Description - Type In Animation */}
+                        <div className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium min-h-[3.5rem] sm:min-h-[2rem]">
+                          <TypingAnimation
+                            delay={1350}
+                            typeSpeed={20}
+                            showCursor={true}
+                            cursorStyle="line"
+                            className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
+                          >
                             Deploy tutoring for every student. Designed for the AI Era.
-                          </TextAnimate>
-                        </motion.div>
+                          </TypingAnimation>
+                        </div>
                       </div>
 
                       {/* Right: Subtle CTAs */}
@@ -265,7 +257,7 @@ export default function Home() {
                         className="flex items-center gap-6 shrink-0 pb-2 md:pb-4 relative z-30"
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 2.55, duration: 1, ease: "easeOut" }}
+                        transition={{ delay: 2.3, duration: 0.8, ease: "easeOut" }}
                       >
                         <Link href="/request-access">
                           <Button variant="link" className="h-auto p-0 font-medium text-sm text-primary hover:text-primary/80 transition-all flex items-center gap-1.5 group">
@@ -290,7 +282,7 @@ export default function Home() {
                         style={{ perspective: "1600px" }}
                         initial={{ opacity: 0, y: 80 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 3.3, duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ delay: 2.6, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
                       >
                         {/* Ambient glow */}
                         <div className="absolute -inset-12 bg-primary/12 rounded-full blur-[90px] pointer-events-none" />
@@ -321,7 +313,7 @@ export default function Home() {
                               muted
                               loop
                               playsInline
-                              preload="auto"
+                              preload="metadata"
                               className="w-full h-full object-cover"
                               onLoadedMetadata={(e) => {
                                 e.currentTarget.muted = true;

@@ -14,8 +14,8 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
     const timer = setTimeout(() => {
       setLoading(false);
       // Faster exit wait
-      setTimeout(() => onFinish?.(), 400);
-    }, 1200); // Snappy 1.2s duration
+      setTimeout(() => onFinish?.(), 300);
+    }, 800); // Reduced from 1200ms → 800ms for faster time-to-content
     return () => clearTimeout(timer);
   }, [onFinish]);
 
@@ -27,7 +27,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
           className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden"
           exit={{ 
             opacity: 0,
-            transition: { duration: 0.4, ease: "easeOut" }
+            transition: { duration: 0.3, ease: "easeOut" }
           }}
         >
           {/* Clean Mathematical Grid Background */}
@@ -167,7 +167,7 @@ export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
               className="h-full bg-primary"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ duration: 1.2, ease: "linear" }}
+              transition={{ duration: 0.8, ease: "linear" }}
             />
           </div>
         </motion.div>

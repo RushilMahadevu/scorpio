@@ -4,9 +4,9 @@ import { memo } from "react"
 import {
   AnimatePresence,
   motion,
-  Variants,
   type DOMMotionComponents,
   type MotionProps,
+  type Variants,
 } from "motion/react"
 
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ interface TextAnimateProps extends Omit<MotionProps, "children"> {
   /**
    * The text content to animate
    */
-  children: React.ReactNode
+  children: string
   /**
    * The class name to be applied to the component
    */
@@ -155,17 +155,20 @@ const defaultItemAnimationVariants: Record<
   blurIn: {
     container: defaultContainerVariants,
     item: {
-      hidden: { opacity: 0, filter: "blur(10px)" },
+      hidden: { opacity: 0, filter: "blur(12px)", y: 8 },
       show: {
         opacity: 1,
         filter: "blur(0px)",
+        y: 0,
         transition: {
-          duration: 0.3,
+          duration: 0.6,
+          ease: [0.16, 1, 0.3, 1],
         },
       },
       exit: {
         opacity: 0,
-        filter: "blur(10px)",
+        filter: "blur(12px)",
+        y: 8,
         transition: { duration: 0.3 },
       },
     },
@@ -173,25 +176,22 @@ const defaultItemAnimationVariants: Record<
   blurInUp: {
     container: defaultContainerVariants,
     item: {
-      hidden: { opacity: 0, filter: "blur(10px)", y: 20 },
+      hidden: { opacity: 0, filter: "blur(12px)", y: 16 },
       show: {
         opacity: 1,
         filter: "blur(0px)",
         y: 0,
         transition: {
-          y: { duration: 0.3 },
-          opacity: { duration: 0.4 },
-          filter: { duration: 0.3 },
+          duration: 0.6,
+          ease: [0.16, 1, 0.3, 1],
         },
       },
       exit: {
         opacity: 0,
-        filter: "blur(10px)",
-        y: 20,
+        filter: "blur(12px)",
+        y: 16,
         transition: {
-          y: { duration: 0.3 },
-          opacity: { duration: 0.4 },
-          filter: { duration: 0.3 },
+          duration: 0.3,
         },
       },
     },
@@ -345,24 +345,41 @@ const TextAnimateBase = ({
 }: TextAnimateProps) => {
   const MotionComponent = motionElements[Component]
 
-  const textContent = typeof children === "string" ? children : ""
-
   let segments: string[] = []
   switch (by) {
     case "word":
-      segments = textContent.split(/(\s+)/)
+      segments = children.split(/(\s+)/)
       break
     case "character":
-      segments = textContent.split("")
+      segments = children.split("")
       break
     case "line":
-      segments = textContent.split("\n")
+      segments = children.split("\n")
       break
     case "text":
     default:
-      segments = [textContent]
+      segments = [children]
       break
   }
+
+  const baseItemVariants = animation
+    ? defaultItemAnimationVariants[animation]?.item
+    : defaultItemVariants
+
+  const itemVariants: Variants = duration
+    ? {
+        ...baseItemVariants,
+        show: {
+          ...baseItemVariants.show,
+          transition: {
+            ...(typeof baseItemVariants.show === "object" && "transition" in baseItemVariants.show
+              ? (baseItemVariants.show as any).transition
+              : {}),
+            duration,
+          },
+        },
+      }
+    : baseItemVariants
 
   const finalVariants = variants
     ? {
@@ -373,13 +390,13 @@ const TextAnimateBase = ({
             transition: {
               opacity: { duration: 0.01, delay },
               delayChildren: delay,
-              staggerChildren: duration / segments.length,
+              staggerChildren: duration ? duration / segments.length : 0.05,
             },
           },
           exit: {
             opacity: 0,
             transition: {
-              staggerChildren: duration / segments.length,
+              staggerChildren: duration ? duration / segments.length : 0.05,
               staggerDirection: -1,
             },
           },
@@ -394,18 +411,18 @@ const TextAnimateBase = ({
               ...defaultItemAnimationVariants[animation].container.show,
               transition: {
                 delayChildren: delay,
-                staggerChildren: duration / segments.length,
+                staggerChildren: duration ? duration / segments.length : 0.05,
               },
             },
             exit: {
               ...defaultItemAnimationVariants[animation].container.exit,
               transition: {
-                staggerChildren: duration / segments.length,
+                staggerChildren: duration ? duration / segments.length : 0.05,
                 staggerDirection: -1,
               },
             },
           },
-          item: defaultItemAnimationVariants[animation].item,
+          item: itemVariants,
         }
       : { container: defaultContainerVariants, item: defaultItemVariants }
 
@@ -419,10 +436,10 @@ const TextAnimateBase = ({
         exit="exit"
         className={cn("whitespace-pre-wrap", className)}
         viewport={{ once }}
-        aria-label={accessible ? textContent : undefined}
+        aria-label={accessible ? children : undefined}
         {...props}
       >
-        {accessible && <span className="sr-only">{textContent}</span>}
+        {accessible && <span className="sr-only">{children}</span>}
         {segments.map((segment, i) => (
           <motion.span
             key={`${by}-${segment}-${i}`}

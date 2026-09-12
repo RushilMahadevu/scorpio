@@ -24,7 +24,7 @@ const ptSerif = PT_Serif({
   weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false, // not used above-the-fold; lazy-load to unblock first paint
 });
 
 const atkinson = Atkinson_Hyperlegible({
@@ -32,14 +32,14 @@ const atkinson = Atkinson_Hyperlegible({
   weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false, // not used above-the-fold; lazy-load to unblock first paint
 });
 
 const robotoMono = Roboto_Mono({
   variable: "--font-roboto-mono",
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false, // not used above-the-fold; lazy-load to unblock first paint
 });
 
 export const metadata: Metadata = {
@@ -113,11 +113,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
-          async
-          crossOrigin="anonymous"
-          src="https://tweakcn.com/live-preview.min.js"
-        />
+        {/* tweakcn design-preview — dev only, never load in production */}
+        {process.env.NODE_ENV === "development" && (
+          <script
+            async
+            crossOrigin="anonymous"
+            src="https://tweakcn.com/live-preview.min.js"
+          />
+        )}
       </head>
       <body suppressHydrationWarning className={`${inter.variable} ${ibmPlexSans.variable} ${ptSerif.variable} ${atkinson.variable} ${robotoMono.variable} antialiased bg-background text-foreground`}>
         <Providers>

@@ -6,12 +6,21 @@ import { useState, useEffect } from "react";
 export function SpaceBackground() {
   const { spaceEffectsEnabled, spacyLevel, nebulaBrightness } = useSpaceEffects();
   const [isMobile, setIsMobile] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   if (!spaceEffectsEnabled) {
@@ -46,7 +55,7 @@ export function SpaceBackground() {
       <div className="absolute inset-0 opacity-50 dark:opacity-70 transition-opacity duration-300">
         {/* EFFECT: Drifting Stars Layer 1 - slow horizontal drift */}
         <div 
-          className="absolute inset-0 animate-[drift_60s_linear_infinite]"
+          className={reducedMotion ? "absolute inset-0" : "absolute inset-0 animate-[drift_60s_linear_infinite]"}
           style={{
             backgroundImage: `
               radial-gradient(1px 1px at 20px 30px, currentColor, transparent),
@@ -62,12 +71,13 @@ export function SpaceBackground() {
             `,
             backgroundSize: `${720 + spacyLevel * 4}px 200px`,
             opacity: 0.3 + spacyLevel / 150,
+            willChange: "transform",
           }}
         />
         
         {/* EFFECT: Drifting Stars Layer 2 - medium drift, opposite direction */}
         <div 
-          className="absolute inset-0 opacity-60 animate-[drift-reverse_45s_linear_infinite]"
+          className={`absolute inset-0 opacity-60 ${reducedMotion ? "" : "animate-[drift-reverse_45s_linear_infinite]"}`}
           style={{
             backgroundImage: `
               radial-gradient(1px 1px at 15px 80px, currentColor, transparent),
@@ -87,12 +97,13 @@ export function SpaceBackground() {
               radial-gradient(1.5px 1.5px at 635px 55px, currentColor, transparent)
             `,
             backgroundSize: '660px 200px',
+            willChange: "transform",
           }}
         />
         
         {/* EFFECT: Twinkling Stars - subtle pulsing */}
         <div 
-          className="absolute inset-0 opacity-30 animate-[twinkle_4s_ease-in-out_infinite]"
+          className={`absolute inset-0 opacity-30 ${reducedMotion ? "" : "animate-[twinkle_4s_ease-in-out_infinite]"}`}
           style={{
             backgroundImage: `
               radial-gradient(0.5px 0.5px at 25px 45px, currentColor, transparent),
@@ -122,7 +133,7 @@ export function SpaceBackground() {
 
         {/* EFFECT: Variable Star Sizes - adds depth with larger stars */}
         <div 
-          className="absolute inset-0 opacity-20 animate-[drift_80s_linear_infinite]"
+          className={`absolute inset-0 opacity-20 ${reducedMotion ? "" : "animate-[drift_80s_linear_infinite]"}`}
           style={{
             backgroundImage: `
               radial-gradient(3px 3px at 150px 50px, currentColor, transparent),
@@ -132,32 +143,37 @@ export function SpaceBackground() {
               radial-gradient(3px 3px at 350px 30px, currentColor, transparent)
             `,
             backgroundSize: '720px 200px',
+            willChange: reducedMotion ? undefined : "transform",
           }}
         />
 
-        {/* EFFECT: Pulsing Stars - individual stars with staggered pulse */}
-        <div 
-          className="absolute inset-0 animate-[pulse_3s_ease-in-out_infinite]"
-          style={{
-            backgroundImage: `
-              radial-gradient(2px 2px at 100px 90px, currentColor, transparent),
-              radial-gradient(1.5px 1.5px at 300px 120px, currentColor, transparent)
-            `,
-            backgroundSize: '720px 200px',
-            animationDelay: '0s'
-          }}
-        />
-        <div 
-          className="absolute inset-0 animate-[pulse_4s_ease-in-out_infinite]"
-          style={{
-            backgroundImage: `
-              radial-gradient(2.5px 2.5px at 200px 60px, currentColor, transparent),
-              radial-gradient(1.5px 1.5px at 500px 140px, currentColor, transparent)
-            `,
-            backgroundSize: '720px 200px',
-            animationDelay: '1.5s'
-          }}
-        />
+        {/* EFFECT: Pulsing Stars - individual stars with staggered pulse (consolidated) */}
+        {!reducedMotion && (
+          <>
+            <div 
+              className="absolute inset-0 animate-[pulse_3s_ease-in-out_infinite]"
+              style={{
+                backgroundImage: `
+                  radial-gradient(2px 2px at 100px 90px, currentColor, transparent),
+                  radial-gradient(1.5px 1.5px at 300px 120px, currentColor, transparent)
+                `,
+                backgroundSize: '720px 200px',
+                animationDelay: '0s'
+              }}
+            />
+            <div 
+              className="absolute inset-0 animate-[pulse_4s_ease-in-out_infinite]"
+              style={{
+                backgroundImage: `
+                  radial-gradient(2.5px 2.5px at 200px 60px, currentColor, transparent),
+                  radial-gradient(1.5px 1.5px at 500px 140px, currentColor, transparent)
+                `,
+                backgroundSize: '720px 200px',
+                animationDelay: '1.5s'
+              }}
+            />
+          </>
+        )}
 
         {/* EFFECT: Nebula Clouds - responsive, follow viewport size */}
         {nebulaBrightness > 0 && (
