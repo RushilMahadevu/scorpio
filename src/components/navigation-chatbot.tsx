@@ -47,7 +47,7 @@ const studentQuickActions: QuickAction[] = [
   { icon: FileText, label: 'Assignments', path: '/student/assignments' },
   { icon: BarChart, label: 'Grades', path: '/student/grades' },
   { icon: Hand, label: 'Raise', path: '/student/tutor' },
-  { icon: BowArrow, label: 'Practice', path: '/student/practice' },
+  { icon: BowArrow, label: 'Practice (Offline)', path: '/student/practice' },
   { icon: NotebookPen, label: 'Notebook', path: '/student/notebook' },
   { icon: Upload, label: 'Submissions', path: '/student/submissions' },
   { icon: BookOpen, label: 'Resources', path: '/student/resources' },
@@ -67,7 +67,7 @@ const teacherQuickActions: QuickAction[] = [
 const studentSuggested = [
   "How do I start an assignment?",
   "What is Raise?",
-  "How does Practice work?",
+  "Why is Practice offline?",
   "Where are my grades?",
 ];
 

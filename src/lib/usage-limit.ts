@@ -39,6 +39,14 @@ export async function checkBudget(
       return { allowed: false, error: "Your subscription is no longer active." };
     }
 
+    // Practice Feature Suspension (Eco & Token Conservation)
+    if (type === "practice") {
+      return {
+        allowed: false,
+        error: "Practice has been temporarily disabled due to environmental harm (excessive token waste). Warning: Looking for better solutions."
+      };
+    }
+
     // 2. Network-wide Budget Enforcement (Hard Cap in cents)
     const budgetLimit = data?.aiBudgetLimit || 0;
     const currentUsage = data?.aiUsageCurrent || 0;

@@ -418,8 +418,8 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
               icon: GraduationCap
             },
             {
-              title: "5. Adaptive Practice",
-              description: "Use Practice mode to reinforce your understanding of specific physics concepts. The system generates problems based on your historical performance, focusing on areas where you've previously struggled.",
+              title: "5. Adaptive Practice (Temporarily Paused)",
+              description: "Practice mode is temporarily turned off for students and teachers due to environmental harm (token waste). Warning: Looking for better solutions.",
               icon: BowArrow
             },
             {
@@ -577,9 +577,12 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
               </Button>
             </Link>
             <Link href="/student/practice">
-              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border border-zinc-200/50 dark:border-white/10 bg-white/80 dark:bg-zinc-800/50 shadow-sm">
-                <BowArrow className="h-5 w-5" />
-                <span className="text-[10px] font-bold uppercase tracking-tighter">Practice</span>
+              <Button variant="outline" className="cursor-pointer w-full h-16 flex flex-col items-center justify-center gap-1 rounded-2xl hover:bg-primary/10 transition-all border border-zinc-200/50 dark:border-white/10 bg-white/80 dark:bg-zinc-800/50 shadow-sm relative overflow-hidden group">
+                <BowArrow className="h-5 w-5 text-amber-500" />
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-tighter">Practice</span>
+                  <span className="text-[7px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1 py-0.2 rounded border border-amber-500/20">Offline</span>
+                </div>
               </Button>
             </Link>
             <Link href="/student/vault">

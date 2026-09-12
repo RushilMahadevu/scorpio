@@ -5,6 +5,7 @@ export async function generatePracticeProblem(
   difficulty: string,
   progress: number = 0
 ): Promise<{ problem: any, usage?: { inputTokens: number, outputTokens: number } }> {
+  throw new Error("Practice generation is disabled due to environmental harm (excessive token waste). Warning: Looking for better solutions.");
   try {
     const varietySeed = Math.random().toString(36).substring(7);
     const prompt = `Generate a high-quality physics problem for the topic: ${topic} at ${difficulty} level.

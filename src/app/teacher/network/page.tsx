@@ -17,6 +17,7 @@ import {
   Building2,
   Users,
   ShieldAlert,
+  AlertTriangle,
   HandCoins,
   Info,
   ArrowRight,
@@ -236,35 +237,8 @@ export default function NetworkPage() {
 
 
   const handleUpdatePracticeLimit = async () => {
-    if (!user || !organization || user.uid !== organization.ownerId) return;
-
-    const perMember = parseInt(tempPracticeLimitPerStudent);
-    if (isNaN(perMember) || perMember < 0) {
-      toast.error("Please enter a valid allowance.");
-      return;
-    }
-
-    // Practice limit is strictly for students
-    const totalLimit = perMember * studentCount;
-
-    setUpdatingPractice(true);
-    try {
-      await updateDoc(doc(db, "organizations", organization.id), {
-        practiceLimitPerStudent: perMember,
-        practiceLimit: totalLimit
-      });
-      toast.success(`Practice Limit updated to ${totalLimit} total student units!`);
-      setOrganization(prev => prev ? {
-        ...prev,
-        practiceLimitPerStudent: perMember,
-        practiceLimit: totalLimit
-      } : null);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to update practice limit.");
-    } finally {
-      setUpdatingPractice(false);
-    }
+    toast.error("Practice is temporarily disabled due to environmental harm (token waste). Warning: Looking for better solutions.");
+    return;
   };
 
   const handleUpdateBudget = async () => {
@@ -1210,15 +1184,28 @@ export default function NetworkPage() {
                               </TooltipContent>
                             </Tooltip>
                           </CardTitle>
-                          <Badge variant="outline" className="text-[10px] font-mono border-indigo-200 text-indigo-700 bg-indigo-100/50">
-                            SHARED · MONTHLY
+                          <Badge variant="outline" className="text-[10px] font-mono border-amber-300 text-amber-700 bg-amber-100/50 dark:border-amber-900/40 dark:text-amber-300">
+                            OFFLINE · TOKEN CONSERVATION
                           </Badge>
                         </div>
                         <CardDescription className="text-[11px]">
-                          Each student gets a set number of AI scenario generations per month, pooled network-wide.
+                          Practice features are currently paused across the platform for environmental conservation.
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {/* Environmental Impact & Token Conservation Warning */}
+                        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1.5">
+                          <div className="flex items-center gap-2 font-black text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                            <AlertTriangle className="h-4 w-4 shrink-0" />
+                            <span>Practice Engine Suspended</span>
+                          </div>
+                          <p className="text-xs font-medium leading-relaxed">
+                            Practice has been turned off for students and teachers as of now due to excessive environmental harm from token waste.
+                          </p>
+                          <p className="text-xs font-bold text-amber-950 dark:text-amber-100">
+                            Warning: Looking for better solutions.
+                          </p>
+                        </div>
                         {(() => {
                           const used = organization.practiceUsageCurrent || 0;
                           const pool = organization.practiceLimit || 0;
@@ -1272,17 +1259,18 @@ export default function NetworkPage() {
                                   id="practice-limit"
                                   type="number"
                                   min="0"
-                                  placeholder="e.g. 10"
-                                  className="h-10 font-mono text-sm rounded-xl focus-visible:ring-indigo-500"
+                                  disabled={true}
+                                  placeholder="Offline"
+                                  className="h-10 font-mono text-sm rounded-xl focus-visible:ring-indigo-500 opacity-60 cursor-not-allowed"
                                   value={tempPracticeLimitPerStudent}
                                   onChange={(e) => setTempPracticeLimitPerStudent(e.target.value)}
                                 />
                                 <Button
-                                  className="cursor-pointer h-10 px-4 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 transition-opacity font-bold rounded-xl"
+                                  className="h-10 px-4 bg-zinc-400 dark:bg-zinc-700 text-white font-bold rounded-xl cursor-not-allowed opacity-60"
                                   onClick={handleUpdatePracticeLimit}
-                                  disabled={updatingPractice}
+                                  disabled={true}
                                 >
-                                  {updatingPractice ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                                  Suspended
                                 </Button>
                               </div>
                             </div>

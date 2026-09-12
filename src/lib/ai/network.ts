@@ -44,11 +44,9 @@ Plan: ${ctx.planId === "free" ? "Free (upgrade required for most features)" : ct
   • Remaining headroom: $${Math.max(0, (ctx.aiBudgetLimit - ctx.aiUsageCurrent) / 100).toFixed(4)}
   • Effect: When current bill hits the cap, ALL AI features pause for the billing period.
 
-🏹 PRACTICE CAPACITY (Physics Scenario Generator)
-  • Per-student allowance: ${ctx.practiceLimitPerStudent} scenarios/month
-  • Total network pool: ${ctx.practiceLimit} scenarios (${ctx.studentCount} students × allowance)
-  • Used this period: ${ctx.practiceUsageCurrent} (${practiceUsedPercent}%)
-  • Effect: Students cannot generate new practice scenarios once the pool is exhausted.
+🏹 PRACTICE CAPACITY (Physics Scenario Generator) [STATUS: TEMPORARILY OFFLINE]
+  • Status: Practice mode is currently suspended network-wide for both students and teachers due to environmental harm and token waste. Warning: Looking for better solutions.
+  • Generation of new scenarios is paused until further notice.
 
 📒 NOTEBOOK CAPACITY (Research Workspace)
   • Max notebooks per student: ${ctx.notebookLimitPerStudent}

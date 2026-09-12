@@ -28,6 +28,7 @@ export interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 }
 
 export interface NavSection {
@@ -135,6 +136,11 @@ function SidebarContent({
                   )} />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap">{item.label}</span>
+                  )}
+                  {!isCollapsed && item.badge && (
+                    <span className="ml-auto text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                      {item.badge}
+                    </span>
                   )}
                   {isActive && !isCollapsed && (
                     <motion.span

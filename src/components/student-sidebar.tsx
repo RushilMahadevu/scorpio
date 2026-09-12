@@ -35,7 +35,6 @@ const navSections: NavSection[] = [
   {
     label: "Study",
     items: [
-      { href: "/student/practice", label: "Practice", icon: BowArrow },
       { href: "/student/notebook", label: "Notebook", icon: NotebookPen },
       { href: "/student/vault", label: "Equation Vault", icon: PackageOpen },
       { href: "/student/tutor", label: "Raise", icon: SidebarRaiseIcon },
@@ -46,6 +45,12 @@ const navSections: NavSection[] = [
     label: "Impact",
     items: [
       { href: "/sustainability", label: "Green Impact", icon: Leaf },
+    ],
+  },
+  {
+    label: "Offline",
+    items: [
+      { href: "/student/practice", label: "Practice", icon: BowArrow, badge: "Offline" },
     ],
   },
 ];

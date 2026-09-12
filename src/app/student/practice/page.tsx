@@ -8,6 +8,8 @@ import {
   RefreshCw, 
   CheckCircle2, 
   AlertCircle, 
+  AlertTriangle,
+  Leaf,
   ChevronRight,
   ArrowRight,
   Lock,
@@ -193,76 +195,8 @@ export default function Practice() {
   }, [user, profile?.organizationId]);
 
   const generateProblem = async () => {
-    const topicToUse = customTopic || selectedTopic;
-    if (!topicToUse || practiceStatus.remaining <= 0) {
-      if (!topicToUse) {
-        toast.error("Please identify a research target first.");
-      } else if (practiceStatus.remaining <= 0) {
-         toast.error("Your class has reached its monthly practice limit for this period.");
-      }
-      return;
-    }
-
-    // Reset session context if starting fresh OR resetting completed session
-    if (!problem || problemsInCurrentSession >= sessionQuantity - 1) {
-      setIsInSession(true);
-      setProblemsInCurrentSession(0);
-    } else {
-      // Progress to the next simulation unit
-      setProblemsInCurrentSession(prev => prev + 1);
-    }
-
-    setLoading(true);
-    setProblem(null);
-    setFeedback(null);
-    setAnswer("");
-    setShowExplanation(false);
-    setCurrentHintIndex(-1);
-
-    let retryCount = 0;
-    const maxRetries = 2;
-
-    const performGeneration = async () => {
-      try {
-        const response = await fetch("/api/practice/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            topic: topicToUse,
-            difficulty: selectedDifficulty,
-            studentId: user?.uid,
-            courseId: profile?.courseId,
-            progress: problemsInCurrentSession
-          }),
-        });
-
-        if (!response.ok) {
-          const err = await response.json();
-          // If it's a structural "unstable result" error, allow retry
-          if (err.error?.includes("unstable result") && retryCount < maxRetries) {
-            retryCount++;
-            return performGeneration();
-          }
-          throw new Error(err.error || "Failed to generate problem.");
-        }
-
-        const parsed = await response.json();
-        setProblem({ ...parsed, id: Date.now().toString() });
-
-        setPracticeStatus(prev => ({ 
-          ...prev, 
-          used: prev.used + 1, 
-          remaining: Math.max(0, prev.remaining - 1) 
-        }));
-      } catch (error: any) {
-        console.error("Generation error:", error);
-        toast.error(error?.message || "Failed to calibrate the engine. Retrying...");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    await performGeneration();
+    toast.error("Practice is turned off as of now due to environmental harm (token waste). Warning: Looking for better solutions.");
+    return;
   };
 
   const checkAnswer = async () => {
@@ -321,7 +255,7 @@ export default function Practice() {
              <div className="bg-primary/10 p-3 rounded-2xl">
                 <BowArrow className="h-8 w-8 text-primary" />
              </div>
-             <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary px-3 py-1">Simulation Mode</Badge>
+             <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1">Offline · Token Conservation</Badge>
           </div>
           <h1 className="text-5xl font-black tracking-tighter">
              Practice
@@ -369,11 +303,39 @@ export default function Practice() {
                </div>
              )}
 
-             <Progress value={practiceStatus.limit > 0 ? (practiceStatus.remaining / practiceStatus.limit) * 100 : 0} className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-             <p className="text-[9px] text-muted-foreground mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
-                <span className={`h-1 w-1 rounded-full ${practiceStatus.connected ? "bg-emerald-500 animate-pulse" : "bg-zinc-500"}`} />
-                {practiceStatus.connected ? "Dynamic Network Capacity" : "Provisioning Status: Standby"}
+              <Progress value={0} className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+             <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-3 font-bold uppercase tracking-widest flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Practice Engine Paused (Eco-Safety)
              </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Sustainability & Token Conservation Notice */}
+      <div className="rounded-3xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/20 p-6 sm:p-8 backdrop-blur-md shadow-sm space-y-3">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div className="space-y-1.5 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-black tracking-tight text-amber-900 dark:text-amber-100">
+                Practice Mode Offline (Eco & Token Conservation)
+              </h2>
+              <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10">
+                Disabled Network-Wide
+              </Badge>
+            </div>
+            <p className="text-sm font-medium text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
+              Practice has been turned off for students and teachers as of now due to excessive environmental harm from token waste.
+            </p>
+            <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/25 mt-2">
+              <p className="text-xs font-bold text-amber-950 dark:text-amber-100 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span><strong>Warning:</strong> Looking for better solutions.</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -462,20 +424,13 @@ export default function Practice() {
 
             <Button 
                 onClick={generateProblem} 
-                disabled={loading || (!selectedTopic && !customTopic) || practiceStatus.remaining <= 0}
-                className="cursor-pointer w-full h-20 rounded-[2rem] text-xl font-black bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:scale-[1.01] active:scale-95 transition-all shadow-2xl shadow-primary/10 disabled:opacity-40 mt-10"
+                disabled={true}
+                className="w-full h-20 rounded-[2rem] text-lg font-black bg-zinc-200 dark:bg-zinc-800/80 text-muted-foreground cursor-not-allowed border border-amber-500/30 shadow-none mt-10 hover:bg-zinc-200 dark:hover:bg-zinc-800/80"
             >
-                {loading ? (
-                  <div className="flex items-center gap-3">
-                     <RefreshCw className="h-6 w-6 animate-spin opacity-50" />
-                     Developing a Customized Practice...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                     <Zap className="h-6 w-6 fill-current" />
-                     Generate Simulation
-                  </div>
-                )}
+                <div className="flex items-center gap-3">
+                   <AlertTriangle className="h-5 w-5 text-amber-500" />
+                   Practice Offline — Looking for Better Solutions
+                </div>
             </Button>
           </div>
 
