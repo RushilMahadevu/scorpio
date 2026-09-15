@@ -114,12 +114,12 @@ export function ModeToggle() {
             </div>
             <div className="flex flex-col gap-1">
               {[
-                { id: "ibm-plex-sans", label: "IBM Plex (Default)", font: "var(--font-ibm-plex-sans)" },
+                { id: "atkinson", label: "Atkinson (Default)", font: "var(--font-atkinson), sans-serif" },
+                { id: "ibm-plex-sans", label: "IBM Plex", font: "var(--font-ibm-plex-sans)" },
                 { id: "inter", label: "Inter", font: "var(--font-inter)" },
                 { id: "verdana", label: "Verdana", font: "Verdana, sans-serif" },
                 { id: "pt-serif", label: "PT Serif", font: "var(--font-pt-serif), serif" },
-                { id: "roboto-mono", label: "Roboto Mono", font: "var(--font-roboto-mono)" },
-                { id: "atkinson", label: "Atkinson", font: "var(--font-atkinson), sans-serif" }
+                { id: "roboto-mono", label: "Roboto Mono", font: "var(--font-roboto-mono)" }
               ].map((f) => (
                 <button
                   key={f.id}

@@ -569,12 +569,24 @@ export function SettingsDialog() {
                   >
                     <div
                       className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                      onClick={() => setFont("atkinson")}
+                    >
+                      <RadioGroupItem value="atkinson" id="font-atkinson" />
+                      <div className="flex items-center gap-2">
+                        <div style={{ fontFamily: 'var(--font-atkinson), sans-serif' }}>
+                          <Label htmlFor="font-atkinson" className="font-medium">Atkinson Hyperlegible (Default)</Label>
+                          <p className="text-xs text-muted-foreground">High-contrast, dyslexic-friendly design</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
                       onClick={() => setFont("ibm-plex-sans")}
                     >
                       <RadioGroupItem value="ibm-plex-sans" id="font-ibm-plex-sans" />
                       <div className="flex items-center gap-2">
                         <div style={{ fontFamily: 'var(--font-ibm-plex-sans)' }}>
-                          <Label htmlFor="font-ibm-plex-sans" className="font-medium text-foreground">IBM Plex Sans (Default)</Label>
+                          <Label htmlFor="font-ibm-plex-sans" className="font-medium text-foreground">IBM Plex Sans</Label>
                           <p className="text-xs text-muted-foreground">Technical, precise, and professional</p>
                         </div>
                       </div>
@@ -624,18 +636,6 @@ export function SettingsDialog() {
                         <div style={{ fontFamily: 'var(--font-roboto-mono)' }}>
                           <Label htmlFor="font-roboto-mono" className="font-medium">Roboto Mono</Label>
                           <p className="text-xs text-muted-foreground">Clear monospace for scientific clarity</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                      onClick={() => setFont("atkinson")}
-                    >
-                      <RadioGroupItem value="atkinson" id="font-atkinson" />
-                      <div className="flex items-center gap-2">
-                        <div style={{ fontFamily: 'var(--font-atkinson), sans-serif' }}>
-                          <Label htmlFor="font-atkinson" className="font-medium">Atkinson Hyperlegible</Label>
-                          <p className="text-xs text-muted-foreground">High-contrast, dyslexic-friendly design</p>
                         </div>
                       </div>
                     </div>

@@ -16,7 +16,7 @@ const ibmPlexSans = IBM_Plex_Sans({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false, // lazy-load to unblock first paint
 });
 
 const ptSerif = PT_Serif({
@@ -30,9 +30,11 @@ const ptSerif = PT_Serif({
 const atkinson = Atkinson_Hyperlegible({
   variable: "--font-atkinson",
   weight: ["400", "700"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
   display: "swap",
-  preload: false, // not used above-the-fold; lazy-load to unblock first paint
+  preload: true,
+  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
 });
 
 const robotoMono = Roboto_Mono({
@@ -113,6 +115,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem("app-font-migrated-atkinson");var f=localStorage.getItem("app-font");if(!m||f==="ibm-plex-sans"){localStorage.setItem("app-font","atkinson");localStorage.setItem("app-font-migrated-atkinson","true");f="atkinson";}var d=document.documentElement;var fc=["font-inter","font-ibm-plex-sans","font-verdana","font-roboto-mono","font-pt-serif","font-atkinson"];for(var i=0;i<fc.length;i++){d.classList.remove(fc[i]);}d.classList.add("font-"+(f||"atkinson"));}catch(e){}})();`,
+          }}
+        />
         {/* tweakcn design-preview — dev only, never load in production */}
         {process.env.NODE_ENV === "development" && (
           <script
