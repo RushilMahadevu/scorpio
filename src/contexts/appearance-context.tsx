@@ -17,21 +17,12 @@ interface AppearanceContextType {
 const AppearanceContext = React.createContext<AppearanceContextType | undefined>(undefined);
 
 export function AppearanceProvider({ children }: { children: React.ReactNode }) {
-  const [font, setFontState] = React.useState<FontOption>("atkinson");
+  const [font, setFontState] = React.useState<FontOption>("ibm-plex-sans");
   const [themeColor, setThemeColorState] = React.useState<ThemeColor>("default");
   const [customColor, setCustomColorState] = React.useState<string>("#3b82f6");
 
   React.useEffect(() => {
-    // Migrate all users to Atkinson Hyperlegible
-    const migrated = localStorage.getItem("app-font-migrated-atkinson");
-    let storedFont = localStorage.getItem("app-font") as FontOption;
-
-    if (!migrated || storedFont === "ibm-plex-sans") {
-      storedFont = "atkinson";
-      localStorage.setItem("app-font", "atkinson");
-      localStorage.setItem("app-font-migrated-atkinson", "true");
-    }
-
+    const storedFont = localStorage.getItem("app-font") as FontOption;
     if (storedFont && ["inter", "ibm-plex-sans", "verdana", "roboto-mono", "pt-serif", "atkinson"].includes(storedFont)) {
       setFontState(storedFont);
     }

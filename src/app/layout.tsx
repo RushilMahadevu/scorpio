@@ -16,7 +16,7 @@ const ibmPlexSans = IBM_Plex_Sans({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
-  preload: false, // lazy-load to unblock first paint
+  preload: true,
 });
 
 const ptSerif = PT_Serif({
@@ -33,7 +33,7 @@ const atkinson = Atkinson_Hyperlegible({
   style: ["normal", "italic"],
   subsets: ["latin"],
   display: "swap",
-  preload: true,
+  preload: false,
   fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
 });
 
@@ -117,7 +117,24 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var m=localStorage.getItem("app-font-migrated-atkinson");var f=localStorage.getItem("app-font");if(!m||f==="ibm-plex-sans"){localStorage.setItem("app-font","atkinson");localStorage.setItem("app-font-migrated-atkinson","true");f="atkinson";}var d=document.documentElement;var fc=["font-inter","font-ibm-plex-sans","font-verdana","font-roboto-mono","font-pt-serif","font-atkinson"];for(var i=0;i<fc.length;i++){d.classList.remove(fc[i]);}d.classList.add("font-"+(f||"atkinson"));}catch(e){}})();`,
+            __html: `
+              (() => {
+                try {
+                  const migrationKey = "app-font-migrated-ibm-plex-sans";
+                  const defaultFont = "ibm-plex-sans";
+                  const fonts = ["inter", "ibm-plex-sans", "verdana", "roboto-mono", "pt-serif", "atkinson"];
+                  let font = localStorage.getItem("app-font");
+
+                  if (localStorage.getItem(migrationKey) !== "true") {
+                    font = defaultFont;
+                    localStorage.setItem("app-font", font);
+                    localStorage.setItem(migrationKey, "true");
+                  }
+
+                  document.documentElement.classList.add("font-" + (fonts.includes(font) ? font : defaultFont));
+                } catch {}
+              })();
+            `,
           }}
         />
         {/* tweakcn design-preview — dev only, never load in production */}
