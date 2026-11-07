@@ -34,6 +34,7 @@ import { MarkdownRenderer } from "@/components/markdown-renderer";
 import "katex/dist/katex.min.css";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { cn } from "@/lib/utils";
+import { getAssignmentPoints } from "@/lib/assignment-points";
 import { ScientificCalculator } from "@/components/calculator/scientific-calculator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -79,6 +80,7 @@ function AssignmentDetailContent() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const totalPoints = getAssignmentPoints(assignment?.questions);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -684,7 +686,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         submittedAt: new Date(),
         isLate,
         graded: false,
-        totalPoints: assignment.questions.reduce((acc, q) => acc + (q.points || 10), 0),
+        totalPoints,
         earnedPoints: null,
         workFiles: workFilesData,
         unfocusCount,
@@ -749,6 +751,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                 <span>Total Questions</span>
               </div>
               <span className="text-2xl font-bold">{assignment.questions.length}</span>
+              <span className="text-sm text-muted-foreground">{totalPoints} points total</span>
             </div>
 
             {assignment.requireWorkSubmission && (
@@ -984,6 +987,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                       <FileText className="mr-1.5 h-3.5 w-3.5" />
                       {assignment.questions.length} questions
                     </Badge>
+                    <Badge variant="outline" className="bg-muted/50">{totalPoints} points total</Badge>
                     {assignment.timeLimit && (
                       <Badge variant="outline" className="bg-muted/50">
                         {assignment.timeLimit} minute limit

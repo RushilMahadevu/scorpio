@@ -12,7 +12,6 @@ import {
   Waypoints,
   PackageCheck,
   Presentation,
-  Leaf,
 } from "lucide-react";
 import { AppSidebar, NavSection } from "./app-sidebar";
 
@@ -47,7 +46,7 @@ const navSections: NavSection[] = [
   {
     label: "Impact",
     items: [
-      { href: "/sustainability", label: "Sustainability", icon: Leaf },
+      { dialog: "sustainability", label: "Sustainability" },
     ],
   },
 ];

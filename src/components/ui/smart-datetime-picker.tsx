@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { parseDate } from 'chrono-node'
-import { CalendarIcon, Clock, AlertCircle } from 'lucide-react'
+import { CalendarIcon, Clock } from 'lucide-react'
 import { format } from 'date-fns'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -33,6 +32,11 @@ export function SmartDateTimePicker({
   )
   const [month, setMonth] = useState<Date | undefined>(date || new Date())
   const [isValid, setIsValid] = useState(true)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.setCustomValidity(isValid ? '' : 'Enter a date or choose one from the calendar.')
+  }, [isValid])
 
   // Sync internal state with external value if it changes
   useEffect(() => {
@@ -50,8 +54,10 @@ export function SmartDateTimePicker({
     const val = e.target.value
     setInputValue(val)
 
-    if (!val) {
+    if (!val.trim()) {
       setIsValid(true)
+      setDate(undefined)
+      onChange?.(undefined)
       return
     }
 
@@ -100,25 +106,20 @@ export function SmartDateTimePicker({
     onChange?.(newDate)
   }
 
-  const formatDisplayDate = (d: Date | undefined) => {
-    if (!d) return 'Not set'
-    return format(d, 'PPP p')
-  }
-
   return (
     <div className='w-full space-y-2'>
-      <Label htmlFor='datetime-picker' className='px-1 text-sm font-medium'>
+      <Label htmlFor='datetime-picker'>
         {label}
       </Label>
       <div className='relative flex gap-2'>
         <Input
           id='datetime-picker'
+          ref={inputRef}
           value={inputValue}
           placeholder={placeholder}
-          className={cn(
-            'bg-background pr-10 border-zinc-200 focus:ring-primary/20 transition-colors',
-            !isValid && 'border-destructive focus:ring-destructive/20 pr-16'
-          )}
+          className='pr-10'
+          aria-invalid={!isValid}
+          aria-describedby='datetime-picker-help'
           onChange={handleInputChange}
           onKeyDown={e => {
             if (e.key === 'ArrowDown') {
@@ -127,29 +128,15 @@ export function SmartDateTimePicker({
             }
           }}
         />
-        {!isValid && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className='absolute top-1/2 right-10 -translate-y-1/2'>
-                  <AlertCircle className='size-4 text-destructive animate-pulse' />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Could not parse date</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
-              id='date-picker-trigger'
+              type='button'
               variant='ghost'
               size="icon"
-              className='absolute top-1/2 right-1 size-8 -translate-y-1/2 hover:bg-zinc-100'
+              className='absolute top-1/2 right-1 size-8 -translate-y-1/2 text-muted-foreground'
             >
-              <CalendarIcon className='size-4 text-zinc-500' />
+              <CalendarIcon className='size-4' />
               <span className='sr-only'>Pick date and time</span>
             </Button>
           </PopoverTrigger>
@@ -163,12 +150,13 @@ export function SmartDateTimePicker({
                 onSelect={handleDateSelect}
                 initialFocus
               />
-              <div className="border-t p-3 bg-zinc-50/50 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-sm text-zinc-600 font-medium">
+              <div className="flex items-center justify-between gap-4 border-t bg-muted/30 p-3">
+                <Label htmlFor="datetime-picker-time" className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="size-4" />
                   Time
-                </div>
+                </Label>
                 <Input
+                  id="datetime-picker-time"
                   type="time"
                   className="w-32 h-8 text-sm"
                   value={date ? format(date, 'HH:mm') : ''}
@@ -179,9 +167,11 @@ export function SmartDateTimePicker({
           </PopoverContent>
         </Popover>
       </div>
-      <div className='text-xs text-zinc-900 dark:text-zinc-100 px-1 italic'>
-        <span className='font-semibold not-italic'>{formatDisplayDate(date)}</span>
-      </div>
+      <p id='datetime-picker-help' className={cn('text-xs text-muted-foreground', !isValid && 'text-destructive')}>
+        {!isValid
+          ? 'Enter a date or choose one from the calendar.'
+          : date ? format(date, 'PPP p') : 'Due when you create it if left blank.'}
+      </p>
     </div>
   )
 }

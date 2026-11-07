@@ -5,6 +5,7 @@ import Link from "next/link";
 import { collection, getDocs, deleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
+import { getAssignmentPoints } from "@/lib/assignment-points";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ interface Assignment {
   title: string;
   description: string;
   dueDate: Date;
-  questions: any[];
+  questions?: { points?: number }[];
   createdAt: Date;
   courseId?: string;
   courseName?: string;
@@ -231,6 +232,7 @@ export default function AssignmentsPage() {
                   <TableHead>Title</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Questions</TableHead>
+                  <TableHead>Points</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Visibility</TableHead>
                   <TableHead>Status</TableHead>
@@ -256,6 +258,7 @@ export default function AssignmentsPage() {
                         )}
                     </TableCell>
                     <TableCell>{assignment.questions?.length || 0}</TableCell>
+                    <TableCell className="tabular-nums">{getAssignmentPoints(assignment.questions)}</TableCell>
                     <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Select 

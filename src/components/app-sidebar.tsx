@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { logout } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
@@ -15,21 +16,29 @@ import {
   PanelLeftOpen,
   PlaneLanding,
   DoorClosedLocked,
+  Leaf,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/auth-context";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
-export interface NavItem {
+const SustainabilityContent = dynamic(() => import("@/components/sustainability-content"), {
+  loading: () => <p role="status" className="text-muted-foreground">Loading sustainability…</p>,
+});
+
+interface NavLink {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
 }
+
+type NavItem = NavLink | { dialog: "sustainability"; label: string };
 
 export interface NavSection {
   label: string;
@@ -46,6 +55,37 @@ interface AppSidebarProps {
 
 interface SidebarContentProps extends AppSidebarProps {
   onNavigate?: () => void;
+}
+
+function SustainabilityDialog({ label, isCollapsed }: { label: string; isCollapsed: boolean }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <motion.button
+          type="button"
+          aria-label={label}
+          whileHover={isCollapsed ? { scale: 1.1 } : { x: 8 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <Leaf aria-hidden="true" className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+          {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
+        </motion.button>
+      </DialogTrigger>
+      <DialogContent aria-describedby={undefined} className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl">
+        <DialogTitle className="border-b px-5 py-4 pr-12">Sustainability</DialogTitle>
+        <div
+          role="region"
+          aria-label="Sustainability information"
+          tabIndex={0}
+          className="min-h-0 space-y-12 overflow-y-auto overscroll-contain px-4 py-6 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-8"
+        >
+          <SustainabilityContent />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function SidebarContent({
@@ -109,6 +149,10 @@ function SidebarContent({
                 </div>
               )}
               {section.items.map((item) => {
+            if ("dialog" in item) {
+              return <SustainabilityDialog key={item.dialog} label={item.label} isCollapsed={isCollapsed} />;
+            }
+
             const isRootRoute = item.href === "/teacher" || item.href === "/student" || item.href === "/admin";
             const isActive = pathname ? (
               isRootRoute
@@ -311,11 +355,12 @@ export function AppSidebar({
       <div className="md:hidden p-4">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="Open sidebar">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
+          <SheetContent side="left" className="w-64 p-0" aria-describedby={undefined}>
+            <SheetTitle className="sr-only">{roleLabel} sidebar</SheetTitle>
             <SidebarContent
               roleLabel={roleLabel}
               roleIcon={roleIcon}

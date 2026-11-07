@@ -249,16 +249,16 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
   ];
 
   const platformItems: MenuItem[] = [
-    { target: "problem", label: "The Problem", desc: "Why traditional physics tutors fail.", icon: AlertCircle },
-    { target: "solution", label: "Our Solution", desc: "Socratic scaffolding in action.", icon: Lightbulb },
+    { target: "problem", label: "The Problem", desc: "Why students need room to work through a problem.", icon: AlertCircle },
+    { target: "solution", label: "How Raise works", desc: "See how Raise responds to a physics question.", icon: Lightbulb },
     { target: "features", label: "Features", desc: "Key features of Scorpio.", icon: Sparkles },
-    { target: "efficacy", label: "Efficacy & Compare", desc: "Data-driven performance metrics.", icon: BarChart3 },
+    { target: "efficacy", label: "Research & comparison", desc: "Read the study and compare tutoring options.", icon: BarChart3 },
   ];
 
   const docsItems: MenuItem[] = [
-    { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
-    { href: "/research", label: "Research & Methodology", desc: "Deep dive into Scorpio's guided learning approach.", icon: Brain },
-    { href: "/sustainability", label: "Sustainability & Climate", desc: "Honest lifecycle accounting & thermodynamic footprint.", icon: Leaf },
+    { href: "/about", label: "About Scorpio", desc: "Why we built Scorpio.", icon: Info },
+    { href: "/research", label: "Research & Methodology", desc: "How we built and tested Raise.", icon: Brain },
+    { href: "/sustainability", label: "Sustainability & Climate", desc: "How Scorpio uses energy, water, and paper.", icon: Leaf },
     { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
     { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
     { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },

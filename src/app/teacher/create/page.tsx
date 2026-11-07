@@ -1,63 +1,52 @@
 "use client";
-// Fix for custom window property
-declare global {
-  interface Window {
-    firebaseAuth?: any;
-  }
-}
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { collection, addDoc, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { parseQuestionsManually } from "@/lib/ai/assignment";
+import { getAssignmentPoints, splitAssignmentPoints } from "@/lib/assignment-points";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import { RaiseLogo } from "@/components/ui/raise-logo";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { PlusCircle, AppWindow, Trash2, Sparkles, ListFilterPlus, Loader2, ChevronDown, ChevronUp, FileDown, Copy, Lock, Eye, Waypoints, ShieldCheck, BrainCircuit, FileUp, HelpCircle, CheckCircle2, Calculator } from "lucide-react";
+import { ArrowLeft, ChevronDown, Eye, FileDown, Loader2, Lock, Plus, Settings2, Sparkles, Trash2, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-// Collapsible section for advanced options
-function CollapsibleSection({ title, children, defaultOpen = false, openWhen = false, accent = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean; openWhen?: boolean; accent?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
-  useEffect(() => {
-    if (openWhen) setOpen(true);
-  }, [openWhen]);
+import { MathInputField } from "@/components/math-input";
+import { SmartDateTimePicker } from "@/components/ui/smart-datetime-picker";
+
+function AdvancedSettings({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className={`rounded-xl border mb-6 ${accent ? "border-primary/30 bg-primary/[0.03] shadow-sm" : ""}`}>
+    <div className="overflow-hidden rounded-xl border bg-card">
       <button
         type="button"
-        className={`w-full flex items-center justify-between rounded-t-xl px-5 py-4 font-medium text-left cursor-pointer transition-colors ${accent ? "bg-primary/10 text-primary hover:bg-primary/15" : "bg-muted hover:bg-muted/70"}`}
+        className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left hover:bg-muted/50 focus-visible:outline-ring focus-visible:outline-offset-[-2px] sm:px-6"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
-        <span>{title}</span>
-        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        <Settings2 className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span className="flex-1 space-y-1">
+          <span className="block text-sm font-semibold">Advanced settings</span>
+          <span className="block text-sm text-muted-foreground">Grading, time limits, student tools, and sharing</span>
+        </span>
+        <ChevronDown className={`size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
-      {open && <div className="space-y-6 p-6">{children}</div>}
+      {open && <div className="divide-y border-t px-4 sm:px-6">{children}</div>}
     </div>
   );
 }
-import { MathInputField } from "@/components/math-input";
-import { SmartDateTimePicker } from "@/components/ui/smart-datetime-picker";
 
 interface Question {
   id: string;
@@ -67,6 +56,13 @@ interface Question {
   correctAnswer?: string;
   points: number;
 }
+
+const QUESTION_TYPES = [
+  { type: "text", label: "Free Response" },
+  { type: "short-answer", label: "Short Answer" },
+  { type: "multiple-choice", label: "Multiple Choice" },
+  { type: "true-false", label: "True/False" },
+] as const;
 
 export default function CreateAssignmentPage() {
   return (
@@ -97,8 +93,18 @@ function CreateAssignmentForm() {
   const [enableTabDetection, setEnableTabDetection] = useState(true);
   const [lockdownMode, setLockdownMode] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const questionToFocus = useRef<string>(null);
+  const [assignmentPoints, setAssignmentPoints] = useState(100);
+  const [customPoints, setCustomPoints] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rubric, setRubric] = useState("");
+
+  useEffect(() => {
+    if (questionToFocus.current) {
+      document.getElementById(`question-${questionToFocus.current}`)?.focus();
+      questionToFocus.current = null;
+    }
+  }, [questions]);
 
   const isFreePlan = authLoading || !organization || (
     organization.planId === "free" && (organization.aiBudgetLimit || 0) <= (organization.aiUsageCurrent || 0)
@@ -135,11 +141,15 @@ function CreateAssignmentForm() {
           if (assignment.allowAIHelp !== undefined) {
             setAllowAIHelp(!!assignment.allowAIHelp);
           }
-          if (assignment.questions) {
-            setQuestions(assignment.questions.map((q: any) => ({
-              ...q,
-              id: crypto.randomUUID()
-            })));
+          if (assignment.questions?.length) {
+            const copiedQuestions = assignment.questions.map((question: Question) => ({
+              ...question,
+              id: crypto.randomUUID(),
+              points: question.points || 10,
+            }));
+            setQuestions(copiedQuestions);
+            setAssignmentPoints(assignment.totalPoints ?? getAssignmentPoints(copiedQuestions));
+            setCustomPoints(true);
           }
           toast.success("Assignment forked! Choose a class to assign it.");
           // We'll keep it in sessionStorage for now in case of refresh
@@ -219,10 +229,10 @@ function CreateAssignmentForm() {
         text: q.text,
         type: q.type,
         options: q.options || [],
-        correctAnswer: q.correctAnswer,
+        correctAnswer: q.correctAnswer ?? "",
         points: 10,
       }));
-      setQuestions([...questions, ...newQuestions]);
+      setQuestions((current) => [...current, ...newQuestions]);
       setImportOpen(false);
       setImportText("");
       toast.success(`Successfully imported ${newQuestions.length} questions!`);
@@ -235,26 +245,25 @@ function CreateAssignmentForm() {
   };
 
   const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      {
-        id: crypto.randomUUID(),
-        text: "",
-        type: "text",
-        options: [],
-        points: 10,
-      },
-    ]);
+    const question: Question = {
+      id: crypto.randomUUID(),
+      text: "",
+      type: "text",
+      options: [],
+      points: 10,
+    };
+    questionToFocus.current = question.id;
+    setQuestions((current) => [...current, question]);
   };
 
   const updateQuestion = (id: string, updates: Partial<Question>) => {
-    setQuestions(
-      questions.map((q) => (q.id === id ? { ...q, ...updates } : q))
+    setQuestions((current) =>
+      current.map((q) => (q.id === id ? { ...q, ...updates } : q))
     );
   };
 
   const removeQuestion = (id: string) => {
-    setQuestions(questions.filter((q) => q.id !== id));
+    setQuestions((current) => current.filter((q) => q.id !== id));
   };
 
   const addOption = (questionId: string) => {
@@ -271,7 +280,10 @@ function CreateAssignmentForm() {
     if (question && question.options) {
       const newOptions = [...question.options];
       newOptions[optionIndex] = value;
-      updateQuestion(questionId, { options: newOptions });
+      const correctAnswer = question.correctAnswer && question.correctAnswer === question.options[optionIndex]
+        ? value
+        : question.correctAnswer;
+      updateQuestion(questionId, { options: newOptions, correctAnswer: correctAnswer ?? "" });
     }
   };
 
@@ -350,11 +362,11 @@ function CreateAssignmentForm() {
         text: q.text,
         type: q.type,
         options: q.options || [],
-        correctAnswer: q.correctAnswer,
+        correctAnswer: q.correctAnswer ?? "",
         points: q.points || 10,
       }));
 
-      setQuestions([...questions, ...newQuestions]);
+      setQuestions((current) => [...current, ...newQuestions]);
       setAiOpen(false);
       setAiTopic("");
       toast.success(`Successfully generated ${newQuestions.length} questions!`);
@@ -366,16 +378,74 @@ function CreateAssignmentForm() {
     }
   };
 
+  const handleGenerateAssignmentRubric = async () => {
+    if (!title.trim()) {
+      toast.error("Enter an assignment title first.");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Generate a high-level grading rubric for an assignment titled "${title}". Focus on expectations for accuracy, units, and reasoning.`,
+          userId: user?.uid,
+          userRole: "teacher",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to generate rubric.");
+      setRubric(data.text);
+      toast.success("Rubric generated.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to generate rubric.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const validTotal = Number.isSafeInteger(assignmentPoints) && assignmentPoints > 0;
+  const evenlySplitPoints = splitAssignmentPoints(validTotal ? assignmentPoints : 0, questions.length);
+  const scoredQuestions = customPoints
+    ? questions
+    : questions.map((question, index) => ({ ...question, points: evenlySplitPoints[index] }));
+  const allocatedPoints = scoredQuestions.reduce((total, question) => total + question.points, 0);
+  const remainingPoints = assignmentPoints - allocatedPoints;
+
+  let pointsError = "";
+  if (!validTotal) {
+    pointsError = "Enter a positive whole number for the assignment total.";
+  } else if (assignmentPoints < questions.length) {
+    pointsError = "The assignment needs at least 1 point per question.";
+  } else if (scoredQuestions.some(({ points }) => !Number.isSafeInteger(points) || points < 1)) {
+    pointsError = "Give each question at least 1 whole point.";
+  } else if (questions.length > 0 && remainingPoints !== 0) {
+    const difference = Math.abs(remainingPoints);
+    const pointCount = `${difference} ${difference === 1 ? "point" : "points"}`;
+    pointsError = remainingPoints > 0
+      ? `${pointCount} left to assign.`
+      : `${pointCount} over the assignment total.`;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourseId) {
       toast.error("Please select a class for this assignment.");
       return;
     }
+    if (questions.length === 0 || pointsError) {
+      toast.error(pointsError || "Add at least one question before creating the assignment.");
+      return;
+    }
+    if (timeLimit !== "" && timeLimit < 0) {
+      toast.error("Enter a time limit of 0 or more minutes in Advanced settings.");
+      return;
+    }
     setLoading(true);
     try {
       // 1. Create assignment
-      const assignmentRef = await addDoc(collection(db, "assignments"), {
+      await addDoc(collection(db, "assignments"), {
         title,
         description,
         topic,
@@ -391,7 +461,8 @@ function CreateAssignmentForm() {
         lockdownMode,
         allowAIHelp,
         allowCalculator,
-        questions,
+        totalPoints: assignmentPoints,
+        questions: scoredQuestions,
         createdAt: new Date(),
         type: "standard",
         googleFormLink: null,
@@ -404,204 +475,56 @@ function CreateAssignmentForm() {
       router.push("/teacher/assignments");
     } catch (error) {
       console.error("Error creating assignment:", error);
+      toast.error("Couldn’t create the assignment. Your changes are still here. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <TooltipProvider delayDuration={100}>
-      <div className="max-w-3xl mx-auto space-y-6">
-        
-        {/* Header: Title and preview */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">Create Assignment</h1>
-            <p className="text-muted-foreground">Create a new physics assignment for your students.</p>
-          </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <header className="space-y-3">
+        <Link
+          href="/teacher/assignments"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Assignments
+        </Link>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Create assignment</h1>
+      </header>
 
-          <div className="flex flex-wrap gap-2">
-            {/* Generate with AI Dialog */}
-            <Dialog open={aiOpen} onOpenChange={setAiOpen}>
-              <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <ListFilterPlus className="h-5 w-5 text-primary" />
-                    AI Question Generator
-                  </DialogTitle>
-                  <DialogDescription>
-                    Provide a topic and context to automatically generate assignment questions.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ai-topic">Focus Topic</Label>
-                      <Input
-                        id="ai-topic"
-                        placeholder="e.g. Kinematics"
-                        value={aiTopic}
-                        onChange={(e) => setAiTopic(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="ai-count">Number of Questions</Label>
-                      <Input
-                        id="ai-count"
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={aiCount}
-                        onChange={(e) => setAiCount(parseInt(e.target.value))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="ai-context">Instructions or Learning Objectives (Optional)</Label>
-                    <Textarea
-                      id="ai-context"
-                      placeholder="e.g. Focus on Newton's Second Law, include technical friction analysis..."
-                      value={aiContext}
-                      onChange={(e) => setAiContext(e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Difficulty Level</Label>
-                      <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
-                        {['Easy', 'Medium', 'Hard'].map((diff) => (
-                          <div key={diff} className="flex items-center space-x-2">
-                            <RadioGroupItem value={diff} id={`diff-${diff}`} />
-                            <Label htmlFor={`diff-${diff}`} className="text-sm font-normal">{diff}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Question Type</Label>
-                      <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
-                        {[
-                          { value: 'mixed', label: 'Mixed' },
-                          { value: 'multiple-choice', label: 'Multiple Choice' },
-                          { value: 'true-false', label: 'True/False' },
-                          { value: 'short-answer', label: 'Short Answer' },
-                          { value: 'text', label: 'Free Response' }
-                        ].map((type) => (
-                          <div key={type.value} className="flex items-center space-x-2">
-                            <RadioGroupItem value={type.value} id={`type-${type.value}`} />
-                            <Label htmlFor={`type-${type.value}`} className="text-xs font-normal">{type.label}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    onClick={handleAiGenerate}
-                    disabled={aiLoading || !aiTopic}
-                    className="w-full sm:w-auto"
-                  >
-                    {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Generate Questions
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Import from Text Dialog */}
-            <Dialog open={importOpen} onOpenChange={setImportOpen}>
-              <DialogContent className="max-w-5xl w-full">
-                <DialogHeader>
-                  <DialogTitle>Import Questions from Text</DialogTitle>
-                  <DialogDescription>
-                    Paste questions copied from Google Forms, Word, or other sources. The AI will extract and format them.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-yellow-800">
-                        Import with Text is still in production and might be buggy
-                      </h3>
-                      <div className="mt-2 text-sm text-yellow-700">
-                        <p>This feature is experimental. If you encounter issues, please try again or use the manual question creation.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full">
-                  <Textarea
-                    value={importText}
-                    onChange={(e) => setImportText(e.target.value)}
-                    placeholder="Paste your questions here..."
-                    rows={15}
-                    className="w-full h-64 max-h-[600px] resize-y overflow-auto whitespace-pre-wrap"
-                    style={{ fontFamily: 'monospace', fontSize: '1rem' }}
-                  />
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleImportQuestions} disabled={importLoading || !importText}>
-                    {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Import
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Full Preview Toggle */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsPreviewOpen(true)}
-              className="cursor-pointer hover:bg-zinc-100 transition-colors"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Preview Assignment
-            </Button>
-          </div>
-        </div>
-
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <form onSubmit={handleSubmit} className="space-y-6">
 
-          {/* ── 1. Assignment Details ── */}
-          <Card className="border-zinc-200 shadow-sm">
-            <CardHeader>
-              <CardTitle>Assignment Details</CardTitle>
-              <CardDescription>Basic information about this assignment.</CardDescription>
+          <Card className="gap-5">
+            <CardHeader className="px-4 sm:px-6">
+              <h2 className="font-semibold">Assignment details</h2>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Assignment Title <span className="text-destructive">*</span></Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Unit 1: Kinematics"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="course">Class / Section <span className="text-destructive">*</span></Label>
-                  <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                    <SelectTrigger id="course" className="cursor-pointer">
-                      <SelectValue placeholder="Select a class..." />
+            <CardContent className="space-y-5 px-4 sm:px-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Assignment title</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="e.g. Unit 1 practice"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8rem]">
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <Label htmlFor="course">Class</Label>
+                  <Select value={selectedCourseId} onValueChange={setSelectedCourseId} required>
+                    <SelectTrigger id="course" className="w-full">
+                      <SelectValue placeholder="Choose a class" />
                     </SelectTrigger>
                     <SelectContent>
                       {courses.length === 0 ? (
-                        <SelectItem value="none" disabled>No classes found.</SelectItem>
+                        <SelectItem value="none" disabled>No classes found</SelectItem>
                       ) : (
-                        courses.map(course => (
+                        courses.map((course) => (
                           <SelectItem key={course.id} value={course.id}>
                             {course.name} ({course.code})
                           </SelectItem>
@@ -610,589 +533,589 @@ function CreateAssignmentForm() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <SmartDateTimePicker
-                    value={dueDate?.toISOString()}
-                    onChange={setDueDate}
-                    label="Due Date"
-                  />
-                </div>
+                <SmartDateTimePicker
+                  value={dueDate?.toISOString()}
+                  onChange={setDueDate}
+                  label="Due date"
+                  placeholder="e.g. Friday at 5 pm"
+                />
                 <div className="space-y-2">
-                  <Label htmlFor="timeLimit">Time Limit (Minutes)</Label>
+                  <Label htmlFor="assignment-points">Total points</Label>
                   <Input
-                    id="timeLimit"
+                    id="assignment-points"
                     type="number"
-                    min="0"
-                    placeholder="Unlimited"
-                    value={timeLimit}
-                    onChange={(e) => setTimeLimit(e.target.value === "" ? "" : parseInt(e.target.value))}
+                    min={1}
+                    step={1}
+                    required
+                    value={assignmentPoints || ""}
+                    onChange={(event) => setAssignmentPoints(event.target.valueAsNumber || 0)}
+                    aria-invalid={!validTotal}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="topic">Topic / Subject</Label>
-                  <Select value={topic} onValueChange={setTopic}>
-                    <SelectTrigger id="topic">
-                      <SelectValue placeholder="Select a topic..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="kinematics">Kinematics</SelectItem>
-                      <SelectItem value="dynamics">Dynamics (Newton's Laws)</SelectItem>
-                      <SelectItem value="energy">Energy & Momentum</SelectItem>
-                      <SelectItem value="thermo">Thermodynamics</SelectItem>
-                      <SelectItem value="em">Electricity & Magnetism</SelectItem>
-                      <SelectItem value="waves">Waves & Optics</SelectItem>
-                      <SelectItem value="modern">Modern Physics</SelectItem>
-                      <SelectItem value="other">General / Other</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description / Instructions</Label>
+                <Label htmlFor="description">
+                  Student instructions <span className="font-normal text-muted-foreground">(optional)</span>
+                </Label>
                 <Textarea
                   id="description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Learning objectives or instructions visible to students..."
-                  rows={3}
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder="What should students know before they start?"
+                  rows={2}
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* ── 2. Questions ── */}
-          <Card>
-            <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Card className="gap-5">
+            <CardHeader className="flex flex-wrap items-start justify-between gap-3 px-4 sm:px-6">
               <div>
-                <CardTitle>Questions</CardTitle>
-                <CardDescription>Add and configure what students will answer.</CardDescription>
+                <h2 className="font-semibold">Questions</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Write your own, generate them, or import text.</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => setAiOpen(true)} disabled={isFreePlan}>
-                  <ListFilterPlus className="mr-2 h-4 w-4" />
-                  Generate
-                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
-                </Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={isFreePlan}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Import
-                  {isFreePlan && <Lock className="ml-2 h-3 w-3" />}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {questions.length === 0 && (
-                <div className="rounded-lg border border-dashed bg-muted/20 px-6 py-8 text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-sm">
-                    <PlusCircle className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="mt-3 text-sm font-semibold">Add your first question</h3>
-                  <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
-                    Write one yourself, or use Generate and Import above to bring in existing content.
-                  </p>
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    <Button type="button" size="sm" onClick={addQuestion}>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Write a question
+                <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" size="sm" variant="outline" disabled={isFreePlan} title={isFreePlan ? "Requires AI access" : undefined}>
+                      <Sparkles />
+                      Generate with AI
+                      {isFreePlan && <Lock className="size-3" />}
                     </Button>
-                  </div>
-                </div>
-              )}
-              {questions.map((question, index) => (
-                <Card key={question.id} className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold">Question {index + 1}</Label>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">Points</Label>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        Generate questions
+                      </DialogTitle>
+                      <DialogDescription>
+                        Choose a topic, then review the generated questions before assigning them.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-6 py-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="ai-topic">Focus Topic</Label>
                           <Input
-                            type="number"
-                            value={question.points || 10}
-                            onChange={(e) => updateQuestion(question.id, { points: parseInt(e.target.value) || 0 })}
-                            className="w-12 h-8 text-xs px-1 text-center"
+                            id="ai-topic"
+                            placeholder="e.g. Kinematics"
+                            value={aiTopic}
+                            onChange={(e) => setAiTopic(e.target.value)}
                           />
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeQuestion(question.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="space-y-2">
+                          <Label htmlFor="ai-count">Number of Questions</Label>
+                          <Input
+                            id="ai-count"
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={aiCount}
+                            onChange={(e) => setAiCount(parseInt(e.target.value))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="ai-context">Instructions or Learning Objectives (Optional)</Label>
+                        <Textarea
+                          id="ai-context"
+                          placeholder="e.g. Focus on Newton's Second Law, include technical friction analysis..."
+                          value={aiContext}
+                          onChange={(e) => setAiContext(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Difficulty Level</Label>
+                          <RadioGroup value={aiDifficulty} onValueChange={setAiDifficulty} className="flex gap-4">
+                            {['Easy', 'Medium', 'Hard'].map((diff) => (
+                              <div key={diff} className="flex items-center space-x-2">
+                                <RadioGroupItem value={diff} id={`diff-${diff}`} />
+                                <Label htmlFor={`diff-${diff}`} className="text-sm font-normal">{diff}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Question Type</Label>
+                          <RadioGroup value={aiQuestionType} onValueChange={setAiQuestionType} className="grid grid-cols-2 gap-2">
+                            {[
+                              { value: 'mixed', label: 'Mixed' },
+                              { value: 'multiple-choice', label: 'Multiple Choice' },
+                              { value: 'true-false', label: 'True/False' },
+                              { value: 'short-answer', label: 'Short Answer' },
+                              { value: 'text', label: 'Free Response' }
+                            ].map((type) => (
+                              <div key={type.value} className="flex items-center space-x-2">
+                                <RadioGroupItem value={type.value} id={`type-${type.value}`} />
+                                <Label htmlFor={`type-${type.value}`} className="text-xs font-normal">{type.label}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
                       </div>
                     </div>
+                    <DialogFooter>
+                      <Button
+                        onClick={handleAiGenerate}
+                        disabled={aiLoading || !aiTopic}
+                        className="w-full sm:w-auto"
+                      >
+                        {aiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Generate Questions
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Dialog open={importOpen} onOpenChange={setImportOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" size="sm" variant="outline" disabled={isFreePlan} title={isFreePlan ? "Requires AI access" : undefined}>
+                      <FileDown />
+                      Import text
+                      {isFreePlan && <Lock className="size-3" />}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Import questions</DialogTitle>
+                      <DialogDescription>
+                        Paste questions from a document or form. Include answer choices and answer keys if you have them.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                      <Label htmlFor="question-import-text">Questions to import</Label>
+                      <Textarea
+                        id="question-import-text"
+                        value={importText}
+                        onChange={(e) => setImportText(e.target.value)}
+                        placeholder="Paste your questions here..."
+                        rows={8}
+                        className="max-h-[45dvh] resize-y"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleImportQuestions} disabled={importLoading || !importText}>
+                        {importLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Import
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 px-4 sm:px-6">
+              {questions.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-4">
+                  <div role="status" className="space-y-1">
+                    <p className="text-sm font-semibold tabular-nums">
+                      {allocatedPoints} / {assignmentPoints || 0} points assigned
+                    </p>
+                    <p className={pointsError ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>
+                      {pointsError || (customPoints ? "Custom points per question" : "Points split evenly across questions")}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!customPoints && !!pointsError}
+                    onClick={() => {
+                      if (!customPoints) setQuestions(scoredQuestions);
+                      setCustomPoints(!customPoints);
+                    }}
+                  >
+                    {customPoints ? "Split evenly" : "Customize points"}
+                  </Button>
+                </div>
+              )}
+              {scoredQuestions.map((question, index) => (
+                <section
+                  key={question.id}
+                  aria-labelledby={`question-${question.id}`}
+                  className="overflow-hidden rounded-lg border"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/30 px-3 py-2 sm:px-4">
+                    <h3 id={`question-${question.id}`} tabIndex={-1} className="scroll-mt-4 text-sm font-semibold">
+                      Question {index + 1}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {customPoints ? (
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={`points-${question.id}`}>Points</Label>
+                          <Input
+                            id={`points-${question.id}`}
+                            type="number"
+                            min={1}
+                            step={1}
+                            required
+                            value={question.points || ""}
+                            onChange={(event) => updateQuestion(question.id, { points: event.target.valueAsNumber || 0 })}
+                            className="h-8 w-16"
+                          />
+                        </div>
+                      ) : (
+                        <Badge variant="secondary" className="tabular-nums">{question.points} pts</Badge>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => removeQuestion(question.id)}
+                        aria-label={`Remove question ${index + 1}`}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-4 p-3 sm:p-4">
+                    <fieldset className="min-w-0">
+                      <legend className="mb-2 text-sm font-medium">Question type</legend>
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {QUESTION_TYPES.map(({ type, label }) => (
+                          <Button
+                            key={type}
+                            type="button"
+                            variant="outline"
+                            aria-pressed={question.type === type}
+                            className="h-auto min-h-9 whitespace-normal px-2 aria-pressed:border-primary/60 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+                            onClick={() => {
+                              if (type === "true-false") {
+                                updateQuestion(question.id, { type, options: ["True", "False"] });
+                              } else if (type === "multiple-choice" && !question.options?.length) {
+                                updateQuestion(question.id, { type, options: ["", ""] });
+                              } else {
+                                updateQuestion(question.id, { type });
+                              }
+                            }}
+                          >
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
+                    </fieldset>
                     <MathInputField
                       value={question.text}
                       onChange={(value) => updateQuestion(question.id, { text: value })}
-                      placeholder="Enter your question text here..."
+                      ariaLabel={`Prompt for question ${index + 1}`}
+                      placeholder="Write the question students will see"
                       rows={3}
+                      defaultPreviewOpen={false}
                     />
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { type: "text", label: "Free Response" },
-                        { type: "short-answer", label: "Short Answer" },
-                        { type: "multiple-choice", label: "Multiple Choice" },
-                        { type: "true-false", label: "True/False" },
-                      ].map((btn) => (
-                        <Button
-                          key={btn.type}
-                          type="button"
-                          variant={question.type === btn.type ? "default" : "outline"}
-                          size="sm"
-                          onClick={() =>
-                            updateQuestion(question.id, btn.type === "true-false"
-                              ? { type: btn.type as "true-false", options: ["True", "False"] }
-                              : { type: btn.type as "text" | "multiple-choice" | "short-answer" })
-                          }
-                        >
-                          {btn.label}
-                        </Button>
-                      ))}
-                    </div>
                     {(question.type === "text" || question.type === "short-answer") && (
-                      <div className="space-y-3 bg-muted/20 p-4 rounded-lg border border-dashed">
-                        <div className="flex items-center justify-between gap-4">
-                          <Label className="text-[10px] uppercase font-bold text-muted-foreground">Grading Guide / Correct Answer</Label>
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Label htmlFor={`answer-${question.id}`}>
+                            {question.type === "text" ? "Grading guide" : "Expected answer"}
+                            <span className="font-normal text-muted-foreground">(optional)</span>
+                          </Label>
                           <Button
                             type="button"
                             variant="link"
                             size="sm"
                             disabled={aiGenerating === question.id || !question.text}
                             onClick={() => handleSynthesizeRubric(question.id)}
-                            className="h-auto p-0 text-xs text-primary"
+                            className="h-auto p-0 text-xs"
                           >
-                            {aiGenerating === question.id ? "Generating..." : "Generate with AI"}
+                            {aiGenerating === question.id ? "Generating…" : "Generate with AI"}
                           </Button>
                         </div>
                         <Textarea
+                          id={`answer-${question.id}`}
                           value={question.correctAnswer || ""}
                           onChange={(e) => updateQuestion(question.id, { correctAnswer: e.target.value })}
-                          placeholder="Explain what defines a correct answer for this question..."
-                          className="text-sm bg-background min-h-[100px]"
+                          placeholder={question.type === "text" ? "What should a correct response include?" : "Enter an answer to use when grading"}
+                          rows={2}
                         />
                       </div>
                     )}
 
                     {question.type === "multiple-choice" && (
-                      <div className="space-y-2 pl-4">
+                      <fieldset className="min-w-0 space-y-3">
+                        <legend className="mb-1 text-sm font-medium">Answer choices</legend>
+                        <p className="text-xs text-muted-foreground">Select the radio button next to the correct answer.</p>
                         {question.options?.map((option, optionIndex) => (
-                          <div key={optionIndex} className="flex items-start gap-2">
-                            <div className="flex-1">
-                              <MathInputField
-                                value={option}
-                                onChange={(value) => updateOption(question.id, optionIndex, value)}
-                                placeholder={`Option ${optionIndex + 1}`}
-                                rows={2}
-                                compact={true}
-                              />
-                            </div>
+                          <div key={optionIndex} className="flex items-start gap-3">
                             <input
                               type="radio"
                               name={`correct-${question.id}`}
-                              checked={question.correctAnswer === option}
+                              aria-label={`Mark choice ${optionIndex + 1} as correct`}
+                              checked={!!option.trim() && question.correctAnswer === option}
+                              disabled={!option.trim()}
                               onChange={() => updateQuestion(question.id, { correctAnswer: option })}
-                              className="mt-3"
+                              className="mt-3.5 size-4 shrink-0 accent-primary"
                             />
+                            <div className="min-w-0 flex-1">
+                              <MathInputField
+                                value={option}
+                                onChange={(value) => updateOption(question.id, optionIndex, value)}
+                                placeholder={`Choice ${optionIndex + 1}`}
+                                rows={1}
+                                compact
+                              />
+                            </div>
                           </div>
                         ))}
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="cursor-pointer"
                           onClick={() => addOption(question.id)}
                         >
-                          Add Option
+                          <Plus /> Add choice
                         </Button>
-                      </div>
+                      </fieldset>
                     )}
                     {question.type === "true-false" && (
-                      <div className="pl-4 text-sm text-muted-foreground">
-                        Options set to: True / False
-                      </div>
+                      <fieldset className="space-y-2">
+                        <legend className="text-sm font-medium">Correct answer</legend>
+                        <RadioGroup
+                          aria-label="Correct answer"
+                          value={typeof question.correctAnswer === "string" ? question.correctAnswer.trim().toLowerCase() : ""}
+                          onValueChange={(value) => updateQuestion(question.id, { correctAnswer: value === "true" ? "True" : "False" })}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="true" id={`true-${question.id}`} />
+                            <Label htmlFor={`true-${question.id}`}>True</Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="false" id={`false-${question.id}`} />
+                            <Label htmlFor={`false-${question.id}`}>False</Label>
+                          </div>
+                        </RadioGroup>
+                      </fieldset>
                     )}
                   </div>
-                </Card>
+                </section>
               ))}
-              <Button type="button" variant="outline" onClick={addQuestion} className="w-full cursor-pointer">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Question
-              </Button>
+              <div className={questions.length ? "" : "flex flex-col items-center gap-3 rounded-lg border border-dashed bg-muted/20 px-4 py-7 text-center"}>
+                {questions.length === 0 && <p className="text-sm text-muted-foreground">No questions yet</p>}
+                <Button type="button" variant={questions.length ? "outline" : "default"} onClick={addQuestion}>
+                  <Plus />
+                  {questions.length ? "Add another question" : "Add a question"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
-          <CollapsibleSection
-            title="Advanced settings: grading, security & visibility"
-            openWhen={questions.length > 0}
-            accent
-          >
-          {/* ── 3. Grading ── */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-bold flex items-center gap-2">
-                <BrainCircuit className="h-4 w-4 text-primary" />
-                Grading
-              </CardTitle>
-              <CardDescription>How will student submissions be evaluated?</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <RadioGroup
-                value={gradingType}
-                onValueChange={(v) => {
-                  if (isFreePlan && v === "ai") {
-                    toast.error("AI Grading requires a Standard subscription.");
-                    return;
-                  }
-                  setGradingType(v as "ai" | "manual");
-                }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-3"
-              >
-                <div className={`flex items-start space-x-3 p-4 rounded-lg border hover:bg-muted/40 transition-colors ${gradingType === 'ai' ? 'border-primary/40 bg-primary/5' : ''} ${isFreePlan ? 'opacity-60' : ''}`}>
-                  <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} className="cursor-pointer mt-1" />
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="grading-ai" className="font-bold text-sm">AI-Assisted Grading</Label>
-                      {isFreePlan && <Lock className="h-3 w-3" />}
-                    </div>
-                    <span className="text-xs text-muted-foreground">Automated feedback and scoring based on your rubric.</span>
-                  </div>
+          <AdvancedSettings>
+            <section className="space-y-3 py-5" aria-labelledby="assignment-options-heading">
+              <h2 id="assignment-options-heading" className="text-sm font-semibold">Assignment options</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="topic">Topic</Label>
+                  <Select value={topic} onValueChange={setTopic}>
+                    <SelectTrigger id="topic" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kinematics">Kinematics</SelectItem>
+                      <SelectItem value="dynamics">Dynamics (Newton&apos;s Laws)</SelectItem>
+                      <SelectItem value="energy">Energy &amp; Momentum</SelectItem>
+                      <SelectItem value="thermo">Thermodynamics</SelectItem>
+                      <SelectItem value="em">Electricity &amp; Magnetism</SelectItem>
+                      <SelectItem value="waves">Waves &amp; Optics</SelectItem>
+                      <SelectItem value="modern">Modern Physics</SelectItem>
+                      <SelectItem value="other">General / Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className={`flex items-start space-x-3 p-4 rounded-lg border hover:bg-muted/40 transition-colors ${gradingType === 'manual' ? 'border-primary/40 bg-primary/5' : ''}`}>
-                  <RadioGroupItem value="manual" id="grading-manual" className="cursor-pointer mt-1" />
-                  <div className="flex-grow">
-                    <Label htmlFor="grading-manual" className="font-bold text-sm">Manual Teacher Review</Label>
-                    <span className="text-xs text-muted-foreground block">Traditional grading workflow for maximum oversight.</span>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="timeLimit">Time limit (minutes)</Label>
+                  <Input
+                    id="timeLimit"
+                    type="number"
+                    min={0}
+                    placeholder="Unlimited"
+                    value={timeLimit}
+                    onChange={(event) => setTimeLimit(event.target.value === "" ? "" : parseInt(event.target.value, 10))}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-3 py-5" aria-labelledby="grading-heading">
+              <h2 id="grading-heading" className="text-sm font-semibold">Grading</h2>
+              <RadioGroup
+                aria-labelledby="grading-heading"
+                value={gradingType}
+                onValueChange={(value) => setGradingType(value === "ai" && !isFreePlan ? "ai" : "manual")}
+                className="flex flex-wrap gap-x-6 gap-y-3"
+              >
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="manual" id="grading-manual" />
+                  <Label htmlFor="grading-manual">Grade manually</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} />
+                  <Label htmlFor="grading-ai">
+                    Grade with AI
+                    {isFreePlan && <Lock className="size-3 text-muted-foreground" aria-label="Requires AI access" />}
+                  </Label>
                 </div>
               </RadioGroup>
-
               {gradingType === "ai" && (
-                <div className="space-y-3 p-4 bg-muted/30 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="rubric" className="text-sm font-semibold">Global Grading Rubric</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      onClick={async () => {
-                        if (!title) { toast.error("Please enter a title first."); return; }
-                        setAiLoading(true);
-                        try {
-                          const response = await fetch('/api/chat', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              message: `Generate a high-level grading rubric for an assignment titled "${title}". Focus on expectations for accuracy, units, and reasoning.`,
-                              userId: user?.uid,
-                              userRole: 'teacher'
-                            })
-                          });
-                          if (!response.ok) { const err = await response.json(); throw new Error(err.error || "Failed to generate rubric."); }
-                          const data = await response.json();
-                          setRubric(data.text);
-                          toast.success("Rubric generated.");
-                        } catch (e: any) {
-                          toast.error(e.message || "Failed to generate rubric.");
-                        } finally {
-                          setAiLoading(false);
-                        }
-                      }}
-                    >
-                      <Sparkles className="h-3.5 w-3.5 mr-2" />
-                      Generate Rubric
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Label htmlFor="rubric">Assignment rubric</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateAssignmentRubric} disabled={aiLoading}>
+                      {aiLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                      Generate rubric
                     </Button>
                   </div>
                   <Textarea
                     id="rubric"
                     value={rubric}
-                    onChange={(e) => setRubric(e.target.value)}
-                    placeholder="General criteria for grading this assignment..."
-                    rows={4}
-                    className="bg-background text-sm"
+                    onChange={(event) => setRubric(event.target.value)}
+                    placeholder="What should the grader look for across all questions?"
+                    rows={3}
                   />
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </section>
 
-          {/* ── 4. Test Security & Student Tools ── */}
-          <Card className="border-primary/10 bg-primary/5 shadow-none ring-1 ring-primary/5">
-            <CardHeader className="py-4 border-b">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                Test Security & Student Tools
-              </CardTitle>
-              <CardDescription className="text-[10px]">Enable exam-style security features and conceptual support tools.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox className="cursor-pointer" id="lockdownMode" checked={lockdownMode} onCheckedChange={(checked) => setLockdownMode(!!checked)} />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="lockdownMode" className="text-xs font-bold flex items-center gap-1.5">
-                        <Lock className="h-3 w-3" /> Lockdown (Tests)
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-red-200 shadow-2xl rounded-2xl">
-                          <div className="bg-red-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><Lock className="h-3.5 w-3.5" />Secure Test Mode</p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[10px] font-medium leading-relaxed text-muted-foreground italic">Highly recommended for formal exams.</p>
-                            <ul className="space-y-1.5 pt-1">
-                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400"><CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /><span>Locks browser to full-screen mode.</span></li>
-                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400"><CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /><span>Disables switching tabs or copy-pasting.</span></li>
-                              <li className="flex items-start gap-2 text-[10px] font-medium leading-tight text-zinc-600 dark:text-zinc-400"><CheckCircle2 className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /><span>Warns instructor if window is closed.</span></li>
-                            </ul>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+            <section className="space-y-4 py-5" aria-labelledby="student-tools-heading">
+              <h2 id="student-tools-heading" className="text-sm font-semibold">Student tools and test security</h2>
+              <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                {[
+                  { id: "allowCalculator", label: "Allow calculator", description: "Give students an on-screen scientific calculator.", checked: allowCalculator, setChecked: setAllowCalculator },
+                  { id: "allowAIHelp", label: "Allow Raise hints", description: isFreePlan ? "Requires AI access." : "Give students guided hints as they work.", checked: allowAIHelp, setChecked: setAllowAIHelp, disabled: isFreePlan },
+                  { id: "requireWork", label: "Require work upload", description: "Have students submit a photo or PDF of their work.", checked: requireWorkSubmission, setChecked: setRequireWorkSubmission },
+                  { id: "enableTabDetection", label: "Track tab switching", description: "Record when students leave the assignment tab.", checked: enableTabDetection, setChecked: setEnableTabDetection },
+                  { id: "lockdownMode", label: "Lockdown mode", description: "Require full screen and restrict copy and paste.", checked: lockdownMode, setChecked: setLockdownMode },
+                ].map(({ id, label, description, checked, setChecked, disabled }) => (
+                  <div key={id} className="flex items-start gap-2.5">
+                    <Checkbox id={id} checked={checked} disabled={disabled} onCheckedChange={(value) => setChecked(value === true)} aria-describedby={`${id}-help`} className="mt-0.5" />
+                    <div className="space-y-1">
+                      <Label htmlFor={id}>{label}</Label>
+                      <p id={`${id}-help`} className="text-xs text-muted-foreground">{description}</p>
                     </div>
                   </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Best for exams. Prevents switching tabs or using shortcuts.</p>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox className="cursor-pointer" id="enableTabDetection" checked={enableTabDetection} onCheckedChange={(checked) => setEnableTabDetection(!!checked)} />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="enableTabDetection" className="text-xs font-bold flex items-center gap-1.5">
-                        <AppWindow className="h-3 w-3" /> Detect Tab Switching
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-orange-200 shadow-2xl rounded-2xl">
-                          <div className="bg-orange-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" />Switch Logs</p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground">Notifies you every time a student switches tabs or windows.</p>
-                            <div className="p-2.5 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-100 dark:border-orange-900/30">
-                              <p className="text-[9px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-tighter">Violation Log</p>
-                              <p className="text-[10px] text-orange-600 dark:text-orange-300 mt-1">Each event is timestamped and flagged in your final report.</p>
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Logs if students exit the tab or switch applications.</p>
-                </div>
-
-                <div className={`flex flex-col gap-3 ${isFreePlan ? 'opacity-50' : ''}`}>
-                  <div className="flex items-center gap-2">
-                    <Checkbox className="cursor-pointer" id="allowAIHelp" checked={allowAIHelp} disabled={isFreePlan} onCheckedChange={(checked) => setAllowAIHelp(!!checked)} />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="allowAIHelp" className="text-xs font-bold flex items-center gap-1.5">
-                        <RaiseLogo className="h-3 w-3" size={16} /> Enable Raise
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-purple-200 shadow-2xl rounded-2xl">
-                          <div className="bg-purple-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><RaiseLogo className="h-3.5 w-3.5" />Guided Tutoring with Raise</p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground">Students can raise their hand for conceptual hints without giving away final answers.</p>
-                            <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 border-t pt-2">SOCRATIC METHOD:</p>
-                            <p className="text-[10px] text-zinc-500 leading-tight">The AI guides students through step-by-step logic and terminology.</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Gives students conceptual hints ONLY. Never reveals answers.</p>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox className="cursor-pointer" id="allowCalculator" checked={allowCalculator} onCheckedChange={(checked) => setAllowCalculator(!!checked)} />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="allowCalculator" className="text-xs font-bold flex items-center gap-1.5">
-                        <Calculator className="h-3 w-3 text-primary" /> Allow Calculator
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-sky-200 shadow-2xl rounded-2xl">
-                          <div className="bg-sky-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><Calculator className="h-3.5 w-3.5" />Scientific Calculator</p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground">Provides students with an integrated on-screen scientific calculator during the assignment.</p>
-                            <p className="text-[10px] text-zinc-500 leading-tight">Includes trig (DEG/RAD), logs, powers, roots, scientific notation, and quick physics constants ($g, c, h$, etc.).</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Enables an on-screen scientific physics calculator for students.</p>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox className="cursor-pointer" id="requireWork" checked={requireWorkSubmission} onCheckedChange={(checked) => setRequireWorkSubmission(!!checked)} />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="requireWork" className="text-xs font-bold flex items-center gap-1.5">
-                        <FileUp className="h-3 w-3" /> Photo of Work
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground/50 cursor-help" /></TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-0 overflow-hidden border-emerald-200 shadow-2xl rounded-2xl">
-                          <div className="bg-emerald-600 p-4 text-white">
-                            <p className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><FileUp className="h-3.5 w-3.5" />Evidence of Work</p>
-                          </div>
-                          <div className="p-4 space-y-2.5 bg-white dark:bg-zinc-950">
-                            <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">Require students to upload an image of their written steps.</p>
-                            <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-md border border-emerald-100 dark:border-emerald-900/30">
-                              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                              <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Prevents AI Chatbot Cheating</p>
-                            </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">Forces students to upload an image of their scratch paper.</p>
-                </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+            </section>
 
-          {/* ── 5. Publishing / Visibility (optional, collapsible) ── */}
-          <CollapsibleSection title="Publishing & Visibility" defaultOpen={false}>
-            <div className="space-y-4">
-              <p className="text-xs text-muted-foreground">Control who can view and fork this assignment beyond your class.</p>
-              <RadioGroup value={visibility} onValueChange={(v) => setVisibility(v as "private" | "network" | "global")} className="space-y-2">
-                <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
-                  <RadioGroupItem value="private" id="visible-private" className="mt-1" />
-                  <div className="flex-grow">
-                    <Label htmlFor="visible-private" className="cursor-pointer font-bold block text-sm">Private</Label>
-                    <span className="text-xs text-muted-foreground">Only you and students in this class can access.</span>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
-                  <RadioGroupItem value="network" id="visible-network" disabled={!profile?.organizationId} className="mt-1" />
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="visible-network" className={`cursor-pointer font-bold block text-sm ${!profile?.organizationId ? 'text-muted-foreground' : ''}`}>Network</Label>
-                      {!profile?.organizationId && <Badge variant="secondary" className="text-[10px]">LOCKED</Badge>}
+            <section className="space-y-3 py-5" aria-labelledby="sharing-heading">
+              <h2 id="sharing-heading" className="text-sm font-semibold">Sharing</h2>
+              <RadioGroup aria-labelledby="sharing-heading" value={visibility} onValueChange={(value) => setVisibility(value as typeof visibility)}>
+                {[
+                  { value: "private", label: "Private", description: "Keep this assignment out of the shared library." },
+                  { value: "network", label: "School network", description: profile?.organizationId ? "Share a copy with teachers in your network." : "Requires a school network.", disabled: !profile?.organizationId },
+                  { value: "global", label: "Global Waypoint", description: "Make a copy available in the shared Waypoints library." },
+                ].map(({ value, label, description, disabled }) => (
+                  <div key={value} className="flex items-start gap-2.5">
+                    <RadioGroupItem value={value} id={`visible-${value}`} disabled={disabled} aria-describedby={`visible-${value}-help`} className="mt-0.5" />
+                    <div className="space-y-1">
+                      <Label htmlFor={`visible-${value}`}>{label}</Label>
+                      <p id={`visible-${value}-help`} className="text-xs text-muted-foreground">{description}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground">Shared with colleagues in {profile?.organizationId || "your school"}.</span>
                   </div>
-                </div>
-                <div className="flex items-start space-x-3 p-3 rounded-lg border border-transparent hover:bg-muted/50 transition-colors cursor-pointer">
-                  <RadioGroupItem value="global" id="visible-global" className="mt-1" />
-                  <div className="flex-grow">
-                    <Label htmlFor="visible-global" className="cursor-pointer font-bold block text-sm text-primary">Global Waypoint</Label>
-                    <span className="text-xs text-muted-foreground">Contribute to the public library of verified benchmarks.</span>
-                  </div>
-                </div>
+                ))}
               </RadioGroup>
+            </section>
+          </AdvancedSettings>
+
+          <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3 shadow-md sm:px-4">
+            <p className="text-sm text-muted-foreground">
+              {questions.length} {questions.length === 1 ? "question" : "questions"}
+              {validTotal && <> <span aria-hidden="true">·</span> {assignmentPoints} {assignmentPoints === 1 ? "point" : "points"}</>}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <DialogTrigger asChild>
+                <Button type="button" variant="outline"><Eye /> Preview</Button>
+              </DialogTrigger>
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="animate-spin" />}
+                {loading ? "Creating…" : "Create assignment"}
+              </Button>
             </div>
-          </CollapsibleSection>
-
-          </CollapsibleSection>
-
-          <div className="flex gap-4">
-            <Button type="submit" disabled={loading} className="cursor-pointer">
-              {loading ? "Creating..." : "Create Assignment"}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()} className="cursor-pointer">
-              Cancel
-            </Button>
           </div>
         </form>
 
-        {/* Full Assignment Preview Dialog */}
-        <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Student View Preview</DialogTitle>
-              <DialogDescription>
-                This is how your assignment will appear to students.
-              </DialogDescription>
-            </DialogHeader>
+        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Student preview</DialogTitle>
+            <DialogDescription>
+              Review the instructions, questions, and points before creating the assignment.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="space-y-8 py-4">
-              <div className="space-y-2 border-b pb-6">
-                <h2 className="text-3xl font-bold tracking-tight">{title || "Untitled Assignment"}</h2>
-                <p className="text-muted-foreground">{description || "No description provided."}</p>
-                <div className="flex gap-4 text-xs font-medium uppercase tracking-tighter text-muted-foreground pt-2">
-                  <span>Due: {dueDate ? dueDate.toLocaleString() : "Not set"}</span>
-                  {timeLimit && <span>Time Limit: {timeLimit} mins</span>}
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                {questions.length === 0 ? (
-                  <div className="py-20 text-center border-2 border-dashed rounded-xl">
-                    <p className="text-muted-foreground italic">No questions added yet.</p>
-                  </div>
-                ) : (
-                  questions.map((question, index) => (
-                    <Card key={question.id} className="overflow-hidden border-zinc-200">
-                      <CardHeader className="bg-muted/30 pb-4">
-                        <div className="flex justify-between items-start">
-                          <Label className="text-base font-bold">Question {index + 1}</Label>
-                          <Badge variant="outline" className="font-mono">{question.points || 10} PTS</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-6 space-y-6">
-                        <MarkdownRenderer>
-                          {question.text || "*No question text entered.*"}
-                        </MarkdownRenderer>
-
-                        <div className="space-y-3">
-                          {question.type === "multiple-choice" && (
-                            <div className="grid gap-2">
-                              {question.options?.map((option, oIdx) => (
-                                <div key={oIdx} className="flex items-center gap-3 p-3 rounded-lg border bg-zinc-50/50">
-                                  <div className="w-4 h-4 rounded-full border border-zinc-300" />
-                                  <MarkdownRenderer className="text-sm prose-p:my-0">{option || `Option ${oIdx + 1}`}</MarkdownRenderer>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {question.type === "true-false" && (
-                            <div className="grid gap-2">
-                              {["True", "False"].map((option) => (
-                                <div key={option} className="flex items-center gap-3 p-3 rounded-lg border bg-zinc-50/50">
-                                  <div className="w-4 h-4 rounded-full border border-zinc-300" />
-                                  <span className="text-sm">{option}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {(question.type === "text" || question.type === "short-answer") && (
-                            <div className="p-4 rounded-lg border border-dashed bg-zinc-50/30 text-muted-foreground text-sm italic">
-                              Student will provide a {question.type === "short-answer" ? "short" : "long"}-form response.
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
+          <div className="space-y-8 py-4">
+            <div className="space-y-2 border-b pb-6">
+              <h2 className="text-3xl font-bold tracking-tight">{title || "Untitled Assignment"}</h2>
+              <p className="text-muted-foreground">{description || "No description provided."}</p>
+              <div className="flex flex-wrap gap-4 text-xs font-medium uppercase tracking-tighter text-muted-foreground pt-2">
+                <span>Due {dueDate ? dueDate.toLocaleString() : "when created"}</span>
+                {validTotal && <span>{assignmentPoints} points total</span>}
+                {timeLimit && <span>Time Limit: {timeLimit} mins</span>}
               </div>
             </div>
 
-            <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
-              <Button onClick={() => setIsPreviewOpen(false)} variant="default" className="w-full sm:w-auto">
-                Close Preview
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </TooltipProvider>
+            <div className="space-y-6">
+              {questions.length === 0 ? (
+                <div className="py-20 text-center border-2 border-dashed rounded-xl">
+                  <p className="text-muted-foreground italic">No questions added yet.</p>
+                </div>
+              ) : (
+                scoredQuestions.map((question, index) => (
+                  <Card key={question.id} className="overflow-hidden">
+                    <CardHeader className="bg-muted/30 pb-4">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-base font-semibold">Question {index + 1}</h3>
+                        <Badge variant="outline" className="font-mono">{question.points} PTS</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-6">
+                      <MarkdownRenderer>
+                        {question.text || "*No question text entered.*"}
+                      </MarkdownRenderer>
+
+                      <div className="space-y-3">
+                        {question.type === "multiple-choice" && (
+                          <div className="grid gap-2">
+                            {question.options?.map((option, oIdx) => (
+                              <div key={oIdx} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+                                <div className="w-4 h-4 rounded-full border border-muted-foreground/50" />
+                                <MarkdownRenderer className="text-sm prose-p:my-0">{option || `Option ${oIdx + 1}`}</MarkdownRenderer>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {question.type === "true-false" && (
+                          <div className="grid gap-2">
+                            {["True", "False"].map((option) => (
+                              <div key={option} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+                                <div className="w-4 h-4 rounded-full border border-muted-foreground/50" />
+                                <span className="text-sm">{option}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {(question.type === "text" || question.type === "short-answer") && (
+                          <div className="p-4 rounded-lg border border-dashed bg-muted/30 text-muted-foreground text-sm italic">
+                            Student will provide a {question.type === "short-answer" ? "short" : "long"}-form response.
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
+            <Button onClick={() => setIsPreviewOpen(false)} variant="default" className="w-full sm:w-auto">
+              Close preview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

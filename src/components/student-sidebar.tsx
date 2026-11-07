@@ -10,7 +10,6 @@ import {
   ChartColumnBig,
   BowArrow,
   NotebookPen,
-  Leaf
 } from "lucide-react";
 import { RaiseLogo } from "./ui/raise-logo";
 import { AppSidebar, NavSection } from "./app-sidebar";
@@ -44,7 +43,7 @@ const navSections: NavSection[] = [
   {
     label: "Impact",
     items: [
-      { href: "/sustainability", label: "Green Impact", icon: Leaf },
+      { dialog: "sustainability", label: "Green Impact" },
     ],
   },
   {

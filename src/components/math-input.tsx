@@ -145,18 +145,22 @@ interface MathInputFieldProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  ariaLabel?: string;
   disabled?: boolean;
   rows?: number;
   compact?: boolean;
+  defaultPreviewOpen?: boolean;
 }
 
 export function MathInputField({
   value,
   onChange,
   placeholder = "Type your answer here…",
+  ariaLabel = placeholder,
   disabled = false,
   rows = 4,
   compact = false,
+  defaultPreviewOpen = true,
 }: MathInputFieldProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const lastExtracted = useRef("");
@@ -166,7 +170,7 @@ export function MathInputField({
   const [showToolbar, setShowToolbar] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("math");
   const [builderType, setBuilderType] = useState<BuilderType>(null);
-  const [showPreview, setShowPreview] = useState(true);
+  const [showPreview, setShowPreview] = useState(defaultPreviewOpen);
 
   // Sync external value → DOM (only when change came from outside)
   useEffect(() => {
@@ -293,6 +297,10 @@ export function MathInputField({
         <div
           ref={editorRef}
           contentEditable={!disabled}
+          role="textbox"
+          aria-label={ariaLabel}
+          aria-multiline="true"
+          aria-readonly={disabled}
           suppressContentEditableWarning
           onInput={syncValue}
           onBlur={syncValue}
@@ -324,7 +332,9 @@ export function MathInputField({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            onMouseDown={(e) => { e.preventDefault(); setShowToolbar((v) => !v); }}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setShowToolbar((v) => !v)}
+            aria-expanded={showToolbar}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
               showToolbar
@@ -340,7 +350,9 @@ export function MathInputField({
           {!compact && (
             <button
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); setShowPreview((v) => !v); }}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setShowPreview((v) => !v)}
+              aria-expanded={showPreview}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
                 showPreview

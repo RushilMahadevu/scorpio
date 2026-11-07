@@ -20,8 +20,8 @@ import SpotlightCards from "@/components/ui/spotlight-cards";
 const steps = [
   {
     id: "step-1",
-    title: "Domain Integrity Guard",
-    description: "Strict physics context enforcement. Instantly neutralizes non-academic requests through hard refusal logic.",
+    title: "Stay on physics",
+    description: "Raise checks whether the question is about physics before it responds.",
     icon: ShieldAlert,
     color: "text-red-300",
     bgColor: "bg-red-400/10",
@@ -31,8 +31,8 @@ const steps = [
   },
   {
     id: "step-2",
-    title: "Pedagogical Intent Engine",
-    description: "Classifies student intent in real-time to select the optimal scaffolding mode for the conceptual gap.",
+    title: "Find the sticking point",
+    description: "It checks what the student is asking for so it can give the right kind of hint.",
     icon: Brain,
     color: "text-orange-300",
     bgColor: "bg-orange-400/10",
@@ -42,8 +42,8 @@ const steps = [
   },
   {
     id: "step-3",
-    title: "Symbolic Notation Mesh",
-    description: "Enforces rigid scientific syntax and LaTeX density. Verifies unit consistency before response generation.",
+    title: "Check the notation",
+    description: "It checks units and formats equations so they’re easier to read.",
     icon: Calculator,
     color: "text-blue-300",
     bgColor: "bg-blue-400/10",
@@ -53,8 +53,8 @@ const steps = [
   },
   {
     id: "step-4",
-    title: "Socratic Scaffolding Output",
-    description: "The complete stack output that elicits student reasoning through inference-time rule validation.",
+    title: "Give the next hint",
+    description: "It gives the student a step to try and leaves the rest of the problem for them to work through.",
     icon: Bot,
     color: "text-green-300",
     bgColor: "bg-green-400/10",
@@ -81,7 +81,7 @@ export function SolutionFlowchart() {
             viewport={{ once: true }}
           >
             <Layers className="h-3 w-3" />
-            <span>The Socratic Stack</span>
+            <span>Raise</span>
           </motion.div>
 
           <motion.h2
@@ -91,7 +91,7 @@ export function SolutionFlowchart() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Why Raise is the <span className="text-primary italic">Solution</span>.
+            How Raise <span className="text-primary italic">gives a hint</span>
           </motion.h2>
 
           <motion.p
@@ -101,7 +101,7 @@ export function SolutionFlowchart() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            A 4-layer constraint architecture that makes bypassing the learning process structurally impossible.
+            Raise runs four checks to keep its replies focused on the next step.
           </motion.p>
         </div>
 
@@ -134,33 +134,33 @@ export function SolutionFlowchart() {
           <div className="space-y-8">
             <div className="space-y-4">
               <h3 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
-                What <span className="text-primary italic">Differentiates</span> Us.
+                What we <span className="text-primary italic">tested</span>
               </h3>
               <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                Standard chatbots are built to answer quickly. Raise is designed to be a rigorous physics mentor.
+                We tested whether Raise could give students a usable hint and leave them room to do the work.
               </p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
               {[
                 {
-                  title: "Inference-Time Layering",
-                  desc: "0% Direct Answer Rate achieved through rigid rule-layering at inference time, not black-box fine-tuning.",
+                  title: "Direct answers",
+                  desc: "In the study, the version with all four checks gave no direct answers.",
                   icon: Zap
                 },
                 {
-                  title: "Expert Validated",
-                  desc: "+0.67 pedagogical uplift across 125 expert-blinded responses validated by Ph.D. physics educators.",
+                  title: "Review by physics educators",
+                  desc: "Physics educators scored 125 responses without knowing which version produced each one.",
                   icon: CheckCircle2
                 },
                 {
-                  title: "Symbolic Integrity",
-                  desc: "0.92 LaTeX notation density ensures precision in mathematical derivation and unit consistency.",
+                  title: "Equations and units",
+                  desc: "We checked how the model wrote equations and handled units.",
                   icon: Calculator
                 },
                 {
-                  title: "Verifiable Research",
-                  desc: "Every claim is backed by the Scorpio Ablation Study, formalizing the shift from answer engines to scaffolding.",
+                  title: "Study and scoring rubric",
+                  desc: "The research page includes the full method and scoring rubric.",
                   icon: Search
                 }
               ].map((item, i) => (

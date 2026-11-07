@@ -8,45 +8,45 @@ import Link from "next/link";
 const faqs = [
   {
     index: "01",
-    question: "What exactly is Scorpio?",
+    question: "What is Scorpio?",
     answer:
-      "Scorpio is the world's first verifiable AI Physics LMS — a learning-management system built around Socratic scaffolding rather than answer delivery. It enforces a 4-layer constraint architecture at inference-time, making it structurally impossible for the AI to bypass the learning process, regardless of how a student phrases their prompt.",
+      "Scorpio is a platform for physics classes. Teachers can post and grade assignments, and students can ask Raise for a hint when they get stuck.",
   },
   {
     index: "02",
-    question: "How does the Socratic architecture work?",
+    question: "How does Raise decide what hint to give?",
     answer:
-      "Every AI response passes through four sequential constraint layers: intent classification, schema enforcement, Socratic gate validation, and pedagogical output generation. No fine-tuning or black-box retraining is involved — all behaviour is observable and auditable at inference-time.",
+      "Raise checks what the student is asking for and applies rules to keep the reply focused on the next step. The research page explains how we tested those rules.",
   },
   {
     index: "03",
     question: "Can students bypass the AI and get direct answers?",
     answer:
-      "No. The constraint architecture makes this structurally impossible — not policy-based. Our Ph.D.-validated audit records a 0% direct answer rate across 125-response ablation studies. Rephrasing, jailbreak attempts, and leading questions are all caught at the schema-enforcement layer.",
+      "Raise is designed to give hints. In our 125-response study, the version with all four checks gave no direct answers.",
   },
   {
     index: "04",
     question: "What physics topics and grade levels are supported?",
     answer:
-      "Scorpio supports A-Level, AP Physics, and undergraduate introductory physics. Topics span mechanics, electromagnetism, thermodynamics, waves, quantum foundations, and more. Teachers can further scope the AI to specific modules using configurable Waypoint constraints.",
+      "Scorpio supports A-Level, AP Physics, and introductory college physics. It covers topics such as mechanics, electromagnetism, thermodynamics, waves, and introductory quantum physics. Teachers can use Waypoints to focus hints on the material their class is studying.",
   },
   {
     index: "05",
     question: "What are Waypoints?",
     answer:
-      "Waypoints are high-precision, peer-validated physics modules — essentially curriculum anchors that teachers can attach to assignments. They lock the AI to specific topic domains, notation conventions, and pedagogical depth levels, ensuring the tutoring stays on-syllabus.",
+      "Waypoints are modules teachers can attach to assignments. They tell Raise which topic to stay on, what notation to use, and how much help to give.",
   },
   {
     index: "06",
     question: "How is pricing structured?",
     answer:
-      "Scorpio operates on a zero-markup pass-through model for AI usage costs. You pay exactly what the underlying model provider charges — no hidden AI surcharges. Platform access is billed per institution seat, with full cost transparency provided in your dashboard.",
+      "Scorpio charges a subscription for platform access and passes through AI usage charges at the provider’s rate. You can see usage costs in your dashboard.",
   },
   {
     index: "07",
     question: "Does Scorpio integrate with existing LMS platforms?",
     answer:
-      "Scorpio is a standalone platform designed for rapid deployment — no LMS integration is required. Setup takes under an afternoon. For institutions requiring deep LMS integration (Canvas, Blackboard, etc.), contact us about our Enterprise tier.",
+      "You can use Scorpio alongside your current LMS without connecting the two. If your school needs a Canvas or Blackboard integration, ask us about the Enterprise plan.",
   },
   {
     index: "08",
@@ -103,7 +103,7 @@ export function LandingFAQ() {
                   <span className="text-primary italic">Questions.</span>
                 </h2>
                 <p className="text-muted-foreground text-base font-medium leading-relaxed max-w-xs">
-                  Everything you need to know about deploying Scorpio in your physics department. Can&rsquo;t find an answer?
+                  Common questions about using Scorpio in a physics class. Can&rsquo;t find your answer?
                 </p>
               </div>
 

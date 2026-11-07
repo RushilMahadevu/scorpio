@@ -220,7 +220,7 @@ export default function Home() {
                               className="block"
                               once
                             >
-                              The operating system
+                              A classroom platform
                             </TextAnimate>
                             <span className="text-primary block">
                               <TextAnimate
@@ -247,7 +247,7 @@ export default function Home() {
                             cursorStyle="line"
                             className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
                           >
-                            Deploy tutoring for every student. Designed for the AI Era.
+                            Post assignments, see where your class gets stuck, and give students hints they can work through on their own.
                           </TypingAnimation>
                         </div>
                       </div>
@@ -362,10 +362,10 @@ export default function Home() {
                         viewport={{ once: true }}
                       >
                         <h3 className="text-2xl md:text-4xl font-black tracking-tight text-foreground">
-                          Trusted by innovative schools.
+                          School partners
                         </h3>
                         <p className="text-muted-foreground font-medium text-base md:text-lg leading-relaxed">
-                          Scorpio is partnering with forward-thinking institutions to bring rigorous, Socratic AI into the physics curriculum.
+                          We’re working with Sage Ridge School to bring guided tutoring into the physics classroom.
                         </p>
                       </motion.div>
                       <motion.div
@@ -410,7 +410,7 @@ export default function Home() {
                           viewport={{ once: true }}
                         >
                           <AlertTriangle className="h-3 w-3" />
-                          <span>The Cognitive Crisis</span>
+                          <span>The problem</span>
                         </motion.div>
                         <motion.h2
                           className="text-4xl md:text-6xl font-black tracking-tighter leading-[0.9] text-foreground"
@@ -418,8 +418,7 @@ export default function Home() {
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                         >
-                          Physics is being <span className="text-red-500 dark:text-red-400 italic">erased</span><br />
-                          by &quot;Answer Engines.&quot;
+                          The work is in <span className="text-red-500 dark:text-red-400 italic">figuring it out.</span>
                         </motion.h2>
                         <motion.p
                           className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed"
@@ -428,7 +427,7 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ delay: 0.1 }}
                         >
-                          Standard LLMs bypass the productive struggle. They don&apos;t teach physics; they solve it—leaving students with full marks and zero mastery.
+                          A chatbot can finish a problem in seconds. A student still needs to practice choosing an equation, drawing the diagram, and checking whether the answer makes sense.
                         </motion.p>
                       </div>
 
@@ -443,7 +442,7 @@ export default function Home() {
                       >
                         <Link href="/about">
                           <Button variant="ghost" className="cursor-pointer text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-red-500 transition-colors">
-                            Read our full mission statement <ArrowRight className="ml-2 h-3 w-3" />
+                            Why we built Scorpio <ArrowRight className="ml-2 h-3 w-3" />
                           </Button>
                         </Link>
                       </motion.div>
@@ -461,7 +460,7 @@ export default function Home() {
 
                     <div className="max-w-6xl mx-auto space-y-16">
                       <div className="text-center space-y-4">
-                        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Our <span className="text-primary">Features</span></h2>
+                        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">What you can do with <span className="text-primary">Scorpio</span></h2>
                         <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">Everything you need to scale verifiable Socratic learning in your institution.</p>
                       </div>
 
@@ -491,7 +490,7 @@ export default function Home() {
                           viewport={{ once: true }}
                         >
                           <Sparkles className="h-3.5 w-3.5" />
-                          <span>Transparent Pricing</span>
+                          <span>Pricing</span>
                         </motion.div>
                         <motion.h2
                           className="text-4xl md:text-5xl font-black tracking-tighter leading-none"
@@ -500,8 +499,7 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ delay: 0.1 }}
                         >
-                          Less than a textbook.<br />
-                          <span className="text-primary italic">Unlimited students.</span>
+                          One subscription for <span className="text-primary italic">all your students</span>
                         </motion.h2>
                       </div>
 
@@ -609,7 +607,7 @@ export default function Home() {
                       >
                         <Link href="/pricing">
                           <Button variant="ghost" className="cursor-pointer text-sm font-bold text-muted-foreground hover:text-primary transition-colors group gap-2">
-                            View full pricing, AI cost analysis & enterprise options
+                            See all plans and AI usage costs
                             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                           </Button>
                         </Link>
@@ -632,9 +630,9 @@ export default function Home() {
 
                       <div className="relative z-10 space-y-8 md:space-y-12">
                         <div className="space-y-6">
-                          <h2 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-foreground">Empower Your <span className="text-primary italic">Department.</span></h2>
+                          <h2 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-none text-foreground">Try Scorpio <span className="text-primary italic">with your class</span></h2>
                           <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">
-                            Deploy in one afternoon. No LMS integration required. Just better physics outcomes from day one — for every student in your roster.
+                            Set up a class and try it with an assignment you already teach. You can use Scorpio alongside your existing LMS.
                           </p>
                         </div>
 

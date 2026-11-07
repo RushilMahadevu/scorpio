@@ -33,20 +33,20 @@ export interface SpotlightItem {
 
 const DEFAULT_ITEMS: SpotlightItem[] = [
   {
-    title: "Solution Leakage",
-    description: "ChatGPT and Gemini prioritize the 'Final Answer,' effectively making homework a game of copy-paste instead of derivation.",
+    title: "Copying the answer",
+    description: "When a chatbot gives the full solution, students can copy the steps without having to work out where they came from.",
     icon: AlertTriangle,
     color: "#ef4444"
   },
   {
-    title: "The 'Black Box' Student",
-    description: "When students rely on unconstrained AI, instructors lose all insight into the actual learning gaps and misconceptions.",
+    title: "Seeing where students get stuck",
+    description: "A finished worksheet can hide the step a student never understood.",
     icon: Brain,
     color: "#ef4444"
   },
   {
-    title: "Academic Dishonesty",
-    description: "Degrees lose value when procedural mastery can be faked. Scorpio restores the integrity of the physics curriculum.",
+    title: "Knowing what students can do on their own",
+    description: "It’s harder to tell what someone has learned when the tool does the reasoning for them.",
     icon: Shield,
     color: "#ef4444"
   },

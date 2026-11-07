@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, type WorkFile } from "@/lib/firebase";
+import { getAssignmentPoints } from "@/lib/assignment-points";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,28 +179,17 @@ export default function GradeSubmissionPage() {
     }
   };
 
+  const totalPossiblePoints = getAssignmentPoints(assignment?.questions);
+  const totalEarnedPoints = assignment?.questions?.reduce((earned, question) => earned + (grades[question.id] || 0), 0) ?? 0;
+  const percentageScore = totalPossiblePoints > 0
+    ? Math.round((totalEarnedPoints / totalPossiblePoints) * 100)
+    : 0;
+
   const handleSave = async () => {
     if (!submission || !id || !assignment) return;
     setSaving(true);
 
     try {
-      // Calculate total score based on earned points vs total possible points
-      let totalEarnedPoints = 0;
-      let totalPossiblePoints = 0;
-
-      submission.answers.forEach(ans => {
-        const question = assignment.questions.find(q => q.id === ans.questionId);
-        if (question) {
-          totalEarnedPoints += grades[ans.questionId] || 0;
-          totalPossiblePoints += question.points;
-        }
-      });
-
-      // Calculate percentage score (0-100)
-      const percentageScore = totalPossiblePoints > 0 
-        ? Math.round((totalEarnedPoints / totalPossiblePoints) * 100)
-        : 0;
-
       // Update answers with new grades/feedback
       const updatedAnswers = submission.answers.map(ans => ({
         ...ans,
@@ -211,6 +201,8 @@ export default function GradeSubmissionPage() {
       await updateDoc(doc(db, "submissions", id), {
         answers: updatedAnswers,
         score: percentageScore,
+        earnedPoints: totalEarnedPoints,
+        totalPoints: totalPossiblePoints,
         totalEarnedPoints,
         totalPossiblePoints,
         graded: true,
@@ -248,27 +240,6 @@ export default function GradeSubmissionPage() {
   if (!submission) {
     return <div className="flex items-center justify-center min-h-[50vh] w-full text-muted-foreground">Submission not found</div>;
   }
-
-  // Calculate current total score for display
-  const calculateCurrentScore = () => {
-    if (!assignment) return { earned: 0, total: 0, percentage: 0 };
-    
-    let totalEarned = 0;
-    let totalPossible = 0;
-
-    submission.answers.forEach(ans => {
-      const question = assignment.questions.find(q => q.id === ans.questionId);
-      if (question) {
-        totalEarned += grades[ans.questionId] || 0;
-        totalPossible += question.points;
-      }
-    });
-
-    const percentage = totalPossible > 0 ? Math.round((totalEarned / totalPossible) * 100) : 0;
-    return { earned: totalEarned, total: totalPossible, percentage };
-  };
-
-  const currentScore = calculateCurrentScore();
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
@@ -352,7 +323,7 @@ export default function GradeSubmissionPage() {
         <div className="lg:col-span-2 space-y-8">
           <AnimatePresence>
             {submission.answers.map((ans, index) => {
-              const question = assignment?.questions.find(q => q.id === ans.questionId);
+              const question = assignment?.questions?.find(q => q.id === ans.questionId);
               const isMCQOrTrueFalse = question?.type === "multiple-choice" || question?.type === "true-false";
               const maxPoints = question?.points || 10;
               const isGrading = gradingQuestion === ans.questionId || gradingQuestion === 'all';
@@ -519,33 +490,27 @@ export default function GradeSubmissionPage() {
               <CardContent className="space-y-6">
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-bold tracking-tight">
-                    {currentScore.earned}
+                    {totalEarnedPoints.toLocaleString()}
                   </span>
-                  <span className="text-xl text-muted-foreground">points</span>
+                  <span className="text-xl text-muted-foreground">/ {totalPossiblePoints} points</span>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Percentage</span>
-                    <span className="font-bold">{currentScore.percentage}%</span>
+                    <span className="font-bold">{percentageScore}%</span>
                   </div>
                   <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                     <motion.div 
                       className="h-full bg-primary" 
                       initial={{ width: 0 }}
-                      animate={{ width: `${currentScore.percentage}%` }}
+                      animate={{ width: `${percentageScore}%` }}
                       transition={{ duration: 0.5 }}
                     />
                   </div>
                 </div>
-                <div className="pt-4 grid grid-cols-2 gap-4 border-t">
-                   <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Possible</p>
-                     <p className="text-sm font-medium">{currentScore.total}</p>
-                   </div>
-                   <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Status</p>
-                     <p className="text-sm font-medium">{currentScore.percentage >= 60 ? "Passing" : "Needs Review"}</p>
-                   </div>
+                <div className="space-y-1 border-t pt-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Status</p>
+                  <p className="text-sm font-medium">{percentageScore >= 60 ? "Passing" : "Needs Review"}</p>
                 </div>
               </CardContent>
             </Card>
