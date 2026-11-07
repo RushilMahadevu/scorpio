@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -90,32 +91,6 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
           let resolvedTid = data.teacherId || null;
           let resolvedCid = data.courseId || null;
 
-          // LEGACY CODE RESOLUTION
-          // If we have a teacherId but NO courseId, the teacherId might actually be a Class Code
-          if (resolvedTid && !resolvedCid) {
-            const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", resolvedTid.trim())));
-            if (!codeMatch.empty) {
-              const courseDoc = codeMatch.docs[0];
-              const courseData = courseDoc.data();
-              resolvedCid = courseDoc.id;
-              resolvedTid = courseData.teacherId;
-
-              // AUTO-SYNC these back to the student doc so it's resolved forever
-              await setDoc(doc(db, "students", user.uid), {
-                courseId: resolvedCid,
-                teacherId: resolvedTid
-              }, { merge: true });
-
-              // Also update unified user if available
-              await setDoc(doc(db, "users", user.uid), {
-                courseId: resolvedCid,
-                teacherId: resolvedTid
-              }, { merge: true });
-
-              console.log("Legacy teacher code resolved to:", resolvedTid, resolvedCid);
-            }
-          }
-
           setTeacherId(resolvedTid);
           setCourseId(resolvedCid);
 
@@ -155,7 +130,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         // FETCHING LOGIC: Priority to courseId, fallback to teacherId (legacy)
         if (courseId) {
           const assignmentsSnap = await getDocs(
-            query(collection(db, "assignments"), where("courseId", "==", courseId))
+            query(collection(db, "assignments"), where("answerKeySeparated", "==", true), where("courseId", "==", courseId))
           );
           totalAssignments = assignmentsSnap.size;
           assignmentsSnap.docs.forEach(doc => currentAssignmentIds.add(doc.id));
@@ -163,7 +138,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
           // Fallback for legacy mode: fetch ALL assignments for this teacher
           // Note: If teacherId is a code, we'll try to resolve it first in syncTeacherId
           const assignmentsSnap = await getDocs(
-            query(collection(db, "assignments"), where("teacherId", "==", teacherId))
+            query(collection(db, "assignments"), where("answerKeySeparated", "==", true), where("teacherId", "==", teacherId), where("courseId", "==", null))
           );
           totalAssignments = assignmentsSnap.size;
           assignmentsSnap.docs.forEach(doc => currentAssignmentIds.add(doc.id));
@@ -209,73 +184,11 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
     if (!user || !classCode) return;
     setJoining(true);
     try {
-      const code = classCode.trim();
-      // Check if code matches a course
-      const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", code)));
-
-      let newTeacherId = "";
-      let newCourseId = "";
-      let newCourseName = "";
-      let newCourseCode = "";
-      let newSchoolId = "";
-      let newOrganizationId: string | null = null;
-
-      if (!coursesSnap.empty) {
-        const courseDoc = coursesSnap.docs[0];
-        const courseData = courseDoc.data();
-        newTeacherId = courseData.teacherId;
-        newCourseId = courseDoc.id;
-        newCourseName = courseData.name;
-        newCourseCode = courseData.code;
-        newSchoolId = courseData.schoolId || "pilot_school";
-        newOrganizationId = courseData.organizationId || null;
-      } else {
-        throw new Error("Invalid class code.");
-      }
-
-      // Update student profile with new teacher, course, AND school
-      const syncData = {
-        role: "student",       // Explicitly set the role here for unified view query
-        teacherId: newTeacherId,
-        courseId: newCourseId,
-        schoolId: newSchoolId, // Auto-migrate the student to the teacher's school
-        email: user.email,     // Ensure student email is saved for teacher view
-        name: profile?.displayName || user.displayName || user.email?.split("@")[0], // Ensure name is saved
-        updatedAt: new Date()
-      };
-
-      // 1. Update legacy students collection (use setDoc with merge to avoid 'doc not found' error)
-      await setDoc(doc(db, "students", user.uid), syncData, { merge: true });
-
-      // 2. First sync to unified users collection with teacherId and courseId
-      // This satisfies the Firestore rule allowing the student to read the teacher doc
-      let organizationId = newOrganizationId;
-
-      await setDoc(doc(db, "users", user.uid), {
-        ...syncData,
-        displayName: syncData.name, // Uniform naming across collections
-        organizationId: organizationId || null
-      }, { merge: true });
-
-      // 3. Now resolve organizationId from teacher doc if not directly on course
-      if (!organizationId && newTeacherId) {
-        try {
-          const teacherUserDoc = await getDoc(doc(db, "users", newTeacherId));
-          if (teacherUserDoc.exists()) {
-            const fetchedOrgId = teacherUserDoc.data()?.organizationId;
-            if (fetchedOrgId) {
-              organizationId = fetchedOrgId;
-              await setDoc(doc(db, "users", user.uid), {
-                organizationId: fetchedOrgId
-              }, { merge: true });
-            }
-          }
-        } catch (e) {
-          console.error("Could not fetch teacher organization", e);
-        }
-      }
-
-      toast.success(`Joined class successfully! ${organizationId ? "You now have access to your organization's AI budget." : ""}`);
+      const response = await authenticatedFetch('/api/student/enrollment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: classCode.trim() }),
+      });
+      if (!response.ok) throw new Error((await response.json()).error);
+      toast.success('Joined class successfully');
       router.refresh(); // Refresh to pick up new claims without full reload
     } catch (error: any) {
       console.error("Error joining class:", error);
@@ -290,35 +203,10 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
     if (!user) return;
     setLeaving(true);
     try {
-      const resetData = {
-        teacherId: null,
-        courseId: null,
-        organizationId: null,
-      };
-
-      // Source of truth: Remove from both collections to be thorough
-      // Use setDoc with merge: true to avoid "No document found" errors if a profile is partially missing
-      let legacySuccess = false;
-      let unifiedSuccess = false;
-
-      try {
-        await setDoc(doc(db, "students", user.uid), resetData, { merge: true });
-        legacySuccess = true;
-      } catch (e) {
-        console.warn("Error clearing legacy student doc:", e);
-      }
-
-      try {
-        await setDoc(doc(db, "users", user.uid), resetData, { merge: true });
-        unifiedSuccess = true;
-      } catch (e) {
-        console.warn("Error clearing unified user doc:", e);
-      }
-
-      if (!legacySuccess && !unifiedSuccess) {
-        throw new Error("Could not update your profile to leave class. Please check your connection.");
-      }
-
+      const response = await authenticatedFetch('/api/student/enrollment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'leave' }),
+      });
+      if (!response.ok) throw new Error((await response.json()).error);
       setTeacherId(null);
       setTeacherName(null);
       setCourseId(null);

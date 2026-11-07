@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Read how Scorpio protects student data, ensures COPPA/FERPA compliance, and secures educational records.",
+  description: "Learn what Scorpio collects, how AI providers process information, and how to request export or deletion.",
 };
 
 export default function PrivacyPage() {
@@ -18,12 +18,12 @@ export default function PrivacyPage() {
     {
       icon: Users,
       title: "How We Use Data",
-      content: "Data is utilized exclusively to provide, maintain, and improve our Socratic tutoring engine. We analyze interactions to refine the 4-layer constraint system for better pedagogical accuracy."
+      content: "Account information and learning records are used to provide classroom, tutoring, and grading features. School records must not be used for unrelated research or model training without an appropriate separate agreement."
     },
     {
       icon: Shield,
       title: "Sharing & Disclosure",
-      content: "Scorpio does not sell student data. Information is only shared with authorized educators (within your school instance) or as required by law to maintain safety and compliance."
+      content: "Scorpio does not sell student data. Firebase/Google Cloud hosts account and learning records. When an AI feature is used, its relevant text is processed by Google’s AI services. Polar processes billing events; email delivery providers process notification details. Authorized educators can access records within their permitted classroom or network scope. Text masking reduces some identifiers but does not guarantee anonymization."
     },
     {
       icon: Lock,
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
     {
       icon: CheckCircle2,
       title: "Compliance Standards",
-      content: "We strive to adhere to COPPA and FERPA guidelines, ensuring that student privacy and educational record integrity are maintained at the highest level."
+      content: "School deployment requires review of student ages, provider terms, school authorization, and applicable data-protection agreements. Scorpio does not claim a blanket FERPA or COPPA certification. Student AI use must not begin until the provider arrangement permits the intended age group."
     }
   ];
 
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
         </p>
         <div className="flex items-center gap-2 text-sm text-muted-foreground italic bg-muted/30 w-fit px-4 py-1.5 rounded-full border border-border/40">
           <FileText className="h-4 w-4" />
-          Last updated: February 16, 2026
+          Last updated: November 7, 2026
         </div>
       </section>
 
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
         <div className="max-w-2xl">
           <h2 className="text-2xl font-bold mb-4">Your Data Rights</h2>
           <p className="text-muted-foreground leading-relaxed mb-6">
-            Under various global regulations, you have the right to access, export, or request the deletion of your personal information. Users can manage their profiles directly or contact school administrators for platform-wide data audits.
+            Under various global regulations, you have the right to access, export, or request the deletion of your personal information. Signed-in users may request an export or delete their account in settings. Teacher accounts with active classes or network ownership require a supported handoff first. Deletion covers account profiles, submissions, uploaded work, notebooks, tutoring sessions, practice history, and portfolios. Billing/security records and provider backups may follow separate retention schedules; contact us to establish a school-specific retention and deletion agreement before onboarding.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold transition hover:opacity-90">

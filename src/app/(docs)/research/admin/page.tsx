@@ -19,25 +19,11 @@ export default function ResearchPage() {
   const [passwordInput, setPasswordInput] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    // Check if already authenticated in this session
-    if (typeof window !== "undefined") {
-      const authed = localStorage.getItem("scorpio_admin_authed");
-      if (authed === "true") setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPassword = process.env.NEXT_PUBLIC_RESEARCH_PASSWORD;
-    if (passwordInput === correctPassword) {
-      setIsAuthenticated(true);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("scorpio_admin_authed", "true");
-      }
-    } else {
-      setError("Incorrect admin code. Please try again.");
-    }
+    const response = await fetch('/api/admin/firestore', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-secret': passwordInput }, body: JSON.stringify({ action: 'listCollections' }) });
+    if (response.ok) setIsAuthenticated(true);
+    else setError('Incorrect admin code');
   };
 
   const [isRunning, setIsRunning] = useState(false);
@@ -60,7 +46,7 @@ export default function ResearchPage() {
           setTotalCalls(total);
           setProgress(status);
           setTimeRemaining(timeLeft);
-        }
+        }, passwordInput
       );
       
       setProgress("Analyzing results...");

@@ -123,31 +123,7 @@ export async function POST(req: NextRequest) {
 
   // ─── MARK USED (called after successful signup) ───────────────────────────
   if (action === 'markUsed') {
-    if (!code || !usedBy) {
-      return NextResponse.json({ error: 'Missing code or usedBy' }, { status: 400 });
-    }
-
-    const normalized = code.trim().toUpperCase();
-    const docRef = adminDb.collection('teacherInviteCodes').doc(normalized);
-
-    try {
-      await adminDb.runTransaction(async (t: any) => {
-        const doc = await t.get(docRef);
-        if (!doc.exists) throw new Error('Code not found');
-        if (doc.data()!.isUsed) throw new Error('Code already used');
-
-        t.update(docRef, {
-          isUsed: true,
-          usedAt: FieldValue.serverTimestamp(),
-          usedBy,
-          usedByEmail: usedByEmail || null,
-        });
-      });
-
-      return NextResponse.json({ success: true });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 409 });
-    }
+    return NextResponse.json({ error: 'Invites are redeemed atomically during registration' }, { status: 410 });
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });

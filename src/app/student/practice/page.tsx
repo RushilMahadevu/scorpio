@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useEffect } from "react";
 import { 
@@ -226,7 +227,7 @@ export default function Practice() {
 
       // Log success in history via server API (bypasses direct Firestore permission issues)
       if (user) {
-        await fetch("/api/practice/history", {
+        await authenticatedFetch("/api/practice/history", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 

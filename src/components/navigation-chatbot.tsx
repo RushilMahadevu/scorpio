@@ -1,4 +1,5 @@
 'use client';
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -216,7 +217,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/support/report', {
+      const response = await authenticatedFetch('/api/support/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -255,7 +256,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await authenticatedFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage, userRole, userId: user.uid }),

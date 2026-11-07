@@ -1,10 +1,11 @@
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { getNetworkLimitsHelp } from '@/lib/ai/network';
 import type { NetworkLimitsContext } from '@/lib/ai/network';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   try {
     const { message, chatHistory, userId } = await req.json();
 
@@ -89,3 +90,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "userId", "teacher": true});

@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
@@ -73,7 +74,7 @@ export default function BillingPage() {
 
     setUpgrading(true);
     try {
-      const response = await fetch("/api/checkout", {
+      const response = await authenticatedFetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

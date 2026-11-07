@@ -650,7 +650,7 @@ export default function Home() {
                           </Link>
                         </div>
                         <div className="pt-4">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">PhD-Validated Framework • FERPA-Ready Infrastructure • Zero Markup AI</p>
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">PhD-Validated Framework • School Privacy Review • Zero Markup AI</p>
                         </div>
                       </div>
                     </motion.div>

@@ -270,7 +270,7 @@ export function LandingHeader() {
                       { href: "/about", label: "About Scorpio", desc: "Our mission to revolutionize physics education.", icon: Info },
                       { href: "/research", label: "Research & Methodology", desc: "Deep dive into our 4-layer AI architecture.", icon: Brain },
                       { href: "/contact", label: "Contact Us", desc: "Get help from our institutional success team.", icon: Mail },
-                      { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant data infrastructure.", icon: Shield },
+                      { href: "/privacy", label: "Privacy Policy", desc: "Student data practices and school review.", icon: Shield },
                       { href: "/terms", label: "Terms of Service", desc: "Standard institutional and usage terms.", icon: FileText },
                     ].map((item) => (
                       <Link key={item.href} href={item.href} onClick={() => setHoveredNav(null)}>

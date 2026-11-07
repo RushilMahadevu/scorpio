@@ -1,7 +1,8 @@
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   if (!adminDb) {
     return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
   }
@@ -28,3 +29,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Logging error' }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "studentId", "teacher": false});

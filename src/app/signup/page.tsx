@@ -114,42 +114,14 @@ export default function SignupPage() {
         password, 
         role, 
         name, 
-        role === "student" ? accessCode.trim() : undefined,
-        role === "teacher" ? (codeOrganizationId || undefined) : undefined
+        accessCode.trim()
       );
       const idToken = await userCredential.user.getIdToken();
 
-      // If this code was linked to an organization, update the user doc
-      if (role === "teacher" && codeOrganizationId) {
-        // We'll update both the user doc and the session to include the organizationId
-        // This ensures they are immediately part of your network
-        await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken, role, organizationId: codeOrganizationId }),
-        });
-      } else {
-        // Set standard session cookie
-        await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken, role }),
-        });
-      }
-
-      // Mark the invite code as used (atomic transaction on the server)
-      if (role === "teacher") {
-        await fetch('/api/auth/teacher-code', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'markUsed',
-            code: accessCode.trim(),
-            usedBy: userCredential.user.uid,
-            usedByEmail: email,
-          }),
-        });
-      }
+      const sessionResponse = await fetch('/api/auth/session', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken }),
+      });
+      if (!sessionResponse.ok) throw new Error('Your account was created. Please sign in to continue.');
 
       router.refresh();
       router.push(role === "teacher" ? "/teacher" : "/student");
@@ -160,7 +132,7 @@ export default function SignupPage() {
       } else if (err.code === 'auth/weak-password') {
         setError("Password should be at least 6 characters");
       } else {
-        setError("Failed to create account. Please try again.");
+        setError(err instanceof Error ? err.message : "Failed to create account. Please try again.");
       }
     } finally {
       setLoading(false);

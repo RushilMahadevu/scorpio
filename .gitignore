@@ -69,3 +69,9 @@ IMPROVEMENTS.md
 /scripts/
 service-account*.json
 **/.DS_Store
+# Isolated verification builds and local emulator logs
+.next-verify/
+firestore-debug.log
+
+# Safe placeholder configuration template
+!.env.example

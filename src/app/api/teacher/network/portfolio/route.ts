@@ -1,3 +1,4 @@
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, adminFieldWithValue } from "@/lib/firebase-admin";
 import { generateStudentPortfolio } from "@/lib/ai/network";
@@ -5,7 +6,7 @@ import { checkBudget, recordUsage } from "@/lib/usage-limit";
 
 
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   try {
     const { teacherId, studentId, organizationId } = await req.json();
 
@@ -111,3 +112,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "teacherId", "teacher": true, "resource": "portfolio"});

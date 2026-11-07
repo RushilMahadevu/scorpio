@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { withAuthorizedRequest } from "@/lib/auth-verify";
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 
-export async function POST(req: Request) {
+async function handlePost(req: NextRequest) {
   try {
     const body = await req.json();
     const {
@@ -70,3 +71,5 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, { identityField: "userId" });

@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useEffect } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -453,7 +454,7 @@ export function NetworkStudents({ organizationId, teacherIds }: { organizationId
     if (!user) return;
     setGeneratingFor(studentId);
     try {
-      const res = await fetch("/api/teacher/network/portfolio", {
+      const res = await authenticatedFetch("/api/teacher/network/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teacherId: user.uid, studentId, organizationId })

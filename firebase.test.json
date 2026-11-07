@@ -1,0 +1,1 @@
+{"firestore":{"rules":"firestore.rules"},"storage":{"rules":"storage.rules"},"emulators":{"firestore":{"port":8188},"storage":{"port":9298},"ui":{"enabled":false},"singleProjectMode":true}}

@@ -1,4 +1,5 @@
 "use client";
+import { getTeacherAssignment } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, addDoc, Timestamp } from "firebase/firestore";
@@ -107,9 +108,12 @@ export default function WaypointsPage() {
     }
   }
 
-  const handleFork = (waypoint: Waypoint) => {
-    sessionStorage.setItem("forked_assignment", JSON.stringify(waypoint));
-    router.push("/teacher/create?fork=true");
+  const handleFork = async (waypoint: Waypoint) => {
+    try {
+      const full = await getTeacherAssignment(waypoint.id);
+      sessionStorage.setItem("forked_assignment", JSON.stringify({ ...waypoint, ...full.data() }));
+      router.push("/teacher/create?fork=true");
+    } catch { toast.error('Unable to copy this assignment'); }
   };
 
   const filteredWaypoints = waypoints.filter(a => {

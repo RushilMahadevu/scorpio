@@ -275,96 +275,19 @@ export async function convertFilesToBase64(files: File[]): Promise<WorkFile[]> {
 
 
 // Auth functions
-export const register = async (email: string, password: string, role: "teacher" | "student", name: string, classCode?: string, organizationId?: string) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  
-  // Create user document in Unified collection (Phase 2.1)
-  const userData: any = {
-    uid: user.uid,
-    email: user.email,
-    displayName: name,
-    role: role,
-    createdAt: new Date(),
-    lastLoginAt: new Date(),
-  };
-
-  let resolvedTeacherId = classCode || null;
-  let resolvedCourseId = null;
-
-  if (role === "student" && classCode) {
-    try {
-      // Try to resolve classCode to a course first
-      const coursesSnap = await getDocs(query(collection(db, "courses"), where("code", "==", classCode.trim())));
-      if (!coursesSnap.empty) {
-        const courseData = coursesSnap.docs[0].data();
-        resolvedTeacherId = courseData.teacherId;
-        resolvedCourseId = coursesSnap.docs[0].id;
-        if (courseData.organizationId) {
-          userData.organizationId = courseData.organizationId;
-        }
-      }
-    } catch (e) { console.error("Error resolving class code during registration", e); }
-    
-    userData.teacherId = resolvedTeacherId;
-    userData.courseId = resolvedCourseId;
+export const register = async (email: string, password: string, role: "teacher" | "student", name: string, code?: string) => {
+  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await credential.user.getIdToken()}` },
+      body: JSON.stringify({ role, name, code }),
+    });
+    if (!response.ok) throw new Error((await response.json()).error || 'Registration failed');
+    return credential;
+  } catch (error) {
+    await deleteUser(credential.user).catch(() => {});
+    throw error;
   }
-
-  if (role === "teacher") {
-    let orgId = organizationId || null;
-    if (!orgId) {
-      const orgRef = doc(collection(db, "organizations"));
-      orgId = orgRef.id;
-      const newOrg = {
-        id: orgId,
-        name: `${name}'s Network`,
-        ownerId: user.uid,
-        ownerEmail: user.email || "",
-        subscriptionStatus: "active",
-        planId: "free",
-        aiUsageCurrent: 0,
-        aiBudgetLimit: 50, // $0.50 starting credit
-        practiceLimitPerStudent: 10,
-        practiceLimit: 0,
-        practiceUsageCurrent: 0,
-        baseMonthlyFee: 0,
-        createdAt: new Date(),
-      };
-      userData.organizationId = orgId;
-      // Write user doc first so isTeacher() rule evaluates to true for creating organization doc
-      await setDoc(doc(db, "users", user.uid), userData);
-      try {
-        await setDoc(orgRef, newOrg);
-      } catch (orgErr) {
-        console.error("Error creating default organization for teacher:", orgErr);
-      }
-    } else {
-      userData.organizationId = orgId;
-      await setDoc(doc(db, "users", user.uid), userData);
-    }
-  } else {
-    // Update unified collection
-    await setDoc(doc(db, "users", user.uid), userData);
-  }
-
-  // Sync back to legacy for compatibility if needed (Optional, but safer for now)
-  const legacyCollection = role === "teacher" ? "teachers" : "students";
-  const legacyData: any = {
-    uid: user.uid,
-    email: user.email,
-    name: name,
-    role: role,
-    createdAt: new Date(),
-  };
-
-  if (role === "student") {
-    legacyData.teacherId = resolvedTeacherId;
-    legacyData.courseId = resolvedCourseId;
-  }
-
-  await setDoc(doc(db, legacyCollection, user.uid), legacyData);
-
-  return userCredential;
 };
 
 export const login = async (email: string, password: string) => {
@@ -386,69 +309,14 @@ export const onAuthChange = (callback: (user: User | null) => void) => {
  * @param studentId The UID of the student
  * @param courseId Optional course ID to target specific class data (if provided)
  */
-export async function cleanupStudentData(studentId: string, courseId?: string) {
-  try {
-     // 1. Determine which submissions to delete
-     let submissionDocs: any[] = [];
-     
-     if (courseId) {
-        // Find all assignments for this course
-        const assignmentsSnap = await getDocs(query(collection(db, "assignments"), where("courseId", "==", courseId)));
-        const assignmentIds = assignmentsSnap.docs.map(d => d.id);
-        
-        if (assignmentIds.length === 0) return;
-
-        // Find submissions for this student belonging to these assignments
-        // Note: 'where in' is limited to 30 items.
-        const chunks = [];
-        for (let i = 0; i < assignmentIds.length; i += 30) {
-            chunks.push(assignmentIds.slice(i, i + 30));
-        }
-
-        for (const chunk of chunks) {
-            const q = query(collection(db, "submissions"), where("studentId", "==", studentId), where("assignmentId", "in", chunk));
-            const snap = await getDocs(q);
-            submissionDocs.push(...snap.docs);
-        }
-     } else {
-        // Delete all submissions for this student
-        const q = query(collection(db, "submissions"), where("studentId", "==", studentId));
-        const snapshot = await getDocs(q);
-        submissionDocs = snapshot.docs;
-     }
-
-     if (submissionDocs.length === 0) return;
-
-     const batch = writeBatch(db);
-     const storageTasks: Promise<void>[] = [];
-     
-     submissionDocs.forEach((subDoc) => {
-        const data = subDoc.data();
-        
-        // 2. Iterate and delete files from storage
-        if (data.workFiles && Array.isArray(data.workFiles)) {
-           data.workFiles.forEach((file: WorkFile) => {
-              if (file.url) {
-                 try {
-                  const fileRef = ref(storage, file.url);
-                  storageTasks.push(deleteObject(fileRef).catch(e => console.warn(`Failed to delete storage file ${file.url}:`, e)));
-                 } catch (e) {
-                   console.warn("Invalid storage URL in cleanup:", file.url);
-                 }
-              }
-           });
-        }
-        batch.delete(subDoc.ref);
-     });
-
-     // 3. Execute deletions
-     await Promise.all(storageTasks);
-     await batch.commit();
-
-  } catch (error) {
-    console.error("Error cleaning up student data:", error);
-    throw error;
-  }
+export async function cleanupStudentData(studentId: string, courseId?: string, unlink = false) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Sign in first');
+  const response = await fetch('/api/teacher/students/cleanup', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await user.getIdToken()}` },
+    body: JSON.stringify({ studentId, courseId, unlink }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error || 'Cleanup failed');
 }
 
 /**
@@ -456,40 +324,11 @@ export async function cleanupStudentData(studentId: string, courseId?: string) {
  * Should be called while the user is still logged in (to delete Auth account) or by an admin.
  */
 export async function deleteFullAccount(uid: string, role: string) {
-    try {
-        // 1. Data Cleanup (Student specific)
-        if (role === 'student' || role === 'checking') {
-            await cleanupStudentData(uid);
-            await deleteDoc(doc(db, "students", uid)).catch(() => {});
-        }
-
-        // 2. Data Cleanup (Teacher specific)
-        if (role === 'teacher') {
-            const batch = writeBatch(db);
-            // Delete assignments
-            const assignmentsSnap = await getDocs(query(collection(db, "assignments"), where("teacherId", "==", uid)));
-            assignmentsSnap.forEach(d => batch.delete(d.ref));
-            
-            // Delete courses
-            const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", uid)));
-            coursesSnap.forEach(d => batch.delete(d.ref));
-            
-            await batch.commit();
-            await deleteDoc(doc(db, "teachers", uid)).catch(() => {});
-        }
-
-        // 3. Delete Unified user doc
-        await deleteDoc(doc(db, "users", uid));
-        
-        // 4. Finally, try to delete the Auth record if it's the current user
-        const currentUser = auth.currentUser;
-        if (currentUser && currentUser.uid === uid) {
-            await deleteUser(currentUser);
-        }
-    } catch (error) {
-        console.error("Full account deletion error:", error);
-        throw error;
-    }
+  const user = auth.currentUser;
+  if (!user || user.uid !== uid) throw new Error('Sign in to delete your account');
+  const response = await fetch('/api/account', { method: 'DELETE', headers: { Authorization: `Bearer ${await user.getIdToken()}` } });
+  if (!response.ok) throw new Error((await response.json()).error);
+  await logout();
 }
 
 export const resetPassword = async (email: string) => {
@@ -531,59 +370,10 @@ export const signInWithGoogleForTeacher = async () => {
   provider.addScope("https://www.googleapis.com/auth/forms.body.readonly");
   const result = await signInWithPopup(auth, provider);
   
-  // Unified Users collection sync (Phase 2.1)
-  const userData: any = {
-    uid: result.user.uid,
-    email: result.user.email,
-    displayName: result.user.displayName || result.user.email || "Unknown Teacher",
-    role: "teacher" as const,
-    lastLoginAt: new Date(),
-  };
-
-  const userDocRef = doc(db, "users", result.user.uid);
-  const userDocSnap = await getDoc(userDocRef);
-  let orgId = userDocSnap.exists() ? userDocSnap.data()?.organizationId : null;
-
-  if (!orgId) {
-    const orgRef = doc(collection(db, "organizations"));
-    orgId = orgRef.id;
-    const newOrg = {
-      id: orgId,
-      name: `${result.user.displayName || "Teacher"}'s Network`,
-      ownerId: result.user.uid,
-      ownerEmail: result.user.email || "",
-      subscriptionStatus: "active",
-      planId: "free",
-      aiUsageCurrent: 0,
-      aiBudgetLimit: 50, // $0.50 starting credit
-      practiceLimitPerStudent: 10,
-      practiceLimit: 0,
-      practiceUsageCurrent: 0,
-      baseMonthlyFee: 0,
-      createdAt: new Date(),
-    };
-    userData.organizationId = orgId;
-    await setDoc(userDocRef, userData, { merge: true });
-    try {
-      await setDoc(orgRef, newOrg);
-    } catch (e) {
-      console.error("Error auto-provisioning organization for google teacher:", e);
-    }
-  } else {
-    await setDoc(userDocRef, userData, { merge: true });
-  }
-
-  // Legacy sync
-  const teacherDocRef = doc(db, "teachers", result.user.uid);
-  const teacherDocSnap = await getDoc(teacherDocRef);
-  if (!teacherDocSnap.exists()) {
-    await setDoc(teacherDocRef, {
-      uid: result.user.uid,
-      email: result.user.email,
-      name: result.user.displayName || result.user.email,
-      role: "teacher",
-      createdAt: new Date(),
-    });
+  const profile = await getDoc(doc(db, "users", result.user.uid));
+  if (!profile.exists() || profile.data().role !== "teacher") {
+    await signOut(auth);
+    throw new Error("Register with a teacher invite code before using Google sign-in.");
   }
   return result.user;
 };

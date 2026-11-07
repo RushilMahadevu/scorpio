@@ -1,10 +1,12 @@
+import { scrubPII } from "@/lib/ai/utils";
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminFieldWithValue } from '@/lib/firebase-admin';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 import { getNotebookAssistantResponse } from "@/lib/ai/notebook";
 import { checkRateLimit } from '@/lib/rate-limit';
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   if (!adminDb) {
     return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
   }
@@ -55,7 +57,7 @@ export async function POST(req: NextRequest) {
     const budgetCheck = await checkBudget(organizationId, "notebook", studentId);
     if (budgetCheck.allowed) {
         // 3. Generate AI Response using centralized gemini helper
-        const result = await getNotebookAssistantResponse(messages, notebookContent);
+        const result = await getNotebookAssistantResponse(messages.map((m: { role: "user" | "assistant"; content: string }) => ({ ...m, content: scrubPII(m.content, [studentData?.displayName || ""]) })), scrubPII(notebookContent, [studentData?.displayName || ""]));
         const responseText = result.content;
 
         // 4. Record Usage and Increment Notebook Count
@@ -85,3 +87,5 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "studentId", "teacher": false});

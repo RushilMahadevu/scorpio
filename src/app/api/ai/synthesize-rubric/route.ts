@@ -1,9 +1,10 @@
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from "next/server";
 import { synthesizeRubric } from "@/lib/ai/grading";
 import { adminDb } from "@/lib/firebase-admin";
 import { checkBudget, recordUsage } from "@/lib/usage-limit";
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   try {
     const { questionText, topic, userId } = await req.json();
 
@@ -49,3 +50,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "userId", "teacher": true});

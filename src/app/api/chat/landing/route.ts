@@ -2,60 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { recordUsage } from '@/lib/usage-limit';
 
-/** Resolve Gemini API key: explicit env var → Firebase web key baked into __FIREBASE_DEFAULTS__ */
-function resolveApiKey(): string {
-  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
-  if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) return process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-  try {
-    const defaults = process.env.__FIREBASE_DEFAULTS__;
-    if (defaults) {
-      const key = JSON.parse(defaults)?.config?.apiKey;
-      if (key) return key;
-    }
-  } catch {}
-  throw new Error('Gemini API key is not configured (set GEMINI_API_KEY, NEXT_PUBLIC_FIREBASE_API_KEY, or __FIREBASE_DEFAULTS__)');
-}
-
-async function callGeminiDirect(
-  prompt: string
-): Promise<{ text: string; usage?: { inputTokens: number; outputTokens: number } }> {
-  const apiKey = resolveApiKey();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // Include the production domain as Referer so requests pass any
-      // HTTP-referrer restrictions configured on the Firebase/Gemini API key.
-      'Referer': process.env.NEXT_PUBLIC_APP_URL ?? 'https://scorpioedu.org',
-    },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => ({}));
-    throw new Error(`Gemini API ${res.status}: ${JSON.stringify(errBody)}`);
-  }
-
-  const data = await res.json();
-  const text: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  return {
-    text,
-    usage: {
-      inputTokens:  data.usageMetadata?.promptTokenCount    ?? 0,
-      outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
-    },
-  };
+import { model } from '@/lib/ai/config';
+import { billingContext } from '@/lib/billing-context';
+import { checkRateLimit } from '@/lib/rate-limit';
+async function callGeminiDirect(prompt: string) {
+  const result = await model.generateContent({ contents: [{ parts: [{ text: prompt }] }] });
+  const response = await result.response;
+  return { text: response.text(), usage: undefined };
 }
 
 const LANDING_LIMIT = 10;
@@ -103,7 +56,7 @@ export async function POST(req: NextRequest) {
   try {
     const { message, visitorId } = await req.json();
 
-    if (!message || !visitorId) {
+    if (typeof message !== "string" || message.length > 4000 || typeof visitorId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(visitorId)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -111,6 +64,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
     }
 
+    const rate = await checkRateLimit(req, null, 'landing', { windowMs: 60000, maxRequests: 5 });
+    if (!rate.allowed) return NextResponse.json({ error: rate.error }, { status: 429 });
     // Check and increment per-visitor usage in Firestore
     const visitorRef = adminDb.collection('landing_visitors').doc(visitorId);
     const visitorDoc = await visitorRef.get();
@@ -132,12 +87,7 @@ export async function POST(req: NextRequest) {
     }, { merge: true });
 
     // Generate AI response (server-side direct REST call — avoids firebase/ai client SDK in Cloud Run)
-    const result = await callGeminiDirect(`${LANDING_SYSTEM_PROMPT}\n\nVisitor question: ${message}`);
-
-    // Bill to developer's own org via Firestore + Polar metered billing
-    if (result.usage && LANDING_ORG_ID) {
-      await recordUsage(LANDING_ORG_ID, 'landing', result.usage.inputTokens, result.usage.outputTokens);
-    }
+    const result = await billingContext.run({ organizationId: LANDING_ORG_ID || "", type: "landing" }, () => callGeminiDirect(`${LANDING_SYSTEM_PROMPT}\n\nVisitor question: ${message}`));
 
     const remaining = LANDING_LIMIT - (currentCount + 1);
 

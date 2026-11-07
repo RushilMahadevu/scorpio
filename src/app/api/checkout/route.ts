@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { withAuthorizedRequest } from "@/lib/auth-verify";
+import { NextRequest, NextResponse } from "next/server";
 import { polar } from "@/lib/polar";
 import { adminDb } from "@/lib/firebase-admin";
 
-export async function POST(req: Request) {
+async function handlePost(req: NextRequest) {
   try {
     const { userId, organizationId, planId } = await req.json();
 
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
       // Ensure POLAR_PRODUCT_ID in .env.local is a Price ID (starts with pri_)
       const checkoutOptions: any = {
         products: [productId], 
-        successUrl: `${req.headers.get("origin")}/teacher/network?success=true`,
+        successUrl: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/teacher/network?success=true`,
         includeConfirmationEmail: true,
         metadata: {
           organizationId: String(organizationId),
@@ -94,3 +95,5 @@ export async function POST(req: Request) {
     }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "userId", "teacher": true});

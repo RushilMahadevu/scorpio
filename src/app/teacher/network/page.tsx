@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -215,7 +216,7 @@ export default function NetworkPage() {
     setLimitsInput("");
     setLimitsLoading(true);
     try {
-      const res = await fetch("/api/chat/limits", {
+      const res = await authenticatedFetch("/api/chat/limits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -305,7 +306,7 @@ export default function NetworkPage() {
 
     setUpgrading(true);
     try {
-      const response = await fetch("/api/checkout", {
+      const response = await authenticatedFetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -370,9 +371,7 @@ export default function NetworkPage() {
     if (!user || !organization || !memberToKick) return;
 
     try {
-      await updateDoc(doc(db, "users", memberToKick.id), {
-        organizationId: null
-      });
+      await membershipAction({ action: 'remove', memberId: memberToKick.id });
       toast.success(`${memberToKick.name} has been removed.`);
       setNetworkMembers(prev => prev.filter(m => m.uid !== memberToKick.id));
     } catch (e) {
@@ -437,80 +436,21 @@ export default function NetworkPage() {
     }
   }
 
-  async function createOrganization() {
-    if (!user || !newOrgName) return;
-    try {
-      const orgRef = doc(collection(db, "organizations"));
-      const newOrg: Organization = {
-        id: orgRef.id,
-        name: newOrgName,
-        ownerId: user.uid,
-        ownerEmail: user.email || "", // Add for Polar sessions
-        subscriptionStatus: "none",
-        planId: "free",
-        aiUsageCurrent: 0,
-        aiBudgetLimit: 50, // Individual/Free $0.50 starting credit
-        practiceLimitPerStudent: 10, // BowArrow allowance per student
-        practiceLimit: 0, // No students added yet
-        practiceUsageCurrent: 0,
-        baseMonthlyFee: 0,
-        createdAt: new Date(),
-      };
-
-      await setDoc(orgRef, newOrg);
-
-      // Update teacher profile in the unified collection (Phase 2.1)
-      await setDoc(doc(db, "users", user.uid), {
-        organizationId: orgRef.id,
-        role: "teacher", // Ensure role is set during migration
-        email: user.email,
-        displayName: user.displayName || "Unknown Teacher",
-        lastLoginAt: new Date()
-      }, { merge: true });
-
-      // Refresh page state (assuming AuthProvider triggers or we manual update)
-      router.refresh();
-    } catch (e) {
-      console.error(e);
-    }
+  async function membershipAction(body: Record<string, string>) {
+    const response = await authenticatedFetch('/api/teacher/network/membership', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    router.refresh();
   }
-
+  async function createOrganization() {
+    try { await membershipAction({ action: 'create', name: newOrgName }); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Unable to create network'); }
+  }
   async function joinOrganization() {
-    const cleanId = joiningOrgId.trim();
-    if (!user || !cleanId) return;
-    try {
-      // 1. Verify org exists and check capacity
-      const orgRef = doc(db, "organizations", cleanId);
-      const orgSnap = await getDoc(orgRef);
-
-      if (!orgSnap.exists()) {
-        toast.error("Network not found. Please check the ID.");
-        return;
-      }
-
-      const orgData = orgSnap.data();
-      const membersSnap = await getDocs(query(collection(db, "users"), where("organizationId", "==", cleanId)));
-
-      if (membersSnap.size >= 50) {
-        toast.error("This network has reached its 50-practitioner limit.");
-        return;
-      }
-
-      // 2. Join the network
-      await setDoc(doc(db, "users", user.uid), {
-        organizationId: cleanId,
-        role: "teacher",
-        email: user.email,
-        displayName: user.displayName || "Unknown Teacher",
-        lastLoginAt: new Date()
-      }, { merge: true });
-
-      toast.success(`Joined ${orgData.name}! Connect with your students to sync your local collective.`);
-      router.refresh();
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to join network. You may already be in one or have insufficient permissions.");
-    }
+    try { await membershipAction({ action: 'join', code: joiningOrgId.trim() }); toast.success('Joined network'); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Unable to join network'); }
   }
 
   async function leaveNetwork() {
@@ -536,23 +476,7 @@ export default function NetworkPage() {
     if (!user || !profile?.organizationId || !organization) return;
     setLoading(true);
     try {
-      const orgId = profile.organizationId;
-
-      // 1. Check if I'm the last member
-      const membersSnap = await getDocs(query(collection(db, "users"), where("organizationId", "==", orgId)));
-      const isLastMember = membersSnap.size <= 1;
-
-      // 2. Remove org link from user profile
-      await setDoc(doc(db, "users", user.uid), {
-        organizationId: null
-      }, { merge: true });
-
-      // 3. If I was the last member, delete the organization doc
-      if (isLastMember) {
-        await deleteDoc(doc(db, "organizations", orgId));
-        console.log("Last member left. Organization deleted.");
-      }
-
+      await membershipAction({ action: 'leave' });
       router.refresh();
     } catch (e) {
       console.error("Error leaving network:", e);

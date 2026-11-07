@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
@@ -389,7 +390,7 @@ export default function NotebookPage() {
     }
 
     try {
-      const response = await fetch('/api/notebook/chat', {
+      const response = await authenticatedFetch('/api/notebook/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

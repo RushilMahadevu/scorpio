@@ -26,16 +26,12 @@ export const onAssignmentDeleted = onDocumentDeleted("assignments/{assignmentId}
 
     const snapshot = await submissionsRef.where("assignmentId", "==", assignmentId).get();
 
-    if (snapshot.empty) {
-        return;
+    for (let i = 0; i < snapshot.docs.length; i += 400) {
+      const batch = db.batch();
+      snapshot.docs.slice(i, i + 400).forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
     }
-
-    const batch = db.batch();
-    snapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-    });
-
-    await batch.commit();
+    await db.collection('assignment_keys').doc(assignmentId).delete();
     console.log(`Deleted ${snapshot.size} submissions for assignment ${assignmentId}`);
 });
 
@@ -116,3 +112,5 @@ export const onAssignmentCreated = onDocumentCreated({
     await Promise.all(emailPromises);
     console.log(`Finished sending assignment creation emails for ${event.params.assignmentId}`);
 });
+
+export { deliverBillingUsage } from "./billing";

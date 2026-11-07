@@ -1,3 +1,4 @@
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import chatbotConfig from '@/lib/chatbot-config.json';
@@ -5,7 +6,7 @@ import { getNavigationResponse } from '@/lib/ai/chatbot';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   try {
     const { message, userRole, userId } = await req.json();
 
@@ -84,3 +85,5 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": "userId", "teacher": false});

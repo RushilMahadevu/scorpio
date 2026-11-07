@@ -4,10 +4,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "TURBOPACK=0 next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest"
+    "test": "jest",
+    "test:security": "firebase emulators:exec --only firestore,storage --project demo-scorpio-security --config firebase.test.json 'jest --config jest.security.config.cjs --runInBand'"
   },
   "dependencies": {
     "@afixt/a11y-calc": "^0.2.2",
@@ -91,6 +92,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@fontsource-variable/alan-sans": "^5.2.2",
     "@google-cloud/vertexai": "^1.10.0",
     "@tailwindcss/postcss": "^4",

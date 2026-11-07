@@ -1,171 +1,100 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if the user is a teacher
-    function isTeacher() {
-      return request.auth != null && (
-        request.auth.token.role == 'teacher' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher')
-      );
+    function signedIn() { return request.auth != null; }
+    function user(id) { return get(/databases/$(database)/documents/users/$(id)).data; }
+    function me() { return user(request.auth.uid); }
+    function teacher() { return signedIn() && me().role == 'teacher'; }
+    function member(org) { return signedIn() && org != null && me().organizationId == org; }
+    function teaches(teacherId) {
+      return teacher() && (teacherId == request.auth.uid ||
+        (teacherId != null && member(user(teacherId).organizationId)));
     }
+    function ownsCourse(id) { return teacher() && id != null && get(/databases/$(database)/documents/courses/$(id)).data.teacherId == request.auth.uid; }
+    function assignment(id) { return get(/databases/$(database)/documents/assignments/$(id)).data; }
+    function ownsAssignment(id) { return teacher() && assignment(id).teacherId == request.auth.uid; }
+    function enrolled(a) {
+      return signedIn() && (a.visibility == 'global' ||
+        (a.visibility == 'network' && member(a.organizationId)) ||
+        (a.get('courseId', null) != null && me().get('courseId', null) == a.courseId) ||
+        (a.get('courseId', null) == null && me().get('teacherId', null) == a.teacherId));
+    }
+    match /users/{id} {
+      allow read: if signedIn() && (id == request.auth.uid ||
+        (teacher() && (member(resource.data.get('organizationId', null)) || teaches(resource.data.get('teacherId', null)) || ownsCourse(resource.data.get('courseId', null)))) ||
+        me().get('teacherId', null) == id);
+      // Authentication profiles and enrollment are provisioned only by server APIs.
+      // Roster placeholders cannot grant teacher access or impersonate an Auth user.
+      allow create: if teacher() && request.resource.data.keys().hasOnly(['email','displayName','teacherId','role','createdAt','status','importedBy']) &&
+        request.resource.data.role == 'student' && request.resource.data.teacherId == request.auth.uid &&
+        request.resource.data.importedBy == request.auth.uid && request.resource.data.status == 'pending_invite';
+      allow update: if signedIn() && (
+        (id == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','email','lastLoginAt','preferences','appearance','photoURL','theme'])) ||
+        (teacher() && resource.data.get('teacherId', null) == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['teacherId','courseId','organizationId']) &&
+          request.resource.data.teacherId == null && request.resource.data.courseId == null && request.resource.data.organizationId == null));
+    }
+    match /students/{id} {
+      allow read: if signedIn() && (id == request.auth.uid || teaches(resource.data.get('teacherId', null)));
+    }
+    match /teachers/{id} {
+      allow read: if signedIn() && (id == request.auth.uid || teaches(id) || me().get('teacherId', null) == id);
+    }
+    match /assignments/{id} {
+      // Legacy documents must be migrated before they can be read by students.
+      allow read: if signedIn() && ((teacher() && (resource.data.teacherId == request.auth.uid || resource.data.visibility == 'global' || member(resource.data.get('organizationId', null)))) ||
+        (resource.data.get('answerKeySeparated', false) == true && enrolled(resource.data)));
+      allow delete: if teacher() && resource.data.teacherId == request.auth.uid;
+    }
+    match /assignment_keys/{id} {
+      allow read: if ownsAssignment(id);
+    }
+    match /submissions/{id} {
+      allow read: if signedIn() && (resource.data.studentId == request.auth.uid || ownsAssignment(resource.data.assignmentId));
+      // Student submissions are validated and normalized by the authenticated API.
+      allow update: if ownsAssignment(resource.data.assignmentId) &&
+        request.resource.data.assignmentId == resource.data.assignmentId && request.resource.data.studentId == resource.data.studentId;
+      allow delete: if ownsAssignment(resource.data.assignmentId);
+    }
+    match /courses/{id} {
+      allow read: if signedIn() && (resource.data.teacherId == request.auth.uid || me().get('courseId', null) == id || (teacher() && teaches(resource.data.teacherId)));
 
-    // Helper function to check if the user is in the correct organization
-    function isMemberOf(orgId) {
-      return request.auth != null && (
-        request.auth.token.organizationId == orgId ||
-        request.auth.token.orgId == orgId ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId)
-      );
+      allow update: if ownsCourse(id) && request.resource.data.teacherId == resource.data.teacherId && request.resource.data.get('organizationId', null) == resource.data.get('organizationId', null);
+      allow delete: if ownsCourse(id);
     }
-
-    // Unified Users collection - allows users to see peers in their network
-    match /users/{userId} {
-      allow read: if request.auth != null && (
-        request.auth.uid == userId || 
-        isTeacher() ||
-        // Allow students to read their teacher's profile to resolve Organization ID
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId == userId) ||
-        // Allow students to read their teacher's profile via course lookup
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId != null &&
-         exists(/databases/$(database)/documents/courses/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId)) &&
-         get(/databases/$(database)/documents/courses/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId)).data.teacherId == userId)
-      );
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && (
-        (request.auth.uid == userId && 
-         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))) ||
-        isTeacher()
-      );
-      allow delete: if isTeacher();
+    match /resources/{id} {
+      allow read: if signedIn() && (teaches(resource.data.teacherId) || me().get('teacherId', null) == resource.data.teacherId);
+      allow create: if teacher() && request.resource.data.teacherId == request.auth.uid;
+      allow update, delete: if teacher() && resource.data.teacherId == request.auth.uid;
     }
-
-    // Students collection (legacy support)
-    match /students/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isTeacher());
-      allow write: if request.auth != null && (request.auth.uid == userId || isTeacher());
+    match /practice_history/{id} {
+      allow read: if signedIn() && (resource.data.studentId == request.auth.uid || teaches(user(resource.data.studentId).get('teacherId', null)));
+      allow create: if signedIn() && request.resource.data.studentId == request.auth.uid;
+      allow update: if signedIn() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == resource.data.studentId;
+      allow delete: if signedIn() && resource.data.studentId == request.auth.uid;
     }
-
-    // Teachers collection
-    match /teachers/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    match /notebooks/{id} {
+      allow read, delete: if signedIn() && (resource.data.studentId == request.auth.uid || id == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.studentId == request.auth.uid;
+      allow update: if signedIn() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == resource.data.studentId;
     }
-
-    // Assignments collection
-    match /assignments/{assignmentId} {
-      allow read: if request.auth != null && (
-        resource.data.visibility == 'global' || 
-        (resource.data.visibility == 'network' && isMemberOf(resource.data.organizationId)) ||
-        resource.data.teacherId == request.auth.uid ||
-        isTeacher() ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
-          resource.data.courseId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.courseId ||
-          resource.data.teacherId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId
-        ))
-      );
-      allow create: if isTeacher();
-      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
-      allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
+    match /tutor_sessions/{id} {
+      allow read, delete: if signedIn() && (resource.data.studentId == request.auth.uid || id == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.studentId == request.auth.uid;
+      allow update: if signedIn() && resource.data.studentId == request.auth.uid && request.resource.data.studentId == resource.data.studentId;
     }
-
-    // Submissions collection
-    match /submissions/{submissionId} {
-      allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isTeacher());
-      allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
-      // Prevent students from updating certain protected fields
-      allow update: if isTeacher() || (
-        request.auth != null && request.auth.uid == resource.data.studentId && 
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['score', 'feedback', 'gradedAnswers'])
-      );
-      allow delete: if isTeacher();
+    match /organizations/{id} {
+      allow read: if member(id);
+      allow update: if teacher() && resource.data.ownerId == request.auth.uid && (
+        (resource.data.get('planId', 'free') != 'free' || request.resource.data.get('aiBudgetLimit', 0) <= resource.data.get('aiBudgetLimit', 0)) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','aiBudgetLimit','practiceLimitPerStudent','practiceLimit','notebookLimitPerStudent','aiNotebookLimitPerStudent','aiTutorLimitPerStudent','notebookLimit']) ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerId']) && user(request.resource.data.ownerId).role == 'teacher' && user(request.resource.data.ownerId).organizationId == id));
     }
-
-    // Resources collection
-    match /resources/{resourceId} {
-      allow read: if request.auth != null;
-      allow write: if isTeacher();
+    match /portfolios/{id} {
+      allow read: if signedIn() && (resource.data.studentId == request.auth.uid || teaches(user(resource.data.studentId).get('teacherId', null)));
     }
-    
-    // Courses collection
-    match /courses/{courseId} {
-      allow read: if request.auth != null;
-      allow create: if isTeacher();
-      allow update: if isTeacher();
-      allow delete: if isTeacher();
+    match /usage_analytics/{id} {
+      allow read: if teacher() && member(resource.data.organizationId);
     }
-
-    // Practice/Sandbox History
-    match /practice_history/{historyId} {
-      allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isTeacher());
-      allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
-      allow update: if request.auth != null && resource.data.studentId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.studentId == request.auth.uid;
-    }
-
-    // Digital Notebooks
-    match /notebooks/{notebookId} {
-      allow read, write: if request.auth != null && (
-        (request.resource != null && request.resource.data.studentId == request.auth.uid) || 
-        (resource != null && (resource.data.studentId == request.auth.uid || resource.id == request.auth.uid)) ||
-        (notebookId == request.auth.uid)
-      );
-    }
-
-    // Tutor Sessions (persisted per student)
-    match /tutor_sessions/{sessionId} {
-      // Allow user to access their own session document OR any session where they are the studentId
-      allow read, write: if request.auth != null && (
-        sessionId == request.auth.uid || 
-        (resource != null && resource.data.studentId == request.auth.uid) ||
-        (request.resource != null && request.resource.data.studentId == request.auth.uid)
-      );
-    }
-
-    // Organizations / Networks
-    match /organizations/{orgId} {
-      // Allow authenticated users to get an organization by ID (for joining/verified checks)
-      allow get: if request.auth != null;
-      // Listing/Querying organizations is reserved for members
-      allow list: if isMemberOf(orgId);
-      
-      // Only teachers can create organizations
-      allow create: if isTeacher();
-      // Only the owner (the person who created it/pays) can update organization settings
-      allow update: if isTeacher() && resource.data.ownerId == request.auth.uid;
-    }
-
-    // Student Portfolios
-    match /portfolios/{studentId} {
-      allow read: if request.auth != null && (
-        request.auth.uid == studentId || 
-        isTeacher()
-      );
-      // Portfolio generation is handled by admin API, so client only needs read.
-      // However, if we ever want the client to delete/update:
-      allow write: if isTeacher();
-    }
-
-    // Teacher Invite Codes — server-side only (admin SDK bypasses these rules)
-    // No client should ever read or write this collection directly
-    match /teacherInviteCodes/{code} {
-      allow read, write: if false;
-    }
-
-    // Usage Analytics logs for metered billing
-    match /usage_analytics/{logId} {
-      // Allow members of the organization to read their own usage logs
-      allow read: if request.auth != null && (
-        isMemberOf(resource.data.organizationId) || isTeacher()
-      );
-      allow list: if request.auth != null && (
-        request.query.filters.organizationId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId ||
-        isTeacher()
-      );
-    }
+    // Every other collection, including invitations and billing state, is server-only.
   }
 }

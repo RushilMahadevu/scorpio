@@ -1,4 +1,5 @@
 "use client";
+import { getTeacherAssignment } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -46,7 +47,7 @@ function AssignmentDetailsContent() {
       if (!assignmentId || !user) return;
 
       try {
-        const assignmentDoc = await getDoc(doc(db, "assignments", assignmentId));
+        const assignmentDoc = await getTeacherAssignment(assignmentId);
         if (assignmentDoc.exists()) {
             const data = assignmentDoc.data();
             if (data.teacherId && data.teacherId !== user.uid) {

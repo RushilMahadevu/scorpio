@@ -1,0 +1,1 @@
+module.exports = { preset: 'ts-jest', testEnvironment: 'node', testMatch: ['**/tests/security/*.test.cjs', '**/tests/security/*.test.ts'], testTimeout: 30000, moduleNameMapper: { '^@/(.*)$':'<rootDir>/src/$1' } };

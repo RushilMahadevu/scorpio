@@ -1,16 +1,10 @@
+import { reserveBudget, settleBudget, estimateMaximumCost } from "./metering";
 import * as admin from "firebase-admin";
 import { onDocumentUpdated, onDocumentCreated } from "firebase-functions/v2/firestore";
 import { GoogleGenAI } from "@google/genai";
-import { Polar } from "@polar-sh/sdk";
 import { defineSecret } from "firebase-functions/params";
 
 const resendApiKey = defineSecret("RESEND_API_KEY");
-
-// Initialize Polar
-const polar = new Polar({
-    accessToken: process.env.POLAR_ACCESS_TOKEN || "",
-    server: (process.env.POLAR_ENV === "sandbox" || process.env.NEXT_PUBLIC_POLAR_ENV === "sandbox") ? "sandbox" : "production",
-});
 
 // Initialize the modern Google Gen AI SDK configured for Vertex AI
 const client = new GoogleGenAI({
@@ -24,7 +18,7 @@ const client = new GoogleGenAI({
  */
 function scrubPII(text: string, studentNames: string[] = []): string {
   if (!text) return text;
-  
+
   let scrubbed = text
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[EMAIL]")
     .replace(/(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/g, "[PHONE]")
@@ -68,22 +62,23 @@ function scrubPII(text: string, studentNames: string[] = []): string {
  * GRADE RESPONSE - Re-implemented using modern @google/genai SDK
  */
 async function gradeResponseAI(
-  question: string, 
-  answer: string, 
+  question: string,
+  answer: string,
   rubric?: string,
-  studentNames: string[] = []
-): Promise<{ 
-  score: number, 
-  feedback: string, 
+  studentNames: string[] = [],
+  organizationId: string = ""
+): Promise<{
+  score: number,
+  feedback: string,
   reasoning?: string,
-  usage?: { inputTokens: number, outputTokens: number } 
+  usage?: { inputTokens: number, outputTokens: number }
 }> {
   try {
     if (!question || !answer) {
       return { score: 0, feedback: "Missing question or answer text for grading." };
     }
 
-    const prompt = `You are an expert Physics professor and evaluator. 
+    const prompt = `You are an expert Physics professor and evaluator.
     Your goal is to grade student responses with scientific rigor.
 
     QUESTION:
@@ -93,7 +88,7 @@ async function gradeResponseAI(
 
     STUDENT SUBMISSION:
     "${scrubPII(answer, studentNames)}"
-    
+
     INSTRUCTIONS:
     1. UNIT SENSITIVITY: In physics, numbers without units are meaningless. If the numerical value is correct but units are missing or incorrect (e.g., Joules instead of Watts), penalize the score by 10-20%.
     2. VECTOR QUANTITIES: For vectors (Force, Velocity, Acceleration, Momentum), ensure the direction is identified if the question requires it.
@@ -112,21 +107,27 @@ async function gradeResponseAI(
       "student_feedback": string,
       "misconceptions": string[]
     }`;
-    
+
+    if (Buffer.byteLength(prompt) > 100000) throw new Error('Submission is too long for AI grading');
+    const reservation = await reserveBudget(admin.firestore(), organizationId, 'grading', undefined, estimateMaximumCost(Buffer.byteLength(prompt), 1024));
     // Modern @google/genai syntax
     const result = await client.models.generateContent({
-      model: "gemini-2.0-flash", 
+      model: "gemini-2.5-flash",
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         maxOutputTokens: 1024,
+        thinkingConfig: { thinkingBudget: 0 },
         temperature: 0.1,
         responseMimeType: "application/json",
       }
     });
-    
+
+    if (!result.usageMetadata) throw new Error('Provider usage missing; reservation retained');
+    await settleBudget(admin.firestore(), reservation, result.usageMetadata.promptTokenCount || 0,
+      (result.usageMetadata.candidatesTokenCount || 0) + (result.usageMetadata.thoughtsTokenCount || 0));
     // Modern @google/genai response parsing
     const text = result.text || "";
-    
+
     if (!text) {
         throw new Error("Empty response from @google/genai");
     }
@@ -136,13 +137,14 @@ async function gradeResponseAI(
     if (startIdx === -1 || endIdx === -1) {
         throw new Error("Invalid response format: No JSON object found in AI output.");
     }
-    
+
     const data = JSON.parse(text.substring(startIdx, endIdx + 1));
-    
+
     if (!data || typeof data !== 'object') {
         throw new Error("Invalid response format from @google/genai");
     }
 
+    if (typeof data.score !== "number" || !Number.isFinite(data.score)) throw new Error("Invalid score");
     let score = 0;
     if (typeof data.score === 'number') {
         score = Math.min(10, Math.max(0, data.score));
@@ -166,90 +168,14 @@ async function gradeResponseAI(
     };
   } catch (error: any) {
     console.error("Error in gradeResponseAI (Modern GenAI):", error);
-    return { 
-        score: 0, 
-        feedback: "Your submission has been received. A teacher will review it shortly." 
-    };
+    throw new Error("AI grading unavailable; manual review required");
   }
-}
-
-/**
- * USAGE LOGGING
- */
-async function recordUsage(
-    db: admin.firestore.Firestore,
-    organizationId: string,
-    type: string,
-    inputTokens: number,
-    outputTokens: number,
-    userId?: string
-) {
-    const RATES = { input: 0.000015, output: 0.000060 };
-    const costCents = (inputTokens * RATES.input) + (outputTokens * RATES.output);
-    
-    const orgRef = db.collection("organizations").doc(organizationId);
-    const usageLogRef = db.collection("usage_analytics").doc();
-    let polarCustomerId: string | null = null;
-
-    try {
-        await db.runTransaction(async (transaction) => {
-            const orgDoc = await transaction.get(orgRef);
-            if (!orgDoc.exists) return;
-
-            const data = orgDoc.data();
-            polarCustomerId = data?.polarCustomerId || null;
-            const currentUsage = data?.aiUsageCurrent || 0;
-
-            transaction.set(orgRef, {
-                aiUsageCurrent: currentUsage + costCents,
-                lastAiUsageAt: admin.firestore.FieldValue.serverTimestamp(),
-                aiUsageTotalCents: (data?.aiUsageTotalCents || 0) + costCents
-            }, { merge: true });
-
-            transaction.set(usageLogRef, {
-                organizationId,
-                userId: userId || null,
-                type,
-                inputTokens,
-                outputTokens,
-                costCents,
-                timestamp: admin.firestore.FieldValue.serverTimestamp()
-            });
-        });
-
-        if (polarCustomerId && process.env.POLAR_ACCESS_TOKEN) {
-            try {
-                await polar.events.ingest({
-                    events: [{
-                        customerId: polarCustomerId,
-                        name: "ai_usage",
-                        timestamp: new Date(),
-                        metadata: {
-                            event_name: "ai_usage",
-                            input_tokens: inputTokens,
-                            output_tokens: outputTokens,
-                            vendor: "google",
-                            model: "gemini-2.0-flash",
-                            costUSD: parseFloat((costCents / 100).toFixed(8)),
-                            type: String(type),
-                            organizationId: String(organizationId),
-                        }
-                    }]
-                });
-                console.log("[Polar] Ingested ai_usage event for", polarCustomerId);
-            } catch (polarErr) {
-                console.error("[Polar] Failed to ingest usage event:", polarErr);
-            }
-        }
-    } catch (err) {
-        console.error("[recordUsage] Transaction error:", err);
-    }
 }
 
 /**
  * MAIN GRADING PROCESSOR
  */
-async function processGrading(submissionId: string, submissionData: any) {
+async function gradeSubmission(submissionId: string, submissionData: any) {
     const db = admin.firestore();
     const assignmentId = submissionData.assignmentId;
     const studentId = submissionData.studentId;
@@ -285,9 +211,16 @@ async function processGrading(submissionId: string, submissionData: any) {
     const assignmentSnap = await db.collection('assignments').doc(assignmentId).get();
     if (!assignmentSnap.exists) return;
     const assignmentData = assignmentSnap.data();
-    const questions = assignmentData?.questions || [];
-    const answers = submissionData?.answers || []; 
-    const globalRubric = assignmentData?.rubric || "";
+    if (assignmentData?.gradingType !== 'ai') return;
+    const org = (await db.collection('organizations').doc(organizationId).get()).data();
+    if (!org || !['active','trialing'].includes(org.subscriptionStatus) || (org.aiBudgetLimit || 0) <= (org.aiUsageCurrent || 0)) {
+      await db.collection('submissions').doc(submissionId).update({ status: 'pending_review', gradingError: 'AI budget unavailable', graded: false });
+      return;
+    }
+    const key = (await db.collection('assignment_keys').doc(assignmentId).get()).data();
+    const questions = (assignmentData?.questions || []).map((q: any) => ({ ...q, correctAnswer: key?.answers?.[q.id] ?? q.correctAnswer }));
+    const answers = submissionData?.answers || [];
+    const globalRubric = key?.rubric || assignmentData?.rubric || "";
 
     let totalScore = 0;
     let maxScore = 0;
@@ -311,7 +244,7 @@ async function processGrading(submissionId: string, submissionData: any) {
 
         if ((question.type === "text" || question.type === "short-answer") && ans.answer) {
             const combinedRubric = [question.correctAnswer, globalRubric].filter(Boolean).join("\n\nGlobal Assignment Rubric:\n");
-            const result = await gradeResponseAI(question.text, ans.answer, combinedRubric, studentNames);
+            const result = await gradeResponseAI(question.text, ans.answer, combinedRubric, studentNames, organizationId);
             feedback = result.feedback;
             reasoning = result.reasoning || "";
             if (result.usage) {
@@ -329,9 +262,7 @@ async function processGrading(submissionId: string, submissionData: any) {
         gradedAnswers.push({ ...ans, feedback, reasoning, score, maxPoints: points });
     }
 
-    if (totalPromptTokens > 0 || totalCandidateTokens > 0) {
-        await recordUsage(db, organizationId, "grading", totalPromptTokens, totalCandidateTokens, studentId);
-    }
+
 
     const finalScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
@@ -374,6 +305,24 @@ async function processGrading(submissionId: string, submissionData: any) {
 /**
  * FIRESTORE TRIGGERS
  */
+async function processGrading(submissionId: string, submissionData: any) {
+  const db = admin.firestore();
+  const ref = db.collection('submissions').doc(submissionId);
+  const lease = db.collection('grading_locks').doc(submissionId);
+  const acquired = await db.runTransaction(async tx => {
+    const current = (await tx.get(ref)).data();
+    const lock = (await tx.get(lease)).data();
+    if (!current || current.graded || (lock?.expiresAt?.toMillis() || 0) > Date.now()) return false;
+    tx.set(lease, { expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 15 * 60 * 1000) });
+    return true;
+  });
+  if (!acquired) return;
+  try { await gradeSubmission(submissionId, submissionData); }
+  catch {
+    await ref.update({ graded: false, status: 'pending_review', gradingError: 'AI grading unavailable; teacher review required' });
+  } finally { await lease.delete(); }
+}
+
 export const onSubmissionCreated = onDocumentCreated({
     document: "submissions/{submissionId}",
     secrets: [resendApiKey]

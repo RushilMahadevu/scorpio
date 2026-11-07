@@ -1,17 +1,4 @@
 import { adminDb } from './firebase-admin';
-import { polar } from './polar';
-
-/**
- * GEMINI 2.5 FLASH PRICING (Paid Tier):
- * - Input: $0.15 per 1,000,000 Tokens (0.000015 cents per token)
- * - Output: $0.60 per 1,000,000 Tokens (0.000060 cents per token)
- */
-
-// Cost per single token in cents (floating point)
-const RATES = {
-  input: 0.000015,
-  output: 0.000060,
-};
 
 /**
  * Checks if an organization has an active (non-free) subscription.
@@ -35,7 +22,7 @@ export async function checkBudget(
     const data = orgDoc.data();
 
     // 1. Basic Subscription Checks
-    if (data?.subscriptionStatus === "canceled" || data?.subscriptionStatus === "revoked") {
+    if (!data || !["active", "trialing"].includes(data.subscriptionStatus)) {
       return { allowed: false, error: "Your subscription is no longer active." };
     }
 
@@ -49,7 +36,7 @@ export async function checkBudget(
 
     // 2. Network-wide Budget Enforcement (Hard Cap in cents)
     const budgetLimit = data?.aiBudgetLimit || 0;
-    const currentUsage = data?.aiUsageCurrent || 0;
+    const currentUsage = (data?.aiUsageCurrent || 0) + (data?.aiUsageReserved || 0);
 
     // If free plan, allow AI usage if starter credit is available
     if (!data?.planId || data.planId === "free") {
@@ -74,7 +61,7 @@ export async function checkBudget(
       // Tutor Limit
       if (type === "tutor") {
         const teacherAllowance = data?.aiTutorLimitPerStudent || 0;
-        const studentUsage = userData?.tutorUsageCurrent || 0;
+        const studentUsage = userData?.usageMonth === new Date().toISOString().slice(0, 7) ? (userData?.tutorUsageCurrent || 0) : 0;
 
         if (teacherAllowance > 0 && studentUsage >= teacherAllowance) {
           return { 
@@ -100,7 +87,7 @@ export async function checkBudget(
       // Notebook Limit
       if (type === "notebook") {
         const notebookAllowance = data?.aiNotebookLimitPerStudent || 0;
-        const notebookUsage = userData?.aiNotebookUsageCurrent || 0;
+        const notebookUsage = userData?.usageMonth === new Date().toISOString().slice(0, 7) ? (userData?.aiNotebookUsageCurrent || 0) : 0;
 
         if (notebookAllowance > 0 && notebookUsage >= notebookAllowance) {
           return { 
@@ -123,109 +110,11 @@ export async function checkBudget(
  * This is called from the backend API routes using 'usageMetadata' returned from the model.
  */
 export async function recordUsage(
-  organizationId: string | undefined | null,
-  type: string,
-  inputTokens: number,
-  outputTokens: number,
-  userId?: string
+  _organizationId: string | undefined | null, _type: string,
+  _inputTokens: number, _outputTokens: number, _userId?: string
 ): Promise<{ success: boolean; overLimit?: boolean }> {
-  if (!organizationId || !adminDb) return { success: false };
-
-  const costCents = (inputTokens * RATES.input) + (outputTokens * RATES.output);
-  let polarCustomerId: string | null = null;
-
-  try {
-    const orgRef = adminDb.collection("organizations").doc(organizationId);
-    const userRef = userId ? adminDb.collection("users").doc(userId) : null;
-    const usageLogRef = adminDb.collection("usage_analytics").doc();
-
-    await adminDb.runTransaction(async (transaction) => {
-      // ALL reads must come before any writes in a Firestore transaction
-      const orgDoc = await transaction.get(orgRef);
-      const userDoc = (["tutor", "practice", "notebook"].includes(type) && userRef) ? await transaction.get(userRef) : null;
-
-      if (!orgDoc.exists) return;
-
-      const data = orgDoc.data();
-      const userData = userDoc?.data();
-      polarCustomerId = data?.polarCustomerId || null;
-      const currentUsage = data?.aiUsageCurrent || 0;
-
-      // 1. Update Network Budget
-      transaction.set(orgRef, {
-        aiUsageCurrent: currentUsage + costCents,
-        lastAiUsageAt: new Date(),
-        aiUsageTotalCents: (data?.aiUsageTotalCents || 0) + costCents
-      }, { merge: true });
-
-      // 2. Update Student Specific Message Count
-      if (userRef && userData) {
-        if (type === "tutor") {
-          transaction.set(userRef, {
-            tutorUsageCurrent: (userData.tutorUsageCurrent || 0) + 1,
-            lastTutorUsageAt: new Date()
-          }, { merge: true });
-        } else if (type === "practice") {
-          transaction.set(userRef, {
-            practiceUsageCurrent: (userData.practiceUsageCurrent || 0) + 1,
-            lastPracticeUsageAt: new Date()
-          }, { merge: true });
-        } else if (type === "notebook") {
-          transaction.set(userRef, {
-            aiNotebookUsageCurrent: (userData.aiNotebookUsageCurrent || 0) + 1,
-            lastAiNotebookUsageAt: new Date()
-          }, { merge: true });
-        }
-      }
-
-      // 3. Log into analytics
-      transaction.set(usageLogRef, {
-        organizationId,
-        userId: userId || null,
-        type,
-        inputTokens,
-        outputTokens,
-        costCents,
-        timestamp: new Date()
-      });
-    });
-
-    // Report to Polar for metered billing
-    console.log("[Polar] polarCustomerId:", polarCustomerId, "| costCents:", costCents);
-    if (polarCustomerId) {
-      try {
-        await polar.events.ingest({
-          events: [{
-            customerId: polarCustomerId,
-            name: "ai_usage",
-            timestamp: new Date(),
-            metadata: {
-              // Polar meter filter: Metadata | event_name | equals | ai_usage
-              event_name: "ai_usage",
-              input_tokens: inputTokens,
-              output_tokens: outputTokens,
-              // Extra context fields
-              vendor: "google",
-              model: "gemini-2.5-flash",
-              costUSD: parseFloat((costCents / 100).toFixed(8)),
-              type: String(type),
-              organizationId: String(organizationId),
-            }
-          }]
-        });
-        console.log("[Polar] Ingested ai_usage event for", polarCustomerId);
-      } catch (polarErr) {
-        console.error("[Polar] Failed to ingest usage event:", polarErr);
-      }
-    } else {
-      console.warn("[Polar] Skipping metering — no polarCustomerId on org", organizationId);
-    }
-
-    return { success: true };
-  } catch (err) {
-    console.error("[recordUsage] Error:", err);
-    return { success: false };
-  }
+  // Provider calls settle usage transactionally, even when downstream parsing fails.
+  return { success: true };
 }
 
 // Legacy export (keeping for backwards compatibility during migration)

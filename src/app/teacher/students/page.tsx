@@ -36,7 +36,7 @@ export default function StudentsPage() {
         // Fetch courses first to map IDs (include legacy search too)
         const [cSnap1, cSnap2] = await Promise.all([
            getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))),
-           getDocs(query(collection(db, "courses"), where("code", "==", user.uid)))
+           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), where("code", "==", user.uid)))
         ]);
         
         const courseMap: Record<string, string> = {};
@@ -99,14 +99,7 @@ export default function StudentsPage() {
   const deleteStudent = async (studentId: string) => {
     try {
       // 1. Storage & Submissions Cleanup (Space saving)
-      await cleanupStudentData(studentId);
-
-      // 2. Remove Profile links from system
-      await Promise.all([
-        // We reset their teacherId/courseId instead of deleting the user doc
-        // in case they want to join another teacher later.
-        setDoc(doc(db, "users", studentId), { teacherId: null, courseId: null }, { merge: true })
-      ]);
+      await cleanupStudentData(studentId, undefined, true);
       setStudents(students.filter((s) => s.id !== studentId));
       toast.success("Student records removed.");
     } catch (error: any) {

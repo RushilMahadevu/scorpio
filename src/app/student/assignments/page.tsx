@@ -48,41 +48,13 @@ export default function StudentAssignmentsPage() {
           } catch (e) { console.error("Could not fetch legacy student profile", e); }
         }
 
-        // --- LEGACY RESOLUTION START ---
-        // If we have a teacherId but NO courseId, the teacherId might actually be a Class Code
-        if (teacherId && !courseId) {
-             const codeMatch = await getDocs(query(collection(db, "courses"), where("code", "==", teacherId.trim())));
-             if (!codeMatch.empty) {
-                const courseDoc = codeMatch.docs[0];
-                const courseData = courseDoc.data();
-                courseId = courseDoc.id;
-                teacherId = courseData.teacherId;
-                
-                // AUTO-SYNC resolution so it persists
-                try {
-                  await setDoc(doc(db, "students", user.uid), { 
-                    courseId, 
-                    teacherId 
-                  }, { merge: true });
-                  
-                  await setDoc(doc(db, "users", user.uid), { 
-                    courseId, 
-                    teacherId 
-                  }, { merge: true });
-                } catch (e) {
-                  console.warn("Could not sync resolved legacy code", e);
-                }
 
-                console.log("Resolved legacy code in assignments page:", teacherId, courseId);
-             }
-        }
-        // --- LEGACY RESOLUTION END ---
 
         let data: Assignment[] = [];
         if (courseId) {
           // New system: filter by specific course
           const assignmentsSnap = await getDocs(
-            query(collection(db, "assignments"), where("courseId", "==", courseId))
+            query(collection(db, "assignments"), where("answerKeySeparated", "==", true), where("courseId", "==", courseId))
           );
           data = assignmentsSnap.docs.map((doc) => ({
             id: doc.id,
@@ -92,7 +64,7 @@ export default function StudentAssignmentsPage() {
         } else if (teacherId) {
           // Fallback for legacy connections
           const assignmentsSnap = await getDocs(
-            query(collection(db, "assignments"), where("teacherId", "==", teacherId))
+            query(collection(db, "assignments"), where("answerKeySeparated", "==", true), where("teacherId", "==", teacherId), where("courseId", "==", null))
           );
           data = assignmentsSnap.docs.map((doc) => ({
             id: doc.id,

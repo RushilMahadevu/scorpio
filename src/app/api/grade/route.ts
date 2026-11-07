@@ -1,9 +1,11 @@
+import { mergeAnswerKey } from "@/lib/assignment-security";
+import { withAuthorizedRequest } from "@/lib/auth-verify";
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { gradeResponse } from '@/lib/ai/grading';
 import { checkBudget, recordUsage } from '@/lib/usage-limit';
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   if (!adminDb) {
     console.error("Firebase Admin not initialized");
     return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
@@ -83,7 +85,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
     }
 
-    const assignmentData = assignmentSnap.data();
+    const key = (await adminDb.collection("assignment_keys").doc(assignmentId).get()).data();
+    const assignmentData = mergeAnswerKey(assignmentSnap.data()!, key);
     const questions = assignmentData?.questions || [];
     const answers = submissionData?.answers || []; 
     const globalRubric = assignmentData?.rubric || "";
@@ -140,8 +143,8 @@ export async function POST(req: NextRequest) {
             
         } catch (e) {
             console.error("AI Grading failed", e);
-            feedback = "Error grading response.";
-            score = 0;
+            if (!submissionData?.graded) await submissionRef.update({ status: "pending_review", gradingError: "AI grading unavailable", graded: false });
+            return NextResponse.json({ error: "AI grading failed. The existing grade was preserved; review manually or retry." }, { status: 502 });
         }
       } else if (question.correctAnswer && (question.type === "multiple-choice" || question.type === "true-false")) {
         // Strict match for objective questions
@@ -179,6 +182,7 @@ export async function POST(req: NextRequest) {
       earnedPoints: totalScore,
       answers: gradedAnswers,
       graded: true,
+      status: "graded",
       gradedAt: new Date()
     });
 
@@ -189,3 +193,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export const POST = withAuthorizedRequest(handlePost, {"identityField": undefined, "teacher": true, "resource": "submission"});

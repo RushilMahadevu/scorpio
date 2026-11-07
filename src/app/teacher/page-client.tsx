@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, orderBy, limit, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
@@ -72,7 +73,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         // 1. Fetch courses first (including legacy) to resolve course-based student counts
         const [cSnap1, cSnap2] = await Promise.all([
            getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))).catch(() => ({docs:[]} as any)),
-           getDocs(query(collection(db, "courses"), where("code", "==", user.uid))).catch(() => ({docs:[]} as any))
+           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), where("code", "==", user.uid))).catch(() => ({docs:[]} as any))
         ]);
         
         const courseDocs = [...cSnap1.docs, ...cSnap2.docs];
@@ -189,35 +190,10 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
     setIsCreatingCourse(true);
     const code = newCourseCode.trim();
     try {
-      // Check if code exists in courses
-      const existing = await getDocs(query(collection(db, "courses"), where("code", "==", code)));
-      if (!existing.empty) {
-        toast.error("Class code already exists. Please choose another.");
-        setIsCreatingCourse(false);
-        return;
-      }
-      
-      // Check if code overlaps with a KEY legacy teacher ID (other than own)
-      // We do this to prevent students from joining the "Wrong" teacher if they use a legacy code
-      // Note: If you use your OWN legacy code, that is allowed (it acts as a migration)
-      if (code !== user.uid) {
-         try {
-             // We can't query teachers by ID easily without knowing it, but we can try to fetch it
-             const teacherDoc = await getDocs(query(collection(db, "teachers"), where("__name__", "==", code)));
-             if (!teacherDoc.empty) {
-                 toast.error("This code is reserved by another teacher (Legacy ID). Please choose another.");
-                 setIsCreatingCourse(false);
-                 return;
-             }
-         } catch (e) { console.log("Error checking legacy overlap", e); }
-      }
-
-      await addDoc(collection(db, "courses"), {
-        name: newCourseName,
-        code: code,
-        teacherId: user.uid,
-        createdAt: new Date().toISOString()
+      const response = await authenticatedFetch('/api/courses', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newCourseName, code }),
       });
+      if (!response.ok) throw new Error((await response.json()).error);
 
       setNewCourseName("");
       setNewCourseCode("");

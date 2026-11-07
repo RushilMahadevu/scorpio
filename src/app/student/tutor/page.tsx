@@ -1,4 +1,5 @@
 "use client"
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import * as React from "react"
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
@@ -616,7 +617,7 @@ export default function TutorPage() {
         content: msg.content,
       }))
 
-      const res = await fetch("/api/student/tutor", {
+      const res = await authenticatedFetch("/api/student/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -646,7 +647,7 @@ export default function TutorPage() {
       let newTitle: string | undefined = undefined
       if (finalMessages.length === 2) {
         try {
-          const titleRes = await fetch("/api/ai/generate-title", {
+          const titleRes = await authenticatedFetch("/api/ai/generate-title", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

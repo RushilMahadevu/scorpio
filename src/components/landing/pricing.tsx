@@ -334,12 +334,12 @@ export function Pricing() {
             </p>
             <div className="flex gap-6 pt-1">
               <div>
-                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.15</p>
+                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.30</p>
                 <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Input</p>
               </div>
               <div className="w-px bg-border self-stretch" />
               <div>
-                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.60</p>
+                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$2.50</p>
                 <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Output</p>
               </div>
             </div>

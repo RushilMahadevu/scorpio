@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -466,7 +467,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
       // Map local ChatMessage to the format our API expects
       const historyForAi = aiMessages.map(m => ({ role: m.role, content: m.content }));
 
-      const response = await fetch("/api/student/tutor", {
+      const response = await authenticatedFetch("/api/student/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -585,14 +586,13 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
       };
 
 
-      if (existingSubmission?.id) {
-        // Update existing draft
-        await setDoc(doc(db, "submissions", existingSubmission.id), submissionData, { merge: true });
-      } else {
-        // Create new draft
-        const docRef = await addDoc(collection(db, "submissions"), submissionData);
-        setExistingSubmission({ ...submissionData, id: docRef.id });
-      }
+      const response = await authenticatedFetch('/api/submissions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...submissionData, submissionId: existingSubmission?.id }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setExistingSubmission({ ...submissionData, id: result.id });
       toast.success("Draft saved!");
       return true;
     } catch (error) {
@@ -700,13 +700,11 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
       delete submissionData.feedback;
       delete submissionData.gradedAnswers;
 
-      let docRef;
-      if (existingSubmission?.id) {
-        docRef = doc(db, "submissions", existingSubmission.id);
-        await setDoc(docRef, submissionData);
-      } else {
-        docRef = await addDoc(collection(db, "submissions"), submissionData);
-      }
+      const response = await authenticatedFetch('/api/submissions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...submissionData, submissionId: existingSubmission?.id }),
+      });
+      if (!response.ok) throw new Error((await response.json()).error || 'Submission failed');
 
       setSubmitted(true);
       router.push("/student/submissions");

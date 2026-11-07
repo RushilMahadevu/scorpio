@@ -63,7 +63,8 @@ export default function LoginPage() {
 
       console.log(`[Login] Redirecting to: ${role === "teacher" ? "/teacher" : "/student"}`);
       // Hard redirect is safer for ensuring middleware catches the new session
-      const target = role === "teacher" ? "/teacher" : "/student";
+      const sessionData = await response.json();
+      const target = sessionData.role === "teacher" ? "/teacher" : "/student";
       window.location.href = target;
     } catch (err: any) {
       console.error("[Login] Detailed Error:", err);
@@ -84,65 +85,8 @@ export default function LoginPage() {
       return;
     }
 
-    if (recoveryRole === "teacher" && recoveryAccessCode !== process.env.NEXT_PUBLIC_TEACHER_ACCESS_CODE) {
-      setError("Invalid Teacher Access Code");
-      return;
-    }
-
-    setLoading(true);
-    setIsRecovering(true);
-    setError("");
-
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("No session found. Please sign in again.");
-
-      const collectionName = recoveryRole === "teacher" ? "teachers" : "students";
-      const userData: any = {
-        uid: currentUser.uid,
-        email: recoveryEmail,
-        name: recoveryEmail,
-        role: recoveryRole,
-        createdAt: new Date(),
-      };
-
-      console.log("Attempting to recover account for", currentUser.uid, "as", recoveryRole);
-
-      // Attempt all writes and capture individual failures
-      const results = await Promise.allSettled([
-        setDoc(doc(db, "users", currentUser.uid), userData),
-        setDoc(doc(db, collectionName, currentUser.uid), userData)
-      ]);
-
-      const failedIndices = results.map((r, i) => r.status === 'rejected' ? i : -1).filter(i => i !== -1);
-
-      if (failedIndices.length > 0) {
-        failedIndices.forEach(idx => {
-          const collection = idx === 0 ? "users" : collectionName;
-          const error = (results[idx] as PromiseRejectedResult).reason;
-          console.error(`Firestore write failure in ${collection}:`, error);
-        });
-        throw (results[failedIndices[0]] as PromiseRejectedResult).reason;
-      }
-
-      // Force session refresh
-      const idToken = await currentUser.getIdToken();
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, role: recoveryRole }),
-      });
-
-      router.refresh();
-      window.location.reload(); // Hard reload to refresh auth context
-    } catch (err) {
-      console.error("Recovery error:", err);
-      setError("Account recovery failed. Please try again.");
-      setLoading(false);
-      setIsRecovering(false);
-    }
+    setError("For account recovery, contact rushil@scorpioedu.org. Roles cannot be restored from this browser.");
   };
-
   if (authLoading) {
     return <LoadingSpinner fullPage />;
   }

@@ -49,7 +49,7 @@ export function Efficacy() {
               Validated Institutional <span className="text-secondary-foreground italic">Efficacy.</span>
             </h2>
             <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-xl">
-              Based on our 125-response ablation study, Scorpio's framework successfully eliminates direct solution delivery while achieving expert-validated gains in pedagogical quality and symbolic precision.
+              In our 125-response ablation study, the full framework showed no direct solution delivery in the evaluated responses and gains in pedagogical quality. These results do not guarantee classroom outcomes or prevent every attempt to obtain answers.
             </p>
           </div>
           

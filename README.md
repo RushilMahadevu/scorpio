@@ -35,7 +35,7 @@ graph TD
     end
 
     subgraph Crux ["Crux AI Engine (Pedagogical Layer)"]
-        Sanitize[PII Scrubber / FERPA Compliance]:::crux
+        Sanitize[PII Masking / School Privacy Review]:::crux
         Layer1[Layer 1: Domain Constraint]:::crux
         Layer2[Layer 2: Pedagogical Discovery]:::crux
         Layer3[Layer 3: Notation & LaTeX]:::crux
@@ -89,7 +89,7 @@ graph TD
 ```
 
 ### 🛡️ The 4-Layer Constraint System
-At the heart of Crux's AI tutoring capabilities is a **transparent and research-driven** constraint architecture designed to ensure pedagogical validity and eliminate hallucinations while maintaining full academic integrity.
+At the heart of Crux's AI tutoring capabilities is a **transparent and research-driven** constraint architecture designed to support pedagogical validity and academic integrity. Model errors and direct-answer leakage remain possible and require ongoing evaluation.
 
 [**📄 View Full System Architecture (PDF)**](./public/architecture.pdf)
 
@@ -235,7 +235,7 @@ Scorpio includes a dedicated research dashboard to monitor the performance of it
    POLAR_ENV=production # or sandbox
 
    # Access Control
-   NEXT_PUBLIC_TEACHER_ACCESS_CODE=...
+   ADMIN_SECRET=... # Server-only; teacher invitations are single-use database records
    ```
 
 3. **Development Mode**
@@ -253,3 +253,7 @@ firebase deploy
 ---
 
 © 2025 Scorpio. Built for the advancement of physics education.
+
+## School rollout
+
+See [the school deployment readiness notes](docs/school-deployment-readiness.md) before deploying the security migration or onboarding students.

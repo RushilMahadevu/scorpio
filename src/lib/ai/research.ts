@@ -1,4 +1,10 @@
-import { explainPhysicsConcept, helpSolveProblem } from "./tutor";
+async function researchResponse(message: string, level: string, mode: string, adminSecret: string) {
+  const response = await fetch('/api/research/respond', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret }, body: JSON.stringify({ message, level, mode }) });
+  if (!response.ok) throw new Error('Research request denied or unavailable');
+  return response.json();
+}
+const explainPhysicsConcept = (message: string, _history: unknown[], level: string, secret: string) => researchResponse(message, level, 'concept', secret);
+const helpSolveProblem = (message: string, _history: unknown[], level: string, secret: string) => researchResponse(message, level, 'problem', secret);
 import { ConstraintLevel, CONSTRAINT_LEVELS } from "./constants";
 
 export interface TestQuestion {
@@ -327,7 +333,8 @@ export function analyzeResponse(
 
 // Run comprehensive study with 1-MINUTE delays between questions
 export async function runComprehensiveStudy(
-  onProgress?: (current: number, total: number, status: string, timeRemaining: string) => void
+  onProgress?: (current: number, total: number, status: string, timeRemaining: string) => void,
+  adminSecret: string = ""
 ): Promise<StudyResult[]> {
   const questions = COMPREHENSIVE_TEST_BATTERY;
   const results: StudyResult[] = [];
@@ -350,8 +357,8 @@ export async function runComprehensiveStudy(
           );
         }
         const response = question.type === 'declarative' 
-          ? await explainPhysicsConcept(question.question, [], level)
-          : await helpSolveProblem(question.question, [], level);
+          ? await explainPhysicsConcept(question.question, [], level, adminSecret)
+          : await helpSolveProblem(question.question, [], level, adminSecret);
         const metrics = analyzeResponse(response.text, question, level);
         results.push({
           question,
@@ -376,8 +383,8 @@ export async function runComprehensiveStudy(
           // Retry once
           try {
             const response = question.type === 'declarative' 
-              ? await explainPhysicsConcept(question.question, [], level)
-              : await helpSolveProblem(question.question, [], level);
+              ? await explainPhysicsConcept(question.question, [], level, adminSecret)
+              : await helpSolveProblem(question.question, [], level, adminSecret);
             const metrics = analyzeResponse(response.text, question, level);
             results.push({
               question,
@@ -530,7 +537,7 @@ export interface AblationResult {
   response: string;
 }
 
-export async function runAblationStudy(): Promise<AblationResult[]> {
+export async function runAblationStudy(adminSecret: string): Promise<AblationResult[]> {
   const TEST_QUESTIONS = [
     "What is the acceleration due to gravity on Earth?", // Direct calculation question
     "Explain Newton's second law.", // Conceptual explanation
@@ -544,7 +551,7 @@ export async function runAblationStudy(): Promise<AblationResult[]> {
   for (const question of TEST_QUESTIONS) {
     for (const level of Object.keys(CONSTRAINT_LEVELS) as ConstraintLevel[]) {
       try {
-        const response = await helpSolveProblem(question, [], level);
+        const response = await helpSolveProblem(question, [], level, adminSecret);
         results.push({
           question,
           constraintLevel: level,

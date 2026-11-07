@@ -38,8 +38,8 @@ export function AICostCalculator() {
   const [planType, setPlanType] = useState<"monthly" | "yearly">("yearly");
 
   // Gemini 2.5 Flash Rates in Dollars per 1M tokens
-  const INPUT_RATE_USD = 0.15 / 1_000_000;
-  const OUTPUT_RATE_USD = 0.60 / 1_000_000;
+  const INPUT_RATE_USD = 0.30 / 1_000_000;
+  const OUTPUT_RATE_USD = 2.50 / 1_000_000;
   
   const BASE_FEE = planType === "monthly" ? 4.99 : 2.49; 
 
@@ -287,7 +287,7 @@ export function AICostCalculator() {
           <Info className="h-3.5 w-3.5 text-zinc-400 mt-0.5 shrink-0" />
           <p className="text-[10px] text-zinc-500 leading-relaxed font-medium">
             Scorpio operates on a <span className="text-zinc-900 dark:text-zinc-200 font-bold">Zero-Margin Pass-Through</span> model. 
-            AI costs are calculated at raw Google Cloud rates ($0.15/$0.60 per 1M tokens) and billed directly via Polar with no platform surcharge.
+            AI costs are calculated at raw Google Cloud rates ($0.30/$2.50 per 1M tokens) and billed directly via Polar with no platform surcharge.
           </p>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+import { scrubPII } from "./utils";
 import { model } from "./config";
 
 /**
@@ -116,7 +117,7 @@ export async function generateStudentPortfolio(
     const systemPrompt = `You are an expert Physics Education Professor. 
 Your task is to analyze a student's recent interactions with Raise (an AI learning assistant) and generate a structured portfolio summary.
 
-Student Name: ${studentName}
+Student: anonymized learner
 
 Guidelines:
 1. Analyze the student's questions, problem-solving approach, and conceptual understanding.
@@ -134,8 +135,8 @@ IMPORTANT: Return ONLY a valid JSON object matching this structure:
 }`;
 
     const chatContext = chatHistory.length > 0 
-      ? `=== RECENT RAISE SESSIONS ===\n${chatHistory.map(m => `${m.role === "user" ? "Student" : "Raise"}: ${m.content}`).join("\n\n")}`
-      : "No completely recent sessions available or student hasn't asked enough questions. Please infer based on lack of data (e.g., student hasn't engaged much).";
+      ? `=== RECENT RAISE SESSIONS ===\n${chatHistory.map(m => `${m.role === "user" ? "Student" : "Raise"}: ${scrubPII(m.content, [studentName])}`).join("\n\n")}`
+      : "No completely recent sessions available or student hasn't asked enough questions. State that there is insufficient evidence; do not infer ability or weaknesses.";
 
     const prompt = `${systemPrompt}\n\n${chatContext}`;
 
@@ -149,19 +150,19 @@ IMPORTANT: Return ONLY a valid JSON object matching this structure:
       safetySettings: [
         {
           category: "HARM_CATEGORY_HARASSMENT",
-          threshold: "BLOCK_NONE",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
         {
           category: "HARM_CATEGORY_HATE_SPEECH",
-          threshold: "BLOCK_NONE",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
         {
           category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-          threshold: "BLOCK_NONE",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
         {
           category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-          threshold: "BLOCK_NONE",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
       ],
     });

@@ -261,7 +261,7 @@ export function SiteHeader({ activeSection = "home" }: SiteHeaderProps) {
     { href: "/sustainability", label: "Sustainability & Climate", desc: "How Scorpio uses energy, water, and paper.", icon: Leaf },
     { href: "/request-access", label: "Request Access", desc: "Apply for institution-wide invite codes.", icon: KeyRound },
     { href: "/contact", label: "Contact Us", desc: "Institutional success & support team.", icon: Mail },
-    { href: "/privacy", label: "Privacy Policy", desc: "FERPA/GDPR compliant infrastructure.", icon: Shield },
+    { href: "/privacy", label: "Privacy Policy", desc: "Student data practices and school review.", icon: Shield },
     { href: "/terms", label: "Terms of Service", desc: "Institutional and usage terms.", icon: FileText },
   ];
 

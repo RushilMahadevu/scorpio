@@ -65,7 +65,7 @@ export async function gradeResponse(
         console.error("Failed to get text from AI response:", textError);
         // Check if it's a safety block
         if (response.candidates && response.candidates[0]?.finishReason === 'SAFETY') {
-            return { score: 0, feedback: "Response blocked by safety filters. Please review manually." };
+            throw new Error("Response blocked; manual review required");
         }
         throw textError;
     }
@@ -88,6 +88,7 @@ export async function gradeResponse(
     try {
         const data = JSON.parse(jsonStr);
         
+        if (typeof data.score !== "number" || !Number.isFinite(data.score)) throw new Error("Invalid score");
         // Ensure score is a number and capped
         let score = 0;
         if (typeof data.score === 'number') {
@@ -116,23 +117,12 @@ export async function gradeResponse(
         };
     } catch (parseError) {
         console.error("Error parsing AI response. Raw text:", text);
-        return { 
-            score: 0, 
-            feedback: "Evaluation format error. The grader output was not valid JSON.", 
-            usage: {
-                inputTokens: response.usageMetadata?.promptTokenCount || 0,
-                outputTokens: response.usageMetadata?.candidatesTokenCount || 0
-            }
-        };
+        throw new Error("Invalid grading response; manual review required");
     }
 
   } catch (error: any) {
     console.error("Error in gradeResponse:", error);
-    return { 
-        score: 0, 
-        feedback: `Grading engine error: ${error?.message || "Unknown error"}. Please check manually.`,
-        reasoning: `Error details: ${JSON.stringify(error)}`
-    };
+    throw new Error("AI grading unavailable; manual review required");
   }
 }
 

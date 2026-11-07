@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { collection, addDoc, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { parseQuestionsManually } from "@/lib/ai/assignment";
+import { parseQuestionsManually } from "@/lib/assignment-parser";
 import { getAssignmentPoints, splitAssignmentPoints } from "@/lib/assignment-points";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,7 +203,7 @@ function CreateAssignmentForm() {
       } catch (manualError) {
         console.log("Manual parsing failed, trying AI parser...", manualError);
         // Fall back to AI parsing
-        const res = await fetch("/api/ai/parse", {
+        const res = await authenticatedFetch("/api/ai/parse", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: importText, userId: user?.uid }),
@@ -294,7 +295,7 @@ function CreateAssignmentForm() {
 
     setAiGenerating(questionId);
     try {
-      const res = await fetch("/api/ai/synthesize-rubric", {
+      const res = await authenticatedFetch("/api/ai/synthesize-rubric", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -329,7 +330,7 @@ function CreateAssignmentForm() {
     if (!aiTopic) return;
     setAiLoading(true);
     try {
-      const res = await fetch("/api/ai/generate", {
+      const res = await authenticatedFetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -416,7 +417,7 @@ function CreateAssignmentForm() {
     setLoading(true);
     try {
       // 1. Create assignment
-      await addDoc(collection(db, "assignments"), {
+      const createResponse = await authenticatedFetch("/api/assignments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         title,
         description,
         topic,
@@ -438,7 +439,9 @@ function CreateAssignmentForm() {
         type: "standard",
         googleFormLink: null,
         rubric: null,
-      });
+      }) });
+
+      if (!createResponse.ok) throw new Error((await createResponse.json()).error || "Could not create assignment");
 
       // The email notifications to students are now automatically handled in the background
       // by the Firebase Cloud Function 'onAssignmentCreated'.

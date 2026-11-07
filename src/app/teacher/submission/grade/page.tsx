@@ -1,4 +1,6 @@
 "use client";
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+import { getTeacherAssignment } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -95,7 +97,7 @@ export default function GradeSubmissionPage() {
           setSubmission(sub);
 
           // Fetch assignment details to get question metadata
-          const assignmentDoc = await getDoc(doc(db, "assignments", data.assignmentId));
+          const assignmentDoc = await getTeacherAssignment(data.assignmentId);
           if (assignmentDoc.exists()) {
             setAssignment({ id: assignmentDoc.id, ...assignmentDoc.data() } as Assignment);
           }
@@ -134,7 +136,7 @@ export default function GradeSubmissionPage() {
       // But the best UX is to just trigger the global API if they want to re-evaluate everything
       // OR specifically grade one.
       
-      const response = await fetch('/api/grade', {
+      const response = await authenticatedFetch('/api/grade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ submissionId: submission.id })

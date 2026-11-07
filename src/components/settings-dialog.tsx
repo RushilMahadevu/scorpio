@@ -343,7 +343,7 @@ export function SettingsDialog() {
                   <div className="space-y-2 mt-4">
                     <h4 className="text-sm font-medium text-destructive">Danger Zone</h4>
                     <p className="text-[10px] text-muted-foreground leading-snug">
-                      Once you delete your account, there is no going back. All submissions, uploaded work files, and profile data will be permanently purged.
+                      Once you delete your account, there is no going back. Learning records and uploaded work will be removed. Billing records and provider backups may have separate retention periods.
                     </p>
                     <Button
                       variant="ghost"
@@ -364,7 +364,7 @@ export function SettingsDialog() {
             open={showDeleteConfirm}
             onOpenChange={setShowDeleteConfirm}
             title="Delete Account"
-            description="CRITICAL: This will permanently delete your account and ALL your data (submissions, storage files, profile). This cannot be undone. Are you absolutely sure?"
+            description="CRITICAL: This removes your account and learning records. Billing records and provider backups may have separate retention periods. This cannot be undone. Continue?"
             onConfirm={handleDeleteAccount}
             confirmText="Delete Account"
             variant="destructive"

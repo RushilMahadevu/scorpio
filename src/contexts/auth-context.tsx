@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { onAuthChange, db } from "@/lib/firebase";
 import { UserProfile, UserRole } from "@/lib/types";
 
@@ -65,63 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }).catch(() => {});
               }).catch(() => {});
             } else {
-              // Fallback to legacy check if unified doc doesn't exist yet
-              // Check if teacher
-              const teacherDoc = await getDoc(doc(db, "teachers", firebaseUser.uid));
-              if (teacherDoc.exists()) {
-                const teacherData = teacherDoc.data();
-                const newProfile: Partial<UserProfile> = {
-                  uid: firebaseUser.uid,
-                  email: firebaseUser.email || "",
-                  displayName: firebaseUser.displayName || teacherData.name || "Unknown Teacher",
-                  role: "teacher",
-                  createdAt: (teacherData.createdAt || serverTimestamp()) as unknown as Date,
-                  lastLoginAt: serverTimestamp() as unknown as Date,
-                  classIds: [],
-                };
-                await setDoc(doc(db, "users", firebaseUser.uid), newProfile, { merge: true });
-                setRole("teacher");
-                setProfile(newProfile as UserProfile);
-
-                firebaseUser.getIdToken().then((idToken) => {
-                  fetch('/api/auth/session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idToken, role: "teacher" }),
-                  }).catch(() => {});
-                }).catch(() => {});
-              } else {
-                // Check if student
-                const studentDoc = await getDoc(doc(db, "students", firebaseUser.uid));
-                if (studentDoc.exists()) {
-                  const studentData = studentDoc.data();
-                  const newProfile: Partial<UserProfile> = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email || "",
-                    displayName: firebaseUser.displayName || studentData.name || "Unknown Student",
-                    role: "student",
-                    teacherId: studentData.teacherId || null,
-                    courseId: studentData.courseId || null,
-                    schoolId: studentData.schoolId || null,
-                    createdAt: (studentData.createdAt || serverTimestamp()) as unknown as Date,
-                    lastLoginAt: serverTimestamp() as unknown as Date,
-                  };
-                  await setDoc(doc(db, "users", firebaseUser.uid), newProfile, { merge: true });
-                  setRole("student");
-                  setProfile(newProfile as UserProfile);
-
-                  firebaseUser.getIdToken().then((idToken) => {
-                    fetch('/api/auth/session', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ idToken, role: "student" }),
-                    }).catch(() => {});
-                  }).catch(() => {});
-                } else {
-                  setRole(null);
-                  setLoading(false);
-                }
-              }
+              setRole(null);
+              setProfile(null);
+              setLoading(false);
             }
                     }, (err: any) => {
             if (err.code !== 'permission-denied') {
