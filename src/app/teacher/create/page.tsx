@@ -39,7 +39,7 @@ function AdvancedSettings({ children }: { children: React.ReactNode }) {
         <Settings2 className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="flex-1 space-y-1">
           <span className="block text-sm font-semibold">Advanced settings</span>
-          <span className="block text-sm text-muted-foreground">Grading, time limits, student tools, and sharing</span>
+          <span className="block text-sm text-muted-foreground">Time limits, student tools, and sharing</span>
         </span>
         <ChevronDown className={`size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
@@ -84,7 +84,6 @@ function CreateAssignmentForm() {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [timeLimit, setTimeLimit] = useState<number | "">("");
-  const [gradingType, setGradingType] = useState<"ai" | "manual">("manual");
   const [visibility, setVisibility] = useState<"private" | "network" | "global">("private");
   const [topic, setTopic] = useState<string>("other");
   const [requireWorkSubmission, setRequireWorkSubmission] = useState(false);
@@ -97,7 +96,6 @@ function CreateAssignmentForm() {
   const [assignmentPoints, setAssignmentPoints] = useState(100);
   const [customPoints, setCustomPoints] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [rubric, setRubric] = useState("");
 
   useEffect(() => {
     if (questionToFocus.current) {
@@ -378,33 +376,6 @@ function CreateAssignmentForm() {
     }
   };
 
-  const handleGenerateAssignmentRubric = async () => {
-    if (!title.trim()) {
-      toast.error("Enter an assignment title first.");
-      return;
-    }
-    setAiLoading(true);
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: `Generate a high-level grading rubric for an assignment titled "${title}". Focus on expectations for accuracy, units, and reasoning.`,
-          userId: user?.uid,
-          userRole: "teacher",
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to generate rubric.");
-      setRubric(data.text);
-      toast.success("Rubric generated.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to generate rubric.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   const validTotal = Number.isSafeInteger(assignmentPoints) && assignmentPoints > 0;
   const evenlySplitPoints = splitAssignmentPoints(validTotal ? assignmentPoints : 0, questions.length);
   const scoredQuestions = customPoints
@@ -455,7 +426,7 @@ function CreateAssignmentForm() {
         courseId: selectedCourseId,
         dueDate: dueDate || new Date(),
         timeLimit: timeLimit === "" ? null : Number(timeLimit),
-        gradingType,
+        gradingType: "manual",
         requireWorkSubmission,
         enableTabDetection,
         lockdownMode,
@@ -466,7 +437,7 @@ function CreateAssignmentForm() {
         createdAt: new Date(),
         type: "standard",
         googleFormLink: null,
-        rubric: rubric || null,
+        rubric: null,
       });
 
       // The email notifications to students are now automatically handled in the background
@@ -937,46 +908,6 @@ function CreateAssignmentForm() {
                   />
                 </div>
               </div>
-            </section>
-
-            <section className="space-y-3 py-5" aria-labelledby="grading-heading">
-              <h2 id="grading-heading" className="text-sm font-semibold">Grading</h2>
-              <RadioGroup
-                aria-labelledby="grading-heading"
-                value={gradingType}
-                onValueChange={(value) => setGradingType(value === "ai" && !isFreePlan ? "ai" : "manual")}
-                className="flex flex-wrap gap-x-6 gap-y-3"
-              >
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="manual" id="grading-manual" />
-                  <Label htmlFor="grading-manual">Grade manually</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="ai" id="grading-ai" disabled={isFreePlan} />
-                  <Label htmlFor="grading-ai">
-                    Grade with AI
-                    {isFreePlan && <Lock className="size-3 text-muted-foreground" aria-label="Requires AI access" />}
-                  </Label>
-                </div>
-              </RadioGroup>
-              {gradingType === "ai" && (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Label htmlFor="rubric">Assignment rubric</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateAssignmentRubric} disabled={aiLoading}>
-                      {aiLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-                      Generate rubric
-                    </Button>
-                  </div>
-                  <Textarea
-                    id="rubric"
-                    value={rubric}
-                    onChange={(event) => setRubric(event.target.value)}
-                    placeholder="What should the grader look for across all questions?"
-                    rows={3}
-                  />
-                </div>
-              )}
             </section>
 
             <section className="space-y-4 py-5" aria-labelledby="student-tools-heading">
