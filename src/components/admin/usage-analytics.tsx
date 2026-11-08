@@ -571,10 +571,6 @@ export function UsageAnalytics({ organizationId }: { organizationId: string | nu
                           <p className="font-black text-[9px] uppercase text-purple-600 dark:text-purple-400 font-mono">TUTOR</p>
                           <p className="text-[10px] text-muted-foreground font-medium">Direct student questions.</p>
                         </div>
-                        <div className="flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md">
-                          <p className="font-black text-[9px] uppercase text-indigo-600 dark:text-indigo-400 font-mono">PRACTICE</p>
-                          <p className="text-[10px] text-muted-foreground font-medium">Simulations & problem generation.</p>
-                        </div>
                         <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">
                           <p className="font-black text-[9px] uppercase text-emerald-600 dark:text-emerald-400 font-mono">GRADING</p>
                           <p className="text-[10px] text-muted-foreground font-medium">Auto-feedback on student work.</p>

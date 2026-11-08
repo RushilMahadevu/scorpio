@@ -6,7 +6,6 @@ import type { ChatMessage } from "./ai/tutor";
 import { gradeResponse, synthesizeRubric, validateResponse } from "./ai/grading";
 import type { ValidationResult } from "./ai/grading";
 import { parseQuestionsManually, generateAssignmentQuestions, parseQuestionsFromText } from "./ai/assignment";
-import { generatePracticeProblem } from "./ai/practice";
 import { getNotebookAssistantResponse } from "./ai/notebook";
 import { getNetworkLimitsHelp, generateStudentPortfolio } from "./ai/network";
 import type { NetworkLimitsContext } from "./ai/network";
@@ -49,7 +48,6 @@ export {
   parseQuestionsManually,
   generateAssignmentQuestions,
   parseQuestionsFromText,
-  generatePracticeProblem,
   getNotebookAssistantResponse,
   getNetworkLimitsHelp,
   generateStudentPortfolio,

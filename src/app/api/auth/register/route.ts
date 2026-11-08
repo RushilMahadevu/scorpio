@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       if (role === "teacher" && orgId === newOrg.id) tx.set(newOrg, {
         id: orgId, name: `${name.trim()}'s Network`, ownerId: caller.uid, ownerEmail: caller.email || "",
         subscriptionStatus: "active", planId: "free", aiUsageCurrent: 0, aiBudgetLimit: 50,
-        practiceLimitPerStudent: 10, practiceLimit: 0, practiceUsageCurrent: 0, baseMonthlyFee: 0, createdAt: new Date(),
+        baseMonthlyFee: 0, createdAt: new Date(),
       });
       if (inviteRef) tx.update(inviteRef, { isUsed: true, usedAt: new Date(), usedBy: caller.uid, usedByEmail: caller.email || "" });
       tx.set(userRef, data);

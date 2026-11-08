@@ -787,14 +787,14 @@ export default function TutorPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="size-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => router.push("/student")}
               aria-label="Back to student dashboard"
             >
               <ArrowLeft className="size-4" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="bg-primary/10 border border-primary/25 size-8 rounded-lg flex items-center justify-center shadow-xs">
+              <div className="bg-primary/10 border border-primary/25 size-8 rounded-xl flex items-center justify-center shadow-xs">
                 <RaiseLogo size={16} className="text-primary" />
               </div>
               <div className="flex flex-col">
@@ -813,7 +813,7 @@ export default function TutorPage() {
               variant="ghost"
               size="icon"
               className={cn(
-                "size-7 rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer",
+                "size-7 rounded-full text-muted-foreground hover:text-foreground transition-colors cursor-pointer",
                 showSearchInput && "bg-muted text-foreground"
               )}
               onClick={() => setShowSearchInput(!showSearchInput)}
@@ -824,7 +824,7 @@ export default function TutorPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              className="size-7 rounded-full text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               onClick={() => setSidebarOpen(false)}
               aria-label="Close chat history"
             >
@@ -975,7 +975,7 @@ export default function TutorPage() {
                               variant="ghost"
                               size="icon"
                               className={cn(
-                                "size-6 rounded-md transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 hover:bg-muted/80 cursor-pointer",
+                                "size-6 rounded-full transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 hover:bg-muted/80 cursor-pointer",
                                 isActive && "opacity-100"
                               )}
                               aria-label={`Options for ${conversation.title}`}
@@ -1066,7 +1066,7 @@ export default function TutorPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                className="size-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Open chat history"
               >
@@ -1082,13 +1082,13 @@ export default function TutorPage() {
 
           {/* Mode Switcher & Actions */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-xl bg-muted/60 p-0.5 border border-border/50 shadow-2xs">
+            <div className="flex items-center rounded-full bg-muted/60 p-0.5 border border-border/50 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setMode("concept")}
                 aria-pressed={mode === "concept"}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
+                  "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
                   mode === "concept"
                     ? "bg-background text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -1102,7 +1102,7 @@ export default function TutorPage() {
                 onClick={() => setMode("problem")}
                 aria-pressed={mode === "problem"}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
+                  "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
                   mode === "problem"
                     ? "bg-background text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"

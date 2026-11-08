@@ -3,32 +3,45 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { logout } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import {
-  LogOut,
   Menu,
+  X,
+  Leaf,
   PanelLeftClose,
   PanelLeftOpen,
-  PlaneLanding,
   DoorClosedLocked,
-  Leaf,
+  PlaneLanding,
 } from "lucide-react";
-import { ModeToggle } from "@/components/mode-toggle";
 import { CompassLogo } from "@/components/ui/compass-logo";
 import { SettingsDialog } from "@/components/settings-dialog";
-import { useState } from "react";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/auth-context";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/auth-context";
+import {
+  AnimatedSidebar,
+  AnimatedSidebarClose,
+  AnimatedSidebarContent,
+  AnimatedSidebarFooter,
+  AnimatedSidebarGroup,
+  AnimatedSidebarGroupContent,
+  AnimatedSidebarGroupLabel,
+  AnimatedSidebarHeader,
+  AnimatedSidebarMenu,
+  AnimatedSidebarMenuButton,
+  AnimatedSidebarMenuItem,
+  AnimatedSidebarProvider,
+  AnimatedSidebarRail,
+  AnimatedSidebarTrigger,
+  useAnimatedSidebar,
+} from "@/components/motion/animated-sidebar";
 
 const SustainabilityContent = dynamic(() => import("@/components/sustainability-content"), {
-  loading: () => <p role="status" className="text-muted-foreground">Loading sustainability…</p>,
+  loading: () => (
+    <p role="status" className="text-muted-foreground">
+      Loading sustainability…
+    </p>
+  ),
 });
 
 interface NavLink {
@@ -45,7 +58,7 @@ export interface NavSection {
   items: NavItem[];
 }
 
-interface AppSidebarProps {
+export interface AppSidebarProps {
   roleLabel: string;
   roleIcon?: React.ComponentType<{ className?: string }>;
   navSections: NavSection[];
@@ -53,28 +66,37 @@ interface AppSidebarProps {
   onToggle: () => void;
 }
 
-interface SidebarContentProps extends AppSidebarProps {
-  onNavigate?: () => void;
-}
+function SustainabilityDialogItem({ label }: { label: string }) {
+  const [open, setOpen] = useState(false);
+  const context = useAnimatedSidebar();
 
-function SustainabilityDialog({ label, isCollapsed }: { label: string; isCollapsed: boolean }) {
+  const handleOpen = () => {
+    if (context.isMobile) {
+      context.setOpenMobile(false);
+    }
+    setOpen(true);
+  };
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <motion.button
-          type="button"
-          aria-label={label}
-          whileHover={isCollapsed ? { scale: 1.1 } : { x: 8 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Leaf aria-hidden="true" className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-          {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
-        </motion.button>
-      </DialogTrigger>
-      <DialogContent aria-describedby={undefined} className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl">
-        <DialogTitle className="border-b px-5 py-4 pr-12">Sustainability</DialogTitle>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <AnimatedSidebarMenuItem>
+        <DialogTrigger asChild>
+          <AnimatedSidebarMenuButton
+            icon={<Leaf className="size-5" />}
+            onSelect={handleOpen}
+            closeOnSelect={false}
+          >
+            {label}
+          </AnimatedSidebarMenuButton>
+        </DialogTrigger>
+      </AnimatedSidebarMenuItem>
+      <DialogContent
+        aria-describedby={undefined}
+        className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl"
+      >
+        <DialogTitle className="border-b px-5 py-4 pr-12 text-lg font-bold">
+          {label}
+        </DialogTitle>
         <div
           role="region"
           aria-label="Sustainability information"
@@ -88,288 +110,235 @@ function SustainabilityDialog({ label, isCollapsed }: { label: string; isCollaps
   );
 }
 
-function SidebarContent({
+function SidebarFooterSection({
   roleLabel,
-  roleIcon: RoleIcon,
-  navSections,
   isCollapsed,
-  onNavigate,
-  onToggle,
-}: SidebarContentProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { profile, role } = useAuth();
-  
+}: {
+  roleLabel: string;
+  isCollapsed: boolean;
+}) {
+  const { profile, role, user } = useAuth();
   const autoRedirect = profile?.preferences?.autoRedirectPortal ?? true;
-  
-  const handleLogout = async () => {
-    await logout();
-    router.push("/login");
-  };
+
+  const displayName = profile?.displayName || user?.displayName || "";
+  const email = user?.email || profile?.email || "";
+
+  const initials = (() => {
+    if (displayName && typeof displayName === "string" && displayName.trim()) {
+      return displayName
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    if (email && typeof email === "string" && email.trim()) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return roleLabel.slice(0, 2).toUpperCase();
+  })();
 
   return (
-    <div className="flex h-full flex-col min-w-[72px] max-w-64 overflow-hidden">
-      <div className="px-4 py-6 border-b border-border/40 flex-shrink-0 flex flex-col items-center">
-        <motion.div
-          layout
-          className="flex items-center gap-3 w-full px-2 justify-start"
-          whileHover={{ scale: 1.02 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <motion.div
-            layout
-            className="bg-muted p-2 rounded-xl shadow-inner-sm flex-shrink-0"
-          >
-            <CompassLogo className="h-6 w-6 text-foreground" />
-          </motion.div>
-          <AnimatePresence mode="popLayout">
-            {!isCollapsed && (
-              <motion.span
-                layout
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-                className="font-inter font-black text-xl tracking-tighter whitespace-nowrap"
+    <AnimatedSidebarFooter className="gap-2.5 border-t border-border/30 p-3">
+      {/* Landing page action for non-student roles */}
+      {role !== "student" && (
+        <TooltipProvider>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              {autoRedirect ? (
+                <div className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-xs text-muted-foreground/60 bg-muted/20 cursor-help group-data-[state=collapsed]/sidebar:justify-center">
+                  <DoorClosedLocked className="size-4.5 shrink-0 text-muted-foreground/60" />
+                  <span className="truncate group-data-[state=collapsed]/sidebar:hidden font-medium">
+                    Landing Locked
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  href="/"
+                  className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors group-data-[state=collapsed]/sidebar:justify-center"
+                >
+                  <PlaneLanding className="size-4.5 shrink-0" />
+                  <span className="truncate group-data-[state=collapsed]/sidebar:hidden">
+                    Landing Page
+                  </span>
+                </Link>
+              )}
+            </TooltipTrigger>
+            {autoRedirect && (
+              <TooltipContent
+                side="right"
+                className="max-w-[220px] text-xs font-medium p-3 bg-background border-border/50 text-foreground"
               >
-                Scorpio
-              </motion.span>
+                The landing page is disabled while{" "}
+                <span className="text-primary italic font-semibold">
+                  "Auto-Portal Redirect"
+                </span>{" "}
+                is ON. Disable it in settings to visit the Landing page.
+              </TooltipContent>
             )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
+            {!autoRedirect && (
+              <TooltipContent side="right" className="text-xs font-medium">
+                Visit Landing Page
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+      )}
 
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-5">
-          {navSections.map((section) => (
-            <div key={section.label} className="space-y-1">
-              {!isCollapsed && (
-                <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
-                  {section.label}
-                </div>
-              )}
-              {section.items.map((item) => {
-            if ("dialog" in item) {
-              return <SustainabilityDialog key={item.dialog} label={item.label} isCollapsed={isCollapsed} />;
-            }
-
-            const isRootRoute = item.href === "/teacher" || item.href === "/student" || item.href === "/admin";
-            const isActive = pathname ? (
-              isRootRoute
-                ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(item.href + "/")
-            ) : false;
-            return (
-              <Link key={item.href} href={item.href} onClick={onNavigate}>
-                <motion.div
-                  initial={false}
-                  animate={isActive ? { x: 4 } : { x: 0 }}
-                  whileHover={!isCollapsed ? { x: 8, backgroundColor: "rgba(var(--muted), 0.8)" } : { scale: 1.1 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className={cn(
-                    "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors group w-full",
-                    isActive
-                      ? "bg-muted/80 text-foreground font-semibold shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className={cn(
-                    "h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
-                    isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                  )} />
-                  {!isCollapsed && (
-                    <span className="whitespace-nowrap">{item.label}</span>
-                  )}
-                  {!isCollapsed && item.badge && (
-                    <span className="ml-auto text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <motion.span
-                      layoutId="active-pill"
-                      className="absolute left-0 w-1 h-5 bg-primary rounded-r-full shadow-[0_0_8px_var(--primary)]"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </motion.div>
-              </Link>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-      </ScrollArea>
-
-      <div className="px-3 mb-2">
-        <div className={cn(
-          "flex items-center gap-3 w-full transition-all duration-300",
-          "justify-start px-3 py-1.5 rounded-lg",
-          !isCollapsed && "bg-muted/40"
-        )}>
-          {RoleIcon && (
-            <RoleIcon className="h-4 w-4 text-muted-foreground transition-colors" />
-          )}
-          {!isCollapsed && (
-            <motion.span
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -5 }}
-              className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap"
-            >
-              {roleLabel}
-            </motion.span>
-          )}
+      {/* User profile card */}
+      <div className="flex items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-muted/40 group-data-[state=collapsed]/sidebar:justify-center">
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+          {initials}
+        </span>
+        <div className="min-w-0 flex-1 group-data-[state=collapsed]/sidebar:hidden">
+          <p className="truncate text-sm font-semibold text-foreground leading-tight">
+            {displayName || roleLabel}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {email || `${roleLabel.toLowerCase()}@scorpio.edu`}
+          </p>
         </div>
       </div>
 
-      <div className="p-3 border-t border-border/40 space-y-3 bg-muted/10">
-        {role !== "student" && (
-          <TooltipProvider>
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <div
-                  className={cn(
-                    "flex items-center justify-start p-2.5 rounded-xl transition shadow-sm border border-transparent min-w-[40px] h-10 overflow-hidden px-3 w-full",
-                    autoRedirect ? "opacity-40 cursor-help bg-muted/30" : "hover:bg-background hover:border-border/50 bg-background/50"
-                  )}
-                >
-                  {!autoRedirect ? (
-                    <Link href="/" className="flex items-center gap-2 w-full justify-start group" prefetch={false}>
-                      <PlaneLanding className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
-                      {!isCollapsed && (
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] whitespace-nowrap group-hover:text-foreground transition-colors p-0.5">
-                          Landing Page
-                        </span>
-                      )}
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-2 w-full justify-start">
-                      <DoorClosedLocked className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-                      {!isCollapsed && (
-                        <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] whitespace-nowrap">
-                          Landing Page Locked
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </TooltipTrigger>
-              {autoRedirect && (
-                <TooltipContent side="right" className="max-w-[200px] text-xs font-bold p-3 bg-background border-border/50 text-foreground animate-in fade-in zoom-in-95 duration-200">
-                  <p className="leading-relaxed">
-                    The landing page is disabled while <span className="text-primary italic">"Auto-Portal Redirect"</span> is ON. Disable it in settings to visit the PlaneLanding page.
-                  </p>
-                </TooltipContent>
-              )}
-              {!autoRedirect && !isCollapsed && (
-                <TooltipContent side="right" className="text-[10px] font-black uppercase tracking-widest p-2">
-                  Visit Landing Page
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
-        )}
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between min-h-[32px] px-2">
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.5 }}
-                  exit={{ opacity: 0 }}
-                  className="text-[10px] font-bold text-muted-foreground/150 uppercase tracking-widest overflow-hidden whitespace-nowrap"
-                >
-                  Sidebar
-                </motion.span>
-              )}
-            </AnimatePresence>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggle}
-              className={cn(
-                "cursor-pointer h-8 w-8 text-muted-foreground hover:text-foreground transition-colors hover:bg-muted shrink-0",
-                isCollapsed ? "" : "ml-auto"
-              )}
-            >
-              {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between min-h-[32px] px-2">
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.5 }}
-                  exit={{ opacity: 0 }}
-                  className="text-[10px] font-bold text-muted-foreground/150 uppercase tracking-widest overflow-hidden whitespace-nowrap"
-                >
-                  Settings
-                </motion.span>
-              )}
-            </AnimatePresence>
-            <div className={cn("shrink-0", isCollapsed ? "" : "ml-auto")}>
-              <SettingsDialog />
-            </div>
-          </div>
+      {/* Control row: Settings & Collapse Toggle */}
+      <div className="flex items-center justify-between pt-1 border-t border-border/20 group-data-[state=collapsed]/sidebar:flex-col group-data-[state=collapsed]/sidebar:gap-2">
+        <div className="flex items-center gap-1 group-data-[state=collapsed]/sidebar:flex-col">
+          <SettingsDialog />
         </div>
+        <AnimatedSidebarTrigger
+          className="size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <PanelLeftOpen className="size-4.5" />
+          ) : (
+            <PanelLeftClose className="size-4.5" />
+          )}
+        </AnimatedSidebarTrigger>
       </div>
-    </div>
+    </AnimatedSidebarFooter>
   );
 }
 
 export function AppSidebar({
   roleLabel,
-  roleIcon,
+  roleIcon: _roleIcon,
   navSections,
   isCollapsed,
   onToggle,
 }: AppSidebarProps) {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <>
-      <aside
-        className={cn(
-          "hidden md:flex md:flex-col h-full bg-background/40 backdrop-blur-xl border-r border-border/30 transition-all duration-300 ease-in-out relative flex-shrink-0",
-          isCollapsed ? "w-[72px]" : "w-64"
-        )}
-      >
-        <div className="w-full h-full overflow-hidden">
-          <SidebarContent
-            roleLabel={roleLabel}
-            roleIcon={roleIcon}
-            navSections={navSections}
-            isCollapsed={isCollapsed}
-            onToggle={onToggle}
-          />
+    <AnimatedSidebarProvider
+      open={!isCollapsed}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen === isCollapsed) {
+          onToggle();
+        }
+      }}
+      className="flex-col md:flex-row min-h-0 shrink-0 w-full md:w-auto"
+    >
+      {/* Mobile top navigation header */}
+      <div className="md:hidden flex h-14 w-full items-center justify-between px-4 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-30 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <CompassLogo className="size-6 text-foreground" />
+          <span className="font-inter font-black text-lg tracking-tight">Scorpio</span>
         </div>
-      </aside>
-      <div className="md:hidden p-4">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open sidebar">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0" aria-describedby={undefined}>
-            <SheetTitle className="sr-only">{roleLabel} sidebar</SheetTitle>
-            <SidebarContent
-              roleLabel={roleLabel}
-              roleIcon={roleIcon}
-              navSections={navSections}
-              isCollapsed={false}
-              onToggle={() => { }}
-              onNavigate={() => setOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
+        <AnimatedSidebarTrigger
+          className="size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+          aria-label="Open sidebar"
+        >
+          <Menu className="size-5" />
+        </AnimatedSidebarTrigger>
       </div>
-    </>
+
+      {/* Main Animated Sidebar */}
+      <AnimatedSidebar
+        ariaLabel={`${roleLabel} workspace`}
+        collapsible="icon"
+        className="min-h-0"
+        panelClassName="h-dvh border-border/40 bg-card/60 backdrop-blur-xl"
+      >
+        {/* Minimal, clean top header without slop */}
+        <AnimatedSidebarHeader className="p-4 pb-3">
+          <div className="flex items-center gap-3 overflow-hidden px-1">
+            <div className="flex size-8 shrink-0 items-center justify-center text-foreground">
+              <CompassLogo className="size-6 text-foreground" />
+            </div>
+            <span className="truncate text-lg font-black tracking-tight font-inter text-foreground group-data-[state=collapsed]/sidebar:hidden">
+              Scorpio
+            </span>
+            <AnimatedSidebarClose className="ml-auto text-muted-foreground hover:text-foreground hover:bg-muted md:hidden">
+              <X aria-hidden="true" className="size-4.5" />
+            </AnimatedSidebarClose>
+          </div>
+        </AnimatedSidebarHeader>
+
+        <AnimatedSidebarContent className="px-2.5 py-2">
+          {navSections.map((section) => (
+            <AnimatedSidebarGroup key={section.label} className="py-1">
+              <AnimatedSidebarGroupLabel>
+                {section.label}
+              </AnimatedSidebarGroupLabel>
+              <AnimatedSidebarGroupContent>
+                <AnimatedSidebarMenu>
+                  {section.items.map((item) => {
+                    if ("dialog" in item) {
+                      return (
+                        <SustainabilityDialogItem
+                          key={item.dialog}
+                          label={item.label}
+                        />
+                      );
+                    }
+
+                    const isRootRoute =
+                      item.href === "/teacher" ||
+                      item.href === "/student" ||
+                      item.href === "/admin";
+                    const isActive = pathname
+                      ? isRootRoute
+                        ? pathname === item.href
+                        : pathname === item.href ||
+                          pathname.startsWith(item.href + "/")
+                      : false;
+
+                    const Icon = item.icon;
+
+                    return (
+                      <AnimatedSidebarMenuItem key={item.href}>
+                        <AnimatedSidebarMenuButton
+                          href={item.href}
+                          isActive={isActive}
+                          icon={<Icon className="size-5" />}
+                          badge={
+                            item.badge ? (
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                                {item.badge}
+                              </span>
+                            ) : undefined
+                          }
+                        >
+                          {item.label}
+                        </AnimatedSidebarMenuButton>
+                      </AnimatedSidebarMenuItem>
+                    );
+                  })}
+                </AnimatedSidebarMenu>
+              </AnimatedSidebarGroupContent>
+            </AnimatedSidebarGroup>
+          ))}
+        </AnimatedSidebarContent>
+
+        <SidebarFooterSection
+          roleLabel={roleLabel}
+          isCollapsed={isCollapsed}
+        />
+
+        <AnimatedSidebarRail />
+      </AnimatedSidebar>
+    </AnimatedSidebarProvider>
   );
 }
-

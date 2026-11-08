@@ -278,7 +278,7 @@ export function MathInputField({
   }, [disabled, syncValue]);
 
   const symCls = cn(
-    "inline-flex items-center justify-center rounded border border-border",
+    "inline-flex items-center justify-center rounded-md border border-border",
     "bg-background hover:bg-muted active:scale-95 transition-all font-medium text-foreground select-none cursor-pointer",
     compact ? "h-7 min-w-[28px] px-1.5 text-xs" : "h-8 min-w-[32px] px-2 text-sm",
   );
@@ -354,7 +354,7 @@ export function MathInputField({
               onClick={() => setShowPreview((v) => !v)}
               aria-expanded={showPreview}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
                 showPreview
                   ? "bg-emerald-600 text-white border-emerald-600"
                   : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground",
@@ -423,7 +423,7 @@ export function MathInputField({
                       key={b.type}
                       type="button"
                       onMouseDown={(e) => { e.preventDefault(); openBuilder(b.type); }}
-                      className="flex items-center gap-2 rounded-lg border border-border p-2.5 bg-background hover:bg-primary/5 hover:border-primary/40 active:scale-[0.98] transition-all text-left cursor-pointer"
+                      className="flex items-center gap-2 rounded-xl border border-border p-2.5 bg-background hover:bg-primary/5 hover:border-primary/40 active:scale-[0.98] transition-all text-left cursor-pointer"
                     >
                       <span className="text-lg w-6 text-center shrink-0">{b.symbol}</span>
                       <div>

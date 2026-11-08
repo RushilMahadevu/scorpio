@@ -8,7 +8,6 @@ import {
   GraduationCap,
   PackageOpen,
   ChartColumnBig,
-  BowArrow,
   NotebookPen,
 } from "lucide-react";
 import { RaiseLogo } from "./ui/raise-logo";
@@ -44,12 +43,6 @@ const navSections: NavSection[] = [
     label: "Impact",
     items: [
       { dialog: "sustainability", label: "Green Impact" },
-    ],
-  },
-  {
-    label: "Offline",
-    items: [
-      { href: "/student/practice", label: "Practice", icon: BowArrow, badge: "Offline" },
     ],
   },
 ];

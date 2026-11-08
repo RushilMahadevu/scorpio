@@ -26,14 +26,6 @@ export async function checkBudget(
       return { allowed: false, error: "Your subscription is no longer active." };
     }
 
-    // Practice Feature Suspension (Eco & Token Conservation)
-    if (type === "practice") {
-      return {
-        allowed: false,
-        error: "Practice has been temporarily disabled due to environmental harm (excessive token waste). Warning: Looking for better solutions."
-      };
-    }
-
     // 2. Network-wide Budget Enforcement (Hard Cap in cents)
     const budgetLimit = data?.aiBudgetLimit || 0;
     const currentUsage = (data?.aiUsageCurrent || 0) + (data?.aiUsageReserved || 0);
@@ -67,19 +59,6 @@ export async function checkBudget(
           return { 
             allowed: false, 
             error: `You have used all ${teacherAllowance} of your Raise messages for this period. Contact your teacher to increase your allowance.`
-          };
-        }
-      }
-
-      // Practice Limit
-      if (type === "practice") {
-        const practiceAllowance = data?.practiceLimitPerStudent || 0;
-        const practiceUsage = userData?.practiceUsageCurrent || 0;
-
-        if (practiceAllowance > 0 && practiceUsage >= practiceAllowance) {
-          return { 
-            allowed: false, 
-            error: `You have used all ${practiceAllowance} of your generated practice problems for this period.` 
           };
         }
       }

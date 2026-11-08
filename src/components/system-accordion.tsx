@@ -1,6 +1,6 @@
 "use client";
 
-import { Hand, NotebookPen, Edit3, Waypoints, PackageOpen, Maximize2, Sparkles, ArrowRight } from "lucide-react";
+import { Hand, NotebookPen, Waypoints, PackageOpen, Maximize2, Sparkles, ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
@@ -44,20 +44,6 @@ const items = [
   },
   {
     id: 3,
-    title: "Adaptive Practice Engine",
-    shortTitle: "Practice",
-    badge: "Mastery Scaffolding",
-    Icon: Edit3,
-    imgSrc: "/network-previews/practice.png",
-    description: "Dynamic problem sets that adapt to student performance, automatically isolating conceptual bottlenecks before moving forward.",
-    bullets: [
-      "Multi-step parametric problem generators",
-      "Targeted scaffolding for recurring misconceptions",
-      "Immediate instructor telemetry on struggle areas",
-    ],
-  },
-  {
-    id: 4,
     title: "Equation Vault",
     shortTitle: "Equations",
     badge: "Symbolic Knowledge Base",
@@ -71,7 +57,7 @@ const items = [
     ],
   },
   {
-    id: 5,
+    id: 4,
     title: "Waypoints Network",
     shortTitle: "Waypoints",
     badge: "Faculty Collaborative",

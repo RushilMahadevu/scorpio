@@ -113,11 +113,11 @@ export function ScientificCalculator({
             </div>
 
             {/* Mode Pills */}
-            <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/60 text-[11px] font-semibold shrink-0">
+            <div className="flex items-center bg-muted/60 p-0.5 rounded-full border border-border/60 text-[11px] font-semibold shrink-0">
               <button
                 onClick={() => { setMode("desmos-sci"); setIsMinimized(false); }}
                 className={cn(
-                  "px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1",
+                  "px-2.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1",
                   mode === "desmos-sci"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -129,7 +129,7 @@ export function ScientificCalculator({
               <button
                 onClick={() => { setMode("desmos-graph"); setIsMinimized(false); }}
                 className={cn(
-                  "px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1",
+                  "px-2.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1",
                   mode === "desmos-graph"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -142,7 +142,7 @@ export function ScientificCalculator({
               <button
                 onClick={() => { setMode("react-calc"); setIsMinimized(false); }}
                 className={cn(
-                  "px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1",
+                  "px-2.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1",
                   mode === "react-calc"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -155,7 +155,7 @@ export function ScientificCalculator({
               <button
                 onClick={() => { setMode("constants"); setIsMinimized(false); }}
                 className={cn(
-                  "px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1",
+                  "px-2.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1",
                   mode === "constants"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -174,7 +174,7 @@ export function ScientificCalculator({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
                 onClick={() => setIsExpanded((v) => !v)}
                 title={isExpanded ? "Standard view" : "Expand view"}
               >
@@ -186,7 +186,7 @@ export function ScientificCalculator({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => setIsMinimized((v) => !v)}
               title={isMinimized ? "Open calculator" : "Minimize to pill"}
             >
@@ -197,7 +197,7 @@ export function ScientificCalculator({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+              className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive cursor-pointer"
               onClick={onClose}
               title="Close calculator"
             >

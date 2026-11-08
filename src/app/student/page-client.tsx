@@ -13,15 +13,30 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { FileText, FileCheck, ArrowRight, PackageOpen, BowArrow, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck } from "lucide-react";
+import { FileText, FileCheck, ArrowRight, PackageOpen, LayoutDashboard, GraduationCap, NotebookPen, ShieldCheck } from "lucide-react";
 import { RaiseLogo } from "@/components/ui/raise-logo";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
+import { StudentProgressChart } from "@/components/dashboard/student-progress-chart";
+
 interface Stats {
   totalAssignments: number;
   completedAssignments: number;
   pendingAssignments: number;
+}
+
+interface RecentAssignment {
+  id: string;
+  title: string;
+  dueDate: any;
+  isSubmitted: boolean;
+}
+
+interface ScorePoint {
+  title: string;
+  score: number;
+  date: string;
 }
 
 export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }) {
@@ -32,6 +47,8 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
     completedAssignments: 0,
     pendingAssignments: 0,
   });
+  const [recentAssignments, setRecentAssignments] = useState<RecentAssignment[]>([]);
+  const [recentScores, setRecentScores] = useState<ScorePoint[]>([]);
   const [teacherId, setTeacherId] = useState<string | null>(null);
   const [courseId, setCourseId] = useState<string | null>(null);
   const [teacherName, setTeacherName] = useState<string | null>(null);
@@ -110,6 +127,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
 
         let totalAssignments = 0;
         let currentAssignmentIds = new Set<string>();
+        let assignmentsList: any[] = [];
 
         // FETCHING LOGIC: Priority to courseId, fallback to teacherId (legacy)
         if (courseId) {
@@ -117,7 +135,10 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
             query(collection(db, "assignments"), where("answerKeySeparated", "==", true), where("courseId", "==", courseId))
           );
           totalAssignments = assignmentsSnap.size;
-          assignmentsSnap.docs.forEach(doc => currentAssignmentIds.add(doc.id));
+          assignmentsSnap.docs.forEach(doc => {
+            currentAssignmentIds.add(doc.id);
+            assignmentsList.push({ id: doc.id, ...doc.data() });
+          });
         } else if (teacherId) {
           // Fallback for legacy mode: fetch ALL assignments for this teacher
           // Note: If teacherId is a code, we'll try to resolve it first in syncTeacherId
@@ -125,23 +146,71 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
             query(collection(db, "assignments"), where("answerKeySeparated", "==", true), where("teacherId", "==", teacherId), where("courseId", "==", null))
           );
           totalAssignments = assignmentsSnap.size;
-          assignmentsSnap.docs.forEach(doc => currentAssignmentIds.add(doc.id));
+          assignmentsSnap.docs.forEach(doc => {
+            currentAssignmentIds.add(doc.id);
+            assignmentsList.push({ id: doc.id, ...doc.data() });
+          });
         }
 
         const submissionsSnap = await getDocs(
           query(collection(db, "submissions"), where("studentId", "==", user.uid))
         );
 
-        const submissions = submissionsSnap.docs.map(d => d.data());
+        const submissions = submissionsSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+        const submittedAssignmentIds = new Set(
+          submissions.filter(data => data.status !== 'draft').map(data => data.assignmentId)
+        );
         const completedAssignments = submissions.filter(data =>
           data.status !== 'draft' && currentAssignmentIds.has(data.assignmentId)
         ).length;
+
+        // Map assignment title lookup
+        const titleMap = new Map<string, string>();
+        assignmentsList.forEach(a => titleMap.set(a.id, a.title || "Assignment"));
+
+        // Extract score points sorted chronologically
+        const gradedSubmissions = submissions
+          .filter(s => s.graded && typeof s.score === 'number' && s.status !== 'draft' && currentAssignmentIds.has(s.assignmentId))
+          .sort((a, b) => {
+            const timeA = a.submittedAt?.seconds ? a.submittedAt.seconds * 1000 : (a.submittedAt ? new Date(a.submittedAt).getTime() : 0);
+            const timeB = b.submittedAt?.seconds ? b.submittedAt.seconds * 1000 : (b.submittedAt ? new Date(b.submittedAt).getTime() : 0);
+            return timeA - timeB;
+          });
+
+        const scorePoints: ScorePoint[] = gradedSubmissions.map(s => {
+          const rawDate = s.submittedAt?.seconds ? new Date(s.submittedAt.seconds * 1000) : (s.submittedAt ? new Date(s.submittedAt) : null);
+          return {
+            title: titleMap.get(s.assignmentId) || "Assignment",
+            score: s.score,
+            date: rawDate ? rawDate.toLocaleDateString() : "",
+          };
+        });
+
+        // Determine top upcoming assignments: unsubmitted first, sorted by due date ascending
+        const upcoming: RecentAssignment[] = assignmentsList
+          .map(a => ({
+            id: a.id,
+            title: a.title || "Untitled",
+            dueDate: a.dueDate,
+            isSubmitted: submittedAssignmentIds.has(a.id),
+          }))
+          .sort((a, b) => {
+            if (a.isSubmitted !== b.isSubmitted) {
+              return a.isSubmitted ? 1 : -1;
+            }
+            const timeA = a.dueDate?.seconds ? a.dueDate.seconds * 1000 : (a.dueDate ? new Date(a.dueDate).getTime() : Infinity);
+            const timeB = b.dueDate?.seconds ? b.dueDate.seconds * 1000 : (b.dueDate ? new Date(b.dueDate).getTime() : Infinity);
+            return timeA - timeB;
+          })
+          .slice(0, 3);
 
         setStats({
           totalAssignments,
           completedAssignments,
           pendingAssignments: Math.max(0, totalAssignments - completedAssignments),
         });
+        setRecentScores(scorePoints);
+        setRecentAssignments(upcoming);
         setDataReady(true);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -233,27 +302,22 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
               icon: GraduationCap
             },
             {
-              title: "5. Adaptive Practice (Temporarily Paused)",
-              description: "New problems are paused to reduce token use. Your recent attempts are still available.",
-              icon: BowArrow
-            },
-            {
-              title: "6. Digital Notebook",
+              title: "5. Digital Notebook",
               description: "A persistent, Markdown-supported space for your notes. Use it to document derivations, save conceptual explanations, and prep for exams without switching platforms.",
               icon: NotebookPen
             },
             {
-              title: "7. The Equation Vault",
+              title: "6. The Equation Vault",
               description: "Your searchable database for physics formulas and constants. You can quickly search for specific equations and reference them while working on problems.",
               icon: PackageOpen
             },
             {
-              title: "8. Raise & Learning Library",
+              title: "7. Raise & Learning Library",
               description: "Access general conceptual help outside of specific assignments. If you're confused about a fundamental law of physics, use Raise for a deep-dive explanation or browse curated resources.",
               icon: RaiseLogo
             },
             {
-              title: "9. Working with the Socratic AI",
+              title: "8. Working with the Socratic AI",
               description: "To succeed, share your logic with the AI. If you're stuck, describe what you've tried or provide a partial derivation. The AI will analyze your work and provide a targeted hint to help you reach the next step.",
               icon: ShieldCheck,
               isSpecial: true
@@ -315,26 +379,123 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         cancelText="Stay"
       />
 
-      <section aria-labelledby="coursework-heading" className="space-y-3">
-        <h2 id="coursework-heading" className="text-lg font-semibold">Coursework</h2>
-        <WorkspaceSummary label="Assignment progress" items={[
-          { label: "Assigned", value: stats.totalAssignments },
-          { label: "Submitted", value: stats.completedAssignments },
-          { label: "To do", value: stats.pendingAssignments },
-        ]} />
-        <div className="flex flex-wrap gap-2">
-          <Button asChild><Link href="/student/assignments">View assignments <ArrowRight /></Link></Button>
-          <Button asChild variant="outline"><Link href="/student/grades">View grades</Link></Button>
-        </div>
-      </section>
+      <StudentProgressChart
+        totalAssignments={stats.totalAssignments}
+        completedAssignments={stats.completedAssignments}
+        pendingAssignments={stats.pendingAssignments}
+        scores={recentScores}
+      />
 
-      <section aria-labelledby="study-heading" className="space-y-3 border-t border-border pt-5">
-        <h2 id="study-heading" className="text-lg font-semibold">Study tools</h2>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild><Link href="/student/tutor"><RaiseLogo size={16} aria-hidden /> Ask Raise</Link></Button>
-          <Button asChild variant="outline"><Link href="/student/notebook">Notebook</Link></Button>
-          <Button asChild variant="outline"><Link href="/student/vault">Equation Vault</Link></Button>
-          <Button asChild variant="outline"><Link href="/student/resources">Resources</Link></Button>
+      <Card className="gap-0 py-0 shadow-none overflow-hidden">
+        <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-foreground">Upcoming assignments</h2>
+          <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
+            <Link href="/student/assignments">All Assignments <ArrowRight className="size-3.5" /></Link>
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0 bg-card">
+          {recentAssignments.length > 0 ? (
+            <ul className="divide-y divide-border">
+              {recentAssignments.map((assignment) => (
+                <li key={assignment.id}>
+                  <Link
+                    href={assignment.isSubmitted ? `/student/submissions` : `/student/assignment-view?id=${assignment.id}`}
+                    className="group flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-muted/30 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="block break-words text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                          {assignment.title}
+                        </span>
+                        {assignment.isSubmitted && (
+                          <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5 font-normal">
+                            Completed
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        {assignment.dueDate
+                          ? `Due ${new Date(assignment.dueDate.seconds ? assignment.dueDate.seconds * 1000 : assignment.dueDate).toLocaleDateString()}`
+                          : "No due date"}
+                      </span>
+                    </div>
+                    <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="px-5 py-6 text-sm text-muted-foreground">
+              {dataReady ? "No coursework assigned yet." : "Loading coursework…"}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <section aria-labelledby="study-heading" className="space-y-3 pt-1">
+        <h2 id="study-heading" className="text-sm font-semibold tracking-tight text-foreground">
+          Study Tools
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Link
+            href="/student/tutor"
+            className="group rounded-xl border border-border/80 bg-card p-4 transition-all hover:border-primary/50 hover:bg-muted/20"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                <RaiseLogo size={16} aria-hidden /> Ask Raise
+              </span>
+              <ArrowRight className="size-3.5 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Socratic physics AI guidance
+            </p>
+          </Link>
+
+          <Link
+            href="/student/vault"
+            className="group rounded-xl border border-border/80 bg-card p-4 transition-all hover:border-primary/50 hover:bg-muted/20"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                Equation Vault
+              </span>
+              <ArrowRight className="size-3.5 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Physics formulas & constants
+            </p>
+          </Link>
+
+          <Link
+            href="/student/notebook"
+            className="group rounded-xl border border-border/80 bg-card p-4 transition-all hover:border-primary/50 hover:bg-muted/20"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                Notebook
+              </span>
+              <ArrowRight className="size-3.5 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Derivations & Markdown notes
+            </p>
+          </Link>
+
+          <Link
+            href="/student/resources"
+            className="group rounded-xl border border-border/80 bg-card p-4 transition-all hover:border-primary/50 hover:bg-muted/20"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                Resources
+              </span>
+              <ArrowRight className="size-3.5 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Course materials & references
+            </p>
+          </Link>
         </div>
       </section>
 

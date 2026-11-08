@@ -58,7 +58,7 @@ export function MarkdownRenderer({ children, className, noProse, onLinkClick }: 
           }
         }}
       >
-        {children}
+        {children || ""}
       </ReactMarkdown>
     </div>
   );

@@ -477,11 +477,11 @@ export default function NotebookPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center bg-muted p-1 rounded-xl border border-border ">
+              <div className="flex items-center bg-muted p-1 rounded-full border border-border ">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-lg cursor-pointer"
+                  className="h-8 w-8 rounded-full cursor-pointer"
                   aria-label="Zoom out"
                   onClick={() => setZoomLevel(prev => Math.max(50, prev - 10))}
                 >
@@ -493,7 +493,7 @@ export default function NotebookPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-lg cursor-pointer"
+                  className="h-8 w-8 rounded-full cursor-pointer"
                   aria-label="Zoom in"
                   onClick={() => setZoomLevel(prev => Math.min(200, prev + 10))}
                 >
@@ -503,7 +503,7 @@ export default function NotebookPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-lg cursor-pointer"
+                  className="h-8 w-8 rounded-full cursor-pointer"
                   aria-label="Reset zoom"
                   onClick={() => setZoomLevel(100)}
                 >
@@ -579,7 +579,7 @@ export default function NotebookPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 rounded-md hover:bg-accent  cursor-pointer"
+                className="h-6 w-6 rounded-full hover:bg-accent  cursor-pointer"
                 aria-label="New notebook"
                 onClick={createNewNotebook}
               >
@@ -770,7 +770,7 @@ export default function NotebookPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-md hover:bg-accent  cursor-pointer"
+                    className="h-6 w-6 rounded-full hover:bg-accent  cursor-pointer"
                     aria-label="Close Raise help"
                     onClick={() => setShowCopilot(false)}
                   >

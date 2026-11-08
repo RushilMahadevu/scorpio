@@ -15,7 +15,10 @@ ${featuresContext}
 User role: ${userRole}
 User question: ${message}
 
-If suggesting navigation, wrap the path in parentheses like this: (/student/grades)`;
+Formatting & Markdown Instructions:
+- Format your response using clean Markdown with bolding, lists, and links where appropriate.
+- When referencing or suggesting navigation to platform pages, use standard Markdown links using the paths above (e.g. [Assignments](/student/assignments) or [Grades](/student/grades)) or wrap the path in parentheses like (/student/grades).
+- Keep responses concise, warm, helpful, and direct.`;
 
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],

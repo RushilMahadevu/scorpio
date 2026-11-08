@@ -29,7 +29,6 @@ import {
   ArrowRight,
   Loader2,
   TrendingUp,
-  BowArrow,
   NotebookPen,
   ShieldCheck,
   CheckCircle2,
@@ -96,7 +95,6 @@ export default function NetworkPage() {
   const [joiningOrgId, setJoiningOrgId] = useState("");
   const [updatingBudget, setUpdatingBudget] = useState(false);
   const [tempBudget, setTempBudget] = useState<string>("");
-  const [tempPracticeLimitPerStudent, setTempPracticeLimitPerStudent] = useState<string>("");
   const [updatingNotebook, setUpdatingNotebook] = useState(false);
   const [tempNotebookLimitPerStudent, setTempNotebookLimitPerStudent] = useState<string>("");
   const [tempAiNotebookLimitPerStudent, setTempAiNotebookLimitPerStudent] = useState<string>("");
@@ -129,12 +127,6 @@ export default function NetworkPage() {
       setTempBudget((organization.aiBudgetLimit / 100).toFixed(2));
     } else {
       setTempBudget("10.00");
-    }
-
-    if (organization?.practiceLimitPerStudent !== undefined) {
-      setTempPracticeLimitPerStudent(organization.practiceLimitPerStudent.toString());
-    } else {
-      setTempPracticeLimitPerStudent("0");
     }
 
     if (organization?.notebookLimitPerStudent !== undefined) {
@@ -227,10 +219,6 @@ export default function NetworkPage() {
     } finally {
       setLimitsLoading(false);
     }
-  };
-
-  const handleUpdatePracticeLimit = async () => {
-    toast.error("Practice is temporarily paused platform-wide for compute token optimization.");
   };
 
   const handleUpdateBudget = async () => {
@@ -1135,7 +1123,7 @@ export default function NetworkPage() {
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-md"
+                              className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-full"
                               onClick={() => stepBudget(amount)}
                             >
                               +${amount}
@@ -1240,7 +1228,7 @@ export default function NetworkPage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-md"
+                                className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-full"
                                 onClick={() => stepTutor(amount)}
                               >
                                 +{amount}
@@ -1367,51 +1355,6 @@ export default function NetworkPage() {
                         </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-
-                {/* 4. Practice Scenarios (Clean Status Row) */}
-                <Card className="border-border/60 bg-muted/20 shadow-sm relative overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-bold flex items-center gap-2 text-muted-foreground">
-                        <BowArrow className="h-4 w-4 text-zinc-500" />
-                        Practice Scenarios
-                      </CardTitle>
-                      <Badge variant="outline" className="text-[10px] font-mono border-zinc-300 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
-                        CONSERVATION PAUSE
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-xs">
-                      Numerical pool settings preserved. Temporarily paused for token optimization.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-background/50 border rounded-xl shadow-xs opacity-75">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">
-                          Generated This Month
-                        </span>
-                        <span className="text-2xl font-black font-mono text-muted-foreground">
-                          {organization.practiceUsageCurrent || 0}
-                        </span>
-                      </div>
-                      <div className="p-3 bg-background/50 border rounded-xl shadow-xs opacity-75">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">
-                          Pool Allocated
-                        </span>
-                        <span className="text-2xl font-black font-mono text-muted-foreground">
-                          {organization.practiceLimit || 0}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2.5">
-                      <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <p className="text-xs text-amber-900 dark:text-amber-200 leading-snug">
-                        <strong>Engine Optimization:</strong> Practice generation is temporarily paused platform-wide to conserve compute tokens. Your configured limits will seamlessly reactivate when updates land.
-                      </p>
-                    </div>
                   </CardContent>
                 </Card>
 

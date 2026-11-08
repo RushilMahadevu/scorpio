@@ -305,9 +305,9 @@ export function LandingChatbot() {
               {limitReached && (
                 <div className="ml-8 p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
                   <p className="text-xs font-semibold text-foreground">Ready to get full access?</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited Raise help, practice, and platform features.</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited Raise help, notebooks, and platform features.</p>
                   <Link href="/signup" onClick={() => setIsOpen(false)}>
-                    <Button size="sm" className="w-full rounded-xl font-bold text-xs cursor-pointer h-8 mt-1">
+                    <Button size="sm" className="w-full rounded-full font-bold text-xs cursor-pointer h-8 mt-1">
                       Sign up for free <ArrowRight className="h-3 w-3 ml-1" />
                     </Button>
                   </Link>
@@ -342,7 +342,7 @@ export function LandingChatbot() {
                   size="icon"
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || isLoading || limitReached}
-                  className="h-7 w-7 shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer"
+                  className="h-7 w-7 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5" />
                 </Button>

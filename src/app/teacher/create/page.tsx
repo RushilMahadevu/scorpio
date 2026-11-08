@@ -481,7 +481,7 @@ function CreateAssignmentForm() {
                   id="title"
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="e.g. Unit 1 practice"
+                  placeholder="e.g. Unit 1 review"
                   required
                 />
               </div>

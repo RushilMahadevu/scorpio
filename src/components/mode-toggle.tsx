@@ -77,7 +77,7 @@ export function ModeToggle() {
                     e.stopPropagation();
                     setSpacyLevel(level);
                   }}
-                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${spacyLevel === level
+                  className={`h-6 w-full text-[10px] rounded-full border transition-colors cursor-pointer ${spacyLevel === level
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-background hover:bg-muted border-border"
                     }`}
@@ -96,7 +96,7 @@ export function ModeToggle() {
                     e.stopPropagation();
                     setNebulaBrightness(level);
                   }}
-                  className={`h-6 w-full text-[10px] rounded border transition-colors cursor-pointer ${nebulaBrightness === level
+                  className={`h-6 w-full text-[10px] rounded-full border transition-colors cursor-pointer ${nebulaBrightness === level
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-background hover:bg-muted border-border"
                     }`}
@@ -128,7 +128,7 @@ export function ModeToggle() {
                     setFont(f.id as FontOption);
                   }}
                   style={{ fontFamily: f.font }}
-                  className={`w-full text-left px-2 py-1.5 text-[11px] rounded transition-colors cursor-pointer flex items-center justify-between ${font === f.id
+                  className={`w-full text-left px-2 py-1.5 text-[11px] rounded-lg transition-colors cursor-pointer flex items-center justify-between ${font === f.id
                     ? "bg-primary/10 text-primary font-bold"
                     : "hover:bg-muted text-muted-foreground"
                     }`}
@@ -164,7 +164,7 @@ export function ModeToggle() {
                   }}
                   title={t.name}
                   disabled={t.value === "midnight" && theme === "light"}
-                  className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"} ${t.value === "midnight" && theme === "light" ? "opacity-50 grayscale pointer-events-none" : ""
+                  className={`group relative flex flex-col items-center justify-center p-1 rounded-lg border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === t.value ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"} ${t.value === "midnight" && theme === "light" ? "opacity-50 grayscale pointer-events-none" : ""
                     }`}
                 >
                   <div className={`h-4 w-4 rounded-full ${t.color} shadow-xs group-hover:scale-110 transition-transform`} />
@@ -175,7 +175,7 @@ export function ModeToggle() {
                   e.stopPropagation();
                   setThemeColor("custom");
                 }}
-                className={`group relative flex flex-col items-center justify-center p-1 rounded-md border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === "custom" ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
+                className={`group relative flex flex-col items-center justify-center p-1 rounded-lg border transition-all hover:bg-muted/50 cursor-pointer ${themeColor === "custom" ? "border-primary bg-primary/5 shadow-sm scale-110" : "border-transparent"
                   }`}
                 title="Custom Color"
               >

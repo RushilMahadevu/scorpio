@@ -47,9 +47,9 @@ export interface Organization {
   // AI Budgeting & Usage
   aiBudgetLimit: number; // Monthly budget in cents or "token units" (e.g. 500 = $5.00)
   aiUsageCurrent: number; // Current month's usage in same units
-  practiceLimitPerStudent: number; // Allowance assigned per member
-  practiceLimit: number; // Calculated: practiceLimitPerStudent * memberCount
-  practiceUsageCurrent: number; // Current month's practice usage count
+  practiceLimitPerStudent?: number; // Allowance assigned per member (legacy)
+  practiceLimit?: number; // Calculated: practiceLimitPerStudent * memberCount (legacy)
+  practiceUsageCurrent?: number; // Current month's practice usage count (legacy)
   notebookLimitPerStudent?: number; // Max notebooks a student can create
   aiNotebookLimitPerStudent?: number; // Max AI interactions per student per month
   notebookLimit?: number; // Total network usage limit for interactions

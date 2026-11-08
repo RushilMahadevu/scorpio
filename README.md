@@ -108,7 +108,7 @@ At the heart of Crux's AI tutoring capabilities is a **transparent and research-
 [**📦 View Prompt Layering Diagram (MD)**](LAYERING.md)
 
 ### 🔄 Data & AI Infrastructure
-- **Modular AI Core:** Specialized `src/lib/ai/` engines for **Tutor**, **Grading**, **Notebook**, **Practice**, **Research**, and **Network** (Student Portfolios).
+- **Modular AI Core:** Specialized `src/lib/ai/` engines for **Tutor**, **Grading**, **Notebook**, **Research**, and **Network** (Student Portfolios).
 - **Real-Time Synchronization:** Powered by **Cloud Firestore** with optimistic UI updates for zero-latency interaction.
 - **Background Orchestration:** Firebase Cloud Functions handle automated grading, **Polar** subscriber management, and **Resend** email templates.
 

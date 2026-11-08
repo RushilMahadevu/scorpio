@@ -107,13 +107,13 @@ export default function HeroSection() {
           transition={{ delay: 1.7, duration: 0.6 }}
         >
           <Link href="#cta">
-            <button className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-extrabold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+            <button className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-extrabold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
               Get Started
               <ArrowRight className="h-4 w-4" />
             </button>
           </Link>
           <Link href="/about">
-            <button className="px-8 py-3 border rounded-lg font-extrabold hover:bg-accent transition-colors">
+            <button className="px-8 py-3 border rounded-full font-extrabold hover:bg-accent transition-colors">
               Learn More
             </button>
           </Link>

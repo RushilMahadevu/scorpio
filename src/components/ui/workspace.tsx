@@ -28,7 +28,7 @@ export function WorkspaceSummary({
   items: { label: string; value: ReactNode }[];
 }) {
   return (
-    <dl aria-label={label} className={`grid gap-px overflow-hidden rounded-xl border border-border bg-border ${items.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
+    <dl aria-label={label} className={`grid gap-px overflow-hidden rounded-2xl border border-border bg-border ${items.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
       {items.map((item) => (
         <div key={item.label} className="min-w-0 space-y-1 bg-card px-4 py-3 sm:px-5">
           <dt className="text-xs font-medium text-muted-foreground">{item.label}</dt>

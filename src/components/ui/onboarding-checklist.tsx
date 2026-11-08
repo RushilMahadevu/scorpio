@@ -230,7 +230,7 @@ export function OnboardingChecklist({
               </div>
 
               <Link href={items.find(it => !it.check(checkData))?.link || items[0].link} className="shrink-0 ml-2 hidden lg:block">
-                <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-bold rounded-xl border-primary/20 hover:bg-primary/5 gap-2">
+                <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-bold rounded-full border-primary/20 hover:bg-primary/5 gap-2">
                   {progress === 100 ? "All Set!" : "Next Step"}
                   <ChevronRight className="h-3 w-3" />
                 </Button>

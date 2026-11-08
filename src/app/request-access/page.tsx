@@ -299,7 +299,7 @@ export default function RequestAccessPage() {
               )}
 
               <Button
-                className="w-full h-12 text-base font-semibold rounded-lg"
+                className="w-full h-12 text-base font-semibold rounded-full"
                 onClick={handleSubmit}
                 disabled={loading}
               >

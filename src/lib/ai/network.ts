@@ -10,9 +10,6 @@ export interface NetworkLimitsContext {
   planId: string;
   aiBudgetLimit: number;       // in cents
   aiUsageCurrent: number;      // in cents
-  practiceLimit: number;       // total pool
-  practiceUsageCurrent: number;
-  practiceLimitPerStudent: number;
   notebookLimitPerStudent: number;
   aiNotebookLimitPerStudent: number;
   aiTutorLimitPerStudent: number;
@@ -28,9 +25,6 @@ export async function getNetworkLimitsHelp(
     const budgetUsedPercent = ctx.aiBudgetLimit > 0
       ? ((ctx.aiUsageCurrent / ctx.aiBudgetLimit) * 100).toFixed(1)
       : "0";
-    const practiceUsedPercent = ctx.practiceLimit > 0
-      ? ((ctx.practiceUsageCurrent / ctx.practiceLimit) * 100).toFixed(1)
-      : "0";
 
     const systemPrompt = `You are **Raise**, an expert AI assistant for physics teachers managing their Scorpio Network.
 Your job is to answer questions about limits, budgets, and capacities — clearly, concisely, and in plain English.
@@ -44,10 +38,6 @@ Plan: ${ctx.planId === "free" ? "Free (upgrade required for most features)" : ct
   • Used this period: $${(ctx.aiUsageCurrent / 100).toFixed(4)} (${budgetUsedPercent}%)
   • Remaining headroom: $${Math.max(0, (ctx.aiBudgetLimit - ctx.aiUsageCurrent) / 100).toFixed(4)}
   • Effect: When current bill hits the cap, ALL AI features pause for the billing period.
-
-🏹 PRACTICE CAPACITY (Physics Scenario Generator) [STATUS: TEMPORARILY OFFLINE]
-  • Status: Practice mode is currently suspended network-wide for both students and teachers due to environmental harm and token waste. Warning: Looking for better solutions.
-  • Generation of new scenarios is paused until further notice.
 
 📒 NOTEBOOK CAPACITY (Research Workspace)
   • Max notebooks per student: ${ctx.notebookLimitPerStudent}

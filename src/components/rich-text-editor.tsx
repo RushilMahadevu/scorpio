@@ -53,7 +53,7 @@ const ToolbarButton = ({
         onMouseDown={onMouseDown}
         title={title}
         className={cn(
-          "flex items-center justify-center h-8 w-8 rounded-md transition-all duration-200 disabled:opacity-30 border cursor-pointer",
+          "flex items-center justify-center h-8 w-8 rounded-lg transition-all duration-200 disabled:opacity-30 border cursor-pointer",
           isActive 
             ? "bg-zinc-900 text-white border-zinc-950 dark:bg-zinc-100 dark:text-zinc-950 dark:border-white shadow-lg scale-[1.05] z-10" 
             : "text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200/80 dark:hover:bg-zinc-800/80 hover:text-zinc-900 dark:hover:text-zinc-100 bg-transparent border-transparent"

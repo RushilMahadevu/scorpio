@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   X, Send, Home, FileText, BarChart,
   Upload, Users, BookOpen, Rocket, Zap,
-  NotebookPen, BowArrow, Building2, LifeBuoy,
+  NotebookPen, Building2, LifeBuoy,
   Compass, ArrowRight, Image as ImageIcon, Trash2, Hand
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 
 type UserRole = 'student' | 'teacher';
-type ActiveTab = 'support' | 'nav';
+type ActiveTab = 'nav' | 'support';
 
 interface NavigationChatbotProps {
   userRole: UserRole;
@@ -48,7 +48,6 @@ const studentQuickActions: QuickAction[] = [
   { icon: FileText, label: 'Assignments', path: '/student/assignments' },
   { icon: BarChart, label: 'Grades', path: '/student/grades' },
   { icon: Hand, label: 'Raise', path: '/student/tutor' },
-  { icon: BowArrow, label: 'Practice (Offline)', path: '/student/practice' },
   { icon: NotebookPen, label: 'Notebook', path: '/student/notebook' },
   { icon: Upload, label: 'Submissions', path: '/student/submissions' },
   { icon: BookOpen, label: 'Resources', path: '/student/resources' },
@@ -68,7 +67,7 @@ const teacherQuickActions: QuickAction[] = [
 const studentSuggested = [
   "How do I start an assignment?",
   "What is Raise?",
-  "Why is Practice offline?",
+  "How do I use the Notebook?",
   "Where are my grades?",
 ];
 
@@ -85,7 +84,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('support');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('nav');
 
   // Support Form State
   const [issueType, setIssueType] = useState<'bug' | 'feature' | 'question'>('bug');
@@ -108,15 +107,19 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   const quickActions = userRole === 'student' ? studentQuickActions : teacherQuickActions;
 
   const extractAllNavigationPaths = (text: string): NavDestination[] => {
-    const matches = Array.from(text.matchAll(/\((\/(?:student|teacher)[^)\s]*)\)/g));
+    const matches = Array.from(
+      text.matchAll(/(?:\[([^\]]+)\]\((\/(?:student|teacher)[^)\s]*)\)|(?<!\])\((\/(?:student|teacher)[^)\s]*)\))/g)
+    );
     const destinations: NavDestination[] = [];
 
     for (const match of matches) {
-      const path = match[1];
+      const explicitLabel = match[1];
+      const path = match[2] || match[3];
+      if (!path || !path.startsWith('/')) continue;
       if (!destinations.some(d => d.path === path)) {
         const action = quickActions.find(a => a.path === path);
-        const fallbackLabel = path.split('/').pop()?.replace(/-/g, ' ') || path;
-        const label = action ? action.label : (fallbackLabel.charAt(0).toUpperCase() + fallbackLabel.slice(1));
+        const fallbackLabel = path.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || path;
+        const label = explicitLabel || (action ? action.label : (fallbackLabel.charAt(0).toUpperCase() + fallbackLabel.slice(1)));
         destinations.push({ path, label });
       }
     }
@@ -124,12 +127,22 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   };
 
   const formatMessageWithLinks = (text: string): string => {
-    // Replace `(/student/grades)` with `[Grades](/student/grades)` or `[/student/grades](/student/grades)`
-    return text.replace(/\((\/(?:student|teacher)[^)\s]*)\)/g, (_match, path) => {
-      const action = quickActions.find(a => a.path === path);
-      const label = action ? action.label : path;
-      return `[${label}](${path})`;
-    });
+    if (!text) return '';
+    // If the path is already inside a markdown link [Label](/path), preserve it intact.
+    // Only convert standalone paths like `(/student/grades)` into `[Grades](/student/grades)`
+    return text.replace(
+      /(?<!!)\[([^\]]+)\]\((\/(?:student|teacher)[^)\s]*)\)|(?<!\])\((\/(?:student|teacher)[^)\s]*)\)/g,
+      (fullMatch, _existingLabel, existingPath, standalonePath) => {
+        if (existingPath) {
+          return fullMatch;
+        }
+        const path = standalonePath;
+        const action = quickActions.find(a => a.path === path);
+        const fallbackLabel = path.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || path;
+        const label = action ? action.label : (fallbackLabel.charAt(0).toUpperCase() + fallbackLabel.slice(1));
+        return `[${label}](${path})`;
+      }
+    );
   };
 
   const handleNavigation = (path: string) => {
@@ -141,7 +154,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
     const firstName = profile?.displayName?.split(' ')[0] || (userRole === 'teacher' ? 'Teacher' : 'there');
     const roleBlurb = userRole === 'teacher'
       ? `I can help you navigate [Assignments](/teacher/assignments), [Create Assignment](/teacher/create), [Gradebook](/teacher/grades), [Network Limits](/teacher/network), [Waypoints](/teacher/waypoints), and more.`
-      : `I can help you navigate [Assignments](/student/assignments), your [Raise](/student/tutor), [Practice](/student/practice), [Notebook](/student/notebook), and [Grades](/student/grades).`;
+      : `I can help you navigate [Assignments](/student/assignments), your [Raise](/student/tutor), [Notebook](/student/notebook), and [Grades](/student/grades).`;
 
     setMessages([{
       role: 'assistant',
@@ -289,22 +302,27 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            setActiveTab('nav');
+          }
+          setIsOpen(!isOpen);
+        }}
         className={cn(
-          "fixed bottom-6 right-6 z-50 flex items-center gap-2.5 h-12 px-5 rounded-full cursor-pointer transition-all duration-200 shadow-2xl active:scale-95 select-none",
+          "fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2 h-11 sm:h-12 px-4 sm:px-5 rounded-full cursor-pointer transition-all duration-200 shadow-2xl active:scale-95 select-none",
           "bg-primary text-primary-foreground hover:bg-primary/90 border border-primary/20"
         )}
         aria-label="Support & Help"
       >
         {isOpen ? (
           <>
-            <X className="h-5 w-5 shrink-0" />
-            <span className="text-sm font-bold">Close</span>
+            <X className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold">Close</span>
           </>
         ) : (
           <>
-            <LifeBuoy className="h-6 w-6 shrink-0" />
-            <span className="text-md font-bold tracking-tight">Support</span>
+            <LifeBuoy className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-tight">Support</span>
           </>
         )}
       </button>
@@ -312,55 +330,193 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
       {/* Panel */}
       {isOpen && (
         <div className={cn(
-          "fixed bottom-22 right-6 z-50 flex flex-col",
-          "w-[520px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-6rem)]",
+          "fixed bottom-[74px] sm:bottom-20 right-3 sm:right-6 z-50 flex flex-col",
+          "w-[calc(100vw-1.5rem)] sm:w-[480px] h-[560px] max-h-[calc(100vh-6.5rem)]",
           "bg-background border border-border rounded-2xl shadow-2xl overflow-hidden",
           "animate-in fade-in-0 zoom-in-95 duration-150"
         )}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/70 bg-muted/30 shrink-0">
-            {/* Tab Switcher */}
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
-              <button
-                type="button"
-                onClick={() => setActiveTab('support')}
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer",
-                  activeTab === 'support'
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Support
-              </button>
+          <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 border-b border-border/70 bg-muted/30 shrink-0">
+            {/* Tab Switcher: Nav Help first, Support / Ticket after Nav Help */}
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-full">
               <button
                 type="button"
                 onClick={() => setActiveTab('nav')}
                 className={cn(
-                  "px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer",
+                  "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
                   activeTab === 'nav'
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Nav Help
+                <Compass className="h-3.5 w-3.5" />
+                <span>Nav Help</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('support')}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                  activeTab === 'support'
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <LifeBuoy className="h-3.5 w-3.5" />
+                <span>Support / Ticket</span>
               </button>
             </div>
 
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              aria-label="Close dialog"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
-          {/* TAB 1: SUPPORT / REPORT BUG */}
+          {/* TAB 1: NAV HELP */}
+          {activeTab === 'nav' && (
+            <div className="flex-1 flex flex-col min-h-0">
+              {/* Quick Navigation Shortcuts */}
+              <div className="px-3.5 sm:px-4 py-2 border-b border-border/40 bg-muted/20 shrink-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                  <Compass className="h-3 w-3" /> Jump to page
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {quickActions.map((action) => (
+                    <button
+                      key={action.path}
+                      type="button"
+                      onClick={() => handleNavigation(action.path)}
+                      title={action.label}
+                      className="flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-colors cursor-pointer border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground group min-w-0"
+                    >
+                      <action.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground shrink-0" />
+                      <span className="text-xs font-medium text-foreground truncate">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3 min-h-0">
+                {messages.map((m, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <div className={cn("flex gap-2", m.role === 'user' ? "justify-end" : "justify-start")}>
+                      {m.role === 'assistant' && (
+                        <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                          <RaiseLogo size={12} className="currentColor" />
+                        </div>
+                      )}
+                      <div className={cn(
+                        "max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs",
+                        m.role === 'user'
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "bg-muted text-foreground"
+                      )}>
+                        {m.role === 'user' ? (
+                          <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                        ) : (
+                          <MarkdownRenderer
+                            onLinkClick={(href) => handleNavigation(href)}
+                            className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed prose-p:my-1 prose-p:leading-relaxed prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-1.5 prose-headings:text-xs prose-headings:font-bold prose-code:text-[11px] prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:my-1.5 prose-pre:p-2 prose-pre:bg-background/80 overflow-hidden break-words"
+                          >
+                            {formatMessageWithLinks(m.content)}
+                          </MarkdownRenderer>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Dedicated Open Page Buttons for Assistant Suggestions */}
+                    {m.navigation && m.navigation.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 ml-8 pt-0.5">
+                        {m.navigation.map((nav, idx) => (
+                          <Button
+                            key={idx}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleNavigation(nav.path)}
+                            className="h-7 text-xs font-bold rounded-full border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer gap-1 shadow-xs max-w-[200px]"
+                          >
+                            <Compass className="h-3 w-3 shrink-0" />
+                            <span className="truncate">Open {nav.label} →</span>
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Suggested Questions */}
+                {!isLoading && messages.length <= 2 && (
+                  <div className="space-y-1 pt-1 ml-8">
+                    {suggestedPrompts.map((p, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => sendMessage(p)}
+                        className="flex items-center gap-1.5 w-full text-left text-xs text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
+                      >
+                        <ArrowRight className="h-3 w-3 shrink-0" />
+                        <span>{p}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {isLoading && (
+                  <div className="flex gap-2">
+                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
+                      <RaiseLogo size={12} className="currentColor" />
+                    </div>
+                    <div className="bg-muted rounded-xl px-3 py-2 text-xs text-muted-foreground">
+                      Typing...
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-3 border-t border-border shrink-0 bg-background">
+                <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-1.5 border border-border focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage(input);
+                      }
+                    }}
+                    placeholder="Ask Raise where to find things..."
+                    className="flex-1 bg-transparent border-0 resize-none p-1 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:outline-none focus:ring-0 min-h-[22px] max-h-[72px] leading-relaxed"
+                    rows={1}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    size="icon"
+                    type="button"
+                    onClick={() => sendMessage(input)}
+                    disabled={!input.trim() || isLoading}
+                    className="h-6 w-6 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer shrink-0"
+                  >
+                    <Send className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: SUPPORT / REPORT BUG */}
           {activeTab === 'support' && (
-            <div className="flex-1 overflow-y-auto p-5" onPaste={handlePaste}>
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden" onPaste={handlePaste}>
               {submittedTicketId ? (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-3 p-4">
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-3 p-6">
                   <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xl">
                     ✓
                   </div>
@@ -383,233 +539,106 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                   </Button>
                 </div>
               ) : (
-                <form onSubmit={handleSupportSubmit} className="space-y-4 flex flex-col h-full">
-                  {/* Issue Type Pills */}
-                  <div className="flex gap-2">
-                    {([
-                      { id: 'bug' as const, label: 'Bug / Issue' },
-                      { id: 'feature' as const, label: 'Feature Request' },
-                      { id: 'question' as const, label: 'Help / Question' },
-                    ]).map(t => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setIssueType(t.id)}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
-                          issueType === t.id
-                            ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                            : "bg-muted/40 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                        )}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Main Textarea */}
-                  <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
-                    <Textarea
-                      required
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe what happened or what you need help with... (You can also paste screenshots directly with Cmd+V)"
-                      className="flex-1 min-h-[140px] text-sm bg-card resize-none rounded-xl border-border focus-visible:ring-1"
-                    />
-                  </div>
-
-                  {/* Screenshot Attachments */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={(e) => handleImageUpload(e.target.files)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={screenshots.length >= 3}
-                        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        <ImageIcon className="h-3.5 w-3.5" />
-                        <span>Add Screenshot {screenshots.length > 0 && `(${screenshots.length}/3)`}</span>
-                      </button>
-                      <span className="text-[10px] text-muted-foreground/60">
-                        Paste directly or click to upload
-                      </span>
-                    </div>
-
-                    {/* Previews */}
-                    {screenshots.length > 0 && (
-                      <div className="flex gap-2 pt-1">
-                        {screenshots.map((src, i) => (
-                          <div key={i} className="relative group h-16 w-24 rounded-lg overflow-hidden border border-border bg-muted">
-                            <Image src={src} alt="screenshot" fill className="object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => removeScreenshot(i)}
-                              className="absolute top-1 right-1 p-1 rounded-md bg-black/70 text-white hover:bg-black transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
+                <form onSubmit={handleSupportSubmit} className="flex-1 flex flex-col min-h-0">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
+                    {/* Issue Type Pills */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-muted-foreground">Category</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {([
+                          { id: 'bug' as const, label: 'Bug / Issue' },
+                          { id: 'feature' as const, label: 'Feature' },
+                          { id: 'question' as const, label: 'Question' },
+                        ]).map(t => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setIssueType(t.id)}
+                            className={cn(
+                              "px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer text-center truncate",
+                              issueType === t.id
+                                ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                : "bg-muted/40 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                            )}
+                          >
+                            {t.label}
+                          </button>
                         ))}
                       </div>
-                    )}
+                    </div>
+
+                    {/* Main Textarea */}
+                    <div className="space-y-1 flex flex-col">
+                      <label className="text-[11px] font-semibold text-muted-foreground">Description</label>
+                      <textarea
+                        required
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Describe what happened or what you need help with... (Paste screenshots directly with Cmd+V)"
+                        className="w-full min-h-[110px] sm:min-h-[130px] p-3 text-xs bg-card resize-none rounded-xl border border-border text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Screenshot Attachments */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e.target.files)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={screenshots.length >= 3}
+                          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          <ImageIcon className="h-3.5 w-3.5" />
+                          <span>Add Screenshot {screenshots.length > 0 && `(${screenshots.length}/3)`}</span>
+                        </button>
+                        <span className="text-[10px] text-muted-foreground/60">
+                          Paste directly or upload
+                        </span>
+                      </div>
+
+                      {/* Previews */}
+                      {screenshots.length > 0 && (
+                        <div className="flex gap-2 pt-1 overflow-x-auto pb-1">
+                          {screenshots.map((src, i) => (
+                            <div key={i} className="relative group h-14 w-20 rounded-lg overflow-hidden border border-border bg-muted shrink-0">
+                              <Image src={src} alt="screenshot" fill className="object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => removeScreenshot(i)}
+                                className="absolute top-1 right-1 p-1 rounded-md bg-black/70 text-white hover:bg-black transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Footer & Submit Button */}
-                  <div className="pt-3 border-t border-border flex items-center justify-between shrink-0">
-                    <span className="text-[11px] text-muted-foreground">
+                  <div className="p-3 sm:px-4 py-2.5 border-t border-border bg-muted/20 flex items-center justify-between shrink-0">
+                    <span className="text-[11px] text-muted-foreground truncate mr-2">
                       Direct contact: <a href="mailto:rushil@scorpioedu.org" className="underline hover:text-foreground">rushil@scorpioedu.org</a>
                     </span>
                     <Button
                       type="submit"
                       disabled={isSubmitting || !description.trim()}
-                      className="h-9 px-4 rounded-lg text-xs font-bold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="h-8 px-4 rounded-full text-xs font-bold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
                     >
                       {isSubmitting ? 'Sending...' : 'Submit'}
                     </Button>
                   </div>
                 </form>
               )}
-            </div>
-          )}
-
-          {/* TAB 2: NAV HELP */}
-          {activeTab === 'nav' && (
-            <div className="flex-1 flex flex-col min-h-0">
-              {/* Quick Navigation Shortcuts */}
-              <div className="px-4 py-2.5 border-b border-border/40 bg-muted/20 shrink-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-                  <Compass className="h-3 w-3" /> Jump to page
-                </p>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {quickActions.map((action) => (
-                    <button
-                      key={action.path}
-                      type="button"
-                      onClick={() => handleNavigation(action.path)}
-                      className="flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-colors cursor-pointer border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground group"
-                    >
-                      <action.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground shrink-0" />
-                      <span className="text-xs font-medium text-foreground truncate">{action.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.map((m, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <div className={cn("flex gap-2", m.role === 'user' ? "justify-end" : "justify-start")}>
-                      {m.role === 'assistant' && (
-                        <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                          <RaiseLogo size={12} className="currentColor" />
-                        </div>
-                      )}
-                      <div className={cn(
-                        "max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs",
-                        m.role === 'user'
-                          ? "bg-primary text-primary-foreground shadow-xs"
-                          : "bg-muted text-foreground"
-                      )}>
-                        {m.role === 'user' ? (
-                          <p>{m.content}</p>
-                        ) : (
-                          <MarkdownRenderer
-                            onLinkClick={(href) => handleNavigation(href)}
-                            className="prose prose-xs dark:prose-invert prose-p:my-0"
-                          >
-                            {formatMessageWithLinks(m.content)}
-                          </MarkdownRenderer>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Dedicated Open Page Buttons for Assistant Suggestions */}
-                    {m.navigation && m.navigation.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 ml-8 pt-0.5">
-                        {m.navigation.map((nav, idx) => (
-                          <Button
-                            key={idx}
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleNavigation(nav.path)}
-                            className="h-7 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer gap-1 shadow-xs"
-                          >
-                            <Compass className="h-3 w-3" />
-                            Open {nav.label} →
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* Suggested Questions */}
-                {!isLoading && messages.length <= 2 && (
-                  <div className="space-y-1 pt-1 ml-8">
-                    {suggestedPrompts.map((p, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => sendMessage(p)}
-                        className="flex items-center gap-1.5 w-full text-left text-xs text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
-                      >
-                        <ArrowRight className="h-3 w-3 shrink-0" />
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {isLoading && (
-                  <div className="flex gap-2">
-                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
-                      <RaiseLogo size={12} className="currentColor" />
-                    </div>
-                    <div className="bg-muted rounded-xl px-3 py-2 text-xs text-muted-foreground">
-                      Typing...
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Chat Input */}
-              <div className="p-3 border-t border-border shrink-0 bg-background">
-                <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-1.5 border border-border">
-                  <Textarea
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage(input);
-                      }
-                    }}
-                          placeholder="Ask Raise where to find things..."
-                    className="flex-1 bg-transparent border-0 resize-none p-0 text-xs focus-visible:ring-0 min-h-[20px] max-h-[60px]"
-                    rows={1}
-                    disabled={isLoading}
-                  />
-                  <Button
-                    size="icon"
-                    onClick={() => sendMessage(input)}
-                    disabled={!input.trim() || isLoading}
-                    className="h-6 w-6 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer shrink-0"
-                  >
-                    <Send className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
             </div>
           )}
         </div>

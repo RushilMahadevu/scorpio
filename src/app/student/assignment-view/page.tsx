@@ -1246,7 +1246,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           size="icon"
                           onClick={handleResetChat}
                           disabled={aiMessages.length === 0}
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                          className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           <RotateCcw className="h-3.5 w-3.5" />
                         </Button>

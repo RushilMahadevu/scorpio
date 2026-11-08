@@ -599,7 +599,7 @@ function StudentCard({
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className={cn(
-                "h-8 px-3 gap-1.5 text-xs font-semibold shrink-0 rounded-lg transition-all cursor-pointer",
+                "h-8 px-3 gap-1.5 text-xs font-semibold shrink-0 rounded-full transition-all cursor-pointer",
                 portfolio
                   ? "text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
@@ -665,7 +665,7 @@ function PortfolioDialog({
             )}
           </div>
           <DialogClose asChild>
-            <button className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 hover:border-white/20 transition-all text-white/60 hover:text-white/90 shrink-0 cursor-pointer">
+            <button className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 hover:border-white/20 transition-all text-white/60 hover:text-white/90 shrink-0 cursor-pointer">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="pointer-events-none">
                 <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
               </svg>

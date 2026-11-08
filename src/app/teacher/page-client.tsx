@@ -17,6 +17,7 @@ import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
 import { TeacherPageHeader, TeacherSummary } from "@/components/teacher/workspace";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
+import { TeacherGradingProgress } from "@/components/dashboard/teacher-grading-progress";
 
 interface Submission {
   id: string;
@@ -319,27 +320,35 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         ]}
       />
 
+      <TeacherGradingProgress
+        completedSubmissions={stats.completedSubmissions}
+        pendingSubmissions={stats.pendingSubmissions}
+        totalAssignments={stats.totalAssignments}
+        totalStudents={stats.totalStudents}
+        dataReady={dataReady}
+      />
+
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="grid min-w-0 gap-5">
-          <Card className="gap-0 py-0">
-            <CardHeader className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-              <h2 className="text-base font-semibold">To grade</h2>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/teacher/grades">Gradebook <ArrowRight /></Link>
+          <Card className="gap-0 py-0 shadow-none overflow-hidden">
+            <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
+              <h2 className="text-sm font-semibold tracking-tight text-foreground">To grade</h2>
+              <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
+                <Link href="/teacher/grades">Gradebook <ArrowRight className="size-3.5" /></Link>
               </Button>
             </CardHeader>
-            <CardContent className="border-t p-0">
+            <CardContent className="p-0 bg-card">
               {pendingGrading.length > 0 ? (
                 <ul className="divide-y divide-border">
                   {pendingGrading.map((submission) => (
-                    <li key={submission.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                    <li key={submission.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
                       <div className="min-w-0">
-                        <p className="break-words text-sm font-medium">{submission.assignmentTitle}</p>
-                        <p className="text-xs text-muted-foreground">{submission.studentName || "Student submission"}</p>
+                        <p className="break-words text-sm font-medium text-foreground">{submission.assignmentTitle}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{submission.studentName || "Student submission"}</p>
                       </div>
-                      <Button asChild size="sm" variant="outline">
+                      <Button asChild size="sm" variant="outline" className="h-8 text-xs">
                         <Link href={`/teacher/submission/grade?id=${submission.id}`} aria-label={`Grade ${submission.assignmentTitle}`}>
-                          Grade <ArrowRight />
+                          Grade <ArrowRight className="size-3.5" />
                         </Link>
                       </Button>
                     </li>
@@ -353,29 +362,31 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
             </CardContent>
           </Card>
 
-          <Card className="gap-0 py-0">
-            <CardHeader className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-              <h2 className="text-base font-semibold">Recent assignments</h2>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/teacher/assignments">All Assignments <ArrowRight /></Link>
+          <Card className="gap-0 py-0 shadow-none overflow-hidden">
+            <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
+              <h2 className="text-sm font-semibold tracking-tight text-foreground">Recent assignments</h2>
+              <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
+                <Link href="/teacher/assignments">All Assignments <ArrowRight className="size-3.5" /></Link>
               </Button>
             </CardHeader>
-            <CardContent className="border-t p-0">
+            <CardContent className="p-0 bg-card">
               {recentAssignments.length > 0 ? (
                 <ul className="divide-y divide-border">
                   {recentAssignments.map((assignment) => (
                     <li key={assignment.id}>
                       <Link
                         href={`/teacher/assignment-view?id=${assignment.id}`}
-                        className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                        className="group flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-muted/30 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                       >
-                        <span className="min-w-0">
-                          <span className="block break-words text-sm font-medium">{assignment.title || "Untitled"}</span>
-                          <span className="text-xs text-muted-foreground">
+                        <div className="min-w-0">
+                          <span className="block break-words text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                            {assignment.title || "Untitled"}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted-foreground">
                             {assignment.dueDate ? `Due ${new Date(assignment.dueDate.seconds ? assignment.dueDate.seconds * 1000 : assignment.dueDate).toLocaleDateString()}` : "No due date"}
                           </span>
-                        </span>
-                        <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                        </div>
+                        <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
                       </Link>
                     </li>
                   ))}
@@ -389,13 +400,13 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
           </Card>
         </div>
 
-        <Card className="min-w-0 gap-0 py-0">
-          <CardHeader className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-            <h2 className="text-base font-semibold">My classes</h2>
+        <Card className="min-w-0 gap-0 py-0 shadow-none overflow-hidden">
+          <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">My classes</h2>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
-                  <PlusCircle className="h-4 w-4" />
+                <Button size="sm" className="h-7 text-xs">
+                  <PlusCircle className="size-3.5" />
                   Create Class
                 </Button>
               </DialogTrigger>
@@ -439,18 +450,19 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
               </DialogContent>
             </Dialog>
           </CardHeader>
-          <CardContent className="border-t p-0">
+          <CardContent className="p-0 bg-card">
             {courses.length > 0 ? (
               <ul className="divide-y divide-border">
                 {courses.map((course) => (
-                  <li key={course.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                  <li key={course.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
                     <div className="min-w-0">
-                      <p className="break-words text-sm font-medium">{course.name}</p>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <span className="break-all font-mono">{course.code}</span>
+                      <p className="break-words text-sm font-medium text-foreground">{course.name}</p>
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="font-mono font-medium text-foreground/80">{course.code}</span>
                         <Button
                           variant="ghost"
                           size="icon-sm"
+                          className="size-6 text-muted-foreground hover:text-foreground"
                           aria-label={`Copy class code for ${course.name}`}
                           onClick={async () => {
                             try {
@@ -461,18 +473,18 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
                             }
                           }}
                         >
-                          <Copy />
+                          <Copy className="size-3" />
                         </Button>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      className="text-muted-foreground hover:text-destructive"
+                      className="size-7 text-muted-foreground hover:text-destructive"
                       aria-label={`Delete class ${course.name}`}
                       onClick={() => setCourseToDelete(course.id)}
                     >
-                      <Trash2 />
+                      <Trash2 className="size-3.5" />
                     </Button>
                   </li>
                 ))}

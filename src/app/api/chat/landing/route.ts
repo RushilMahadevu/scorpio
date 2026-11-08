@@ -30,7 +30,6 @@ KEY DIFFERENTIATORS:
 
 FEATURES:
 - Raise (scorpioedu.org/student/tutor): Socratic physics learning assistant. Students ask questions, Raise guides them — never tells them the answer. Teacher-controlled message limits per student.
-- Practice Mode (scorpioedu.org/student/practice): Adaptive AI-generated physics problem scenarios with instant step-by-step feedback.
 - Notebook (scorpioedu.org/student/notebook): AI-powered note-taking workspace with full LaTeX support for complex derivations.
 - Vault (scorpioedu.org/student/vault): Secure personal file and material library.
 - Waypoints Network (scorpioedu.org/teacher/waypoints): Peer-validated physics modules shared across institutions within a Scorpio Network.
