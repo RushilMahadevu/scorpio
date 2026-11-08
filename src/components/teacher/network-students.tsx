@@ -398,12 +398,14 @@ function ProfileCardView({ student, portfolio }: { student: any; portfolio: Stud
 
 /* ─── Main export ──────────────────────────────────────────────── */
 
-export function NetworkStudents({ organizationId, teacherIds }: { organizationId: string; teacherIds: string[] }) {
-  const { user } = useAuth();
+export function NetworkStudents({ organizationId, teacherIds }: { organizationId?: string; teacherIds: string[] }) {
+  const { user, profile } = useAuth();
   const [students, setStudents] = useState<any[]>([]);
   const [portfolios, setPortfolios] = useState<Record<string, StudentPortfolio>>({});
   const [loading, setLoading] = useState(true);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+
+  const effectiveOrgId = organizationId || profile?.organizationId || "";
 
   useEffect(() => {
     if (teacherIds.length === 0) { setLoading(false); return; }
@@ -452,12 +454,16 @@ export function NetworkStudents({ organizationId, teacherIds }: { organizationId
 
   const generatePortfolio = async (studentId: string) => {
     if (!user) return;
+    if (!effectiveOrgId) {
+      toast.error("Connecting to a department network is required to compile AI portfolios.");
+      return;
+    }
     setGeneratingFor(studentId);
     try {
       const res = await authenticatedFetch("/api/teacher/network/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teacherId: user.uid, studentId, organizationId })
+        body: JSON.stringify({ teacherId: user.uid, studentId, organizationId: effectiveOrgId })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to generate portfolio");
