@@ -126,10 +126,10 @@ export default function WaypointsPage() {
   });
 
   return (
-    <div className="container p-6 mx-auto space-y-8">
+    <div className="space-y-6">
       
       {/* Dynamic Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-white/5 p-5 md:p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl bg-card border border-border p-5 md:p-6 shadow-sm">
         {/* Animated Background Elements */}
         <div className="absolute top-0 right-0 -mt-16 -mr-16 h-48 w-48 rounded-full bg-primary/10 blur-[60px]" />
         <div className="absolute bottom-0 left-0 -mb-16 -ml-16 h-32 w-32 rounded-full bg-gray-500/5 blur-[40px]" />
@@ -142,13 +142,13 @@ export default function WaypointsPage() {
               className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary border border-primary/20 dark:border-primary/30 uppercase tracking-widest"
             >
               <Sparkles className="h-3 w-3" />
-              Shared Reference System
+              Template library
             </motion.div>
             <motion.h1 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900 dark:text-white"
+              className="text-3xl font-semibold tracking-tight text-foreground"
             >
               Waypoints
             </motion.h1>
@@ -156,10 +156,9 @@ export default function WaypointsPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-zinc-600 dark:text-neutral-400 text-sm leading-relaxed"
+              className="text-muted-foreground text-sm leading-relaxed"
             >
-              A high-precision catalog of scientific assignments and benchmarks. 
-              Search, explore, and integrate modules into your curriculum.
+              Find a shared assignment and copy it into your class.
             </motion.p>
             
             {profile?.organizationId ? (
@@ -170,7 +169,7 @@ export default function WaypointsPage() {
                 className="flex items-center gap-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400/80 bg-emerald-500/10 dark:bg-emerald-500/5 w-fit px-2 py-0.5 rounded-md border border-emerald-500/20 dark:border-emerald-500/10"
               >
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-500 animate-pulse" />
-                Network Node: {profile.organizationId}
+                Department access
               </motion.div>
             ) : (
               <motion.div 
@@ -180,7 +179,7 @@ export default function WaypointsPage() {
                 className="flex items-center gap-2 text-[11px] font-semibold text-amber-600 dark:text-amber-400/80 bg-amber-500/10 dark:bg-amber-500/5 w-fit px-2 py-0.5 rounded-md border border-amber-500/20 dark:border-amber-500/10"
               >
                 <div className="h-1.5 w-1.5 rounded-full bg-amber-600 dark:bg-amber-500" />
-                Stand-alone Instance
+                Global library access
               </motion.div>
             )}
           </div>
@@ -190,8 +189,8 @@ export default function WaypointsPage() {
              animate={{ opacity: 1, scale: 1 }}
              className="hidden lg:block"
           >
-            <div className="h-24 w-24 rounded-full border-2 border-dashed border-zinc-200 dark:border-white/10 flex items-center justify-center relative bg-white/50 dark:bg-transparent backdrop-blur-sm">
-              <Waypoints className="h-10 w-10 text-zinc-400 dark:text-white/20" />
+            <div className="h-24 w-24 rounded-full border-2 border-dashed border-border flex items-center justify-center relative bg-background/50 backdrop-blur-sm">
+              <Waypoints className="h-10 w-10 text-muted-foreground" />
               {/* Spinning Ring */}
               <div className="absolute inset-0 border-t-2 border-primary/40 rounded-full animate-spin [animation-duration:10s]" />
               <div className="absolute inset-4 border-b-2 border-primary/20 rounded-full animate-spin [animation-duration:15s]" />
@@ -201,24 +200,25 @@ export default function WaypointsPage() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-zinc-100 dark:bg-white/5 backdrop-blur-sm p-4 rounded-2xl border border-zinc-200 dark:border-white/10">
-        <div className="relative flex-grow w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-neutral-500" />
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+        <div className="relative w-full lg:min-w-48 lg:flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Scan for waypoints (e.g. projectile motion, waves)..." 
-            className="pl-11 h-12 bg-white dark:bg-neutral-900/50 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white focus:ring-primary/50"
+            aria-label="Search templates"
+            placeholder="Search templates…"
+            className="pl-11 h-12 bg-background dark:bg-background border-border"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         
-        <Tabs defaultValue="global" onValueChange={setActiveTab} className="w-full md:w-auto">
-          <TabsList className="bg-zinc-200 dark:bg-neutral-900 border border-zinc-200 dark:border-white/5 p-1 h-12">
-            <TabsTrigger value="global" className="cursor-pointer gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-white">
+        <Tabs defaultValue="global" onValueChange={setActiveTab} className="w-full sm:w-auto">
+          <TabsList className="h-auto w-full">
+            <TabsTrigger value="global" className="min-h-9 gap-2 px-3">
               <Globe className="h-4 w-4" />
               Global
             </TabsTrigger>
-            <TabsTrigger value="network" className="cursor-pointer gap-2 px-6 data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="network" className="min-h-9 gap-2 px-3">
               <Users className="h-4 w-4" />
               Department
             </TabsTrigger>
@@ -226,13 +226,13 @@ export default function WaypointsPage() {
         </Tabs>
 
         <Select value={topicFilter} onValueChange={setTopicFilter}>
-          <SelectTrigger className="cursor-pointer w-full md:w-[180px] h-12 bg-white dark:bg-neutral-900 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white">
+          <SelectTrigger aria-label="Topic" className="cursor-pointer w-full sm:w-44 data-[size=default]:h-12 bg-background dark:bg-background border-border">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
               <SelectValue placeholder="All Topics" />
             </div>
           </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-neutral-900 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white">
+          <SelectContent>
             <SelectItem value="all" className="cursor-pointer">All Topics</SelectItem>
             <SelectItem value="kinematics" className="cursor-pointer">Kinematics</SelectItem>
             <SelectItem value="dynamics" className="cursor-pointer">Dynamics</SelectItem>
@@ -254,22 +254,22 @@ export default function WaypointsPage() {
                <Loader2 className="h-12 w-12 animate-spin text-primary" />
                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
              </div>
-             <p className="text-zinc-500 dark:text-neutral-400 font-medium animate-pulse">Syncing with orbit...</p>
+             <p className="text-muted-foreground font-medium animate-pulse">Loading templates…</p>
           </div>
         ) : filteredWaypoints.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed border-zinc-200 dark:border-white/5 rounded-3xl bg-zinc-50 dark:bg-transparent"
+            className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed border-border rounded-3xl bg-muted/30"
           >
-            <div className="bg-zinc-100 dark:bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mb-6 border border-zinc-200 dark:border-white/10">
-              <MapPinned className="h-10 w-10 text-zinc-400 dark:text-neutral-500" />
+            <div className="bg-muted w-20 h-20 rounded-full flex items-center justify-center mb-6 border border-border">
+              <MapPinned className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">No Waypoints Found</h3>
-            <p className="text-zinc-500 dark:text-neutral-400 max-w-sm px-4">
+            <h3 className="text-xl font-bold text-foreground mb-2">No templates found</h3>
+            <p className="text-muted-foreground max-w-sm px-4">
               {activeTab === "network" && !profile?.organizationId 
                 ? "Switch to the Global tab or join a department network to see shared waypoints."
-                : "No active waypoints match your scan parameters. Try broadening your topic filter."}
+                : "Try another search or topic."}
             </p>
           </motion.div>
         ) : (
@@ -284,13 +284,13 @@ export default function WaypointsPage() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4, delay: idx * 0.05 }}
                 >
-                  <Card className="group relative h-full flex flex-col overflow-hidden bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-white/5 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md">
+                  <Card className="group relative h-full flex flex-col overflow-hidden bg-card border border-border hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md">
                     <div className="absolute top-0 right-0 h-24 w-24 bg-primary/5 rounded-bl-full blur-2xl group-hover:bg-primary/10 transition-colors" />
                     
                     <CardHeader className="pb-4 relative z-10">
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-neutral-400 border-zinc-200 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
+                          <Badge variant="secondary" className="text-muted-foreground">
                             <Clock className="h-3 w-3 mr-1" />
                             {waypoint.questions?.length || 0} Components
                           </Badge>
@@ -310,16 +310,16 @@ export default function WaypointsPage() {
                           </div>
                         )}
                       </div>
-                      <CardTitle className="text-xl font-bold text-zinc-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2">
+                      <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                         {waypoint.title}
                       </CardTitle>
-                      <CardDescription className="text-zinc-600 dark:text-neutral-400 line-clamp-3 min-h-[4.5rem] mt-2 leading-relaxed">
-                        {waypoint.description || "No transmission description provided."}
+                      <CardDescription className="text-muted-foreground line-clamp-3 min-h-[4.5rem] mt-2 leading-relaxed">
+                        {waypoint.description || "No description provided."}
                       </CardDescription>
                     </CardHeader>
                     
                     <CardContent className="pt-0 flex-grow relative z-10">
-                      <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-neutral-500 bg-zinc-100 dark:bg-white/5 px-3 py-2 rounded-xl">
+                      <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-2 rounded-xl">
                         <span className="flex items-center gap-2">
                            <Star className="h-3 w-3 text-primary" />
                            {waypoint.forkCount || 0} Active Fork{(waypoint.forkCount || 0) !== 1 ? 's' : ''}
@@ -331,7 +331,7 @@ export default function WaypointsPage() {
                     <CardFooter className="pt-2 pb-6 px-6 relative z-10 mt-auto">
                       <Button 
                         onClick={() => handleFork(waypoint)}
-                        className="cursor-pointer w-full h-11 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black font-bold transition-all transform group-active:scale-95 flex items-center justify-center gap-2"
+                        className="w-full h-11 font-bold active:scale-[0.98]"
                       >
                         <Copy className="h-4 w-4" />
                         Acquire Template

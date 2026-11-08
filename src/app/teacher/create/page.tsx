@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { MathInputField } from "@/components/math-input";
+import { TeacherPageHeader } from "@/components/teacher/workspace";
 import { SmartDateTimePicker } from "@/components/ui/smart-datetime-picker";
 
 function AdvancedSettings({ children }: { children: React.ReactNode }) {
@@ -457,16 +458,14 @@ function CreateAssignmentForm() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <header className="space-y-3">
-        <Link
-          href="/teacher/assignments"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Assignments
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Create assignment</h1>
-      </header>
+      <Link
+        href="/teacher/assignments"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Assignments
+      </Link>
+      <TeacherPageHeader title="Create assignment" />
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -954,7 +953,7 @@ function CreateAssignmentForm() {
             </section>
           </AdvancedSettings>
 
-          <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3 shadow-md sm:px-4">
+          <div className="z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3 shadow-sm sm:sticky sm:bottom-20 sm:px-4">
             <p className="text-sm text-muted-foreground">
               {questions.length} {questions.length === 1 ? "question" : "questions"}
               {validTotal && <> <span aria-hidden="true">·</span> {assignmentPoints} {assignmentPoints === 1 ? "point" : "points"}</>}

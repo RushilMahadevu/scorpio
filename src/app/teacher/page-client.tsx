@@ -5,22 +5,24 @@ import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, orderBy, limit, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { FileText, RotateCcw, Users, CheckCircle, Clock, PlusCircle, List, Upload, GraduationCap, School, Trash2, Copy, Info, BrainCircuit, Building2, Waypoints, PackageCheck, LayoutDashboard, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileText, RotateCcw, Users, PlusCircle, Upload, GraduationCap, Trash2, Copy, Building2, Waypoints, PackageCheck, LayoutDashboard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
+import { TeacherPageHeader, TeacherSummary } from "@/components/teacher/workspace";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
 
 interface Submission {
   id: string;
   graded?: boolean;
+  status?: string;
+  studentName?: string;
   assignmentId?: string;
   assignmentTitle?: string;
 }
@@ -130,14 +132,14 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         }
 
 
-        const completed = submissions.filter((s) => s.graded).length;
-        const pending = submissions.filter((s) => !s.graded).length;
+        const submitted = submissions.filter((s) => s.status !== "draft");
+        const pending = submitted.filter((s) => !s.graded);
 
         setStats({
           totalAssignments: assignmentsSnap.size,
           totalStudents: uniqueStudentIds.size,
-          completedSubmissions: completed,
-          pendingSubmissions: pending,
+          completedSubmissions: submitted.length - pending.length,
+          pendingSubmissions: pending.length,
         });
 
         // Recent assignments (filtered)
@@ -151,7 +153,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         setRecentAssignments(recentSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
         // Pending grading (ungraded submissions from MY assignments)
-        const pendingSubs = submissions.filter((s) => !s.graded).slice(0, 3);
+        const pendingSubs = pending.slice(0, 3);
         
         // Get assignment titles
         const assignmentsMap: Record<string, any> = {};
@@ -179,6 +181,8 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
 
       } catch (error) {
         console.error("Error fetching stats:", error);
+      } finally {
+        setDataReady(true);
       }
     }
 
@@ -232,45 +236,15 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
     setNewCourseCode(code);
   };
 
-  const statCards = [
-    {
-      title: "Total Assignments",
-      value: stats.totalAssignments,
-      icon: FileText,
-      description: "Active assignments",
-    },
-    {
-      title: "Total Students",
-      value: stats.totalStudents,
-      icon: Users,
-      description: "Enrolled students",
-    },
-    {
-      title: "Graded",
-      value: stats.completedSubmissions,
-      icon: CheckCircle,
-      description: "Submissions graded",
-    },
-    {
-      title: "Pending Review",
-      value: stats.pendingSubmissions,
-      icon: Clock,
-      description: "Awaiting grading",
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back <span className="font-semibold">{user?.displayName || "Teacher"}</span>! Here's an overview of your class.</p>
-        </div>
-        
+      <TeacherPageHeader
+        title="Dashboard"
+        description={`Welcome back, ${user?.displayName || "Teacher"}.`}
+      >
         <RundownDialog 
           userRole="teacher"
-          triggerLabel="Platform Tutorial"
+          triggerLabel="Teacher Guide"
           title="Teacher Instruction Manual"
           steps={[
             {
@@ -327,241 +301,210 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
 
           ]}
         />
-      </div>
+        <Button asChild>
+          <Link href="/teacher/create">
+            <PlusCircle />
+            Create Assignment
+          </Link>
+        </Button>
+      </TeacherPageHeader>
 
-      <OnboardingChecklist 
-        userRole="teacher" 
-        metadata={{ 
-          courseCount: courses.length, 
-          assignmentCount: stats.totalAssignments 
-        }} 
+      <TeacherSummary
+        label="Classroom overview"
+        items={[
+          { label: "Assignments", value: dataReady ? stats.totalAssignments : "—" },
+          { label: "Students", value: dataReady ? stats.totalStudents : "—" },
+          { label: "Graded", value: dataReady ? stats.completedSubmissions : "—" },
+          { label: "To grade", value: dataReady ? stats.pendingSubmissions : "—" },
+        ]}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="grid min-w-0 gap-5">
+          <Card className="gap-0 py-0">
+            <CardHeader className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+              <h2 className="text-base font-semibold">To grade</h2>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/teacher/grades">Gradebook <ArrowRight /></Link>
+              </Button>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            <CardContent className="border-t p-0">
+              {pendingGrading.length > 0 ? (
+                <ul className="divide-y divide-border">
+                  {pendingGrading.map((submission) => (
+                    <li key={submission.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-medium">{submission.assignmentTitle}</p>
+                        <p className="text-xs text-muted-foreground">{submission.studentName || "Student submission"}</p>
+                      </div>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/teacher/submission/grade?id=${submission.id}`} aria-label={`Grade ${submission.assignmentTitle}`}>
+                          Grade <ArrowRight />
+                        </Link>
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="px-5 py-6 text-sm text-muted-foreground">
+                  {dataReady ? "No submissions waiting for a grade." : "Loading submissions…"}
+                </p>
+              )}
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks you might want to do</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
-            <Link href="/teacher/create">
-              <PlusCircle className="h-4 w-4 text-primary" />
-              <span className="text-xs">Create Assignment</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
-            <Link href="/teacher/assignments">
-              <List className="h-4 w-4 text-primary" />
-              <span className="text-xs">All Assignments</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
-            <Link href="/teacher/uploads">
-              <Upload className="h-4 w-4 text-primary" />
-              <span className="text-xs">Upload PDF</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-16 flex-col gap-1 hover:bg-primary/5 hover:border-primary/50 transition-all border-dashed cursor-pointer" asChild>
-            <Link href="/teacher/vault">
-              <PackageCheck className="h-4 w-4 text-primary" />
-              <span className="text-xs">Vault Controls</span>
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>My Classes</CardTitle>
-            <CardDescription>Manage your class names and codes—each student limited to one class.</CardDescription>
-          </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2 cursor-pointer hover:bg-primary/90 transition-colors" >
-                <PlusCircle className="h-4 w-4" />
-                Create Class
+          <Card className="gap-0 py-0">
+            <CardHeader className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+              <h2 className="text-base font-semibold">Recent assignments</h2>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/teacher/assignments">All Assignments <ArrowRight /></Link>
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Class</DialogTitle>
-                <DialogDescription>
-                  Create a new class with a unique code for students to join.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Class Name</Label>
-                  <Input 
-                    id="name" 
-                    placeholder="e.g. AP Physics Period 1" 
-                    value={newCourseName}
-                    onChange={(e) => setNewCourseName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="code">Class Code</Label>
-                  <Input 
-                    id="code" 
-                    placeholder="e.g. PHYS101" 
-                    value={newCourseCode}
-                    onChange={(e) => setNewCourseCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-                  />
-                  <Button variant="outline" size="sm" onClick={generateCourseCode} className="cursor-pointer">
-                    <RotateCcw className="h-4 w-4" />
-                    Generate Code
-                  </Button>
-                  <p className="text-xs text-muted-foreground">This is the code students will use to join.</p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleCreateCourse} disabled={isCreatingCourse || !newCourseName || !newCourseCode} className="cursor-pointer">
-                  {isCreatingCourse ? "Creating..." : "Create Class"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {courses.length === 0 ? (
-               <div className="text-center py-6 text-muted-foreground">
-                 <School className="mx-auto h-12 w-12 opacity-20 mb-2" />
-                 <p>No classes created yet.</p>
-                 <p className="text-sm">Create a class to get a code for your students.</p>
-               </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {courses.map((course) => (
-                  <div key={course.id} className="flex items-center justify-between p-4 border rounded-xl bg-card/50">
-                    <div className="space-y-1">
-                      <p className="font-semibold">{course.name}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Badge variant="outline" className="font-mono text-xs">{course.code}</Badge>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6 cursor-pointer hover:bg-accent/50 transition-colors" 
-                          onClick={() => {
-                            navigator.clipboard.writeText(course.code);
-                            toast.success("Code copied!");
-                          }}
-                          title="Copy Code"
-                        >
-                          <Copy className="h-3 w-3" />
+            </CardHeader>
+            <CardContent className="border-t p-0">
+              {recentAssignments.length > 0 ? (
+                <ul className="divide-y divide-border">
+                  {recentAssignments.map((assignment) => (
+                    <li key={assignment.id}>
+                      <Link
+                        href={`/teacher/assignment-view?id=${assignment.id}`}
+                        className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                      >
+                        <span className="min-w-0">
+                          <span className="block break-words text-sm font-medium">{assignment.title || "Untitled"}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {assignment.dueDate ? `Due ${new Date(assignment.dueDate.seconds ? assignment.dueDate.seconds * 1000 : assignment.dueDate).toLocaleDateString()}` : "No due date"}
+                          </span>
+                        </span>
+                        <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="px-5 py-6 text-sm text-muted-foreground">
+                  {dataReady ? "No assignments yet." : "Loading assignments…"}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
+        <Card className="min-w-0 gap-0 py-0">
+          <CardHeader className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+            <h2 className="text-base font-semibold">My classes</h2>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <PlusCircle className="h-4 w-4" />
+                  Create Class
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Class</DialogTitle>
+                  <DialogDescription>
+                    Create a new class with a unique code for students to join.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Class Name</Label>
+                    <Input
+                      id="name"
+                      placeholder="e.g. AP Physics Period 1"
+                      value={newCourseName}
+                      onChange={(e) => setNewCourseName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="code">Class Code</Label>
+                    <Input
+                      id="code"
+                      placeholder="e.g. PHYS101"
+                      value={newCourseCode}
+                      onChange={(e) => setNewCourseCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                    />
+                    <Button variant="outline" size="sm" onClick={generateCourseCode} className="cursor-pointer">
+                      <RotateCcw className="h-4 w-4" />
+                      Generate Code
+                    </Button>
+                    <p className="text-xs text-muted-foreground">This is the code students will use to join.</p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleCreateCourse} disabled={isCreatingCourse || !newCourseName || !newCourseCode} className="cursor-pointer">
+                    {isCreatingCourse ? "Creating..." : "Create Class"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardHeader>
+          <CardContent className="border-t p-0">
+            {courses.length > 0 ? (
+              <ul className="divide-y divide-border">
+                {courses.map((course) => (
+                  <li key={course.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-medium">{course.name}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <span className="break-all font-mono">{course.code}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Copy class code for ${course.name}`}
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(course.code);
+                              toast.success("Code copied!");
+                            } catch {
+                              toast.error("Could not copy the class code.");
+                            }
+                          }}
+                        >
+                          <Copy />
                         </Button>
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Delete class ${course.name}`}
                       onClick={() => setCourseToDelete(course.id)}
                     >
-                      <Trash2 className="h-4 w-4 cursor-pointer hover:bg-destructive/10 transition-colors" />
+                      <Trash2 />
                     </Button>
-                  </div>
+                  </li>
                 ))}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      <div className="grid gap-4 md:grid-cols-2">
-        <ConfirmDialog
-          open={!!courseToDelete}
-          onOpenChange={(open) => !open && setCourseToDelete(null)}
-          title="Delete Class"
-          description="Are you sure you want to delete this class? This will also remove all students access to this class s assignments."
-          onConfirm={() => courseToDelete && handleDeleteCourse(courseToDelete)}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Assignments</CardTitle>
-            <CardDescription>Your latest created assignments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentAssignments.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No assignments yet.</p>
+              </ul>
             ) : (
-              <div className="divide-y rounded-lg overflow-hidden border bg-muted/40">
-                {recentAssignments.map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-accent transition-colors group"
-                  >
-                    <div className="flex flex-col">
-                      <a
-                        href={a.id ? `/teacher/assignment-view?id=${a.id}` : '#'}
-                        className="font-medium text-primary group-hover:underline"
-                      >
-                        {a.title || "Untitled"}
-                      </a>
-                      <span className="text-xs text-muted-foreground italic">
-                        Due: {a.dueDate ? new Date(a.dueDate.seconds ? a.dueDate.seconds * 1000 : a.dueDate).toLocaleDateString() : "N/A"}
-                      </span>
-                    </div>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-4">Recent</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Pending Grading</CardTitle>
-            <CardDescription>Submissions awaiting review</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {pendingGrading.length === 0 ? (
-              <p className="text-muted-foreground text-sm">All caught up!</p>
-            ) : (
-              <div className="divide-y rounded-lg overflow-hidden border bg-muted/40">
-                {pendingGrading.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-accent transition-colors group"
-                  >
-                    <div className="flex flex-col">
-                      <a
-                        href={sub.assignmentId ? `/teacher/assignment-view?id=${sub.assignmentId}` : '#'}
-                        className="font-medium text-primary group-hover:underline"
-                      >
-                        {sub.assignmentTitle || "Untitled"}
-                      </a>
-                      <span className="text-xs text-muted-foreground italic">
-                        Needs grading
-                      </span>
-                    </div>
-                    <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100 px-2 py-1 rounded-full ml-4">Pending</span>
-                  </div>
-                ))}
-              </div>
+              <p className="px-5 py-6 text-sm text-muted-foreground">
+                {dataReady ? "Create a class to get a code to share with students." : "Loading classes…"}
+              </p>
             )}
           </CardContent>
         </Card>
       </div>
+
+      <nav aria-label="Classroom tools" className="flex flex-wrap gap-2">
+        <Button variant="outline" asChild><Link href="/teacher/uploads"><Upload /> Upload PDF</Link></Button>
+        <Button variant="outline" asChild><Link href="/teacher/vault"><PackageCheck /> Vault Controls</Link></Button>
+      </nav>
+
+      <OnboardingChecklist
+        userRole="teacher"
+        metadata={{ courseCount: courses.length, assignmentCount: stats.totalAssignments }}
+      />
+
+      <ConfirmDialog
+        open={!!courseToDelete}
+        onOpenChange={(open) => !open && setCourseToDelete(null)}
+        title="Delete Class"
+        description="Students will lose access to assignments for this class."
+        onConfirm={() => courseToDelete && handleDeleteCourse(courseToDelete)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

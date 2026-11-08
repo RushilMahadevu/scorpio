@@ -12,12 +12,12 @@ export default function InvestmentTrackerPage() {
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-zinc-100 dark:border-zinc-800/50">
         <div className="space-y-4">
-          <Link href="/teacher/network">
-            <Button variant="ghost" size="sm" className="pl-0 gap-2 text-muted-foreground hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer h-auto py-0 font-bold text-xs uppercase tracking-widest">
+          <Button asChild variant="ghost" size="sm" className="pl-0 gap-2 text-muted-foreground hover:text-accent-foreground transition-colors cursor-pointer h-auto py-0 font-bold text-xs uppercase tracking-widest">
+            <Link href="/teacher/network">
               <ChevronLeft className="h-3 w-3" />
               Network
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div className="space-y-1">
             <h1 className="text-4xl font-black tracking-tighter">
               Investment Tracker
@@ -38,7 +38,7 @@ export default function InvestmentTrackerPage() {
             <p className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest mb-1">Method</p>
             <Link
               href="/research"
-              className="text-xs text-muted-foreground hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1 font-medium"
+              className="text-xs text-muted-foreground hover:text-accent-foreground transition-colors flex items-center gap-1 font-medium"
             >
             Transparent Modeling <ArrowRight className="h-3 w-3" />
             </Link>
@@ -119,12 +119,12 @@ export default function InvestmentTrackerPage() {
             </div>
 
             <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
-              <Link href="/teacher/network">
-                <Button variant="outline" className="w-full rounded-xl font-bold text-xs h-12 gap-2 shadow-sm">
+              <Button asChild className="w-full rounded-xl font-bold text-xs h-12 gap-2 shadow-sm">
+                <Link href="/teacher/network">
                   Configure Safety Caps
                   <ArrowRight className="h-3 w-3" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
 

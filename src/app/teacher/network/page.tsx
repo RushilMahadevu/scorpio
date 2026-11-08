@@ -291,21 +291,29 @@ export default function NetworkPage() {
     }
   };
 
-  const copyInviteLink = () => {
+  const copyInviteLink = async () => {
     if (!organization?.id) return;
-    const url = `${window.location.protocol}//${window.location.host}/join/${organization.id}`;
-    navigator.clipboard.writeText(url);
-    setCopiedLink(true);
-    toast.success("Department invitation link copied to clipboard!");
-    setTimeout(() => setCopiedLink(false), 2500);
+    const url = `${window.location.origin}/join/${organization.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      toast.success("Invite link copied.");
+      setTimeout(() => setCopiedLink(false), 2500);
+    } catch {
+      toast.error("Couldn’t copy the invite link. Select the link to copy it manually.");
+    }
   };
 
-  const copyOrgId = () => {
+  const copyOrgId = async () => {
     if (!organization?.id) return;
-    navigator.clipboard.writeText(organization.id);
-    setCopiedId(true);
-    toast.success("Department ID copied to clipboard!");
-    setTimeout(() => setCopiedId(false), 2500);
+    try {
+      await navigator.clipboard.writeText(organization.id);
+      setCopiedId(true);
+      toast.success("Department ID copied.");
+      setTimeout(() => setCopiedId(false), 2500);
+    } catch {
+      toast.error("Couldn’t copy the department ID. Select the ID to copy it manually.");
+    }
   };
 
   const transferOwnership = async (newOwnerId: string, newOwnerName: string) => {
@@ -512,19 +520,20 @@ export default function NetworkPage() {
 
   return (
     <TooltipProvider>
-      <div className="container p-6 mx-auto space-y-6">
+      <div className="space-y-6">
 
         {/* ─── Top Department Pulse Header ───────────────────────── */}
         <div className="flex flex-col gap-5 border-b border-border/60 pb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-3">
                 {organization && isRenaming && isOwner ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Input
                       value={renamedOrgName}
                       onChange={e => setRenamedOrgName(e.target.value)}
-                      className="h-9 w-64 md:w-80 text-lg font-bold"
+                      aria-label="Department name"
+                      className="h-9 w-full text-base font-medium sm:w-64"
                       placeholder="Department Name"
                       autoFocus
                     />
@@ -536,8 +545,8 @@ export default function NetworkPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 group">
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <h1 className="min-w-0 break-words text-3xl font-semibold tracking-tight">
                       {organization ? organization.name : "Scorpio Network"}
                     </h1>
                     {organization && isOwner && (
@@ -557,14 +566,14 @@ export default function NetworkPage() {
                 {organization && (
                   <Badge variant={isFreePlan ? "outline" : "default"} className={cn(
                     "text-xs font-bold uppercase tracking-wider",
-                    isFreePlan ? "text-muted-foreground border-zinc-300 dark:border-zinc-700" : "bg-emerald-600 text-white"
+                    isFreePlan ? "text-muted-foreground border-border" : "bg-emerald-600 text-white"
                   )}>
                     {isFreePlan ? "Free Plan" : "Standard Plan"}
                   </Badge>
                 )}
               </div>
 
-              <p className="text-muted-foreground text-sm font-medium flex items-center gap-2">
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                 <span>Collaborative Physics Department</span>
                 {organization && (
                   <>
@@ -581,25 +590,25 @@ export default function NetworkPage() {
                 <>
                   <Button
                     onClick={() => setInviteModalOpen(true)}
-                    className="h-9 gap-2 text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 shadow-sm cursor-pointer rounded-xl px-4"
+                    className="h-9 gap-2 text-xs font-bold shadow-sm rounded-xl px-4"
                   >
                     <UserPlus className="h-3.5 w-3.5" />
                     Invite Colleague
                   </Button>
                   {isOwner && (
-                    <Link href="/teacher/network/billing">
-                      <Button variant="outline" size="sm" className="h-9 gap-2 text-xs font-semibold rounded-xl cursor-pointer">
+                    <Button asChild variant="outline" size="sm" className="h-9 gap-2 text-xs font-semibold rounded-xl cursor-pointer">
+                      <Link href="/teacher/network/billing">
                         <CreditCard className="h-3.5 w-3.5" />
                         Billing & Plan
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   )}
                 </>
               )}
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 text-[11px] font-bold gap-1.5 border-border hover:bg-secondary/60 rounded-xl px-3 cursor-pointer"
+                className="h-9 text-[11px] font-bold gap-1.5 rounded-xl px-3 cursor-pointer"
                 onClick={() => setTutorialOpen(true)}
               >
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
@@ -610,16 +619,16 @@ export default function NetworkPage() {
 
           {/* ─── Numerical Status Strip (Live Metrics Pulse) ─────── */}
           {organization && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-secondary/30 border border-border/50 rounded-2xl p-3.5 shadow-sm">
+            <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-card p-2 xl:grid-cols-4">
               {/* Metric 1: Faculty */}
               <div className="flex items-center gap-3 p-2 bg-background/70 border border-border/40 rounded-xl">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                <div className="size-7 rounded-lg sm:size-10 bg-blue-500/10 flex items-center justify-center shrink-0">
                   <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-xl font-black font-mono leading-none">{networkMembers.length}</div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-1 truncate">
-                    Department Faculty
+                    Faculty
                   </div>
                 </div>
               </div>
@@ -627,7 +636,7 @@ export default function NetworkPage() {
               {/* Metric 2: Enrolled Students */}
               <Link href="/teacher/students?tab=insights" className="block group">
                 <div className="flex items-center gap-3 p-2 bg-background/70 hover:bg-background border border-border/40 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all rounded-xl cursor-pointer">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 group-hover:bg-indigo-500/20 flex items-center justify-center shrink-0 transition-colors">
+                  <div className="size-7 rounded-lg sm:size-10 bg-indigo-500/10 group-hover:bg-indigo-500/20 flex items-center justify-center shrink-0 transition-colors">
                     <GraduationCap className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -636,7 +645,7 @@ export default function NetworkPage() {
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-1 truncate">
-                      Students · Insights →
+                      Student insights
                     </div>
                   </div>
                 </div>
@@ -644,11 +653,11 @@ export default function NetworkPage() {
 
               {/* Metric 3: AI Spending Meter */}
               <div className="flex items-center gap-3 p-2 bg-background/70 border border-border/40 rounded-xl">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <div className="size-7 rounded-lg sm:size-10 bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <HandCoins className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-1">
+                  <div className="flex flex-wrap items-baseline gap-1">
                     <span className="text-xl font-black font-mono leading-none text-emerald-600 dark:text-emerald-400">
                       ${spentDollars.toFixed(2)}
                     </span>
@@ -670,7 +679,7 @@ export default function NetworkPage() {
 
               {/* Metric 4: Raise Tutor Capacity */}
               <div className="flex items-center gap-3 p-2 bg-background/70 border border-border/40 rounded-xl">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                <div className="size-7 rounded-lg sm:size-10 bg-purple-500/10 flex items-center justify-center shrink-0">
                   <RaiseLogo size={20} className="text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="min-w-0">
@@ -768,19 +777,19 @@ export default function NetworkPage() {
         ) : (
           /* ─── 3 Clean, Focused Tabs ───────────────────────────── */
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            <div className="flex justify-between items-center border-b border-border/50 pb-3">
-              <TabsList className="grid grid-cols-3 w-full sm:w-auto p-1 bg-muted/60 rounded-xl h-auto">
-                <TabsTrigger value="faculty" className="text-xs font-bold py-2 px-5 cursor-pointer gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
+              <TabsList className="grid h-auto w-full grid-cols-3 sm:w-auto">
+                <TabsTrigger value="faculty" className="min-h-8 px-2 sm:px-4">
                   <Users className="h-3.5 w-3.5" />
-                  Faculty & Roster
+                  Faculty
                 </TabsTrigger>
-                <TabsTrigger value="limits" className="text-xs font-bold py-2 px-5 cursor-pointer gap-2">
+                <TabsTrigger value="limits" className="min-h-8 px-2 sm:px-4">
                   <Sliders className="h-3.5 w-3.5" />
-                  Quotas & Limits
+                  Quotas
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="text-xs font-bold py-2 px-5 cursor-pointer gap-2">
+                <TabsTrigger value="analytics" className="min-h-8 px-2 sm:px-4">
                   <BarChart3 className="h-3.5 w-3.5" />
-                  Token Analytics
+                  Analytics
                 </TabsTrigger>
               </TabsList>
 
@@ -788,10 +797,10 @@ export default function NetworkPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="hidden md:flex h-9 text-xs font-bold gap-2 cursor-pointer border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10 rounded-xl"
+                  className="hidden md:flex h-9 text-xs font-bold gap-2 cursor-pointer rounded-xl"
                   onClick={() => setLimitsOpen(true)}
                 >
-                  <RaiseLogo size={15} className="text-purple-600 dark:text-purple-400" />
+                  <RaiseLogo size={15} className="text-primary" />
                   Ask Raise for Advice
                 </Button>
               )}
@@ -816,11 +825,10 @@ export default function NetworkPage() {
                     </div>
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="gap-2 text-xs font-semibold cursor-pointer rounded-xl h-8"
+                      className="text-xs font-semibold rounded-xl"
                       onClick={() => setInviteModalOpen(true)}
                     >
-                      <UserPlus className="h-3.5 w-3.5 text-primary" />
+                      <UserPlus className="h-3.5 w-3.5" />
                       Add Teacher
                     </Button>
                   </CardHeader>
@@ -921,7 +929,7 @@ export default function NetworkPage() {
                     <CardContent className="space-y-3">
                       <div className="flex items-center gap-2 p-2.5 bg-background border rounded-xl text-xs font-mono">
                         <span className="flex-1 truncate text-muted-foreground select-all">{inviteUrl}</span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 cursor-pointer" onClick={copyInviteLink}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Copy invite link" onClick={copyInviteLink}>
                           {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                         </Button>
                       </div>
@@ -930,12 +938,12 @@ export default function NetworkPage() {
                           {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                           {copiedLink ? "Copied!" : "Copy Link"}
                         </Button>
-                        <a href={mailtoLink} className="flex-1">
-                          <Button variant="outline" className="w-full h-9 text-xs font-bold cursor-pointer gap-2">
+                        <Button asChild variant="outline" className="flex-1 h-9 text-xs font-bold">
+                          <a href={mailtoLink}>
                             <Mail className="h-3.5 w-3.5" />
                             Email Draft
-                          </Button>
-                        </a>
+                          </a>
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -958,11 +966,11 @@ export default function NetworkPage() {
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           Managed through Polar metered billing. Department spend is tracked centrally.
                         </p>
-                        <Link href="/teacher/network/billing" className="block w-full">
-                          <Button variant="outline" className="w-full text-xs h-9 font-semibold cursor-pointer">
+                        <Button asChild variant="outline" className="w-full text-xs h-9 font-semibold cursor-pointer">
+                          <Link href="/teacher/network/billing">
                             Manage Subscription & Invoices
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </CardContent>
                     </Card>
                   )}
@@ -1012,10 +1020,10 @@ export default function NetworkPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 text-[11px] font-bold gap-1.5 cursor-pointer border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10 rounded-xl"
+                    className="h-8 text-[11px] font-bold gap-1.5 cursor-pointer rounded-xl"
                     onClick={() => setLimitsOpen(true)}
                   >
-                    <RaiseLogo size={14} className="text-purple-600 dark:text-purple-400" />
+                    <RaiseLogo size={14} className="text-primary" />
                     Ask Raise
                   </Button>
                 </div>
@@ -1033,11 +1041,11 @@ export default function NetworkPage() {
                     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
                       <Lock className="h-5 w-5 text-white mb-2" />
                       <p className="text-xs font-bold text-white mb-3">Unlock Budget Controls on Pro</p>
-                      <Link href="/teacher/network/billing">
-                        <Button size="sm" variant="secondary" className="h-8 text-xs font-bold px-4 rounded-xl cursor-pointer">
+                      <Button asChild size="sm" variant="secondary" className="h-8 text-xs font-bold px-4 rounded-xl cursor-pointer">
+                        <Link href="/teacher/network/billing">
                           Upgrade to Pro
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                   )}
                   <CardHeader className="pb-3">
@@ -1109,7 +1117,7 @@ export default function NetworkPage() {
                               />
                             </div>
                             <Button
-                              className="h-10 px-4 font-bold cursor-pointer rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                              className="h-10 px-4 font-bold cursor-pointer rounded-xl"
                               onClick={handleUpdateBudget}
                               disabled={updatingBudget}
                             >
@@ -1127,7 +1135,7 @@ export default function NetworkPage() {
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-md border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/50"
+                              className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-md"
                               onClick={() => stepBudget(amount)}
                             >
                               +${amount}
@@ -1148,11 +1156,11 @@ export default function NetworkPage() {
                     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
                       <Lock className="h-5 w-5 text-white mb-2" />
                       <p className="text-xs font-bold text-white mb-3">Unlock Raise Quotas on Pro</p>
-                      <Link href="/teacher/network/billing">
-                        <Button size="sm" variant="secondary" className="h-8 text-xs font-bold px-4 rounded-xl cursor-pointer">
+                      <Button asChild size="sm" variant="secondary" className="h-8 text-xs font-bold px-4 rounded-xl cursor-pointer">
+                        <Link href="/teacher/network/billing">
                           Upgrade to Pro
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                   )}
                   <CardHeader className="pb-3">
@@ -1213,7 +1221,7 @@ export default function NetworkPage() {
                               onChange={(e) => setTempTutorLimitPerStudent(e.target.value)}
                             />
                             <Button
-                              className="h-10 px-4 font-bold cursor-pointer rounded-xl bg-purple-600 hover:bg-purple-700 text-white"
+                              className="h-10 px-4 font-bold cursor-pointer rounded-xl"
                               onClick={handleUpdateTutorLimit}
                               disabled={updatingTutor}
                             >
@@ -1232,7 +1240,7 @@ export default function NetworkPage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-md border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-100/50"
+                                className="h-6 px-2 text-[10px] font-mono font-bold cursor-pointer rounded-md"
                                 onClick={() => stepTutor(amount)}
                               >
                                 +{amount}
@@ -1257,11 +1265,11 @@ export default function NetworkPage() {
                     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] p-6 text-center">
                       <Lock className="h-5 w-5 text-white mb-2" />
                       <p className="text-xs font-bold text-white mb-3">Unlock Notebook Limits on Pro</p>
-                      <Link href="/teacher/network/billing">
-                        <Button size="sm" variant="secondary" className="h-8 text-xs font-bold px-4 rounded-xl cursor-pointer">
+                      <Button asChild size="sm" variant="secondary" className="h-8 text-xs font-bold px-4 rounded-xl cursor-pointer">
+                        <Link href="/teacher/network/billing">
                           Upgrade to Pro
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                   )}
                   <CardHeader className="pb-3">
@@ -1350,7 +1358,7 @@ export default function NetworkPage() {
                           </div>
                           <Button
                             size="sm"
-                            className="h-8 px-4 font-bold cursor-pointer rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                            className="h-8 px-4 font-bold cursor-pointer rounded-xl"
                             onClick={handleUpdateNotebookLimit}
                             disabled={updatingNotebook}
                           >
@@ -1444,7 +1452,7 @@ export default function NetworkPage() {
                 <Label className="text-xs font-bold uppercase text-muted-foreground">Department Invitation Link</Label>
                 <div className="flex items-center gap-2 p-2.5 bg-secondary/30 border rounded-xl text-xs font-mono">
                   <span className="flex-1 truncate select-all">{inviteUrl}</span>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 cursor-pointer" onClick={copyInviteLink}>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Copy invite link" onClick={copyInviteLink}>
                     {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                   </Button>
                 </div>
@@ -1457,7 +1465,7 @@ export default function NetworkPage() {
                 <Label className="text-xs font-bold uppercase text-muted-foreground">Department Identifier (ID)</Label>
                 <div className="flex items-center gap-2 p-2.5 bg-secondary/30 border rounded-xl text-xs font-mono">
                   <span className="flex-1 truncate select-all">{organization?.id}</span>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 cursor-pointer" onClick={copyOrgId}>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Copy department ID" onClick={copyOrgId}>
                     {copiedId ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                   </Button>
                 </div>
@@ -1475,17 +1483,17 @@ export default function NetworkPage() {
                 </ul>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 <Button className="flex-1 h-10 font-bold cursor-pointer gap-2" onClick={copyInviteLink}>
                   {copiedLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   {copiedLink ? "Link Copied!" : "Copy Link"}
                 </Button>
-                <a href={mailtoLink} className="flex-1">
-                  <Button variant="outline" className="w-full h-10 font-bold cursor-pointer gap-2">
+                <Button asChild variant="outline" className="flex-1 h-10 font-bold">
+                  <a href={mailtoLink}>
                     <Mail className="h-4 w-4" />
-                    Open Email Template
-                  </Button>
-                </a>
+                    Email Template
+                  </a>
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -1532,7 +1540,7 @@ export default function NetworkPage() {
               <div className="flex gap-2 relative">
                 <Textarea
                   placeholder="Ask Raise about quotas (e.g. 'What is a good budget for 60 students?')..."
-                  className="min-h-[44px] h-[44px] resize-none pr-12 rounded-2xl border-border focus-visible:ring-purple-500"
+                  className="min-h-[44px] h-[44px] resize-none pr-12 rounded-2xl border-border"
                   value={limitsInput}
                   onChange={(e) => setLimitsInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -1544,7 +1552,8 @@ export default function NetworkPage() {
                 />
                 <Button
                   size="icon"
-                  className="absolute right-1.5 top-1.5 h-7 w-7 rounded-xl bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
+                  className="absolute right-1.5 top-1.5 h-7 w-7 rounded-xl cursor-pointer"
+                  aria-label="Send message to Raise"
                   onClick={sendLimitsMessage}
                   disabled={limitsLoading || !limitsInput.trim()}
                 >

@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, query, orderBy, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { WorkspaceHeader } from "@/components/ui/workspace";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, FileText, Search, Video, File, Globe } from "lucide-react";
+import { ExternalLink, FileText, Search, Video, Globe } from "lucide-react";
 import Link from "next/link";
 
 interface Resource {
@@ -104,26 +103,21 @@ export default function StudentResourcesPage() {
 
   return (
     <div className="space-y-6">
-      
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Learning Resources</h1>
-          <p className="text-muted-foreground">Access study materials and external links</p>
-        </div>
-      </div>
+      <WorkspaceHeader title="Resources" description="Study materials shared by your teacher." />
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center space-y-2 md:space-y-0">
-        <div className="relative flex-1 md:max-w-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-0 flex-1 basis-48 sm:max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search resources..."
+            placeholder="Search resources…"
+            aria-label="Search resources"
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <Select value={activeTab} onValueChange={setActiveTab}>
-          <SelectTrigger className="w-[180px] cursor-pointer">
+          <SelectTrigger aria-label="Resource type">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
@@ -135,62 +129,39 @@ export default function StudentResourcesPage() {
         </Select>
       </div>
 
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="h-24 bg-muted/50" />
-              <CardContent className="h-12 bg-muted/30 mt-4" />
-            </Card>
-          ))}
-        </div>
-      ) : filteredResources.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Search className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No resources found</p>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredResources.map((resource) => (
-            <Card key={resource.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20 hover:border-l-primary group">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start gap-2">
-                  <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
-                    {resource.type === 'video' || resource.url.includes('youtube') || resource.url.includes('vimeo') ? (
-                      <Video className="h-5 w-5 text-blue-500" />
-                    ) : resource.type === 'document' || resource.url.includes('.pdf') || resource.url.includes('.doc') ? (
-                      <FileText className="h-5 w-5 text-orange-500" />
-                    ) : (
-                      <Globe className="h-5 w-5 text-emerald-500" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="line-clamp-2 text-lg leading-tight group-hover:text-primary transition-colors">
-                      {resource.title}
-                    </CardTitle>
-                    <CardDescription className="mt-1 flex items-center gap-1.5">
-                      <span className="capitalize">{resource.type || 'Link'}</span>
-                      <span className="text-[10px] opacity-30">•</span>
-                      <span>{resource.createdAt?.toDate ? resource.createdAt.toDate().toLocaleDateString() : 'Recently'}</span>
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full cursor-pointer mt-2" variant="outline">
-                  <Link href={resource.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Launch Resource
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {loading ? (
+          <p role="status" className="p-6 text-sm text-muted-foreground">Loading resources…</p>
+        ) : filteredResources.length === 0 ? (
+          <p className="p-6 text-sm text-muted-foreground">
+            {resources.length ? "No resources match your filters." : "Your teacher hasn’t shared any resources yet."}
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {filteredResources.map((resource) => {
+              const Icon = resource.type === "video" || /youtube|vimeo/.test(resource.url)
+                ? Video
+                : resource.type === "document" || /\.pdf|\.doc/.test(resource.url) ? FileText : Globe;
+              return (
+                <li key={resource.id}>
+                  <Link href={resource.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-4 hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:px-5">
+                    <Icon className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <h2 className="break-words text-sm font-medium">{resource.title}</h2>
+                      <p className="text-xs capitalize text-muted-foreground">
+                        {resource.type || "Link"}
+                        {resource.createdAt?.toDate && ` · ${resource.createdAt.toDate().toLocaleDateString()}`}
+                      </p>
+                    </div>
+                    <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="sr-only">(opens in a new tab)</span>
                   </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

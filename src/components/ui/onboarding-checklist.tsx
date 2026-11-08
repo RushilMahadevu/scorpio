@@ -125,15 +125,8 @@ export function OnboardingChecklist({
           const resSnap = await getDocs(query(collection(db, "resources"), where("teacherId", "==", user!.uid), limit(1)));
           setAutoProgress((prev: any) => ({ ...prev, resourceCount: resSnap.size }));
         } else {
-          // Check tutor chats
-          const chatSnap = await getDocs(query(collection(db, "chats"), where("userId", "==", user!.uid), limit(1)));
-          // Check notebooks
-          const notebookSnap = await getDocs(query(collection(db, "notebooks"), where("userId", "==", user!.uid), limit(1)));
-          setAutoProgress((prev: any) => ({ 
-            ...prev, 
-            chatCount: chatSnap.size,
-            notebookCount: notebookSnap.size
-          }));
+          const chats = await getDocs(query(collection(db, "tutor_sessions"), where("studentId", "==", user!.uid), limit(1)));
+          setAutoProgress((prev: any) => ({ ...prev, chatCount: chats.size }));
         }
       } catch (e) {
         console.warn("Checklist autocheck failed", e);
@@ -149,6 +142,25 @@ export function OnboardingChecklist({
   const progress = (completedItems.length / items.length) * 100;
 
   const shouldShow = isStabilized && progress < 100;
+
+  if (userRole === "student") {
+    if (!shouldShow) return null;
+    return (
+      <details className="rounded-xl border border-border bg-card">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-medium">
+          Getting started · {completedItems.length} of {items.length} complete
+        </summary>
+        <ul className="divide-y divide-border border-t border-border">
+          {items.map((item) => (
+            <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+              <Link href={item.link} className="font-medium underline-offset-4 hover:underline">{item.title}</Link>
+              <span className="text-xs text-muted-foreground">{item.check(checkData) ? "Complete" : "To do"}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    );
+  }
 
   return (
     <AnimatePresence>

@@ -210,7 +210,7 @@ export default function ResearchPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+              <div className="p-6 rounded-2xl border border-border/50 bg-card space-y-4">
                 <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" />
                   Infrastructure
@@ -219,7 +219,7 @@ export default function ResearchPage() {
                   Always-on Raise, Department Waypoints, and Mastery Analytics come standard with every organizational license.
                 </p>
               </div>
-              <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+              <div className="p-6 rounded-2xl border border-border/50 bg-card space-y-4">
                 <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
                   <Globe className="h-4 w-4 text-primary" />
                   Zero Markup
@@ -228,7 +228,7 @@ export default function ResearchPage() {
                   $0.15/1M input and $0.60/1M output tokens — fixed at Google DeepMind Gemini 2.5 Flash rates.
                 </p>
               </div>
-              <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
+              <div className="p-6 rounded-2xl border border-border/50 bg-card space-y-4">
                 <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider">
                   <Lock className="h-4 w-4 text-amber-500" />
                   Enterprise Scale
@@ -260,7 +260,7 @@ export default function ResearchPage() {
                         variant={item.significance === 'Critical' ? 'default' : (item.significance === 'High' ? 'default' : 'secondary')}
                         className={cn(
                           "text-xs",
-                          item.significance === 'Critical' && "bg-orange-500 hover:bg-orange-600 border-none text-white",
+                          item.significance === 'Critical' && "border-destructive/30 bg-destructive/10 text-destructive",
                           item.significance === 'High' && "bg-primary text-primary-foreground",
                           item.significance === 'Medium' && "bg-secondary text-secondary-foreground"
                         )}

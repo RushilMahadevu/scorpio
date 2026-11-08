@@ -1,6 +1,7 @@
-import { CirclePause } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Maximize } from "lucide-react";
+import { ChevronLeft, ChevronRight, CirclePause, Maximize } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const demoSlides = [
@@ -14,9 +15,8 @@ const demoSlides = [
 const slideDurations = [12, 41, 25, 36];
 
 export function DemoCarousel() {
-    // Track if the main video is visible in the viewport
-    const [isVideoVisible, setIsVideoVisible] = useState(true);
-    const mainVideoContainerRef = useRef<HTMLDivElement>(null);
+  const [isVideoVisible, setIsVideoVisible] = useState(true);
+  const mainVideoContainerRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const total = demoSlides.length;
   // Pause/resume when main video is clicked
@@ -25,39 +25,16 @@ export function DemoCarousel() {
   const progressRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const prevVideoRef = useRef<HTMLVideoElement>(null);
   const currentVideoRef = useRef<HTMLVideoElement>(null);
-  const nextVideoRef = useRef<HTMLVideoElement>(null);
+  const [unavailableSlides, setUnavailableSlides] = useState<string[]>([]);
 
   const next = () => setIndex(i => (i + 1) % total);
   const prev = () => setIndex(i => (i - 1 + total) % total);
 
   const getSlide = (o: number) => demoSlides[(index + o + total) % total];
 
-  // Control video playback based on current index
-  useEffect(() => {
-    // Pause all videos first
-    prevVideoRef.current?.pause();
-    currentVideoRef.current?.pause();
-    nextVideoRef.current?.pause();
-
-    // Play only the current video
-    currentVideoRef.current?.play();
-  }, [index]);
-
-  // Play current video on mount
-  useEffect(() => {
-    currentVideoRef.current?.play();
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      prevVideoRef.current?.pause();
-      currentVideoRef.current?.pause();
-      nextVideoRef.current?.pause();
-    };
-  }, []);
+  const slide = getSlide(0);
+  const unavailable = unavailableSlides.includes(slide.src);
 
   // Keyboard navigation
   useEffect(() => {
@@ -94,7 +71,7 @@ export function DemoCarousel() {
       }, intervalMs);
     }
 
-    if (!isVideoPaused) {
+    if (!isVideoPaused && isVideoVisible && !unavailable) {
       startTimer(0);
     }
 
@@ -107,7 +84,7 @@ export function DemoCarousel() {
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     // Only run timer if video is visible and not paused
-    if (isVideoVisible && !isVideoPaused) {
+    if (isVideoVisible && !isVideoPaused && !unavailable) {
       // Resume timer from current progress
       const duration = slideDurations[index] * 1000; // ms
       const intervalMs = 50;
@@ -127,7 +104,7 @@ export function DemoCarousel() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isVideoPaused, isVideoVisible]);
+  }, [isVideoPaused, isVideoVisible, unavailable, index]);
 
   // Pause/resume video on pause state
   useEffect(() => {
@@ -136,7 +113,9 @@ export function DemoCarousel() {
     if (isVideoPaused || !isVideoVisible) {
       video.pause();
     } else {
-      video.play();
+      void video.play().catch(() => {
+        // Autoplay can be interrupted by slide changes and viewport updates.
+      });
     }
   }, [isVideoPaused, isVideoVisible, index]);
 
@@ -161,13 +140,16 @@ export function DemoCarousel() {
       >
 
         {/* Left arrow */}
-        <button
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
           onClick={prev}
-          className="absolute left-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full cursor-pointer hover:scale-105 transition-transform"
+          className="absolute left-2 z-30 rounded-full bg-background sm:left-4"
           aria-label="Previous slide"
         >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
+          <ChevronLeft />
+        </Button>
 
         {/* Track */}
         <div className="relative w-full flex items-center justify-center">
@@ -175,7 +157,6 @@ export function DemoCarousel() {
           {/* Previous preview */}
           <div className="absolute left-0 -translate-x-1/4 z-10 scale-[0.9] opacity-70 blur-[2px] hover:blur-0 transition-all hidden md:block">
             <video
-              ref={prevVideoRef}
               src={getSlide(-1).src}
               autoPlay
               loop
@@ -188,68 +169,78 @@ export function DemoCarousel() {
           </div>
 
           {/* Active */}
-          <div className="z-20 relative">
-            <div
-              ref={mainVideoContainerRef}
-              onClick={() => setIsVideoPaused((p) => !p)}
-              className="relative cursor-pointer group"
-              role="button"
-              aria-label={isVideoPaused ? "Play video" : "Pause video"}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  setIsVideoPaused((p) => !p);
-                }
-              }}
-            >
-              <video
-                ref={currentVideoRef}
-                src={getSlide(0).src}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="rounded-lg border shadow-2xl w-full h-full object-cover"
-                title={`Current: ${getSlide(0).title}`}
-              />
-              {/* Paused overlay effect */}
-              <AnimatePresence>
-                {isVideoPaused && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="absolute inset-0 flex items-center justify-center bg-black/30 dark:bg-black/30 rounded-lg"
-                  >
-                    <CirclePause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              {/* Fullscreen button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const video = currentVideoRef.current;
-                  if (video) {
-                    if (video.requestFullscreen) {
-                      video.requestFullscreen();
-                    } else if ((video as any).webkitEnterFullscreen) {
-                      (video as any).webkitEnterFullscreen();
-                    }
+          <div ref={mainVideoContainerRef} className="z-20 relative">
+            {unavailable ? (
+              <div className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-lg border border-border bg-card p-10 text-center">
+                <p className="text-sm text-muted-foreground">This clip is unavailable.</p>
+                <Button asChild variant="outline">
+                  <Link href="/demos">Watch the full demo</Link>
+                </Button>
+              </div>
+            ) : (
+              <div
+                onClick={() => setIsVideoPaused((p) => !p)}
+                className="relative cursor-pointer group"
+                role="button"
+                aria-label={isVideoPaused ? "Play video" : "Pause video"}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsVideoPaused((p) => !p);
                   }
                 }}
-                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                aria-label="Fullscreen"
               >
-                <Maximize className="h-4 w-4 cursor-pointer" />
-              </button>
-            </div>
+                <video
+                  key={slide.src}
+                  ref={currentVideoRef}
+                  src={slide.src}
+                  onError={() => setUnavailableSlides((previous) => [...previous, slide.src])}
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="rounded-lg border shadow-2xl w-full h-full object-cover"
+                  title={`Current: ${slide.title}`}
+                />
+                {/* Paused overlay effect */}
+                <AnimatePresence>
+                  {isVideoPaused && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg"
+                    >
+                      <CirclePause className="h-12 w-12 text-white opacity-80 drop-shadow-lg" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {/* Fullscreen button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const video = currentVideoRef.current;
+                    if (video) {
+                      if (video.requestFullscreen) {
+                        video.requestFullscreen();
+                      } else if ((video as any).webkitEnterFullscreen) {
+                        (video as any).webkitEnterFullscreen();
+                      }
+                    }
+                  }}
+                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                  aria-label="Fullscreen"
+                >
+                  <Maximize className="h-4 w-4 cursor-pointer" />
+                </button>
+              </div>
+            )}
             {/* Progress bar */}
-            <div className="w-full bg-black/20 dark:bg-white/20 rounded-full h-1.5 mt-2 overflow-hidden relative">
+            <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden relative">
               <div
-                className="h-1.5 bg-black dark:bg-white rounded-full transition-all"
+                className="h-1.5 bg-primary rounded-full transition-all"
                 style={{
                   width: `${progress}%`,
                   transition: `width ${slideDurations[index]}s linear`
@@ -261,7 +252,6 @@ export function DemoCarousel() {
           {/* Next preview */}
           <div className="absolute right-0 translate-x-1/4 z-10 scale-[0.9] opacity-70 blur-[2px] hover:blur-0 transition-all hidden md:block">
             <video
-              ref={nextVideoRef}
               src={getSlide(1).src}
               autoPlay
               loop
@@ -275,13 +265,16 @@ export function DemoCarousel() {
         </div>
 
         {/* Right arrow */}
-        <button
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
           onClick={next}
-          className="absolute right-4 z-30 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full cursor-pointer hover:scale-105 transition-transform"
+          className="absolute right-2 z-30 rounded-full bg-background sm:right-4"
           aria-label="Next slide"
         >
-          <ChevronRight className="h-6 w-6" />
-        </button>
+          <ChevronRight />
+        </Button>
       </div>
 
       <div className="text-center mt-6 md:mt-24 max-w-2xl">
@@ -297,16 +290,17 @@ export function DemoCarousel() {
             onClick={() => setIndex(i)}
             className={`w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 cursor-pointer
               ${i === index
-                ? "bg-black dark:bg-white shadow-lg scale-125"
-                : "bg-black/30 dark:bg-white/50 hover:bg-black/50 dark:hover:bg-white/70"}
+                ? "bg-primary scale-125"
+                : "bg-muted-foreground/40 hover:bg-muted-foreground"}
             `}
             aria-label={`Go to slide ${i + 1}`}
+            aria-current={i === index ? "true" : undefined}
           />
         ))}
       </div>
 
       {/* Subtle guidance */}
-      <div className="mt-3 text-[11px] text-black/40 dark:text-white/40 select-none italic text-center tracking-wide">
+      <div className="mt-3 text-[11px] text-muted-foreground select-none italic text-center tracking-wide">
         Click to pause &middot; Use arrows or keyboard to navigate
       </div>
     </div>

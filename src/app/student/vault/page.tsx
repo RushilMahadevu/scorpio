@@ -3,34 +3,23 @@
 import { useState, useEffect } from "react";
 import { 
   Search, 
-  Filter, 
   LayoutGrid, 
   List, 
-  Calculator,
-  Zap,
-  Waves,
-  Flame,
-  Magnet,
-  Atom,
-  ChevronRight,
   PackageOpen,
   Copy,
   Check,
-  Thermometer,
-  CloudLightning,
-  Sun,
-  Rabbit,
   BatteryFull
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WorkspaceHeader } from "@/components/ui/workspace";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/auth-context";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { InlineMath, BlockMath } from "react-katex";
+import { InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
 import { toast } from "sonner";
 
@@ -45,7 +34,7 @@ interface Formula {
 }
 
 const CATEGORIES = [
-  { id: "all", name: "All Vaults" },
+  { id: "all", name: "All categories" },
   { id: "kinematics", name: "Kinematics" },
   { id: "dynamics", name: "Dynamics" },
   { id: "energy", name: "Energy & Momentum" },
@@ -307,7 +296,7 @@ export default function Vault() {
     fetchCourse();
   }, [profile?.courseId]);
 
-  const handleCopy = (formula: any) => {
+  const handleCopy = (formula: Formula) => {
     navigator.clipboard.writeText(formula.formula || formula.latex);
     setCopiedId(formula.id);
     toast.success(`${formula.name} copied to clipboard!`);
@@ -330,110 +319,74 @@ export default function Vault() {
   return (
     <div className="space-y-6">
       
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">
-            <PackageOpen className="h-8 w-8" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-black tracking-tight">Equation Vault</h1>
-            <p className="text-muted-foreground font-medium italic">Master the laws of {courseName || "Physics"}</p>
-          </div>
+      <WorkspaceHeader title="Equation Vault" description={`Search formulas and constants for ${courseName || "physics"}.`} />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-0 flex-1 basis-48 sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search formulas…"
+            aria-label="Search formulas"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search vault..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-11 rounded-xl"
-            />
-          </div>
-          <div className="flex items-center border rounded-xl p-1 bg-muted/50">
-             <Button 
-               variant={viewMode === "grid" ? "secondary" : "ghost"} 
-               size="icon" 
-               className="cursor-pointer h-9 w-9 px-0 rounded-lg"
-               onClick={() => setViewMode("grid")}
-             >
-                <LayoutGrid className="h-4 w-4" />
-             </Button>
-             <Button 
-               variant={viewMode === "list" ? "secondary" : "ghost"} 
-               size="icon" 
-               className="cursor-pointer h-9 w-9 px-0 rounded-lg"
-               onClick={() => setViewMode("list")}
-             >
-                <List className="h-4 w-4" />
-             </Button>
-          </div>
+        <Select value={activeCategory} onValueChange={setActiveCategory}>
+          <SelectTrigger aria-label="Formula category"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {CATEGORIES.map((category) => (
+              <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex gap-1" role="group" aria-label="Formula layout">
+          <Button variant={viewMode === "grid" ? "default" : "outline"} size="icon" onClick={() => setViewMode("grid")} aria-label="Grid view" aria-pressed={viewMode === "grid"}><LayoutGrid /></Button>
+          <Button variant={viewMode === "list" ? "default" : "outline"} size="icon" onClick={() => setViewMode("list")} aria-label="List view" aria-pressed={viewMode === "list"}><List /></Button>
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
-        {CATEGORIES.map(cat => {
-          return (
-            <Button
-              key={cat.id}
-              variant={activeCategory === cat.id ? "default" : "outline"}
-              className={`cursor-pointer rounded-full shrink-0 border-none px-6 font-bold h-10 shadow-sm transition-all ${activeCategory === cat.id ? 'bg-primary' : 'bg-white dark:bg-zinc-800'}`}
-              onClick={() => setActiveCategory(cat.id)}
-            >
-              {cat.name}
-            </Button>
-          );
-        })}
-      </div>
+      {restrictedIds.length > 0 && <p className="text-sm text-muted-foreground">Your class can only see formulas approved by your teacher.</p>}
 
       {filteredFormulas.length === 0 ? (
-        <div className="text-center py-24 bg-muted/20 rounded-3xl border-4 border-dashed border-muted/50">
-          <PackageOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-          <p className="text-xl font-bold text-muted-foreground">Nothing found in the vault.</p>
-          <p className="text-sm text-muted-foreground/60">Try searching for a different keyword.</p>
+        <div className="rounded-xl border border-border bg-card p-6 text-center">
+          <PackageOpen className="mx-auto mb-2 size-5 text-muted-foreground" />
+          <p className="font-medium">Nothing found in the vault.</p>
+          <p className="text-sm text-muted-foreground">Try another search or category.</p>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
           {filteredFormulas.map(formula => (
             <Card 
               key={formula.id} 
-              className="group hover:ring-2 hover:ring-primary/50 transition-all duration-300 border-none bg-zinc-50 dark:bg-zinc-900/50 shadow-md cursor-pointer rounded-3xl overflow-hidden"
-              onClick={() => handleCopy(formula)}
+              className="min-w-0 gap-3 py-4 shadow-none"
             >
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                   <CardTitle className="text-xl font-black">{formula.name}</CardTitle>
+              <CardHeader className="px-4">
+                <div className="flex flex-wrap justify-between gap-2">
+                   <CardTitle className="break-words text-base">{formula.name}</CardTitle>
                    <div className="flex items-center gap-2">
-                     <Badge variant="secondary" className="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-md">
+                     <Badge variant="secondary" className="capitalize">
                        {formula.category}
                      </Badge>
                    </div>
                 </div>
-                <CardDescription className="text-sm font-medium line-clamp-1">{formula.description}</CardDescription>
+                <CardDescription className="break-words text-sm">{formula.description}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6 pt-2">
-                <div className="bg-white dark:bg-zinc-800 rounded-2xl p-8 text-center shadow-sm group-hover:shadow-md transition-all relative flex flex-col items-center justify-center min-h-[120px]">
-                   <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 flex items-center justify-center">
-                     <BlockMath math={formula.latex} />
-                   </div>
-                   <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                     {copiedId === formula.id ? (
-                       <Check className="h-5 w-5 text-emerald-500" />
-                     ) : (
-                       <Copy className="h-4 w-4 text-muted-foreground" />
-                     )}
-                   </div>
+              <CardContent className="space-y-3 px-4">
+                <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3">
+                  <div className="min-w-0 flex-1 overflow-x-auto py-3 text-center"><InlineMath math={formula.latex} /></div>
+                  <Button variant="ghost" size="icon-sm" onClick={() => handleCopy(formula)} aria-label={copiedId === formula.id ? `Copied ${formula.name}` : `Copy ${formula.name}`}>
+                    {copiedId === formula.id ? <Check /> : <Copy />}
+                  </Button>
                 </div>
-                <div className="grid grid-cols-1 gap-2 border-t border-zinc-200 dark:border-zinc-800 pt-4 mt-auto">
+                <div className="space-y-1">
                   {formula.variables && Object.entries(formula.variables).map(([symbol, name]) => (
-                    <div key={symbol} className="text-[11px] flex items-center gap-2 text-muted-foreground font-medium">
-                      <span className="font-black text-primary font-mono w-5 inline-flex justify-center bg-primary/5 rounded py-0.5">{symbol}</span>
-                      <span className="truncate">{name}</span>
+                    <div key={symbol} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <span className="shrink-0 font-mono text-foreground">{symbol}</span>
+                      <span className="break-words">{name}</span>
                     </div>
                   ))}
                   {!formula.variables && (
-                    <div className="text-[11px] flex items-center gap-2 text-muted-foreground font-medium italic">
+                    <div className="flex items-start gap-2 text-xs text-muted-foreground italic">
                       No variable definitions provided.
                     </div>
                   )}
@@ -443,89 +396,39 @@ export default function Vault() {
           ))}
         </div>
       ) : (
-        <Card className="border-none shadow-md rounded-3xl overflow-hidden bg-zinc-50 dark:bg-zinc-900/50">
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {filteredFormulas.map(formula => (
-              <div 
-                key={formula.id} 
-                className="p-6 flex items-center justify-between group hover:bg-white dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                onClick={() => handleCopy(formula)}
-              >
-                <div className="flex-1 min-w-0 pr-8">
-                  <h3 className="font-extrabold text-lg">{formula.name}</h3>
-                  <p className="text-sm text-muted-foreground truncate font-medium">{formula.description}</p>
-                </div>
-                <div className="flex-1 flex justify-center py-4">
-                  <InlineMath math={formula.latex} />
-                </div>
-                <div className="flex-1 flex items-center justify-end gap-4">
-                   <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest py-1 border-zinc-300 dark:border-zinc-700">{formula.category}</Badge>
-                   <div className="w-8 flex justify-end">
-                     {copiedId === formula.id ? (
-                       <Check className="h-5 w-5 text-emerald-500" />
-                     ) : (
-                       <Copy className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                     )}
-                   </div>
-                </div>
+        <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+          {filteredFormulas.map((formula) => (
+            <li key={formula.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+              <div className="min-w-0 flex-1 basis-48">
+                <h2 className="break-words text-sm font-medium">{formula.name}</h2>
+                <p className="break-words text-xs text-muted-foreground">{formula.description}</p>
               </div>
-            ))}
-          </div>
-        </Card>
+              <div className="min-w-0 max-w-full overflow-x-auto"><InlineMath math={formula.latex} /></div>
+              <Badge variant="outline" className="capitalize">{formula.category}</Badge>
+              <Button variant="ghost" size="icon-sm" onClick={() => handleCopy(formula)} aria-label={copiedId === formula.id ? `Copied ${formula.name}` : `Copy ${formula.name}`}>
+                {copiedId === formula.id ? <Check /> : <Copy />}
+              </Button>
+            </li>
+          ))}
+        </ul>
       )}
-      
-      {/* Quick Tools */}
-      <div className="grid gap-6 md:grid-cols-4 pt-4">
-          <Card className="bg-zinc-900 text-white border-none shadow-lg rounded-3xl overflow-hidden col-span-1">
-             <CardHeader className="align-center flex-col items-start space-y-4 p-6">
-                <CardTitle className="text-lg font-black">Universal Constants</CardTitle>
-             </CardHeader>
-             <CardContent className="space-y-4 p-6">
-                {[
-                  { s: "g", v: "9.81 m/s²", n: "Gravity" },
-                  { s: "G", v: "6.67 × 10⁻¹¹", n: "Gravitation" },
-                  { s: "c", v: "3.00 × 10⁸ m/s", n: "Light Speed" },
-                  { s: "h", v: "6.63 × 10⁻³⁴ Js", n: "Planck's" },
-                ].map(item => (
-                  <div key={item.s} className="flex flex-col gap-0.5">
-                    <div className="flex justify-between items-center">
-                       <span className="text-zinc-500 font-mono italic text-xs font-bold">{item.s}</span>
-                       <span className="font-black text-white text-sm">{item.v}</span>
-                    </div>
-                    <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-wider">{item.n}</span>
-                  </div>
-                ))}
-             </CardContent>
-          </Card>
 
-          <Card className="md:col-span-3 border-none bg-primary/5 rounded-3xl shadow-sm relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-8 opacity-5 -mr-4 -mt-4">
-                <Sun className="h-32 w-32 text-primary rotate-12" />
-             </div>
-             <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <CloudLightning className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle className="text-xl font-black">Class Data Stream</CardTitle>
-                </div>
-                <CardDescription className="text-base font-medium">
-                  Centralized reference for {"General Physics"} (V1.2)
-                </CardDescription>
-             </CardHeader>
-              <CardContent>
-                <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-primary/10 rounded-2xl p-6">
-                  <p className="text-muted-foreground font-medium italic leading-relaxed">
-                    {restrictedIds.length > 0 
-                      ? `Your teacher has restricted ${restrictedIds.length} formulas for this class. Only approved equations are visible in your vault.`
-                      : "Your teacher has not uploaded specific formula restrictions for this class. All standard physics equations are currently visible. Click any formula card to copy its calculation ready form."
-                    }
-                  </p>
-                </div>
-              </CardContent>
-
-          </Card>
-      </div>
+      <details className="rounded-xl border border-border bg-card">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-medium">Universal constants</summary>
+        <dl className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
+          {[
+            { s: "g", v: "9.81 m/s²", n: "Gravity" },
+            { s: "G", v: "6.67 × 10⁻¹¹", n: "Gravitation" },
+            { s: "c", v: "3.00 × 10⁸ m/s", n: "Light speed" },
+            { s: "h", v: "6.63 × 10⁻³⁴ Js", n: "Planck’s constant" },
+          ].map((item) => (
+            <div key={item.s} className="text-sm">
+              <dt className="text-muted-foreground">{item.n}</dt>
+              <dd className="font-mono">{item.s} = {item.v}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
     </div>
   );
 }

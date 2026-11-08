@@ -214,9 +214,9 @@ export function LandingChatbot() {
                 </span>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
-                  <X className="h-4 w-4 text-muted-foreground" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -248,15 +248,15 @@ export function LandingChatbot() {
               {messages.map((message, i) => (
                 <div key={i} className={cn('flex gap-2.5', message.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {message.role === 'assistant' && (
-                    <div className="h-6 w-6 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 mt-0.5 border border-white/5">
-                      <RaiseLogo size={14} className="text-white" />
+                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                      <RaiseLogo size={14} className="currentColor" />
                     </div>
                   )}
                   <div className={cn(
-                    'max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-sm',
+                    'max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-xs',
                     message.role === 'user'
-                      ? 'bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-sm'
-                      : 'bg-zinc-100 dark:bg-zinc-800/80 text-foreground rounded-tl-sm border border-border/30',
+                      ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                      : 'bg-muted/70 text-foreground rounded-tl-sm border border-border/40',
                     message.isWelcome && 'border-l-2 border-l-emerald-400'
                   )}>
                     {message.role === 'user' ? (
@@ -277,7 +277,7 @@ export function LandingChatbot() {
                     <button
                       key={i}
                       onClick={() => sendMessage(prompt)}
-                      className="flex items-center gap-2 w-full text-left text-[11px] font-medium text-muted-foreground hover:text-foreground bg-zinc-100 dark:bg-zinc-800/60 hover:bg-accent px-3 py-2 rounded-xl transition-colors cursor-pointer border border-border/30 hover:border-border"
+                      className="flex items-center gap-2 w-full text-left text-[11px] font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-accent px-3 py-2 rounded-xl transition-colors cursor-pointer border border-border/30 hover:border-border"
                     >
                       <Sparkles className="h-3 w-3 text-purple-400 shrink-0" />
                       {prompt}
@@ -288,14 +288,14 @@ export function LandingChatbot() {
 
               {isLoading && (
                 <div className="flex gap-2.5">
-                  <div className="h-6 w-6 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 border border-white/5">
-                    <RaiseLogo size={14} className="text-white" />
+                  <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
+                    <RaiseLogo size={14} className="currentColor" />
                   </div>
-                  <div className="bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/30">
+                  <div className="bg-muted/70 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/40">
                     <div className="flex gap-1 items-center h-4">
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '120ms' }} />
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: '240ms' }} />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '120ms' }} />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '240ms' }} />
                     </div>
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export function LandingChatbot() {
             {/* Input */}
             <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/30 bg-background">
               <div className={cn(
-                'relative flex items-end gap-2 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl px-4 py-2.5 border border-border/40 focus-within:border-zinc-400 dark:focus-within:border-zinc-500 transition-colors',
+                'relative flex items-end gap-2 bg-muted/50 rounded-2xl px-4 py-2.5 border border-border focus-within:border-primary/50 transition-colors',
                 limitReached && 'opacity-50 pointer-events-none'
               )}>
                 <Textarea
@@ -342,9 +342,9 @@ export function LandingChatbot() {
                   size="icon"
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || isLoading || limitReached}
-                  className="h-7 w-7 shrink-0 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:opacity-80 transition-opacity cursor-pointer"
+                  className="h-7 w-7 shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer"
                 >
-                  <Send className="h-3.5 w-3.5 text-zinc-100 dark:text-zinc-900" />
+                  <Send className="h-3.5 w-3.5" />
                 </Button>
               </div>
               <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">

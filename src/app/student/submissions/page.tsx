@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { collection, query, where, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, Clock, FileCheck } from "lucide-react";
+import { WorkspaceHeader } from "@/components/ui/workspace";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface Submission {
   id: string;
@@ -16,7 +18,7 @@ interface Submission {
   answers: any[];
   submittedAt: Date | null;
   graded: boolean;
-  score?: number;
+  score: number | null;
   feedback?: string;
   status?: string;
 }
@@ -83,31 +85,21 @@ export default function SubmissionsPage() {
 
   return (
     <div className="space-y-6">
-      
-      <div>
-        <h1 className="text-3xl font-bold">My Submissions</h1>
-        <p className="text-muted-foreground">View your submitted assignments and grades</p>
-      </div>
+      <WorkspaceHeader title="My Submissions" description="Check which assignments you’ve turned in.">
+        <Button asChild variant="outline"><Link href="/student/grades">View grades</Link></Button>
+      </WorkspaceHeader>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5" />
-            Submission History
-          </CardTitle>
-          <CardDescription>{submissions.length} submissions</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Card className="overflow-hidden py-0 shadow-none">
+        <CardContent className="p-0">
           {loading ? (
-            <p className="text-muted-foreground">Loading...</p>
+            <p role="status" className="p-6 text-sm text-muted-foreground">Loading submissions…</p>
           ) : submissions.length === 0 ? (
-            <p className="text-muted-foreground">No submissions yet. Complete an assignment to see it here!</p>
+            <p className="p-6 text-sm text-muted-foreground">Your submitted assignments will appear here.</p>
           ) : (
-            <Table>
-              <TableHeader>
+            <Table aria-label="Submission history">
+              <TableHeader className="bg-muted/40">
                 <TableRow>
-                  <TableHead>Assignment</TableHead>
-                  <TableHead>Submitted</TableHead>
+                  <TableHead className="px-4">Assignment</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Score</TableHead>
                 </TableRow>
@@ -115,27 +107,23 @@ export default function SubmissionsPage() {
               <TableBody>
                 {submissions.map((submission) => (
                   <TableRow key={submission.id}>
-                    <TableCell className="font-medium">{submission.assignmentTitle}</TableCell>
-                    <TableCell>
-                        {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : "Draft"}
+                    <TableCell className="min-w-32 whitespace-normal px-4 py-3 font-medium">
+                      <span className="break-words">{submission.assignmentTitle}</span>
+                      <p className="text-xs font-normal text-muted-foreground">{submission.submittedAt?.toLocaleDateString() ?? "—"}</p>
                     </TableCell>
                     <TableCell>
-                      {submission.status === 'draft' ? (
-                        <Badge variant="outline">Draft</Badge>
-                      ) : submission.graded ? (
-                        <Badge className="bg-green-500">
-                          <CheckCircle className="h-3 w-3 mr-1" />
+                      {submission.graded ? (
+                        <Badge variant="secondary">
                           Graded
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Pending
+                        <Badge variant="outline">
+                          Awaiting grade
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      {submission.graded && submission.score !== undefined
+                      {submission.graded && submission.score !== null
                         ? `${submission.score}%`
                         : "-"}
                     </TableCell>

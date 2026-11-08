@@ -432,9 +432,10 @@ export function SettingsDialog() {
                   <Palette className="h-4 w-4" />
                   <h4 className="text-sm font-medium">Accent Color</h4>
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2">
                   {[
-                    { name: "Default", value: "default", color: "bg-foreground" },
+                    { name: "Cosmic", value: "default", color: "bg-blue-600" },
+                    { name: "Monochrome", value: "monochrome", color: "bg-foreground" },
                     { name: "Ocean", value: "ocean", color: "bg-sky-500" },
                     { name: "Violet", value: "violet", color: "bg-violet-500" },
                     { name: "Rose", value: "rose", color: "bg-rose-500" },

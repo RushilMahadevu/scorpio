@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { login, logout, db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/auth-context";
+import { AuthPageNav } from "@/components/landing/auth-page-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceBackground } from "@/components/ui/space-background";
 import Link from "next/link";
-import { ArrowLeft, GraduationCap, Presentation, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Presentation, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/ui/logo";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -93,14 +94,15 @@ export default function LoginPage() {
 
   if (user && role === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <div className="min-h-dvh flex items-center justify-center bg-background px-4 pt-20 pb-8 relative">
         <SpaceBackground />
-        <Card className="w-full max-w-md relative z-10 backdrop-blur-md bg-background/80 border-primary/20 shadow-2xl">
+        <AuthPageNav />
+        <Card className="w-full max-w-md relative z-10">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <Logo size={48} className="text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">Account Recovery</CardTitle>
+            <CardTitle className="text-2xl font-bold">Account Recovery</CardTitle>
             <CardDescription>
               Profile setup was interrupted. Complete it now to continue.
             </CardDescription>
@@ -125,7 +127,6 @@ export default function LoginPage() {
                 value={recoveryEmail}
                 onChange={(e) => setRecoveryEmail(e.target.value)}
                 disabled={loading}
-                className="bg-background/50 border-white/10 focus:border-primary/50"
               />
             </div>
 
@@ -163,14 +164,13 @@ export default function LoginPage() {
                   value={recoveryAccessCode}
                   onChange={(e) => setRecoveryAccessCode(e.target.value)}
                   disabled={loading}
-                  className="bg-background/50 border-white/10 focus:border-primary/50"
                 />
               </motion.div>
             )}
 
             <div className="pt-4 flex flex-col gap-3">
               <Button
-                className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 transition-all active:scale-95 py-6 h-auto text-base"
+                className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={handleRecovery}
                 disabled={loading}
               >
@@ -192,12 +192,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-dvh flex items-center justify-center px-4 pt-20 pb-8 relative">
       <SpaceBackground />
-      <Link href="/" className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors bg-background/80 rounded-full px-3 py-1 shadow-sm border border-border/50">
-        <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm font-medium">Back to Home</span>
-      </Link>
+      <AuthPageNav />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -279,14 +276,16 @@ export default function LoginPage() {
                         aria-label="Student Password"
                         required
                       />
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute inset-y-0 right-0 text-muted-foreground"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                      </Button>
                     </div>
                   </motion.div>
                   {error && (
@@ -304,7 +303,7 @@ export default function LoginPage() {
                     transition={{ delay: 0.3 }}
                   >
                     <Button
-                      className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={() => handleLogin("student")}
                       disabled={loading}
                     >
@@ -363,14 +362,16 @@ export default function LoginPage() {
                         aria-label="Teacher Password"
                         required
                       />
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute inset-y-0 right-0 text-muted-foreground"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                      </Button>
                     </div>
                   </motion.div>
                   {error && (
@@ -388,7 +389,7 @@ export default function LoginPage() {
                     transition={{ delay: 0.3 }}
                   >
                     <Button
-                      className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={() => handleLogin("teacher")}
                       disabled={loading}
                     >

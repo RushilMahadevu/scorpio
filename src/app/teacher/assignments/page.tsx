@@ -9,13 +9,13 @@ import { getAssignmentPoints } from "@/lib/assignment-points";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { PlusCircle, Trash2, Eye, Share2, Globe, Lock, ShieldCheck, ShieldAlert, Copy } from "lucide-react";
-import { addDoc } from "firebase/firestore";
+import { ArrowUpRight, PlusCircle, Trash2, Globe, Lock, ShieldCheck, ShieldAlert, Copy, MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { TeacherPageHeader } from "@/components/teacher/workspace";
 
 interface Assignment {
   id: string;
@@ -147,171 +147,124 @@ export default function AssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      
-      <div>
-        <h1 className="text-3xl font-bold">Assignments</h1>
-        <p className="text-muted-foreground">Manage your class assignments</p>
-      </div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <div className="flex gap-2 flex-wrap items-center">
-            {/* Class Filter */}
-            <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-              <SelectTrigger className="w-[180px] cursor-pointer">
-                <SelectValue placeholder="All Classes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
-                {courses.map((c) => (
-                  <SelectItem key={c.id} value={c.id} className="cursor-pointer">
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <TeacherPageHeader title="Assignments" description="Review deadlines, manage sharing, and open student submissions.">
+        <Button asChild>
+          <Link href="/teacher/create"><PlusCircle /> Create Assignment</Link>
+        </Button>
+      </TeacherPageHeader>
 
-          {/* Filtering Dropdown */}
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[150px] cursor-pointer">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="cursor-pointer">All Status</SelectItem>
-              <SelectItem value="active" className="cursor-pointer">Active</SelectItem>
-              <SelectItem value="pastDue" className="cursor-pointer">Past Due</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Sorting Dropdown */}
-          <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="w-[200px] cursor-pointer">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="dueDateDesc" className="cursor-pointer">Due Date (Latest)</SelectItem>
-              <SelectItem value="dueDateAsc" className="cursor-pointer">Due Date (Earliest)</SelectItem>
-              <SelectItem value="titleAsc" className="cursor-pointer">Title (A-Z)</SelectItem>
-              <SelectItem value="titleDesc" className="cursor-pointer">Title (Z-A)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {/* Create Assignment Button on right */}
-        <div className="flex justify-end">
-          <Link href="/teacher/create">
-            <Button className="cursor-pointer">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Assignment
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>All Assignments</CardTitle>
-          <CardDescription>{filteredAssignments.length} total assignments</CardDescription>
+      <Card className="min-w-0 gap-0 py-0">
+        <CardHeader className="flex flex-wrap items-end justify-between gap-3 px-4 py-4 sm:px-5">
+          <div className="grid w-full max-w-xl gap-3 sm:grid-cols-3">
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="assignment-class" className="block text-xs font-medium text-muted-foreground">Class</label>
+              <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+                <SelectTrigger id="assignment-class" className="w-full cursor-pointer">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {courses.map((course) => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="assignment-status" className="block text-xs font-medium text-muted-foreground">Status</label>
+              <Select value={filter} onValueChange={setFilter}>
+                <SelectTrigger id="assignment-status" className="w-full cursor-pointer">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pastDue">Past Due</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="assignment-sort" className="block text-xs font-medium text-muted-foreground">Sort by</label>
+              <Select value={sort} onValueChange={setSort}>
+                <SelectTrigger id="assignment-sort" className="w-full cursor-pointer">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dueDateDesc">Due Date (Latest)</SelectItem>
+                  <SelectItem value="dueDateAsc">Due Date (Earliest)</SelectItem>
+                  <SelectItem value="titleAsc">Title (A–Z)</SelectItem>
+                  <SelectItem value="titleDesc">Title (Z–A)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {!loading && <p className="text-sm text-muted-foreground">{filteredAssignments.length} assignments</p>}
         </CardHeader>
-        <CardContent>
-          {loading ? (
-            <Card className="my-8 mx-auto max-w-md text-center">
-              <CardContent className="py-8 flex flex-col items-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader animate-spin mb-2 text-muted-foreground"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="M4.93 19.07l2.83-2.83"></path><path d="M16.24 7.76l2.83-2.83"></path></svg>
-                <p className="text-muted-foreground">Loading...</p>
-              </CardContent>
-            </Card>
-          ) : filteredAssignments.length === 0 ? (
-            <Card className="my-8 mx-auto max-w-md text-center">
-              <CardContent className="py-8 flex flex-col items-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text mb-2 text-muted-foreground"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                <p className="text-muted-foreground">No assignments found.</p>
-              </CardContent>
-            </Card>
+        <CardContent className="border-t p-0">
+          {loading || filteredAssignments.length === 0 ? (
+            <p role="status" className="px-5 py-10 text-center text-sm text-muted-foreground">
+              {loading ? "Loading assignments…" : "No assignments match these filters."}
+            </p>
           ) : (
-            <Table>
-              <TableHeader>
+            <Table aria-label="Assignments">
+              <TableHeader className="bg-muted/40">
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Questions</TableHead>
-                  <TableHead>Points</TableHead>
-                  <TableHead>Due Date</TableHead>
+                  <TableHead className="pl-4 sm:pl-5">Assignment</TableHead>
+                  <TableHead>Deadline</TableHead>
                   <TableHead>Visibility</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAssignments.map((assignment) => (
                   <TableRow key={assignment.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
+                    <TableCell className="max-w-80 whitespace-normal py-3 pl-4 sm:pl-5">
+                      <Link
+                        href={`/teacher/assignment-view?id=${assignment.id}`}
+                        className="inline-flex items-baseline gap-1.5 break-words font-medium hover:text-primary hover:underline"
+                      >
                         {assignment.title}
+                        <ArrowUpRight aria-hidden="true" className="size-3 shrink-0 text-muted-foreground" />
+                      </Link>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                        <span>{assignment.courseName || (assignment.courseId ? "Unknown class" : "All classes")}</span>
+                        <span>{assignment.questions?.length || 0} questions · {getAssignmentPoints(assignment.questions)} pts</span>
                         {assignment.lockdownMode && (
-                          <ShieldAlert className="h-3 w-3 text-red-500" />
+                          <span className="inline-flex items-center gap-1"><ShieldAlert aria-hidden="true" className="size-3" /> Lockdown</span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                        {assignment.courseName ? (
-                            <Badge variant="outline">{assignment.courseName}</Badge>
-                        ) : (
-                            <span className="text-xs text-muted-foreground italic">Legacy / All</span>
-                        )}
+                    <TableCell className="text-xs">
+                      <p className="font-medium">{Number.isNaN(assignment.dueDate.getTime()) ? "No due date" : assignment.dueDate.toLocaleDateString()}</p>
+                      <p className="text-muted-foreground">{isPastDue(assignment.dueDate) ? "Past due" : "Active"}</p>
                     </TableCell>
-                    <TableCell>{assignment.questions?.length || 0}</TableCell>
-                    <TableCell className="tabular-nums">{getAssignmentPoints(assignment.questions)}</TableCell>
-                    <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Select 
-                        value={assignment.visibility || "private"} 
-                        onValueChange={(val: "private" | "network" | "global") => updateVisibility(assignment.id, val)}
+                      <Select
+                        value={assignment.visibility || "private"}
+                        onValueChange={(value: "private" | "network" | "global") => updateVisibility(assignment.id, value)}
                       >
-                        <SelectTrigger className="w-[110px] h-8 text-xs cursor-pointer">
+                        <SelectTrigger size="sm" aria-label={`Visibility for ${assignment.title}`} className="cursor-pointer text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="private" className="text-xs cursor-pointer">
-                            <span className="flex items-center gap-1.5"><Lock className="h-3 w-3" /> Private</span>
-                          </SelectItem>
-                          <SelectItem value="network" className="text-xs cursor-pointer">
-                            <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> Network</span>
-                          </SelectItem>
-                          <SelectItem value="global" className="text-xs cursor-pointer">
-                            <span className="flex items-center gap-1.5"><Globe className="h-3 w-3" /> Global</span>
-                          </SelectItem>
+                          <SelectItem value="private"><Lock /> Private</SelectItem>
+                          <SelectItem value="network"><ShieldCheck /> Network</SelectItem>
+                          <SelectItem value="global"><Globe /> Global</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
-                      {isPastDue(assignment.dueDate) ? (
-                        <Badge variant="destructive">Past Due</Badge>
-                      ) : (
-                        <Badge variant="outline">Active</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/teacher/assignment-view?id=${assignment.id}`}>
-                          <Button variant="ghost" size="sm" className="cursor-pointer">
-                            <Eye className="h-4 w-4" />
+                    <TableCell className="pr-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${assignment.title}`}>
+                            <MoreHorizontal />
                           </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="cursor-pointer"
-                          onClick={() => handleDuplicate(assignment)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="cursor-pointer"
-                          onClick={() => setAssignmentToDelete(assignment.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => handleDuplicate(assignment)}><Copy /> Duplicate</DropdownMenuItem>
+                          <DropdownMenuItem variant="destructive" onSelect={() => setAssignmentToDelete(assignment.id)}>
+                            <Trash2 /> Delete assignment
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

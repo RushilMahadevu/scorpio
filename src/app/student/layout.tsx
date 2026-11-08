@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { ProtectedRoute } from "@/components/protected-route";
 import { StudentSidebar } from "@/components/student-sidebar";
-import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { usePathname } from "next/navigation";
-import { PageTransition } from "@/components/page-transition";
 
 
 export default function StudentLayout({
@@ -24,22 +21,19 @@ export default function StudentLayout({
   
   return (
     <ProtectedRoute allowedRole="student">
-      <SpaceBackground />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-dvh flex-col overflow-hidden bg-background md:flex-row">
         {!isFullScreen && (
           <StudentSidebar
             isCollapsed={isCollapsed}
             onToggle={() => setIsCollapsed(!isCollapsed)}
           />
         )}
-        <main className={`flex-1 min-w-0 flex flex-col ${isFullScreen ? "overflow-hidden w-screen fixed inset-0 z-50 bg-background" : "overflow-auto bg-background/50"}`}>
+        <main className={`flex min-h-0 min-w-0 flex-1 flex-col ${isFullScreen ? "overflow-hidden" : "overflow-auto"}`}>
           {isFullScreen ? (
             children
           ) : (
-            <div className="p-8 max-w-7xl mx-auto w-full">
-              <PageTransition>
-                {children}
-              </PageTransition>
+            <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-2 sm:px-6 md:pt-8 lg:px-8">
+              {children}
             </div>
           )}
         </main>

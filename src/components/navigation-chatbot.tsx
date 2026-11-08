@@ -292,8 +292,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 right-6 z-50 flex items-center gap-2.5 h-12 px-5 rounded-full cursor-pointer transition-all duration-200 shadow-2xl active:scale-95 select-none",
-          "bg-primary text-white hover:bg-primary/90 border border-black",
-          "dark:bg-primary dark:text-black dark:hover:bg-primary/90 dark:border-white"
+          "bg-primary text-primary-foreground hover:bg-primary/90 border border-primary/20"
         )}
         aria-label="Support & Help"
       >
@@ -399,7 +398,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                         className={cn(
                           "px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
                           issueType === t.id
-                            ? "bg-foreground text-background border-foreground shadow-sm"
+                            ? "bg-primary text-primary-foreground border-primary shadow-xs"
                             : "bg-muted/40 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                         )}
                       >
@@ -471,10 +470,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                     <Button
                       type="submit"
                       disabled={isSubmitting || !description.trim()}
-                      className={cn(
-                        "h-9 px-4 rounded-lg text-xs font-bold cursor-pointer",
-                        "bg-black text-white hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85"
-                      )}
+                      className="h-9 px-4 rounded-lg text-xs font-bold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                       {isSubmitting ? 'Sending...' : 'Submit'}
                     </Button>
@@ -498,7 +494,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                       key={action.path}
                       type="button"
                       onClick={() => handleNavigation(action.path)}
-                      className="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-muted text-left transition-colors cursor-pointer border border-transparent hover:border-border/50 group"
+                      className="flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-colors cursor-pointer border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground group"
                     >
                       <action.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground shrink-0" />
                       <span className="text-xs font-medium text-foreground truncate">{action.label}</span>
@@ -513,14 +509,14 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                   <div key={i} className="space-y-1.5">
                     <div className={cn("flex gap-2", m.role === 'user' ? "justify-end" : "justify-start")}>
                       {m.role === 'assistant' && (
-                        <div className="h-6 w-6 rounded-full bg-foreground text-background flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                           <RaiseLogo size={12} className="currentColor" />
                         </div>
                       )}
                       <div className={cn(
                         "max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs",
                         m.role === 'user'
-                          ? "bg-foreground text-background"
+                          ? "bg-primary text-primary-foreground shadow-xs"
                           : "bg-muted text-foreground"
                       )}>
                         {m.role === 'user' ? (
@@ -575,7 +571,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
 
                 {isLoading && (
                   <div className="flex gap-2">
-                    <div className="h-6 w-6 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
+                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
                       <RaiseLogo size={12} className="currentColor" />
                     </div>
                     <div className="bg-muted rounded-xl px-3 py-2 text-xs text-muted-foreground">
@@ -608,7 +604,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                     size="icon"
                     onClick={() => sendMessage(input)}
                     disabled={!input.trim() || isLoading}
-                    className="h-6 w-6 rounded-lg bg-foreground text-background hover:opacity-80 transition-opacity cursor-pointer shrink-0"
+                    className="h-6 w-6 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer shrink-0"
                   >
                     <Send className="h-3 w-3" />
                   </Button>

@@ -90,8 +90,8 @@ export default function JoinNetworkPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-muted/30">
-      <Card className="max-w-md w-full shadow-lg">
+    <div className="flex items-center justify-center min-h-dvh p-4 bg-background">
+      <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
             <Building2 className="h-8 w-8 text-primary" />
@@ -100,7 +100,7 @@ export default function JoinNetworkPage() {
           <CardDescription>You've been invited to join a collaborative department.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="p-4 border rounded-lg bg-background text-center">
+          <div className="p-4 border border-border rounded-lg bg-muted/30 text-center">
             <div className="text-sm text-muted-foreground mb-1 font-medium">Network Name</div>
             <div className="text-xl font-bold">{organization?.name}</div>
           </div>

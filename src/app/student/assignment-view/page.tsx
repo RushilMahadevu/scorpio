@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceHeader } from "@/components/ui/workspace";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState, useRef, Suspense } from "react";
@@ -726,88 +727,37 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
 
   if (!hasStarted && !submitted) {
     return (
-      <div className="max-w-2xl mx-auto mt-10">
-        <Card className="text-center p-6">
-          <CardHeader>
-            <CardTitle className="text-2xl leading-tight text-card-foreground">{assignment.title}</CardTitle>
-            <CardDescription className="text-lg mt-2">{assignment.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col items-center gap-4 p-4 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-5 w-5" />
-                <span>Time Limit</span>
-              </div>
-              <span className="text-2xl font-bold">
-                {assignment.timeLimit ? `${assignment.timeLimit} Minutes` : "No Time Limit"}
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center gap-4 p-4 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <CheckCircle className="h-5 w-5" />
-                <span>Total Questions</span>
-              </div>
-              <span className="text-2xl font-bold">{assignment.questions.length}</span>
-              <span className="text-sm text-muted-foreground">{totalPoints} points total</span>
-            </div>
-
-            {assignment.requireWorkSubmission && (
-              <div className="flex flex-col items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center gap-2 text-blue-700">
-                  <Upload className="h-5 w-5" />
-                  <span className="font-semibold">Work Submission Required</span>
-                </div>
-                <span className="text-sm text-blue-600">Upload PDF or images</span>
-              </div>
-            )}
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm text-left">
-              <div className="flex items-center gap-2 font-semibold mb-1">
-                <AlertTriangle className="h-4 w-4" />
-                Important
-              </div>
-              <ul className="list-disc list-inside space-y-1">
-                {assignment.timeLimit && <li>Once you start, the timer cannot be paused.</li>}
-                {assignment.requireWorkSubmission && (
-                  <li className="font-semibold">You must upload your work (PDF/images) to submit.</li>
-                )}
-                {assignment.requireWorkSubmission && assignment.timeLimit && (
-                  <li>You'll have 5 extra minutes to upload work after time expires.</li>
-                )}
-                {assignment.lockdownMode && (
-                  <li className="text-red-700 font-bold">Lockdown Mode: Fullscreen, Copying/Pasting, and Right-click are disabled.</li>
-                )}
-                <li>Do not refresh the page or close the browser window.</li>
-                <li>Ensure you have a stable internet connection.</li>
-              </ul>
-            </div>
-
-            {assignment.lockdownMode && (
-              <div className="flex flex-col items-center gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center gap-2 text-red-700 font-bold uppercase tracking-tighter">
-                  <Lock className="h-5 w-5" />
-                  <span>Strict Integrity Lock Active</span>
-                </div>
-                <p className="text-xs text-red-600/80 leading-relaxed text-center">
-                  Starting this assignment will trigger **Fullscreen Mode**. Standard navigation is disabled.
-                  Any attempt to exit fullscreen, switch tabs, or copy/paste will be logged as a potential violation.
-                </p>
-              </div>
-            )}
-
-            <Button size="lg" className="w-full text-lg" onClick={handleStartAssignment}>
-              <Play className="h-5 w-5 mr-2" />
-              Start Assignment
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
+          <Button variant="ghost" size="sm" onClick={handleBackClick}>
+            <ArrowLeft /> Assignments
+          </Button>
+          <WorkspaceHeader title={assignment.title} description={assignment.description} />
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{assignment.questions.length} {assignment.questions.length === 1 ? "question" : "questions"} · {totalPoints} points</Badge>
+            <Badge variant="outline">{assignment.timeLimit ? `${assignment.timeLimit} minute limit` : "No time limit"}</Badge>
+            {assignment.requireWorkSubmission && <Badge variant="outline">Work upload required</Badge>}
+          </div>
+          <section aria-labelledby="before-start" className="space-y-2 rounded-xl border border-border bg-card p-4 sm:p-5">
+            <h2 id="before-start" className="text-base font-semibold">Before you start</h2>
+            <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
+              {assignment.timeLimit && <li>The timer starts immediately and cannot be paused.</li>}
+              {assignment.requireWorkSubmission && <li>Upload a PDF or images of your work before submitting.</li>}
+              {assignment.requireWorkSubmission && assignment.timeLimit && <li>After time expires, you have five minutes to upload your work.</li>}
+              {assignment.lockdownMode && (
+                <li>Lockdown starts in fullscreen. Switching tabs, exiting fullscreen, or attempting to copy or paste may be logged. Right-click is disabled.</li>
+              )}
+              <li>Use a stable connection and keep this page open.</li>
+            </ul>
+          </section>
+          <Button onClick={handleStartAssignment}><Play /> Start Assignment</Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-[100dvh] w-full bg-muted/20 overflow-hidden relative">
+    <div className="relative flex min-h-0 flex-1 w-full overflow-hidden bg-background">
 
       <Dialog open={showUnfocusPopup}>
         <DialogContent
@@ -871,31 +821,31 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
         <ResizablePanel
           id="main-content"
           order={1}
-          defaultSize={aiHelperOpen && !isMobile ? 70 : 100}
+          defaultSize={aiHelperOpen && !isMobile ? 68 : 100}
           className="h-full flex flex-col min-w-0"
         >
           <div className="flex-1 overflow-y-auto relative scroll-smooth">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-20">
-              <div className="flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 py-3 border-b rounded-b-lg shadow-sm">
+            <div className="mx-auto max-w-4xl space-y-5 px-4 pb-16 sm:px-6">
+              <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-border bg-background py-3">
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="sm" onClick={handleBackClick} className="px-2 text-sm text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back
                   </Button>
                   {assignment.lockdownMode && hasStarted && !submitted && (
-                    <div className="flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-red-600">
+                    <div className="flex items-center gap-1.5 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
                       <Lock className="h-3 w-3" />
                       Locked
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col items-end hidden sm:flex">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="hidden flex-col items-end lg:flex">
                     <span className="text-xs text-muted-foreground">Progress</span>
                     <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-emerald-600 transition-all duration-500"
+                        className="h-full bg-primary transition-all duration-500"
                         style={{ width: `${calculateProgress()}%` }}
                       />
                     </div>
@@ -904,9 +854,9 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                   {timeLeft !== null && !submitted && (
                     <div className="flex flex-col items-end gap-1">
                       {inGracePeriod && (
-                        <span className="text-xs text-orange-600 font-semibold">GRACE PERIOD</span>
+                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">GRACE PERIOD</span>
                       )}
-                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md font-mono font-bold text-sm ${inGracePeriod ? 'bg-orange-100 text-orange-600' : timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-secondary'}`}>
+                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md font-mono font-bold text-sm ${inGracePeriod ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' : timeLeft < 60 ? 'bg-destructive/10 text-destructive' : 'bg-secondary'}`}>
                         <Clock className="h-3.5 w-3.5" />
                         {formatTime(timeLeft)}
                       </div>
@@ -918,14 +868,11 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                       variant={calculatorOpen ? "default" : "outline"}
                       size="sm"
                       onClick={() => setCalculatorOpen(!calculatorOpen)}
-                      className={`cursor-pointer transition-all duration-300 gap-1.5 ${
-                        calculatorOpen
-                          ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20 ring-offset-2"
-                          : "border-border hover:bg-muted"
-                      }`}
+                      aria-label="Calculator"
+                      aria-pressed={calculatorOpen}
                     >
                       <Calculator className="h-4 w-4" />
-                      <span>Calculator</span>
+                      <span className="hidden sm:inline">Calculator</span>
                     </Button>
                   )}
 
@@ -934,74 +881,70 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                       variant={aiHelperOpen ? "default" : "outline"}
                       size="sm"
                       onClick={() => setAiHelperOpen(!aiHelperOpen)}
-                      className={`cursor-pointer transition-all duration-300 gap-1.5 ${aiHelperOpen
-                        ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20 ring-offset-2"
-                        : "border-zinc-300 hover:border-zinc-500 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
-                        }`}
+                      aria-label="Raise hand"
+                      aria-pressed={aiHelperOpen}
                     >
-                      <Hand className={`h-4 w-4 ${aiHelperOpen ? "animate-pulse" : ""}`} />
-                      <span>Raise hand</span>
+                      <Hand className={`h-4 w-4`} />
+                      <span className="hidden sm:inline">Raise hand</span>
                     </Button>
                   )}
                 </div>
               </div>
 
-              <Card className="overflow-hidden border-border bg-card text-card-foreground shadow-sm">
-                <CardHeader className="bg-transparent pb-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <CardTitle className="break-words pl-0 text-2xl leading-tight tracking-tight text-card-foreground">{assignment.title}</CardTitle>
-                      <CardDescription className="mt-2 max-w-2xl leading-relaxed">{assignment.description}</CardDescription>
-                    </div>
-                    {submitted && (
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <Badge className={existingSubmission?.graded ? "bg-emerald-500 text-white" : "bg-secondary text-secondary-foreground"}>
-                          {existingSubmission?.graded ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Graded
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="h-3 w-3 mr-1" />
-                              Submitted
-                            </>
-                          )}
-                        </Badge>
-                        {existingSubmission?.graded && existingSubmission?.score !== undefined && (
-                          <div className="text-2xl font-black tracking-tighter text-card-foreground">
-                            {existingSubmission.score}%
-                          </div>
+              <section className="border-b border-border pb-4">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h1 className="break-words text-2xl font-semibold tracking-tight">{assignment.title}</h1>
+                    <CardDescription className="mt-2 max-w-2xl leading-relaxed">{assignment.description}</CardDescription>
+                  </div>
+                  {submitted && (
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <Badge variant="secondary">
+                        {existingSubmission?.graded ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Graded
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="h-3 w-3 mr-1" />
+                            Submitted
+                          </>
                         )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="bg-muted/50">
-                      <Clock className="mr-1.5 h-3.5 w-3.5" />
-                      Due {new Date(assignment.dueDate).toLocaleDateString()}
-                    </Badge>
-                    <Badge variant="outline" className="bg-muted/50">
-                      <FileText className="mr-1.5 h-3.5 w-3.5" />
-                      {assignment.questions.length} questions
-                    </Badge>
-                    <Badge variant="outline" className="bg-muted/50">{totalPoints} points total</Badge>
-                    {assignment.timeLimit && (
-                      <Badge variant="outline" className="bg-muted/50">
-                        {assignment.timeLimit} minute limit
                       </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-              </Card>
+                      {existingSubmission?.graded && existingSubmission?.score !== undefined && (
+                        <div className="text-2xl font-black tracking-tighter text-card-foreground">
+                          {existingSubmission.score}%
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="mt-5 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <Badge variant="outline" className="bg-muted/50">
+                    <Clock className="mr-1.5 h-3.5 w-3.5" />
+                    Due {new Date(assignment.dueDate).toLocaleDateString()}
+                  </Badge>
+                  <Badge variant="outline" className="bg-muted/50">
+                    <FileText className="mr-1.5 h-3.5 w-3.5" />
+                    {assignment.questions.length} {assignment.questions.length === 1 ? "question" : "questions"}
+                  </Badge>
+                  <Badge variant="outline" className="bg-muted/50">{totalPoints} points total</Badge>
+                  {assignment.timeLimit && (
+                    <Badge variant="outline" className="bg-muted/50">
+                      {assignment.timeLimit} minute limit
+                    </Badge>
+                  )}
+                </div>
+              </section>
 
               <div className="space-y-4">
                 {assignment.questions.map((question, index) => (
-                  <Card key={question.id} className="overflow-hidden border-border/70 shadow-sm">
-                    <CardHeader className="bg-muted/20 border-b pb-4">
-                      <div className="flex justify-between items-start">
+                  <Card key={question.id} className="overflow-hidden gap-0 border-border py-0 shadow-none">
+                    <CardHeader className="bg-muted/20 border-b px-4 pt-3 [.border-b]:pb-3 sm:px-6">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <Label className="text-base">Question {index + 1}</Label>
+                          <h2 className="text-sm font-semibold">Question {index + 1}</h2>
                           {existingSubmission?.graded && (
                             <Badge variant="secondary" className="text-[10px] font-bold">
                               {existingSubmission.answers?.find((a: any) => a.questionId === question.id)?.score ?? 0} / {question.points ?? 10} PTS
@@ -1025,7 +968,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-6 pt-6">
+                    <CardContent className="space-y-4 p-4 sm:p-6">
                       <MarkdownRenderer className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
                         {question.text}
                       </MarkdownRenderer>
@@ -1063,7 +1006,8 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           <MathInputField
                             value={answers[question.id] || ""}
                             onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
-                            placeholder="Type your answer here..."
+                            placeholder="Type your answer here…"
+                            ariaLabel={`Answer to question ${index + 1}`}
                             disabled={submitted}
                             rows={2}
                           />
@@ -1071,7 +1015,8 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           <MathInputField
                             value={answers[question.id] || ""}
                             onChange={(value) => setAnswers({ ...answers, [question.id]: value })}
-                            placeholder="Type your answer here..."
+                            placeholder="Type your answer here…"
+                            ariaLabel={`Answer to question ${index + 1}`}
                             disabled={submitted}
                             rows={4}
                           />
@@ -1097,7 +1042,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-emerald-600" />
-                                <Label className="text-[10px] uppercase font-bold tracking-widest text-emerald-700 dark:text-emerald-500">Correct Answer / Explanation</Label>
+                                <p className="text-xs font-medium text-muted-foreground">Correct answer and explanation</p>
                               </div>
                               <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground bg-muted/20 p-4 rounded-lg border">
                                 <MarkdownRenderer>{question.correctAnswer || "No explanation provided."}</MarkdownRenderer>
@@ -1172,9 +1117,9 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                                   </span>
                                   {submitting && uploadProgress[index] !== undefined && (
                                     <div className="mt-1">
-                                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                      <div className="w-full bg-muted rounded-full h-1.5">
                                         <div
-                                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                          className="bg-primary h-1.5 rounded-full transition-all duration-300"
                                           style={{ width: `${uploadProgress[index]}%` }}
                                         ></div>
                                       </div>
@@ -1204,9 +1149,9 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
               )}
 
               {!submitted && (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap justify-end gap-2">
                   {submitError && (
-                    <div className="text-red-600 bg-red-50 border border-red-200 rounded p-2 text-sm text-center">
+                    <div className="border border-destructive/30 bg-destructive/10 text-destructive rounded p-2 text-sm text-center w-full">
                       Submission failed: {submitError}
                     </div>
                   )}
@@ -1215,7 +1160,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                       onClick={handleSaveDraft}
                       disabled={submitting}
                       variant="outline"
-                      className="w-full"
+                      className="w-full sm:w-auto"
                     >
                       Save Draft
                     </Button>
@@ -1223,7 +1168,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                   <Button
                     onClick={handleSubmit}
                     disabled={submitting || (assignment.requireWorkSubmission && uploadedFiles.length === 0)}
-                    className="w-full"
+                    className="w-full sm:w-auto"
                   >
                     {submitting ? (
                       Object.keys(uploadProgress).length > 0 ?
@@ -1404,7 +1349,7 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           className={cn(
                             "h-7 w-7 rounded-xl shrink-0 flex items-center justify-center shadow-xs mt-0.5",
                             msg.role === "user"
-                              ? "bg-foreground text-background"
+                              ? "bg-primary text-primary-foreground"
                               : "bg-primary/10 text-primary border border-primary/20"
                           )}
                         >
@@ -1415,12 +1360,12 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                           className={cn(
                             "rounded-2xl px-4 py-3 text-sm shadow-xs border relative group",
                             msg.role === "user"
-                              ? "bg-zinc-900 text-white border-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-sm font-medium"
+                              ? "bg-primary text-primary-foreground border-transparent rounded-tr-sm font-medium"
                               : "bg-card/90 text-card-foreground border-border/80 rounded-tl-sm backdrop-blur-xs"
                           )}
                         >
                           {msg.role === "user" ? (
-                            <div className="text-[13.5px] leading-relaxed text-white dark:text-zinc-900 whitespace-pre-wrap">
+                            <div className="text-[13.5px] leading-relaxed text-primary-foreground whitespace-pre-wrap">
                               {msg.content}
                             </div>
                           ) : (
@@ -1657,12 +1602,12 @@ Text: ${q.text || "[This question has no text description. Refer to the assignme
                         className={cn(
                           "p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs border max-w-[92%]",
                           msg.role === "user"
-                            ? "bg-zinc-900 text-white border-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-xs font-medium"
+                            ? "bg-primary text-primary-foreground border-transparent rounded-tr-xs font-medium"
                             : "bg-card text-card-foreground rounded-tl-xs border-border/80"
                         )}
                       >
                         {msg.role === "user" ? (
-                          <div className="text-white dark:text-zinc-900 whitespace-pre-wrap">
+                          <div className="text-primary-foreground whitespace-pre-wrap">
                             {msg.content}
                           </div>
                         ) : (

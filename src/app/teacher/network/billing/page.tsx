@@ -114,9 +114,9 @@ export default function BillingPage() {
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No Network Found</h2>
         <p className="text-muted-foreground mb-6">You need to be part of a network to manage billing.</p>
-        <Link href="/teacher/network">
-          <Button variant="outline">Return to Network</Button>
-        </Link>
+        <Button variant="outline" asChild>
+          <Link href="/teacher/network">Return to Network</Link>
+        </Button>
       </div>
     );
   }
@@ -262,28 +262,34 @@ export default function BillingPage() {
                 {/* Billing Cycle Toggle */}
                 <div className="flex p-1.5 bg-muted rounded-3xl mb-10 relative z-10 overflow-x-auto">
                   <button
+                    type="button"
+                    aria-pressed={billingCycle === "monthly"}
                     onClick={() => setBillingCycle("monthly")}
                     className={cn(
                       "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
-                      billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      billingCycle === "monthly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
                     Monthly
                   </button>
                   <button
+                    type="button"
+                    aria-pressed={billingCycle === "yearly"}
                     onClick={() => setBillingCycle("yearly")}
                     className={cn(
                       "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all flex items-center justify-center gap-1.5",
-                      billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      billingCycle === "yearly" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
                     Annual <Badge variant="secondary" className="dark:bg-green-700 bg-green-500 text-white">Save 50%</Badge>
                   </button>
                   <button
+                    type="button"
+                    aria-pressed={billingCycle === "enterprise"}
                     onClick={() => setBillingCycle("enterprise")}
                     className={cn(
                       "cursor-pointer flex-1 text-sm font-semibold py-3 px-2 rounded-xl transition-all",
-                      billingCycle === "enterprise" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      billingCycle === "enterprise" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
                     Enterprise
@@ -317,7 +323,7 @@ export default function BillingPage() {
 
                     <Button
                       asChild
-                      className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground mt-auto"
+                      className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all mt-auto"
                     >
                       <a href="mailto:rushil@scorpioedu.org">
                         <div className="flex items-center justify-center gap-2">
@@ -361,7 +367,7 @@ export default function BillingPage() {
                     <Button
                       onClick={handleCheckout}
                       disabled={upgrading || !isOwner}
-                      className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground relative z-10"
+                      className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all relative z-10"
                     >
                       {upgrading ? (
                         <div className="flex items-center gap-3">
@@ -407,7 +413,7 @@ export default function BillingPage() {
                     <p className="font-black text-2xl">0%</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full h-14 rounded-2xl border-border hover:bg-muted text-base font-bold shadow-sm" asChild>
+                <Button variant="outline" className="w-full h-14 rounded-2xl text-base font-bold shadow-sm" asChild>
                   <Link href="https://polar.sh/scorpio/portal" target="_blank">
                     Open Billing Dashboard
                   </Link>

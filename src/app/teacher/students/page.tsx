@@ -7,16 +7,16 @@ import { db, cleanupStudentData } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash2, ExternalLink, Users, Sparkles, BrainCircuit } from "lucide-react";
+import { ArrowUpRight, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { RosterImport } from "@/components/roster-import";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NetworkStudents } from "@/components/teacher/network-students";
+import { TeacherPageHeader } from "@/components/teacher/workspace";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Student {
   id: string;
@@ -127,119 +127,66 @@ export default function StudentsPage() {
     }
   };
 
-  const getInitials = (email: string) => {
-    return email.substring(0, 2).toUpperCase();
-  };
-
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight flex items-center gap-2.5">
-            <Users className="h-7 w-7 text-primary" />
-            Students & Learning
-          </h1>
-          <p className="text-muted-foreground text-sm font-medium">
-            Manage course enrollments, import rosters, and explore student AI learning insights.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <RosterImport />
-          {user && (
-            <Button variant="outline" asChild className="rounded-xl font-semibold cursor-pointer">
-              <Link href="/teacher" className="flex items-center gap-2">
-                Manage Classes <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
+      <TeacherPageHeader title="Students" description="Manage enrollments and explore how students use Raise.">
+        {user && (
+          <Button variant="outline" asChild>
+            <Link href="/teacher">Manage Classes <ArrowUpRight /></Link>
+          </Button>
+        )}
+        <RosterImport />
+      </TeacherPageHeader>
 
-      {/* Tabs: Roster vs. AI Insights */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-        <div className="border-b border-border/50 pb-3">
-          <TabsList className="grid grid-cols-2 w-full sm:w-auto p-1 bg-muted/60 rounded-xl h-auto">
-            <TabsTrigger value="roster" className="text-xs font-bold py-2 px-5 cursor-pointer gap-2">
-              <Users className="h-3.5 w-3.5" />
-              Enrolled Roster ({students.length})
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="text-xs font-bold py-2 px-5 cursor-pointer gap-2">
-              <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-              Learning Radar & Insights
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0 gap-4">
+        <TabsList className="h-auto max-w-full flex-wrap">
+          <TabsTrigger value="roster" className="min-h-8">Roster</TabsTrigger>
+          <TabsTrigger value="insights" className="min-h-8">Learning insights</TabsTrigger>
+        </TabsList>
 
-        {/* ─── Tab 1: Class Roster ──────────────────────────────── */}
-        <TabsContent value="roster" className="space-y-4 outline-none">
-          <Card className="border-border/60 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-bold">Class Roster</CardTitle>
-              <CardDescription>{students.length} students enrolled across your classes</CardDescription>
+        <TabsContent value="roster">
+          <Card className="min-w-0 gap-0 py-0">
+            <CardHeader className="flex flex-wrap items-center justify-between gap-2 px-4 py-4 sm:px-5">
+              <h2 className="text-base font-semibold">Class roster</h2>
+              {!loading && <span className="text-sm text-muted-foreground">{students.length} enrolled</span>}
             </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="py-12 text-center text-muted-foreground font-medium animate-pulse">
-                  Loading student roster...
-                </div>
-              ) : students.length === 0 ? (
-                <div className="py-12 text-center text-muted-foreground">
-                  No students enrolled yet. Share your class codes or import a roster to get started.
-                </div>
+            <CardContent className="border-t p-0">
+              {loading || students.length === 0 ? (
+                <p role="status" className="px-5 py-10 text-center text-sm text-muted-foreground">
+                  {loading ? "Loading the roster…" : "No students enrolled yet. Share a class code or import a roster to get started."}
+                </p>
               ) : (
-                <Table>
-                  <TableHeader>
+                <Table aria-label="Class roster">
+                  <TableHeader className="bg-muted/40">
                     <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Email</TableHead>
+                      <TableHead className="pl-4 sm:pl-5">Student</TableHead>
                       <TableHead>Class</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {students.map((student) => (
-                      <TableRow key={student.id} className="hover:bg-muted/40">
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="font-bold text-xs bg-primary/10 text-primary">
-                                {getInitials(student.email)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-semibold text-sm">
-                              {student.name || student.email.split("@")[0]}
-                            </span>
-                          </div>
+                      <TableRow key={student.id}>
+                        <TableCell className="max-w-64 whitespace-normal py-3 pl-4 sm:pl-5">
+                          <p className="break-words font-medium">{student.name || student.email.split("@")[0]}</p>
+                          <p className="break-all text-xs text-muted-foreground">{student.email}</p>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-xs text-muted-foreground font-mono">{student.email}</span>
+                        <TableCell className="max-w-48 whitespace-normal break-words text-muted-foreground">
+                          {student.courseName || "No class assigned"}
                         </TableCell>
-                        <TableCell>
-                          {student.courseName ? (
-                            <Badge variant="outline" className="font-medium text-xs">
-                              {student.courseName}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-xs italic">Direct / General</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="default" className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 text-[10px]">
-                            Active
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setStudentToDelete(student.id)}
-                            className="hover:text-destructive cursor-pointer h-8 w-8"
-                            title="Remove Student"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                        <TableCell className="pr-3">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${student.name || student.email}`}>
+                                <MoreHorizontal />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem variant="destructive" onSelect={() => setStudentToDelete(student.id)}>
+                                <Trash2 /> Remove student
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -250,8 +197,7 @@ export default function StudentsPage() {
           </Card>
         </TabsContent>
 
-        {/* ─── Tab 2: Learning Insights & Radar ─────────────────── */}
-        <TabsContent value="insights" className="space-y-4 outline-none">
+        <TabsContent value="insights">
           <NetworkStudents
             organizationId={profile?.organizationId || undefined}
             teacherIds={networkTeacherIds.length > 0 ? networkTeacherIds : (user ? [user.uid] : [])}

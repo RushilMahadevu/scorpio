@@ -1,21 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, writeBatch, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db, cleanupStudentData } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { TeacherPageHeader } from "@/components/teacher/workspace";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, ChevronRight, Trash2, Download, BarChart3 } from "lucide-react";
+import { ArrowUpRight, BarChart3, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { GradeExportButton } from "@/components/grade-export-button";
 import { GradeDistributionChart } from "@/components/admin/grade-distribution-chart";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Student {
   id: string;
@@ -23,6 +23,7 @@ interface Student {
   email: string;
   submissionCount: number;
   averageScore: number;
+  gradedCount: number;
 }
 
 export default function TeacherGradesPage() {
@@ -34,6 +35,7 @@ export default function TeacherGradesPage() {
   const [assignments, setAssignments] = useState<{id: string, title: string, courseId?: string}[]>([]);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("all");
   const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
+  const [showDistribution, setShowDistribution] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
 
@@ -160,7 +162,7 @@ export default function TeacherGradesPage() {
 
           const student = studentMap.get(studentId)!;
           student.count++;
-          if (data.graded && data.score !== null) {
+          if (data.graded && typeof data.score === "number" && Number.isFinite(data.score)) {
             student.scores.push(data.score);
           }
         });
@@ -199,7 +201,8 @@ export default function TeacherGradesPage() {
             name: data.name,
             email: data.email,
             submissionCount: data.count,
-            averageScore
+            averageScore,
+            gradedCount: data.scores.length,
           };
         });
 
@@ -228,146 +231,132 @@ export default function TeacherGradesPage() {
     }
   };
 
-  if (loading && assignments.length === 0) {
-    return <LoadingSpinner fullPage />;
-  }
+  const selectedAssignmentTitle = assignments.find((assignment) => assignment.id === selectedAssignmentId)?.title;
+  const gradedStudents = students.filter((student) => student.gradedCount > 0);
 
   return (
     <div className="space-y-6">
-      
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <h1 className="text-3xl font-bold">Gradebook</h1>
-            <p className="text-muted-foreground">View student performance and submissions.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-4 bg-muted/30 p-4 rounded-lg border">
-            <GradeExportButton 
-                data={students.map(s => ({
-                    studentName: s.name,
-                    studentEmail: s.email,
-                    assignmentTitle: selectedAssignmentId !== "all" 
-                        ? assignments.find(a => a.id === selectedAssignmentId)?.title || "Selected Assignment" 
-                        : "All Assignments Summary",
-                    score: s.averageScore,
-                    totalPoints: 100, // Normalized for now
-                    submittedAt: new Date().toLocaleDateString()
-                }))}
-                filename={`grades-${selectedCourseId}-${new Date().toISOString().split('T')[0]}.csv`}
+      <TeacherPageHeader title="Gradebook" description="Review student scores and submission history.">
+        <GradeExportButton
+          data={loading ? [] : students.map((student) => ({
+            studentName: student.name,
+            studentEmail: student.email,
+            assignmentTitle: selectedAssignmentTitle || "All Assignments Summary",
+            score: student.averageScore,
+            totalPoints: 100,
+            submittedAt: new Date().toLocaleDateString(),
+          }))}
+          filename={`grades-${selectedCourseId}-${new Date().toISOString().split("T")[0]}.csv`}
+        />
+      </TeacherPageHeader>
+
+      <Card className="min-w-0 gap-0 py-0">
+        <CardHeader className="flex flex-wrap items-end justify-between gap-4 px-4 py-4 sm:px-5">
+          <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="gradebook-class" className="block text-xs font-medium text-muted-foreground">Class</label>
+              <Select
+                value={selectedCourseId}
+                onValueChange={(value) => {
+                  setSelectedCourseId(value);
+                  setSelectedAssignmentId("all");
+                }}
+              >
+                <SelectTrigger id="gradebook-class" className="w-full cursor-pointer sm:w-44">
+                  <SelectValue placeholder="All Classes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {courses.map((course) => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="gradebook-assignment" className="block text-xs font-medium text-muted-foreground">Assignment</label>
+              <Select value={selectedAssignmentId} onValueChange={setSelectedAssignmentId}>
+                <SelectTrigger id="gradebook-assignment" className="w-full cursor-pointer sm:w-52">
+                  <SelectValue placeholder="All Assignments" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Assignments</SelectItem>
+                  {assignments.filter((assignment) => selectedCourseId === "all" || assignment.courseId === selectedCourseId)
+                    .map((assignment) => <SelectItem key={assignment.id} value={assignment.id}>{assignment.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-expanded={showDistribution}
+            aria-controls="grade-distribution"
+            onClick={() => setShowDistribution((open) => !open)}
+          >
+            <BarChart3 />
+            {showDistribution ? "Hide distribution" : "Grade distribution"}
+          </Button>
+        </CardHeader>
+        <div className="border-t" id="grade-distribution" hidden={!showDistribution}>
+          {showDistribution && (
+            <GradeDistributionChart
+              submissions={loading ? [] : gradedStudents.map((student) => ({ score: student.averageScore }))}
+              title={selectedAssignmentTitle || "Grade distribution"}
+              description="Students grouped by their average score"
             />
-            <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Class</label>
-                <Select
-                    value={selectedCourseId}
-                    onValueChange={(value) => {
-                        setSelectedCourseId(value);
-                        setSelectedAssignmentId("all");
-                    }}
-                >
-                    <SelectTrigger className="w-[180px] cursor-pointer bg-background">
-                        <SelectValue placeholder="All Classes" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all" className="cursor-pointer">All Classes</SelectItem>
-                        {courses.map(c => (
-                            <SelectItem key={c.id} value={c.id} className="cursor-pointer">{c.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Assignment</label>
-                <Select
-                    value={selectedAssignmentId}
-                    onValueChange={setSelectedAssignmentId}
-                >
-                    <SelectTrigger className="w-[200px] cursor-pointer bg-background">
-                        <SelectValue placeholder="All Assignments" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all" className="cursor-pointer">All Assignments</SelectItem>
-                        {assignments
-                            .filter(a => selectedCourseId === "all" || a.courseId === selectedCourseId)
-                            .map(a => (
-                                <SelectItem key={a.id} value={a.id} className="cursor-pointer">{a.title}</SelectItem>
-                            ))}
-                    </SelectContent>
-                </Select>
-            </div>
+          )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Students</CardTitle>
-              <CardDescription>Select a student to view detailed grades.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {students.length === 0 ? (
-                <p className="text-muted-foreground">No students found.</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Submissions</TableHead>
-                      <TableHead>Average Score</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {students.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{student.name}</p>
-                              <p className="text-xs text-muted-foreground">{student.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{student.submissionCount}</TableCell>
-                        <TableCell>{student.averageScore}%</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Link href={`/teacher/grades/student?studentId=${student.id}`}>
-                              <Button variant="ghost" size="sm" className="cursor-pointer">
-                                View Details
-                                <ChevronRight className="h-4 w-4 ml-2" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="cursor-pointer"
-                              onClick={() => setStudentToDelete(student.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <GradeDistributionChart 
-            submissions={students.map(s => ({ score: s.averageScore }))}
-            title={selectedAssignmentId !== "all" 
-              ? assignments.find(a => a.id === selectedAssignmentId)?.title 
-              : "Average Performance"}
-          />
-        </div>
-      </div>
+        <CardContent className="border-t p-0">
+          {loading || students.length === 0 ? (
+            <p role="status" className="px-5 py-10 text-center text-sm text-muted-foreground">
+              {loading ? "Loading grades…" : "No submissions match these filters."}
+            </p>
+          ) : (
+            <Table aria-label="Student grades">
+              <TableHeader className="bg-muted/40">
+                <TableRow>
+                  <TableHead className="pl-4 sm:pl-5">Student</TableHead>
+                  <TableHead className="text-right">Submissions</TableHead>
+                  <TableHead className="text-right">Average</TableHead>
+                  <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="max-w-64 whitespace-normal py-3 pl-4 sm:pl-5">
+                      <Link
+                        href={`/teacher/grades/student?studentId=${student.id}`}
+                        className="inline-flex items-baseline gap-1.5 break-words font-medium hover:text-primary hover:underline"
+                      >
+                        {student.name} <ArrowUpRight aria-hidden="true" className="size-3 shrink-0 text-muted-foreground" />
+                      </Link>
+                      {student.email && <p className="break-all text-xs text-muted-foreground">{student.email}</p>}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{student.submissionCount}</TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {student.gradedCount ? `${student.averageScore}%` : <span aria-label="Awaiting a grade">—</span>}
+                    </TableCell>
+                    <TableCell className="pr-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${student.name}`}>
+                            <MoreHorizontal />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem variant="destructive" onSelect={() => setStudentToDelete(student.id)}>
+                            <Trash2 /> Remove records
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <ConfirmDialog
         open={!!studentToDelete}

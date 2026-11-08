@@ -5,6 +5,7 @@ import * as React from "react"
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context"
 import {
   ChatContainerContent,
@@ -76,7 +77,6 @@ import {
   MicOff,
   MoreHorizontal,
   Pencil,
-  Plus,
   PlusIcon,
   Search,
   Sparkles,
@@ -212,7 +212,8 @@ export default function TutorPage() {
   const [feedback, setFeedback] = useState<Record<string, "up" | "down">>({})
 
   // Sidebar & Search state
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const isMobile = useIsMobile()
   const [sidebarSearch, setSidebarSearch] = useState("")
   const [showSearchInput, setShowSearchInput] = useState(false)
 
@@ -245,15 +246,6 @@ export default function TutorPage() {
       })
     }
   }, [messages, isLoading])
-
-  // Complete onboarding flag if not completed
-  useEffect(() => {
-    if (user && profile && !profile.onboarding?.chat_tutor) {
-      updateDoc(doc(db, "users", user.uid), {
-        "onboarding.chat_tutor": true,
-      }).catch((e) => console.warn("Onboarding update failed", e))
-    }
-  }, [user, profile])
 
   // Plan verification
   useEffect(() => {
@@ -471,13 +463,15 @@ export default function TutorPage() {
   // Keyboard shortcut: Cmd+N / Ctrl+N for new chat, Cmd+K for search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false)
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
         e.preventDefault()
         createNewSession()
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault()
-        setShowSearchInput((prev) => !prev)
+        setSidebarOpen(true)
+        setShowSearchInput(true)
       }
     }
     window.addEventListener("keydown", handleKeyDown)
@@ -733,7 +727,7 @@ export default function TutorPage() {
   // Free Tier Restriction Guard
   if (isFreePlan) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center p-6 bg-background">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4 bg-background">
         <Card className="w-full max-w-md border-dashed shadow-xl bg-card">
           <CardContent className="flex flex-col items-center gap-4 pt-10 pb-10 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 shadow-sm">
@@ -773,15 +767,18 @@ export default function TutorPage() {
       initial={{ opacity: 0, scale: 0.992, filter: "blur(4px)" }}
       animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
       transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-      className="flex h-screen w-screen overflow-hidden bg-background text-foreground"
+      className="relative flex min-h-0 flex-1 w-full overflow-hidden bg-background text-foreground"
     >
       {/* ========================================================================= */}
       {/* SIDEBAR: Chat History (Full Height Left Panel)                           */}
       {/* ========================================================================= */}
-      <aside
+      {sidebarOpen && (
+        <button type="button" aria-label="Dismiss chat history" tabIndex={-1} className="absolute inset-0 z-20 bg-black/40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+      <aside aria-label="Chat history" inert={!sidebarOpen}
         className={cn(
-          "flex flex-col h-full shrink-0 border-r border-border/50 bg-card/90 backdrop-blur-xl transition-all duration-300 ease-in-out select-none z-20",
-          sidebarOpen ? "w-72 md:w-80" : "w-0 overflow-hidden opacity-0 pointer-events-none"
+          "absolute inset-y-0 left-0 z-30 flex h-full shrink-0 flex-col border-r border-border bg-card md:relative",
+          sidebarOpen ? "w-[min(19rem,85vw)]" : "hidden"
         )}
       >
         {/* Header */}
@@ -792,7 +789,7 @@ export default function TutorPage() {
               size="icon"
               className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => router.push("/student")}
-              title="Back to Student Dashboard"
+              aria-label="Back to student dashboard"
             >
               <ArrowLeft className="size-4" />
             </Button>
@@ -829,7 +826,7 @@ export default function TutorPage() {
               size="icon"
               className="size-7 rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               onClick={() => setSidebarOpen(false)}
-              title="Collapse sidebar"
+              aria-label="Close chat history"
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -841,7 +838,10 @@ export default function TutorPage() {
           <Button
             variant="outline"
             className="w-full justify-between h-9 rounded-xl border-border/60 bg-muted/30 hover:bg-muted/70 hover:border-border shadow-2xs font-medium text-xs transition-all cursor-pointer"
-            onClick={createNewSession}
+            onClick={() => {
+              createNewSession()
+              if (isMobile) setSidebarOpen(false)
+            }}
           >
             <span className="flex items-center gap-2">
               <PlusIcon className="size-3.5 text-primary" />
@@ -941,7 +941,6 @@ export default function TutorPage() {
                     return (
                       <div
                         key={conversation.id}
-                        onClick={() => switchSession(conversation)}
                         className={cn(
                           "group relative flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-all cursor-pointer",
                           isActive
@@ -949,7 +948,15 @@ export default function TutorPage() {
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/60 border border-transparent"
                         )}
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1 pr-1">
+                        <button
+                          type="button"
+                          aria-current={isActive ? "true" : undefined}
+                          onClick={() => {
+                            switchSession(conversation)
+                            if (isMobile) setSidebarOpen(false)
+                          }}
+                          className="flex min-w-0 flex-1 items-center gap-2 rounded-sm py-1 pr-1 text-left focus-visible:outline-2 focus-visible:outline-ring"
+                        >
                           <MessageSquare
                             className={cn(
                               "size-3.5 shrink-0 transition-colors",
@@ -959,7 +966,7 @@ export default function TutorPage() {
                           <span className="truncate font-normal">
                             {conversation.title}
                           </span>
-                        </div>
+                        </button>
 
                         {/* Dropdown Menu for Rename & Delete */}
                         <DropdownMenu>
@@ -968,10 +975,10 @@ export default function TutorPage() {
                               variant="ghost"
                               size="icon"
                               className={cn(
-                                "size-6 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted/80 cursor-pointer",
+                                "size-6 rounded-md transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 hover:bg-muted/80 cursor-pointer",
                                 isActive && "opacity-100"
                               )}
-                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`Options for ${conversation.title}`}
                             >
                               <MoreHorizontal className="size-3.5" />
                             </Button>
@@ -1051,39 +1058,25 @@ export default function TutorPage() {
       {/* ========================================================================= */}
       {/* MAIN CHAT CONTENT AREA (Rigid Flex Column)                                */}
       {/* ========================================================================= */}
-      <main className="flex flex-1 flex-col h-full min-w-0 min-h-0 overflow-hidden bg-background">
+      <section inert={sidebarOpen && isMobile} aria-label="Raise conversation" className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="bg-card/40 backdrop-blur-md z-10 flex h-14 w-full shrink-0 items-center justify-between border-b border-border/40 px-4">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="z-10 flex w-full shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2 sm:px-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             {!sidebarOpen && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                 onClick={() => setSidebarOpen(true)}
-                title="Open Chat History"
+                aria-label="Open chat history"
               >
                 <ChevronRight className="size-4" />
               </Button>
             )}
             <div className="flex items-center gap-2 min-w-0">
-              <span className="truncate font-semibold text-sm text-foreground">
+              <span className="truncate text-sm font-semibold text-foreground">
                 {activeSession?.title || "New Physics Chat"}
               </span>
-              {activeSession && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-6 text-muted-foreground hover:text-foreground rounded-md cursor-pointer"
-                  onClick={() => {
-                    setEditingTitleId(activeSession.id)
-                    setEditingTitleText(activeSession.title)
-                  }}
-                  title="Rename chat"
-                >
-                  <Pencil className="size-3" />
-                </Button>
-              )}
             </div>
           </div>
 
@@ -1093,6 +1086,7 @@ export default function TutorPage() {
               <button
                 type="button"
                 onClick={() => setMode("concept")}
+                aria-pressed={mode === "concept"}
                 className={cn(
                   "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
                   mode === "concept"
@@ -1106,6 +1100,7 @@ export default function TutorPage() {
               <button
                 type="button"
                 onClick={() => setMode("problem")}
+                aria-pressed={mode === "problem"}
                 className={cn(
                   "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer",
                   mode === "problem"
@@ -1121,7 +1116,7 @@ export default function TutorPage() {
             {activeSession && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8 rounded-lg cursor-pointer">
+                  <Button variant="ghost" size="icon" aria-label="Conversation options">
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -1129,6 +1124,7 @@ export default function TutorPage() {
                   <DropdownMenuItem
                     className="gap-2 cursor-pointer text-xs"
                     onClick={() => {
+                      setSidebarOpen(true)
                       setEditingTitleId(activeSession.id)
                       setEditingTitleText(activeSession.title)
                     }}
@@ -1152,11 +1148,12 @@ export default function TutorPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs gap-1.5 hidden sm:flex cursor-pointer"
+              className="h-8 gap-1.5"
+              aria-label="Back to dashboard"
               onClick={() => router.push("/student")}
             >
               <ArrowLeft className="size-3.5" />
-              <span>Dashboard</span>
+              <span className="hidden sm:inline">Dashboard</span>
             </Button>
           </div>
         </header>
@@ -1166,19 +1163,19 @@ export default function TutorPage() {
           <ChatContainerContent className="mx-auto max-w-3xl space-y-6 px-4 py-8 md:px-6">
             {messages.length === 0 ? (
               /* Empty State / Welcome Screen */
-              <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex flex-col items-center justify-center py-5 text-center sm:py-10">
                 <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary shadow-xs">
                   <RaiseLogo size={28} className="text-primary" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  How can I help you in Physics today?
+                  Ask Raise
                 </h2>
                 <p className="mt-2 max-w-md text-sm text-muted-foreground leading-relaxed">
-                  Ask conceptual questions, break down difficult homework problems, or derive formulas step-by-step.
+                  Ask a physics question or choose a prompt to get started.
                 </p>
 
                 {/* Starter Chips */}
-                <div className="mt-8 grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div className="mt-5 grid w-full gap-2 sm:grid-cols-2">
                   {STARTER_PROMPTS.map((item, idx) => {
                     const Icon = item.icon
                     return (
@@ -1190,9 +1187,9 @@ export default function TutorPage() {
                           setPrompt(item.prompt)
                           handleSubmit(item.prompt)
                         }}
-                        className="group flex flex-col items-start rounded-2xl border border-border/60 bg-card/60 p-4 text-left transition-all hover:border-primary/40 hover:bg-card hover:shadow-xs cursor-pointer"
+                        className="group flex flex-col items-start rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-accent cursor-pointer"
                       >
-                        <div className="flex items-center gap-2 text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-foreground ">
                           <div className="size-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                             <Icon className="size-3.5" />
                           </div>
@@ -1261,7 +1258,7 @@ export default function TutorPage() {
                         {/* Assistant Actions */}
                         <MessageActions
                           className={cn(
-                            "pl-8 flex gap-1 pt-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100",
+                            "pl-8 flex gap-1 pt-1 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100",
                             (isLastMessage || feedback[message.id]) &&
                               "opacity-100"
                           )}
@@ -1335,7 +1332,7 @@ export default function TutorPage() {
                         </MessageContent>
 
                         {/* User Actions */}
-                        <MessageActions className="flex gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pr-1">
+                        <MessageActions className="flex gap-1 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 pr-1">
                           <MessageAction tooltip="Edit prompt">
                             <Button
                               variant="ghost"
@@ -1429,21 +1426,22 @@ export default function TutorPage() {
         {/* ===================================================================== */}
         {/* LOCKED BOTTOM PROMPT BAR                                              */}
         {/* ===================================================================== */}
-        <div className="border-t border-border/40 bg-background/95 backdrop-blur-xl p-3 md:p-4 shrink-0 z-20">
+        <div className="z-10 shrink-0 border-t border-border bg-background p-3 md:p-4">
           <div className="mx-auto max-w-3xl">
             <PromptInput
               isLoading={isLoading}
               value={prompt}
               onValueChange={setPrompt}
               onSubmit={() => handleSubmit()}
-              className="border-border/70 bg-card/90 backdrop-blur-xl relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-sm transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
+              className="relative w-full rounded-xl border border-border bg-card p-0 pt-1 focus-within:ring-2 focus-within:ring-ring/40"
             >
               <div className="flex flex-col">
                 <PromptInputTextarea
+                  aria-label="Message Raise"
                   placeholder={
                     mode === "concept"
-                      ? "Ask about any physics concept (e.g. electromagnetic induction)..."
-                      : "Describe your physics problem step-by-step..."
+                      ? "Ask about a physics concept…"
+                      : "Describe the problem and what you’ve tried…"
                   }
                   className="min-h-[48px] pt-3.5 pl-5 pr-4 text-[14px] leading-relaxed"
                 />
@@ -1451,51 +1449,6 @@ export default function TutorPage() {
                 <PromptInputActions className="mt-2 flex w-full items-center justify-between gap-2 px-3 pb-3">
                   {/* Left Actions */}
                   <div className="flex items-center gap-1.5">
-                    <PromptInputAction tooltip="New conversation">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="size-8 rounded-full border-border/60 hover:bg-muted cursor-pointer"
-                        onClick={createNewSession}
-                      >
-                        <Plus size={16} />
-                      </Button>
-                    </PromptInputAction>
-
-                    <PromptInputAction
-                      tooltip={
-                        mode === "concept"
-                          ? "Switch to Problem Solving"
-                          : "Switch to Concept Explanation"
-                      }
-                    >
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className={cn(
-                          "h-8 rounded-full px-3 text-xs gap-1.5 border-border/60 cursor-pointer",
-                          mode === "problem" && "bg-primary/10 text-primary border-primary/30 font-semibold"
-                        )}
-                        onClick={() =>
-                          setMode(mode === "concept" ? "problem" : "concept")
-                        }
-                      >
-                        {mode === "concept" ? (
-                          <>
-                            <Lightbulb size={14} className="text-amber-500" />
-                            <span>Concept</span>
-                          </>
-                        ) : (
-                          <>
-                            <Calculator size={14} className="text-primary" />
-                            <span>Problem</span>
-                          </>
-                        )}
-                      </Button>
-                    </PromptInputAction>
-
                     <PromptInputAction tooltip="Formula suggestions">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -1503,6 +1456,7 @@ export default function TutorPage() {
                             type="button"
                             variant="outline"
                             size="icon"
+                            aria-label="Formula suggestions"
                             className="size-8 rounded-full border-border/60 cursor-pointer"
                           >
                             <Sparkles size={14} className="text-primary" />
@@ -1561,6 +1515,7 @@ export default function TutorPage() {
                           isRecording &&
                             "bg-destructive/10 text-destructive border-destructive/40 animate-pulse"
                         )}
+                        aria-label={isRecording ? "Stop listening" : "Voice input"}
                         onClick={toggleVoiceRecording}
                       >
                         {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
@@ -1570,6 +1525,7 @@ export default function TutorPage() {
                     <Button
                       type="button"
                       size="icon"
+                      aria-label="Send message"
                       disabled={!prompt.trim() || isLoading}
                       onClick={() => handleSubmit()}
                       className="size-8 rounded-full shadow-xs transition-transform active:scale-95 cursor-pointer"
@@ -1586,7 +1542,7 @@ export default function TutorPage() {
             </PromptInput>
           </div>
         </div>
-      </main>
+      </section>
 
       {/* ========================================================================= */}
       {/* CONFIRM DELETE DIALOG                                                     */}

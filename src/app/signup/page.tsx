@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { register } from "@/lib/firebase";
+import { AuthPageNav } from "@/components/landing/auth-page-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceBackground } from "@/components/ui/space-background";
 import Link from "next/link";
-import { ArrowLeft, GraduationCap, Presentation, Eye, EyeOff, Info } from "lucide-react";
+import { GraduationCap, Presentation, Eye, EyeOff, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/ui/logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -140,12 +141,9 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-dvh flex items-center justify-center px-4 pt-20 pb-8 relative">
       <SpaceBackground />
-      <Link href="/" className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors bg-background/80 rounded-full px-3 py-1 shadow-sm border border-border/50">
-        <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm font-medium">Back to Home</span>
-      </Link>
+      <AuthPageNav />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -236,14 +234,16 @@ export default function SignupPage() {
                           aria-label="Password"
                           required
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                          className="absolute inset-y-0 right-0 text-muted-foreground"
                           aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                        </Button>
                       </div>
                       {password && (
                         <motion.div
@@ -306,7 +306,7 @@ export default function SignupPage() {
                       transition={{ delay: 0.3 }}
                     >
                       <Button
-                        className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={() => handleSignup("student")}
                         disabled={loading}
                       >
@@ -373,14 +373,16 @@ export default function SignupPage() {
                           aria-label="Password"
                           required
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                          className="absolute inset-y-0 right-0 text-muted-foreground"
                           aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                        </Button>
                       </div>
                       {password && (
                         <motion.div
@@ -436,14 +438,16 @@ export default function SignupPage() {
                           aria-label="Teacher Access Code"
                           required
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setShowAccessCode(!showAccessCode)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                          className="absolute inset-y-0 right-0 text-muted-foreground"
                           aria-label={showAccessCode ? "Hide access code" : "Show access code"}
                         >
                           {showAccessCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                        </Button>
                       </div>
                       <p className="text-[11px] text-muted-foreground">
                         Don&apos;t have a code?{" "}
@@ -468,7 +472,7 @@ export default function SignupPage() {
                       transition={{ delay: 0.3 }}
                     >
                       <Button
-                        className="w-full transition-all active:scale-[0.98] hover:shadow-md"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={() => handleSignup("teacher")}
                         disabled={loading}
                       >

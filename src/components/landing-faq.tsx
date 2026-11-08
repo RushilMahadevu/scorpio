@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Mail, Github, BookOpen, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const faqs = [
   {
@@ -80,7 +81,7 @@ export function LandingFAQ() {
         className="max-w-6xl mx-auto"
       >
         {/* Outer card */}
-        <div className="rounded-[2.5rem] border border-border/50 bg-muted/30 dark:bg-card/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+        <div className="rounded-[2.5rem] border border-border/50 bg-card/60 backdrop-blur-xl overflow-hidden shadow-2xl">
           <div className="grid lg:grid-cols-[420px_1fr]">
 
             {/* ── Left: Header + contact ── */}
@@ -114,16 +115,16 @@ export function LandingFAQ() {
                 </p>
                 <div className="flex items-center gap-3">
                   {contactLinks.map(({ icon: Icon, label, href, external }) => (
-                    <Link
-                      key={label}
-                      href={href}
-                      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                      title={label}
-                      className="group flex items-center justify-center w-10 h-10 rounded-full border border-border/60 bg-background/60 dark:bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 hover:scale-110"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="sr-only">{label}</span>
-                    </Link>
+                    <Button key={label} asChild variant="outline" size="icon-lg" className="rounded-full text-muted-foreground">
+                      <Link
+                        href={href}
+                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        title={label}
+                      >
+                        <Icon />
+                        <span className="sr-only">{label}</span>
+                      </Link>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -142,7 +143,7 @@ export function LandingFAQ() {
                     transition={{ delay: i * 0.05, duration: 0.4 }}
                     className={`
                       group rounded-2xl border transition-all duration-300
-                      bg-background dark:bg-card/70
+                      bg-card
                       ${isOpen
                         ? "border-primary/40 shadow-md shadow-primary/5"
                         : "border-border/40 hover:border-border/80 hover:shadow-sm"
@@ -150,9 +151,10 @@ export function LandingFAQ() {
                     `}
                   >
                     <button
+                      type="button"
                       onClick={() => toggle(i)}
                       aria-expanded={isOpen}
-                      className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left cursor-pointer"
+                      className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left cursor-pointer rounded-2xl hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
                     >
                       <div className="flex items-center gap-4 min-w-0">
                         <span className="text-xs font-black tabular-nums text-muted-foreground/50 shrink-0">

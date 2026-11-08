@@ -11,9 +11,7 @@ import {
   Lock,
   Unlock,
   Filter,
-  Info,
   Plus,
-  PackageCheck,
   Trash2,
   Variable,
   RotateCcw,
@@ -36,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { motion, AnimatePresence } from "framer-motion";
+import { TeacherPageHeader } from "@/components/teacher/workspace";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Base categories
@@ -307,46 +306,23 @@ export default function TeacherVault() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-[2.5rem] bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20 shrink-0">
-              <PackageCheck className="h-10 w-10" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-5xl font-black tracking-tighter">Vault Controls</h1>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 cursor-help transition-colors">
-                        <HelpCircle className="h-5 w-5" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-80 rounded-2xl p-5 shadow-2xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-foreground" side="right" align="start">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
-                          <Info className="h-4 w-4" />
-                          Management Guide
-                        </div>
-                        <p className="text-sm font-medium leading-relaxed">
-                          Toggle <Unlock className="inline h-3 w-3 mb-0.5" /> **Standard Formulas** to hide them from students. Create **Custom Equations** for your class. Changes are stored in the bottom **Save Bar**.
-                        </p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <p className="text-muted-foreground font-medium italic mt-1">Manage class-specific formula accessibility and custom content</p>
-            </div>
-          </div>
-
+        <TeacherPageHeader title="Vault Controls" description="Choose which formulas students can use in each class.">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="outline">
+                  <HelpCircle /> Guide
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-72" side="bottom">
+                Choose a class, show or hide formulas, then save your changes.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Dialog open={isAddingFormula} onOpenChange={setIsAddingFormula}>
             <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-14 px-8 rounded-2xl font-black bg-white dark:bg-white text-zinc-950 hover:bg-zinc-100 border-none shadow-xl shadow-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              >
-                <Plus className="h-5 w-5 mr-3" />
+              <Button>
+                <Plus />
                 Add Formula
               </Button>
             </DialogTrigger>
@@ -377,7 +353,7 @@ export default function TeacherVault() {
                     value={newFormula.latex}
                     onChange={(e) => setNewFormula({ ...newFormula, latex: e.target.value })}
                   />
-                  <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-2xl flex items-center justify-center min-h-[80px] shadow-inner">
+                  <div className="bg-muted/40 border border-border p-6 rounded-2xl flex items-center justify-center min-h-[80px] shadow-inner">
                     {newFormula.latex ? <BlockMath math={newFormula.latex} /> : <span className="text-muted-foreground text-sm italic">Live preview</span>}
                   </div>
                 </div>
@@ -400,12 +376,12 @@ export default function TeacherVault() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
+        </TeacherPageHeader>
 
-        <div className="bg-zinc-100/50 dark:bg-zinc-900/50 p-2 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 flex flex-col lg:flex-row items-center gap-2 mb-4">
+        <div className="bg-muted/50 p-2 rounded-[2rem] border border-border flex flex-col lg:flex-row items-center gap-2 mb-4">
           <div className="w-full lg:w-72">
             <Select value={selectedCourseId} onValueChange={onCourseSelectAttempt}>
-              <SelectTrigger className="h-12 rounded-2xl border-none bg-white dark:bg-zinc-900 shadow-sm font-bold px-4">
+              <SelectTrigger aria-label="Class" className="w-full data-[size=default]:h-12 rounded-2xl border-border bg-background dark:bg-background shadow-sm font-bold px-4">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-primary" />
                   <SelectValue placeholder="Select Class" />
@@ -422,16 +398,17 @@ export default function TeacherVault() {
           <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search across all vaults..."
+              aria-label="Search formulas"
+              placeholder="Search formulas…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-12 rounded-2xl border-none bg-white dark:bg-zinc-900 shadow-sm"
+              className="pl-11 h-12 rounded-2xl border-border bg-background dark:bg-background shadow-sm"
             />
           </div>
 
           <div className="w-full lg:w-64">
             <Select value={activeCategory} onValueChange={setActiveCategory}>
-              <SelectTrigger className="h-12 rounded-2xl border-none bg-white dark:bg-zinc-900 shadow-sm font-bold px-4">
+              <SelectTrigger aria-label="Formula category" className="w-full data-[size=default]:h-12 rounded-2xl border-border bg-background dark:bg-background shadow-sm font-bold px-4">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-primary" />
                   <SelectValue placeholder="Filter Category" />
@@ -452,23 +429,23 @@ export default function TeacherVault() {
       <AnimatePresence>
         {hasUnsavedChanges && (
           <motion.div
-            initial={{ y: 50, x: "-50%", opacity: 0 }}
-            animate={{ y: 0, x: "-50%", opacity: 1 }}
-            exit={{ y: 50, x: "-50%", opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 350 }}
-            className="fixed bottom-8 left-1/2 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed bottom-20 left-1/2 z-40 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2"
           >
-            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-8 min-w-[400px]">
-              <div className="flex items-center gap-3 border-r pr-8 border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-popover p-3 shadow-lg sm:px-4">
+              <div className="flex items-center gap-2">
                 <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                <span className="text-sm font-black uppercase tracking-widest text-zinc-500">Unsaved Changes</span>
+                <span className="text-sm font-medium text-muted-foreground">Unsaved Changes</span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleDiscard}
-                  className="text-zinc-500 hover:text-destructive hover:bg-destructive/5 font-bold rounded-xl h-10"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-bold rounded-xl h-10"
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Discard
@@ -477,7 +454,7 @@ export default function TeacherVault() {
                   size="sm"
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-8 rounded-xl h-10 font-black uppercase tracking-wider text-[10px] shadow-lg shadow-primary/20"
+                  className="h-10"
                 >
                   {saving ? "Saving..." : "Save Changes"}
                 </Button>
@@ -502,7 +479,7 @@ export default function TeacherVault() {
                 ? "bg-red-50 dark:bg-red-950/20 ring-1 ring-red-200 dark:ring-red-900/50"
                 : isCustom
                   ? "bg-primary/5 ring-1 ring-primary/20"
-                  : "bg-zinc-50 dark:bg-zinc-900/50 hover:ring-2 hover:ring-primary/50"
+                  : "bg-muted/40 hover:ring-2 hover:ring-primary/50"
                 }`}
               onClick={() => toggleFormula(formula.id)}
             >
@@ -527,6 +504,7 @@ export default function TeacherVault() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        aria-label={`Delete ${formula.name}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           removeCustomFormula(formula.id);
@@ -535,15 +513,26 @@ export default function TeacherVault() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
-                    <div className={`p-2 rounded-xl transition-colors ${isRestricted ? "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400" : "bg-primary/10 text-primary"
-                      }`}>
-                      {isRestricted ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Visible to students: ${formula.name}`}
+                      aria-pressed={!isRestricted}
+                      title={isRestricted ? "Show formula" : "Hide formula"}
+                      className={isRestricted ? "text-destructive" : "text-primary"}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleFormula(formula.id);
+                      }}
+                    >
+                      {isRestricted ? <Lock /> : <Unlock />}
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-2">
-                <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 text-center shadow-sm flex flex-col items-center justify-center min-h-[100px]">
+                <div className="bg-background rounded-2xl p-6 text-center shadow-sm flex flex-col items-center justify-center min-h-[100px]">
                   <BlockMath math={formula.latex} />
                 </div>
               </CardContent>

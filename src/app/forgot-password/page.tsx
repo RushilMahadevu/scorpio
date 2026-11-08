@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { resetPassword } from "@/lib/firebase";
+import { AuthPageNav } from "@/components/landing/auth-page-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SpaceBackground } from "@/components/ui/space-background";
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
-import { ArrowLeft, Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ForgotPasswordPage() {
@@ -46,16 +47,10 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-dvh flex items-center justify-center px-4 pt-20 pb-8 relative">
       <SpaceBackground />
       
-      <Link 
-        href="/login" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors bg-background/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-border/50 z-20"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm font-medium">Back to Login</span>
-      </Link>
+      <AuthPageNav backToLogin />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -63,7 +58,7 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="border-primary/20 shadow-2xl backdrop-blur-md bg-background/80">
+        <Card className="bg-card">
           <CardHeader className="text-center pb-2">
             <div className="flex justify-center mb-6">
               <motion.div
@@ -100,7 +95,7 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-background/50 border-white/10 focus:border-primary/50 py-6"
+                      className="h-11"
                       disabled={loading}
                     />
                   </div>
@@ -118,12 +113,12 @@ export default function ForgotPasswordPage() {
 
                   <Button 
                     type="submit" 
-                    className="w-full py-6 h-auto text-base font-semibold transition-all active:scale-[0.98] shadow-lg shadow-primary/20 hover:shadow-primary/30" 
+                    className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90"
                     disabled={loading}
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                         Sending...
                       </span>
                     ) : (
@@ -156,16 +151,16 @@ export default function ForgotPasswordPage() {
                   <div className="pt-4 space-y-3">
                     <Button 
                       variant="outline" 
-                      className="w-full py-6 h-auto border-white/10 bg-primary/5 hover:bg-primary/10" 
+                      className="w-full h-11"
                       onClick={() => setSuccess(false)}
                     >
                       Try a different email
                     </Button>
-                    <Link href="/login" className="block">
-                      <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground">
+                    <Button asChild variant="ghost" className="w-full text-muted-foreground hover:text-foreground">
+                      <Link href="/login" className="block">
                         Return to sign in
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </motion.div>
               )}

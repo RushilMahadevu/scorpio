@@ -1,160 +1,209 @@
 "use client";
 
-import { Hand, NotebookPen, Edit3, Waypoints, PackageOpen } from "lucide-react";
+import { Hand, NotebookPen, Edit3, Waypoints, PackageOpen, Maximize2, Sparkles, ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useWindowSize } from "@/hooks/use-window-size";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const items = [
   {
     id: 1,
     title: "Raise: Socratic Assistant",
+    shortTitle: "Raise AI",
+    badge: "Student Interface",
     Icon: Hand,
     imgSrc: "/ai-tutor.png",
-    description: "A centralized AI learning assistant for students to access all 4 layers of the architecture, with seamless transitions and personalized guidance.",
+    description: "A 4-layer scaffolding assistant that guides students through physics derivations without ever giving away direct answers.",
+    bullets: [
+      "Layer 1: Concept probing & diagnostic checks",
+      "Layer 2: Symbolic hint scaffolding in LaTeX",
+      "Layer 3: Verification of student free-body logic",
+      "Hard constraint: Direct homework solving blocked",
+    ],
+    actionText: "Try Live AI Playground",
+    actionHref: "/ai",
   },
   {
     id: 2,
     title: "Socratic Notebook",
+    shortTitle: "Notebook",
+    badge: "Interactive Derivation",
     Icon: NotebookPen,
     imgSrc: "/network-previews/notebook.png",
-    description: "An interactive workspace where students engage with the 4-layer scaffolding architecture to master physics concepts.",
+    description: "An interactive scratchpad where students articulate each physics step, verify unit consistency, and receive guided Socratic feedback.",
+    bullets: [
+      "Real-time dimensional analysis & sanity checks",
+      "Side-by-side formula editor with KaTeX output",
+      "Derivation history saved to student portfolio",
+    ],
   },
   {
     id: 3,
-    title: "Practice Engine",
+    title: "Adaptive Practice Engine",
+    shortTitle: "Practice",
+    badge: "Mastery Scaffolding",
     Icon: Edit3,
     imgSrc: "/network-previews/practice.png",
-    description: "Dynamic problem sets that adapt to student performance, ensuring the optimal level of challenge.",
+    description: "Dynamic problem sets that adapt to student performance, automatically isolating conceptual bottlenecks before moving forward.",
+    bullets: [
+      "Multi-step parametric problem generators",
+      "Targeted scaffolding for recurring misconceptions",
+      "Immediate instructor telemetry on struggle areas",
+    ],
   },
   {
     id: 4,
     title: "Equation Vault",
+    shortTitle: "Equations",
+    badge: "Symbolic Knowledge Base",
     Icon: PackageOpen,
     imgSrc: "/equation-vault.png",
-    description: "Detailed breakdown of class-wide and individual student performance, highlighting specific learning gaps.",
+    description: "A centralized reference of foundational laws, constants, and verified derivations formatted in publication-grade LaTeX.",
+    bullets: [
+      "Instant KaTeX code export for student notebooks",
+      "Cross-referenced with AP, IB, and university curricula",
+      "Dimensional breakdowns for fundamental constants",
+    ],
   },
-    {
+  {
     id: 5,
-    title: "Waypoints",
+    title: "Waypoints Network",
+    shortTitle: "Waypoints",
+    badge: "Faculty Collaborative",
     Icon: Waypoints,
     imgSrc: "/waypoints.png",
-    description: "Detailed breakdown of class-wide and individual student performance, highlighting specific learning gaps.",
+    description: "High-precision, peer-validated physics modules authored by real instructors — ready to drop into any assignment syllabus.",
+    bullets: [
+      "100% instructor-authored and peer-reviewed",
+      "Plug-and-play assignment integration",
+      "Multi-institution benchmarks for Newtonian dynamics and E&M",
+    ],
   },
 ];
 
-const panelVariants = {
-  open: {
-    width: "100%",
-    height: "100%",
-  },
-  closed: {
-    width: "0%",
-    height: "100%",
-  },
-};
-
-const panelVariantsSm = {
-  open: {
-    width: "100%",
-    height: "300px",
-  },
-  closed: {
-    width: "100%",
-    height: "0px",
-  },
-};
-
-const descriptionVariants = {
-  open: {
-    opacity: 1,
-    y: "0%",
-    transition: {
-      delay: 0.125,
-    },
-  },
-  closed: { opacity: 0, y: "100%" },
-};
-
-const Panel = ({ open, setOpen, id, Icon, title, imgSrc, description }: any) => {
-  const { width } = useWindowSize();
-  const isOpen = open === id;
-
-  return (
-    <>
-      <button
-        className="bg-card hover:bg-muted/50 cursor-pointer transition-colors p-4 border-r border-b border-border/50 flex flex-row-reverse lg:flex-col justify-end items-center gap-4 relative group"
-        onClick={() => setOpen(id)}
-      >
-        <span
-          style={{
-            writingMode: "vertical-lr",
-          }}
-          className="hidden lg:block text-sm font-bold tracking-widest uppercase rotate-180 text-muted-foreground group-hover:text-foreground transition-colors"
-        >
-          {title}
-        </span>
-        <span className="block lg:hidden text-sm font-bold tracking-widest uppercase text-muted-foreground group-hover:text-foreground transition-colors">
-          {title}
-        </span>
-        <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 text-primary rounded-lg grid place-items-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-          <Icon size={18} />
-        </div>
-        <span className="w-3 h-3 bg-card group-hover:bg-muted/50 transition-colors border-r border-b lg:border-b-0 lg:border-t border-border/50 rotate-45 absolute bottom-0 lg:bottom-[50%] right-[50%] lg:right-0 translate-y-[50%] translate-x-[50%] z-20" />
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key={`panel-${id}`}
-            variants={width && width > 1024 ? panelVariants : panelVariantsSm}
-            initial="closed"
-            animate="open"
-            exit="closed"
-            style={{
-              backgroundImage: `url(${imgSrc})`,
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-            }}
-            className="w-full h-full overflow-hidden relative bg-zinc-950 flex items-end border-b lg:border-b-0 lg:border-r border-border/50"
-          >
-            <motion.div
-              variants={descriptionVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="w-full px-6 py-4 bg-background/60 backdrop-blur-md border-t border-border/50 text-foreground"
-            >
-              <p className="text-sm font-semibold">{description}</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
-
 export const SystemAccordion = () => {
-  const [open, setOpen] = useState(items[0].id);
+  const [activeId, setActiveId] = useState(items[0].id);
+  const activeItem = items.find((item) => item.id === activeId) || items[0];
 
   return (
-    <div className="w-full max-w-6xl mx-auto rounded-3xl overflow-hidden border border-border/60 bg-card shadow-2xl mt-12">
-      <div className="flex flex-col lg:flex-row h-fit lg:h-[500px] w-full items-stretch">
+    <div className="w-full max-w-6xl mx-auto rounded-3xl border border-border/60 bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+      {/* Top Tab Bar */}
+      <div className="flex border-b border-border/50 overflow-x-auto scrollbar-none bg-muted/20">
         {items.map((item) => {
+          const isActive = item.id === activeId;
+          const Icon = item.Icon;
           return (
-            <Panel
+            <button
               key={item.id}
-              open={open}
-              setOpen={setOpen}
-              id={item.id}
-              Icon={item.Icon}
-              title={item.title}
-              imgSrc={item.imgSrc}
-              description={item.description}
-            />
+              onClick={() => setActiveId(item.id)}
+              className={cn(
+                "flex-1 min-w-[140px] sm:min-w-[170px] py-4 px-3 sm:px-5 flex items-center justify-center gap-2.5 text-xs sm:text-sm font-semibold transition-all duration-200 border-b-2 cursor-pointer relative",
+                isActive
+                  ? "border-primary text-primary bg-background/50 font-bold shadow-sm"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
+              )}
+            >
+              <div className={cn(
+                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                isActive ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+              )}>
+                <Icon className="h-4 w-4" />
+              </div>
+              <span className="truncate">{item.shortTitle}</span>
+            </button>
           );
         })}
       </div>
+
+      {/* Main Content Showcase */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeItem.id}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="grid lg:grid-cols-12 gap-8 p-6 sm:p-10 items-center"
+        >
+          {/* Left Details */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="space-y-3">
+              <Badge variant="outline" className="border-primary/30 text-primary text-[10px] font-bold tracking-widest uppercase px-3 py-1">
+                {activeItem.badge}
+              </Badge>
+              <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                {activeItem.title}
+              </h3>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                {activeItem.description}
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-2 border-t border-border/30">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground/70">
+                Key Architectural Capabilities
+              </p>
+              <ul className="space-y-2">
+                {activeItem.bullets.map((bullet, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-foreground/80">
+                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {activeItem.actionHref && (
+              <div className="pt-2">
+                <Button asChild size="sm" className="rounded-full">
+                  <Link href={activeItem.actionHref} className="flex items-center gap-1.5">
+                    {activeItem.actionText} <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Right Image with Zoom Trigger */}
+          <div className="lg:col-span-7">
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="relative rounded-2xl overflow-hidden border border-border/80 bg-background/80 shadow-xl group cursor-pointer aspect-[16/10] flex items-center justify-center">
+                  <Image
+                    src={activeItem.imgSrc}
+                    alt={activeItem.title}
+                    width={1200}
+                    height={750}
+                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-foreground font-semibold text-xs bg-black/40 text-white">
+                    <Maximize2 className="h-4 w-4" /> Click to expand preview
+                  </div>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] lg:max-w-6xl max-h-[90vh] p-2 bg-background/95 backdrop-blur-2xl border border-border shadow-2xl">
+                <DialogTitle className="text-base font-bold px-4 pt-2">
+                  {activeItem.title}
+                </DialogTitle>
+                <div className="relative w-full aspect-[16/10] max-h-[80vh] overflow-hidden rounded-xl mt-2">
+                  <Image
+                    src={activeItem.imgSrc}
+                    alt={activeItem.title}
+                    width={1600}
+                    height={1000}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

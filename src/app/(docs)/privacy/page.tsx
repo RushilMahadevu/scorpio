@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Shield, Lock, Eye, Users, FileText, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
@@ -89,12 +90,12 @@ export default function PrivacyPage() {
             Under various global regulations, you have the right to access, export, or request the deletion of your personal information. Signed-in users may request an export or delete their account in settings. Teacher accounts with active classes or network ownership require a supported handoff first. Deletion covers account profiles, submissions, uploaded work, notebooks, tutoring sessions, practice history, and portfolios. Billing/security records and provider backups may follow separate retention schedules; contact us to establish a school-specific retention and deletion agreement before onboarding.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold transition hover:opacity-90">
-              Request Data Export
-            </a>
-            <a href="mailto:rushil@scorpioedu.org" className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-border bg-background hover:bg-muted transition font-semibold">
-              Privacy Inquiry
-            </a>
+            <Button asChild size="lg">
+              <a href="mailto:rushil@scorpioedu.org">Request Data Export</a>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href="mailto:rushil@scorpioedu.org">Privacy Inquiry</a>
+            </Button>
           </div>
         </div>
       </section>

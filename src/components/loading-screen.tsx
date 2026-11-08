@@ -8,14 +8,26 @@ const SWEEP_EASE = [0.16, 1, 0.3, 1] as const;
 const CHARS = "Scorpio".split("");
 
 export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && sessionStorage.getItem("scorpio_splash_shown")) {
+        onFinish?.();
+        return;
+      }
+    } catch {}
+
+    setLoading(true);
+    try {
+      sessionStorage.setItem("scorpio_splash_shown", "true");
+    } catch {}
+
     const timer = setTimeout(() => {
       setLoading(false);
-      // Faster exit wait
-      setTimeout(() => onFinish?.(), 300);
-    }, 800); // Reduced from 1200ms → 800ms for faster time-to-content
+      setTimeout(() => onFinish?.(), 200);
+    }, 550);
+
     return () => clearTimeout(timer);
   }, [onFinish]);
 

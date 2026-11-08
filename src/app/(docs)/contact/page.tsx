@@ -74,7 +74,7 @@ export default function ContactPage() {
               <div className="text-xs font-mono text-muted-foreground mb-4 truncate italic">
                 {method.value}
               </div>
-              <Button size="sm" className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-all" asChild>
+              <Button size="sm" className="w-full gap-2" asChild>
                 <a href={method.href} target={method.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer">
                   {method.action}
                   <Send className="h-3 w-3" />

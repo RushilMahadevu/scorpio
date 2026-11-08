@@ -63,7 +63,7 @@ export default function NotFound() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
-            <Button asChild size="lg" className="h-12 px-8 rounded-full shadow-lg hover:shadow-primary/20 transition-all gap-2 group">
+            <Button asChild size="lg" className="h-12 px-8 rounded-full">
               <Link href="/">
                 <Home className="w-4 h-4 transition-transform" />
                 Back Home
@@ -72,7 +72,7 @@ export default function NotFound() {
             <Button 
               variant="outline" 
               size="lg" 
-              className="h-12 px-8 rounded-full backdrop-blur-sm border-border hover:bg-muted/50 transition-all gap-2 group cursor-pointer"
+              className="h-12 px-8 rounded-full"
               onClick={() => router.back()}
             >
               <ArrowLeft className="w-4 h-4 transition-transform" />

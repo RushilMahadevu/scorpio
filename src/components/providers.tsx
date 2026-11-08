@@ -6,6 +6,8 @@ import { SpaceEffectsProvider } from "@/contexts/space-effects-context";
 import { AppearanceProvider } from "@/contexts/appearance-context";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { Toaster } from "sonner";
+import { RouteProgressBar } from "@/components/route-progress-bar";
+import { Suspense } from "react";
 
 export function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -13,6 +15,9 @@ export function Providers({ children }: Readonly<{ children: React.ReactNode }>)
       <AppearanceProvider>
         <SpaceEffectsProvider>
           <AuthProvider>
+            <Suspense fallback={null}>
+              <RouteProgressBar />
+            </Suspense>
             <SmoothScroll>
               {children}
             </SmoothScroll>

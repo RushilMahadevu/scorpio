@@ -1,16 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { ProtectedRoute } from "@/components/protected-route";
 import { TeacherSidebar } from "@/components/teacher-sidebar";
-import { Button } from "@/components/ui/button";
-import { PanelLeft } from "lucide-react";
 import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { PageTransition } from "@/components/page-transition";
-import { usePathname } from "next/navigation";
-
 
 export default function TeacherLayout({
   children,
@@ -18,18 +13,17 @@ export default function TeacherLayout({
   children: React.ReactNode;
 }) {
   const { isCollapsed, setIsCollapsed } = useSidebarState("teacher");
-  const pathname = usePathname();
 
   return (
     <ProtectedRoute allowedRole="teacher">
       <SpaceBackground />
-      <div className="flex h-screen">
+      <div className="flex h-dvh flex-col md:flex-row">
         <TeacherSidebar
           isCollapsed={isCollapsed}
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
-        <main className="flex-1 overflow-y-auto bg-background/50">
-          <div className="p-8 w-full">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-background/50">
+          <div className="w-full px-4 pb-24 sm:px-6 md:p-8">
             <div className="max-w-7xl mx-auto">
               <PageTransition>
                 {children}

@@ -14,35 +14,26 @@ const items = [
   { title: "Contact Support", href: "/contact", icon: Mail },
 ];
 
-export function DocsSidebar() {
+export function DocsSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col space-y-1">
+    <nav aria-label="Documentation" className="flex flex-col gap-1">
       {items.map((item) => {
-        const isActive = pathname ? (pathname === item.href || pathname.startsWith(item.href + "/")) : false;
+        const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
         return (
-          <Link key={item.href} href={item.href} className="relative group">
-            <span
-              className={cn(
-                "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 relative z-10",
-                isActive
-                  ? "text-primary bg-primary/5 scale-95"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <item.icon className={cn(
-                "mr-3 h-4 w-4 transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"
-              )} />
-              <span>{item.title}</span>
-              {isActive && (
-                <span className="absolute left-0 w-1 h-4 bg-primary rounded-full" />
-              )}
-            </span>
-            {isActive && (
-              <div className="absolute inset-0 bg-primary/5 blur-md rounded-lg -z-10" />
+          <Link
+            key={item.href}
+            href={item.href}
+            onNavigate={onNavigate}
+            aria-current={pathname === item.href ? "page" : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
             )}
+          >
+            <item.icon className="size-4 shrink-0" />
+            {item.title}
           </Link>
         );
       })}

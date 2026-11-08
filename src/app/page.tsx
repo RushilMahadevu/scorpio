@@ -49,7 +49,14 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState<string>("home");
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return Boolean(sessionStorage.getItem("scorpio_splash_shown"));
+      } catch {}
+    }
+    return false;
+  });
 
   const [theaterOpen, setTheaterOpen] = useState(false);
 
@@ -172,9 +179,9 @@ export default function Home() {
 
               {/* Page wrapper with animation */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                transition={{ duration: 1.2, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               >
 
 
@@ -199,7 +206,7 @@ export default function Home() {
                           className="inline-flex items-center gap-3 mt-20 px-3 py-1 rounded-full border border-primary/20 bg-background/50 backdrop-blur-xl shadow-inner shadow-primary/5 hover:bg-primary/5 transition-colors mb-6"
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.2, duration: 0.4 }}
+                          transition={{ delay: 0.05, duration: 0.3 }}
                         >
                           <div className="relative flex h-1.5 w-1.5 items-center justify-center">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60" />
@@ -215,8 +222,8 @@ export default function Home() {
                               as="span"
                               animation="blurInUp"
                               by="line"
-                              duration={0.65}
-                              delay={0.35}
+                              duration={0.4}
+                              delay={0.1}
                               className="block"
                               once
                             >
@@ -227,8 +234,8 @@ export default function Home() {
                                 as="span"
                                 animation="blurInUp"
                                 by="line"
-                                duration={0.65}
-                                delay={0.7}
+                                duration={0.4}
+                                delay={0.2}
                                 className="inline-block"
                                 once
                               >
@@ -238,17 +245,11 @@ export default function Home() {
                           </h1>
                         </div>
 
-                        {/* Description - Type In Animation */}
+                        {/* Description */}
                         <div className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium min-h-[3.5rem] sm:min-h-[2rem]">
-                          <TypingAnimation
-                            delay={1350}
-                            typeSpeed={20}
-                            showCursor={true}
-                            cursorStyle="line"
-                            className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium"
-                          >
+                          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium">
                             Post assignments, see where your class gets stuck, and give students hints they can work through on their own.
-                          </TypingAnimation>
+                          </p>
                         </div>
                       </div>
 
@@ -257,14 +258,14 @@ export default function Home() {
                         className="flex items-center gap-6 shrink-0 pb-2 md:pb-4 relative z-30"
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 2.3, duration: 0.8, ease: "easeOut" }}
+                        transition={{ delay: 0.25, duration: 0.4, ease: "easeOut" }}
                       >
-                        <Link href="/request-access">
-                          <Button variant="link" className="h-auto p-0 font-medium text-sm text-primary hover:text-primary/80 transition-all flex items-center gap-1.5 group">
+                        <Button asChild variant="link" className="h-auto p-0 font-medium text-sm text-primary hover:text-primary/80 transition-all flex items-center gap-1.5 group">
+                          <Link href="/request-access">
                             Request Access
                             <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                         <div className="w-px h-4 bg-primary/20 hidden md:block" />
                         <Link
                           href="/demos"
@@ -280,9 +281,9 @@ export default function Home() {
                       <motion.div
                         className="w-full relative"
                         style={{ perspective: "1600px" }}
-                        initial={{ opacity: 0, y: 80 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 2.6, duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                       >
                         {/* Ambient glow */}
                         <div className="absolute -inset-12 bg-primary/12 rounded-full blur-[90px] pointer-events-none" />
@@ -440,11 +441,11 @@ export default function Home() {
                         viewport={{ once: true }}
                         transition={{ delay: 0.4 }}
                       >
-                        <Link href="/about">
-                          <Button variant="ghost" className="cursor-pointer text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-red-500 transition-colors">
+                        <Button asChild variant="ghost" className="cursor-pointer text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-accent-foreground transition-colors">
+                          <Link href="/about">
                             Why we built Scorpio <ArrowRight className="ml-2 h-3 w-3" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </motion.div>
                     </div>
                   </section>
@@ -605,12 +606,12 @@ export default function Home() {
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
                       >
-                        <Link href="/pricing">
-                          <Button variant="ghost" className="cursor-pointer text-sm font-bold text-muted-foreground hover:text-primary transition-colors group gap-2">
+                        <Button asChild variant="ghost" className="cursor-pointer text-sm font-bold text-muted-foreground hover:text-accent-foreground transition-colors group gap-2">
+                          <Link href="/pricing">
                             See all plans and AI usage costs
                             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </motion.div>
 
                     </div>
@@ -637,17 +638,17 @@ export default function Home() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                          <Link href="/signup">
-                            <Button size="lg" className="h-16 px-10 rounded-full text-lg font-black bg-primary hover:bg-primary/90 shadow-[0_15px_30px_rgba(var(--primary),0.2)] cursor-pointer transition-all duration-300">
+                          <Button asChild size="lg" className="h-12 px-5 rounded-full text-base font-semibold sm:px-8">
+                            <Link href="/signup">
                               Get Faculty Access
                               <ArrowRight className="ml-2 h-6 w-6" />
-                            </Button>
-                          </Link>
-                          <Link href="/contact">
-                            <Button size="lg" variant="outline" className="h-16 px-10 rounded-full text-lg cursor-pointer font-black border-2 border-border bg-background/50 backdrop-blur-md hover:bg-muted/30 transition-all duration-300">
+                            </Link>
+                          </Button>
+                          <Button asChild size="lg" variant="outline" className="h-12 px-5 rounded-full text-base font-semibold sm:px-8">
+                            <Link href="/contact">
                               Request Department Demo
-                            </Button>
-                          </Link>
+                            </Link>
+                          </Button>
                         </div>
                         <div className="pt-4">
                           <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">PhD-Validated Framework • School Privacy Review • Zero Markup AI</p>

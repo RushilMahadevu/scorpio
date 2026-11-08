@@ -1,523 +1,429 @@
 "use client";
 
-
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { SiteHeader } from "@/components/landing/site-header";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Logo } from "@/components/ui/logo";
+import { LandingFAQ } from "@/components/landing-faq";
 import {
-  ArrowRight, Sparkles,
-  Info, BookOpen, Mail, Shield, FileText,
-  CheckCircle2, XCircle, Zap, KeyRound, Github,
-  ShieldCheck, Globe, Lock, Leaf
+  Check,
+  Minus,
+  ArrowRight,
+  Shield,
+  Zap,
+  Building2,
+  Sparkles,
+  Github,
+  Info,
+  BookOpen,
+  Leaf,
+  KeyRound,
+  FileText,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
-import { Logo } from "@/components/ui/logo";
-import dynamic from "next/dynamic";
-import { LandingFAQ } from "@/components/landing-faq";
-
-
-const CostComparisonChart = dynamic(() => import("@/components/admin/cost-comparison-chart"), {
-  ssr: false,
-  loading: () => <div className="h-96 w-full flex items-center justify-center bg-muted/10 rounded-2xl animate-pulse" />,
-});
+import { cn } from "@/lib/utils";
 
 export default function PricingPage() {
+  const [isAnnual, setIsAnnual] = useState(true);
 
   return (
-    <>
-      {/* ── Page-reveal wipe: sweeps out from top-right → bottom-left ────── */}
-      <motion.div
-        className="fixed inset-0 z-[200] pointer-events-none"
-        style={{ background: "hsl(var(--background))" }}
-        initial={{ clipPath: "polygon(100% 0%, 100% 0%, 100% 0%)" }}
-        animate={{ clipPath: "polygon(-50% 0%, 100% 0%, 100% 200%)" }}
-        transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1] }}
-      />
-      <motion.div
-        className="fixed inset-0 z-[199] pointer-events-none"
-        style={{ background: "hsl(var(--primary) / 0.08)" }}
-        initial={{ clipPath: "polygon(100% 0%, 100% 0%, 100% 0%)" }}
-        animate={{ clipPath: "polygon(-50% 0%, 100% 0%, 100% 200%)" }}
-        transition={{ duration: 0.65, delay: 0.06, ease: [0.76, 0, 0.24, 1] }}
-      />
+    <div className="min-h-screen relative font-medium scroll-smooth bg-background text-foreground">
+      {/* Subtle atmospheric background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-primary/[0.07] rounded-full blur-[140px]" />
+      </div>
 
-      <div className="min-h-screen relative font-medium">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,transparent,black_10rem,black_calc(100%-10rem),transparent)]">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_20%,transparent_100%)]"></div>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        </div>
+      <SiteHeader />
 
-        {/* Global Site Header */}
-        <SiteHeader activeSection="pricing" />
+      <main className="relative z-10 pt-28 md:pt-36 pb-24">
+        {/* ── Hero ────────────────────────────────────────────────────────── */}
+        <section className="container mx-auto px-4 sm:px-6 max-w-4xl text-center space-y-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border/80 bg-muted/30 text-xs font-semibold text-muted-foreground">
+            <span>Pricing</span>
+          </div>
 
-        <main className="relative z-10 pt-16">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.08]">
+            Simple, flat pricing for <br className="hidden sm:inline" />
+            <span className="text-primary italic">physics classrooms.</span>
+          </h1>
 
-          {/* Hero */}
-          <section className="container mx-auto px-6 pt-24 pb-16 text-center relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10" />
-            <motion.div
-              className="max-w-3xl mx-auto space-y-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs font-bold tracking-[0.2em] uppercase text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Transparent Pricing</span>
-              </div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-none">
-                AI-powered physics<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500 italic">
-                  for less than a textbook.
-                </span>
-              </h1>
-              <p className="text-muted-foreground text-xl max-w-2xl mx-auto leading-relaxed font-medium">
-                One flat subscription. Unlimited students. Zero markup on AI. While competitors charge{" "}
-                <span className="text-foreground font-bold">$5–$12 per student per month</span>, Scorpio charges{" "}
-                <span className="text-emerald-500 font-bold">$4.99 total</span>.
-              </p>
+          <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+            No per-student fees. No markup on AI compute. One flat subscription covers your entire classroom network.
+          </p>
 
-              {/* Activate billing callout */}
-              <div className="inline-flex items-start gap-3 px-5 py-4 rounded-2xl border border-primary/20 bg-primary/5 text-left max-w-xl mx-auto">
-                <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-foreground/80 leading-relaxed">
-                  <span className="font-bold text-foreground">To activate billing:</span> Sign up as a teacher → create a network in your portal → billing appears under{" "}
-                  <span className="font-semibold text-foreground">Network → Settings → Billing</span>.
-                </span>
-              </div>
-            </motion.div>
-          </section>
-
-          {/* Stats Strip */}
-          <section className="container mx-auto px-6 pb-16">
-            <motion.div
-              className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-6 px-8 py-5 rounded-2xl border border-border/40 bg-muted/10 backdrop-blur-sm"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              {[
-                { value: "98%", label: "cheaper than industry average at scale" },
-                { value: "$0.08", label: "effective per-student cost at 250 students" },
-                { value: "∞", label: "students on one flat subscription" },
-                { value: "0×", label: "markup on Google DeepMind AI costs" },
-              ].map((stat, i) => (
-                <div key={i} className="flex items-baseline gap-2.5">
-                  <span className="text-3xl font-black tracking-tighter text-foreground">{stat.value}</span>
-                  <span className="text-xs text-muted-foreground max-w-[140px] leading-tight">{stat.label}</span>
-                </div>
-              ))}
-            </motion.div>
-          </section>
-
-          {/* Main Pricing Section */}
-          <section className="container mx-auto px-6 pb-24 relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/3 rounded-full blur-[150px] pointer-events-none -z-10" />
-            <div className="max-w-6xl mx-auto space-y-12">
-
-              {/* 3-Card Grid */}
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+          {/* Billing Switcher Toggle */}
+          <div className="pt-4 flex items-center justify-center">
+            <div className="inline-flex p-1 rounded-full border border-border bg-card/50 backdrop-blur-md shadow-sm">
+              <button
+                type="button"
+                onClick={() => setIsAnnual(false)}
+                className={cn(
+                  "relative px-4 py-1.5 text-xs font-semibold rounded-full transition-colors cursor-pointer",
+                  !isAnnual ? "text-foreground font-bold" : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                {/* Free */}
-                <motion.div
-                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                  className="relative p-8 border border-border bg-card/30 backdrop-blur-sm rounded-2xl flex flex-col gap-5 hover:border-primary/20 transition-all duration-300 shadow-sm"
-                >
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/50 rounded-full px-2.5 py-0.5 mb-4">
-                      Free
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-black tracking-tighter">$0</span>
-                      <span className="text-muted-foreground text-base font-medium">/mo</span>
-                    </div>
-                    <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-                      Get started with core tools. No credit card required.
-                    </p>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 text-sm">
-                    {["Teacher & Student Accounts", "Basic Course Management", "1 Network Waypoint"].map((f) => (
-                      <li key={f} className="flex items-center gap-3 text-foreground/70 font-medium">
-                        <CheckCircle2 className="h-4 w-4 text-muted-foreground/50 shrink-0" />{f}
-                      </li>
-                    ))}
-                    {["Raise (AI Assistant)", "Guided Grading", "Analytics"].map((f) => (
-                      <li key={f} className="flex items-center gap-3 text-muted-foreground/40 font-medium line-through">
-                        <XCircle className="h-4 w-4 text-muted-foreground/20 shrink-0" />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/signup">
-                    <Button variant="outline" className="cursor-pointer w-full font-black py-6 text-base rounded-xl">
-                      Start Free <ArrowRight className="h-4 w-4 ml-2 opacity-50 inline" />
-                    </Button>
-                  </Link>
-                </motion.div>
+                {!isAnnual && (
+                  <motion.div
+                    layoutId="billingPill"
+                    className="absolute inset-0 bg-background rounded-full shadow-sm border border-border/60"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">Monthly billing</span>
+              </button>
 
-                {/* Monthly */}
-                <motion.div
-                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                  className="relative p-8 border border-border bg-card/30 backdrop-blur-sm rounded-2xl flex flex-col gap-5 hover:border-primary/30 transition-all duration-300 shadow-sm"
-                >
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground border border-border/50 rounded-full px-2.5 py-0.5 mb-4">
-                      Monthly
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-black tracking-tighter">$4.99</span>
-                      <span className="text-muted-foreground text-base font-medium">/mo</span>
-                    </div>
-                    <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-                      Full access, cancel anytime.
-                    </p>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 text-sm">
-                    {[
-                      "Everything in Free",
-                      "Unlimited Waypoints",
-                      "Raise (AI Assistant)",
-                      "AI Grading & Feedback",
-                      "Portfolio Analysis per Student",
-                      "Mastery Analytics",
-                      "Spend Caps & Controls",
-                      "Priority Support",
-                    ].map((f) => (
-                      <li key={f} className="flex items-center gap-3 text-foreground/80 font-medium">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/signup">
-                    <Button className="cursor-pointer w-full bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white hover:opacity-90 font-black py-6 text-base rounded-xl shadow-md">
-                      Get Started <ArrowRight className="h-4 w-4 ml-2 opacity-50 inline" />
-                    </Button>
-                  </Link>
-                </motion.div>
-
-                {/* Annual — highlighted */}
-                <motion.div
-                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                  className="relative p-8 border-2 border-primary bg-primary/[0.02] rounded-2xl flex flex-col gap-5 overflow-hidden transition-all hover:scale-[1.01] duration-300 shadow-lg shadow-primary/5"
-                >
-                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] px-4 py-1.5 font-black uppercase tracking-widest rounded-bl-xl">
-                    Best Value
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary border border-primary/30 bg-primary/5 rounded-full px-2.5 py-0.5 mb-4">
-                      Annual
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-black tracking-tighter">$29.88</span>
-                      <span className="text-muted-foreground text-base font-medium">/yr</span>
-                    </div>
-                    <p className="text-sm text-primary font-bold mt-2 flex items-center gap-1.5">
-                      <Zap className="h-4 w-4" /> $2.49/mo — save $30 a year
-                    </p>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 text-sm">
-                    {[
-                      "Everything in Monthly",
-                      "Unlimited Waypoints",
-                      "Raise (AI Assistant)",
-                      "AI Grading & Feedback",
-                      "Portfolio Analysis per Student",
-                      "Mastery Analytics",
-                      "Spend Caps & Controls",
-                      "Priority Support",
-                    ].map((f) => (
-                      <li key={f} className="flex items-center gap-3 text-foreground font-bold">
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/signup">
-                    <Button className="cursor-pointer w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-6 text-base rounded-xl shadow-xl shadow-primary/20">
-                      Claim Annual Plan <ArrowRight className="h-4 w-4 ml-2 inline" />
-                    </Button>
-                  </Link>
-                </motion.div>
-              </motion.div>
-
-              {/* Free vs Standard Comparison Table */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="rounded-2xl border border-border/50 overflow-hidden bg-card/20 backdrop-blur-sm"
+              <button
+                type="button"
+                onClick={() => setIsAnnual(true)}
+                className={cn(
+                  "relative px-4 py-1.5 text-xs font-semibold rounded-full transition-colors cursor-pointer flex items-center gap-1.5",
+                  isAnnual ? "text-foreground font-bold" : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                {/* Table header */}
-                <div className="grid grid-cols-[1fr_auto_auto] gap-0 border-b border-border/50 bg-muted/10">
-                  <div className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">
-                    Feature
-                  </div>
-                  <div className="w-28 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-muted-foreground border-l border-border/30">
-                    Free
-                  </div>
-                  <div className="w-32 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-primary border-l border-border/30 bg-primary/5">
-                    Standard
-                  </div>
-                </div>
-
-                {/* Rows */}
-                {([
-                  { label: "Teacher & Student Accounts", free: true, standard: true, category: "Core" },
-                  { label: "Basic Course Management", free: true, standard: true },
-                  { label: "Limited Network (1 Waypoint)", free: true, standard: true },
-                  { label: "Raise (AI Assistant)", free: false, standard: true, category: "Learning Tools" },
-                  { label: "AI Assignment Help & Feedback", free: false, standard: true },
-                  { label: "AI-Assisted Grading", free: false, standard: true },
-                  { label: "In-depth Portfolio Analysis per Student", free: false, standard: true },
-                  { label: "Unlimited Waypoints", free: false, standard: true, category: "Network & Analytics" },
-                  { label: "Mastery Analytics Dashboard", free: false, standard: true },
-                  { label: "Hard Spend Caps & Budget Controls", free: false, standard: true },
-                  { label: "Priority Support", free: false, standard: true, category: "Support" },
-                ] as { label: string; free: boolean; standard: boolean; category?: string }[]).map((feat, i) => (
-                  <div key={i}>
-                    {feat.category && (
-                      <div className="px-6 py-2 bg-muted/20 border-b border-border/30">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                          {feat.category}
-                        </span>
-                      </div>
-                    )}
-                    <div className={`grid grid-cols-[1fr_auto_auto] gap-0 border-b border-border/20 last:border-0 transition-colors ${i % 2 === 0 ? "bg-transparent" : "bg-muted/5"}`}>
-                      <div className="px-6 py-3.5 text-sm font-medium text-foreground/80">{feat.label}</div>
-                      <div className="w-28 px-4 py-3.5 flex items-center justify-center border-l border-border/30">
-                        {feat.free
-                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
-                          : <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
-                      </div>
-                      <div className="w-32 px-4 py-3.5 flex items-center justify-center border-l border-border/30 bg-primary/[0.02]">
-                        {feat.standard
-                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
-                          : <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* CTA row */}
-                <div className="grid grid-cols-[1fr_auto_auto] border-t border-border/40 bg-muted/10">
-                  <div className="px-6 py-5" />
-                  <div className="w-28 px-4 py-5 flex items-center justify-center border-l border-border/30">
-                    <Link href="/signup">
-                      <Button variant="outline" size="sm" className="cursor-pointer font-black text-xs rounded-xl px-4">Free</Button>
-                    </Link>
-                  </div>
-                  <div className="w-32 px-4 py-5 flex items-center justify-center border-l border-border/30 bg-primary/[0.02]">
-                    <Link href="/signup">
-                      <Button size="sm" className="cursor-pointer font-black text-xs rounded-xl bg-primary text-primary-foreground px-4">Get Started</Button>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-
+                {isAnnual && (
+                  <motion.div
+                    layoutId="billingPill"
+                    className="absolute inset-0 bg-background rounded-full shadow-sm border border-border/60"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">Annual billing</span>
+                <span className="relative z-10 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  Save 50%
+                </span>
+              </button>
             </div>
-          </section>
+          </div>
+        </section>
 
-
-          {/* Zero Markup Deep-Dive */}
-          <section className="container mx-auto px-6 pb-24">
-            <motion.div
-              className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-muted/20 backdrop-blur-md border border-border/50 rounded-[2.5rem] p-8 md:p-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="space-y-6">
-                <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
-                  <Zap className="h-4 w-4" />
-                  Zero Markup Pass-Through
+        {/* ── 3 Core Pricing Cards ────────────────────────────────────────── */}
+        <section className="container mx-auto px-4 sm:px-6 max-w-6xl pt-14 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            {/* 1. Starter */}
+            <div className="p-7 sm:p-8 rounded-3xl border border-border/70 bg-card/30 backdrop-blur-xl flex flex-col justify-between space-y-6 shadow-sm">
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Starter</h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Essential classroom tools for individual instructors evaluating Scorpio.
+                  </p>
                 </div>
-                <h2 className="text-3xl font-black tracking-tight text-foreground">One Platform. Zero EdTech Bloat.</h2>
-                <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                  Most platforms markup AI costs 500%. We charge a flat fee for the infrastructure and pass raw compute costs directly to you. Every dollar goes into student mastery, not platform margins.
-                </p>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div className="pt-2 pb-1 border-y border-border/40">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">$0</span>
+                    <span className="text-xs font-semibold text-muted-foreground">/ month</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">Free forever. No card required.</p>
+                </div>
+
+                <ul className="space-y-3 text-xs sm:text-[13px]">
                   {[
-                    "Google Gemini-Flash Rates",
-                    "FERPA & GDPR Infrastructure",
-                    "Department-Wide Syncing",
-                    "Priority Inference Tunnels",
-                  ].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm font-bold text-foreground">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      {f}
+                    "Teacher & student accounts",
+                    "Course & roster management",
+                    "1 active Waypoint curriculum module",
+                    "LaTeX equation builder",
+                    "Standard coursework submissions",
+                  ].map((feat) => (
+                    <li key={feat} className="flex items-start gap-2.5 text-foreground/80">
+                      <Check className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+                      <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
-                  <p className="text-3xl font-black text-primary mb-1">$0.15</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Input</p>
-                </div>
-                <div className="p-8 rounded-3xl bg-background/50 border border-border/50 text-center shadow-sm">
-                  <p className="text-3xl font-black text-primary mb-1">$0.60</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1M Tokens Output</p>
-                </div>
-              </div>
-            </motion.div>
-          </section>
 
-          {/* Cost Comparison Chart */}
-          <section className="container mx-auto px-6 pb-24">
-            <motion.div
-              className="max-w-6xl mx-auto"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="text-center mb-10">
-                <h2 className="text-2xl font-bold mb-2 text-foreground italic">The scale difference.</h2>
-                <p className="text-muted-foreground text-sm font-medium">See how Scorpio compares to per-seat EdTech pricing at real class sizes.</p>
-              </div>
-              <div className="bg-card/40 backdrop-blur-xl border border-border shadow-2xl rounded-[3rem] p-4 md:p-8">
-                <CostComparisonChart />
-              </div>
-            </motion.div>
-          </section>
+              <Button asChild variant="outline" className="w-full py-5 rounded-2xl font-semibold">
+                <Link href="/signup">Start Free</Link>
+              </Button>
+            </div>
 
-          {/* What You Unlock strip */}
-          <section className="container mx-auto px-6 pb-24">
-            <motion.div
-              className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 backdrop-blur-sm space-y-4">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                  <h4 className="font-black text-sm">What You Unlock</h4>
+            {/* 2. Classroom Pro (Featured) */}
+            <div className="p-7 sm:p-8 rounded-3xl border-2 border-primary bg-gradient-to-b from-primary/[0.06] via-card/50 to-background backdrop-blur-xl flex flex-col justify-between space-y-6 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] px-3.5 py-1 font-black uppercase tracking-widest rounded-bl-xl shadow-sm">
+                Most Popular
+              </div>
+
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Classroom Pro</h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Full Socratic AI scaffolding and analytics for your entire student cohort.
+                  </p>
                 </div>
-                {[
-                  { title: "Always-on Raise", desc: "No throttling during finals, midterms, or late-night study sessions." },
-                  { title: "Department Waypoints", desc: "One curriculum, synchronized instantly across every teacher in your network." },
-                  { title: "Mastery Analytics", desc: "See exactly who's falling behind before it becomes a grade problem." },
-                  { title: "Hard Spend Caps", desc: "Set monthly AI cost ceilings so you never get a surprise bill." },
-                ].map((item, i) => (
-                  <div key={i} className="space-y-0.5">
-                    <h5 className="font-bold text-xs text-foreground">{item.title}</h5>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+
+                <div className="pt-2 pb-1 border-y border-primary/20">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
+                      {isAnnual ? "$2.49" : "$4.99"}
+                    </span>
+                    <span className="text-xs font-semibold text-muted-foreground">/ month</span>
                   </div>
-                ))}
+                  <p className="text-[11px] text-primary font-medium mt-1">
+                    {isAnnual ? "Billed annually ($29.88/year) — covers all students" : "Billed monthly — cancel anytime"}
+                  </p>
+                </div>
+
+                <ul className="space-y-3 text-xs sm:text-[13px]">
+                  {[
+                    "Everything in Starter",
+                    "Unlimited student enrollments (no per-seat fees)",
+                    "Unlimited physics Waypoints",
+                    "Raise Socratic AI assistant for all students",
+                    "AI-assisted grading & rubric synthesis",
+                    "Student derivation tracking & portfolios",
+                    "Hard monthly spend caps & controls",
+                    "Direct raw compute pass-through ($0.15/1M tokens)",
+                    "Priority faculty support",
+                  ].map((feat) => (
+                    <li key={feat} className="flex items-start gap-2.5 text-foreground font-medium">
+                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <div className="p-6 rounded-2xl border border-border/50 bg-zinc-100/50 dark:bg-zinc-900/50 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <h4 className="font-black text-sm">Zero Markup. Seriously.</h4>
+              <Button asChild className="w-full py-5 rounded-2xl font-bold shadow-lg shadow-primary/20">
+                <Link href="/signup" className="flex items-center justify-center gap-1.5">
+                  Get Started <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* 3. Department / Institution */}
+            <div className="p-7 sm:p-8 rounded-3xl border border-border/70 bg-card/30 backdrop-blur-xl flex flex-col justify-between space-y-6 shadow-sm">
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Department</h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    For high school departments, universities, and multi-campus districts.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Most EdTech companies mark up API costs 300–500%. We charge you exactly what Google charges us — every dollar goes directly to your students&apos; learning.
-                </p>
-                <div className="flex gap-6 pt-1">
-                  <div>
-                    <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.15</p>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Input</p>
+
+                <div className="pt-2 pb-1 border-y border-border/40">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">Custom</span>
                   </div>
-                  <div className="w-px bg-border self-stretch" />
-                  <div>
-                    <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.60</p>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Output</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Site licensing & invoice billing.</p>
+                </div>
+
+                <ul className="space-y-3 text-xs sm:text-[13px]">
+                  {[
+                    "Everything in Classroom Pro",
+                    "Canvas, Blackboard & Schoology LTI integration",
+                    "Centralized multi-teacher administration",
+                    "FERPA & COPPA compliance agreements",
+                    "Custom school procurement (PO / Invoice / ACH)",
+                    "Dedicated instructor onboarding & SLA",
+                  ].map((feat) => (
+                    <li key={feat} className="flex items-start gap-2.5 text-foreground/80">
+                      <Check className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Button asChild variant="outline" className="w-full py-5 rounded-2xl font-semibold">
+                <Link href="/request-access">Request Institution License</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Why Flat Pricing Matters (Minimal 3-Pillar Breakdown) ───────── */}
+        <section className="container mx-auto px-4 sm:px-6 max-w-5xl py-12">
+          <div className="text-center space-y-2 mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">The Economics of Fair EdTech</h2>
+            <p className="text-sm text-muted-foreground">How Scorpio is structured to protect departmental budgets.</p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            <div className="p-6 rounded-2xl border border-border/60 bg-card/25 backdrop-blur-md space-y-2.5">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-3">
+                <Zap className="h-4 w-4" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground">Zero Per-Seat Penalties</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Traditional tools charge $4–$12 per student per month. Scorpio never charges per seat—your flat fee covers 25 or 250 students equally.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl border border-border/60 bg-card/25 backdrop-blur-md space-y-2.5">
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-3">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground">Direct Compute Pass-Through</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Raw Google DeepMind Gemini rates ($0.15 / 1M input tokens). We pass API costs through with zero middleman markup.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl border border-border/60 bg-card/25 backdrop-blur-md space-y-2.5">
+              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 mb-3">
+                <Shield className="h-4 w-4" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground">Hard Budget Caps</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Set monthly compute limits directly in your portal settings. You will never receive an unexpected billing overage.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Feature Comparison Table (Clean & Minimal) ──────────────────── */}
+        <section className="container mx-auto px-4 sm:px-6 max-w-5xl py-16">
+          <div className="text-center space-y-2 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Plan Comparison</h2>
+            <p className="text-sm text-muted-foreground">Full breakdown of capabilities across all tiers.</p>
+          </div>
+
+          <div className="rounded-2xl border border-border/60 bg-card/20 backdrop-blur-xl overflow-hidden shadow-sm">
+            {/* Header */}
+            <div className="grid grid-cols-[1fr_80px_100px_100px] sm:grid-cols-[1fr_120px_140px_140px] px-5 py-3.5 bg-muted/30 border-b border-border/50 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <div>Feature</div>
+              <div className="text-center">Starter</div>
+              <div className="text-center text-primary">Pro</div>
+              <div className="text-center">Department</div>
+            </div>
+
+            {/* Rows */}
+            {[
+              { category: "Core Platform" },
+              { name: "Student & Instructor Accounts", starter: true, pro: true, dept: true },
+              { name: "Assignment Builder with LaTeX", starter: true, pro: true, dept: true },
+              { name: "Student Derivation Portfolios", starter: false, pro: true, dept: true },
+              { name: "Waypoints Curriculum Network", starter: "1 Module", pro: "Unlimited", dept: "Unlimited" },
+              { category: "Socratic AI & Grading" },
+              { name: "Raise 4-Layer Socratic Assistant", starter: false, pro: true, dept: true },
+              { name: "Anti-Solver Derivation Enforcement", starter: false, pro: true, dept: true },
+              { name: "AI-Assisted Grading & Rubrics", starter: false, pro: true, dept: true },
+              { name: "Classroom Mastery Analytics", starter: false, pro: true, dept: true },
+              { category: "Governance & Infrastructure" },
+              { name: "Hard Monthly Spend Caps", starter: false, pro: true, dept: true },
+              { name: "Google Gemini Compute at Raw Rates", starter: false, pro: true, dept: true },
+              { name: "Canvas / Blackboard / Schoology LTI", starter: false, pro: false, dept: true },
+              { name: "Central District Administration", starter: false, pro: false, dept: true },
+              { name: "FERPA / COPPA Data Agreements", starter: false, pro: false, dept: true },
+              { name: "Invoice & PO Payment Options", starter: false, pro: false, dept: true },
+            ].map((row, i) => {
+              if (row.category) {
+                return (
+                  <div
+                    key={row.category}
+                    className="px-5 py-2.5 bg-muted/15 border-b border-border/30 text-[11px] font-black uppercase tracking-widest text-muted-foreground/70"
+                  >
+                    {row.category}
                   </div>
+                );
+              }
+
+              const renderValue = (val: boolean | string | undefined) => {
+                if (typeof val === "string") return <span className="font-semibold text-xs text-foreground">{val}</span>;
+                if (val) return <Check className="h-4 w-4 text-emerald-500 mx-auto" />;
+                return <Minus className="h-3.5 w-3.5 text-muted-foreground/30 mx-auto" />;
+              };
+
+              return (
+                <div
+                  key={row.name}
+                  className={`grid grid-cols-[1fr_80px_100px_100px] sm:grid-cols-[1fr_120px_140px_140px] px-5 py-3 border-b border-border/20 last:border-0 items-center text-xs sm:text-sm ${
+                    i % 2 === 0 ? "bg-transparent" : "bg-muted/5"
+                  }`}
+                >
+                  <div className="font-medium text-foreground/90 pr-2">{row.name}</div>
+                  <div className="text-center">{renderValue(row.starter)}</div>
+                  <div className="text-center bg-primary/[0.02] py-1">{renderValue(row.pro)}</div>
+                  <div className="text-center">{renderValue(row.dept)}</div>
                 </div>
-                <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Google DeepMind Gemini 2.5 Flash rates</p>
-              </div>
+              );
+            })}
+          </div>
+        </section>
 
-              <div className="p-6 bg-zinc-100/50 dark:bg-zinc-900/50 rounded-2xl space-y-4 overflow-hidden relative group">
-                <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative z-10 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-amber-500" />
-                    <h4 className="font-black text-foreground text-sm">Scaling Beyond One School?</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">District-wide deployment, custom SSO, dedicated infrastructure, and volume pricing for 10+ networks.</p>
-                  <Link href="/contact">
-                    <Button variant="outline" className="cursor-pointer w-full font-black uppercase tracking-widest text-[10px] py-5 rounded-xl mt-2">
-                      Contact Sales
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </section>
+        {/* ── FAQ ─────────────────────────────────────────────────────────── */}
+        <LandingFAQ />
 
-          {/* FAQ */}
-          <LandingFAQ />
+        {/* ── Direct Minimal Bottom CTA ───────────────────────────────────── */}
+        <section className="container mx-auto px-4 sm:px-6 max-w-4xl py-16">
+          <div className="p-8 sm:p-12 rounded-3xl border border-border/70 bg-card/30 backdrop-blur-xl text-center space-y-6 shadow-sm">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Ready to setup your physics classroom?</h2>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              Create your account in under a minute. No credit card required to start free.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button asChild size="lg" className="rounded-full px-7 font-semibold">
+                <Link href="/signup">
+                  Get Started Free <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="rounded-full px-7 font-semibold">
+                <Link href="/request-access">Request Institutional Access</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      </main>
 
-          {/* CTA */}
-          <section className="container mx-auto px-6 py-24">
-            <motion.div
-              className="max-w-4xl mx-auto rounded-[3rem] p-12 md:p-20 border border-border/60 bg-gradient-to-br from-card/30 to-background/50 backdrop-blur-xl relative overflow-hidden text-center shadow-xl"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
-              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
-              <div className="relative z-10 space-y-8">
-                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-none">Ready to get started?</h2>
-                <p className="text-muted-foreground text-lg font-medium max-w-xl mx-auto leading-relaxed">No LMS integration required. Deploy in one afternoon.</p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link href="/signup">
-                    <Button size="lg" className="h-14 px-10 rounded-full text-lg font-black cursor-pointer">
-                      Get Faculty Access <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
-                  <Link href="/contact">
-                    <Button size="lg" variant="outline" className="h-14 px-10 rounded-full text-lg cursor-pointer font-black border-2 bg-background/50">
-                      Request Demo
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </section>
-        </main>
+      {/* ── Standard Footer ─────────────────────────────────────────────── */}
+      <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
+        <div className="container mx-auto px-6 py-12">
+          <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+            <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0">
+              <Logo size={24} className="text-foreground" />
+              <span className="text-md font-extrabold">Scorpio</span>
+            </div>
 
-        <footer className="relative z-10 bg-background/50 backdrop-blur-sm border-t border-border/50">
-          <div className="container mx-auto px-6 py-12">
-            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-              <div className="flex items-center space-x-3 justify-center md:justify-start mb-6 md:mb-0">
-                <Logo size={24} className="text-foreground" />
-                <span className="text-md font-black tracking-tighter">Scorpio</span>
+            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-0">
+              <Link href="https://github.com/RushilMahadevu/scorpio" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <Github className="h-5 w-5" />
+                <span className="text-sm font-medium">GitHub</span>
+              </Link>
+              <Link href="/about" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <Info className="h-5 w-5" />
+                <span className="text-sm font-medium">About</span>
+              </Link>
+              <Link href="/research" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <BookOpen className="h-5 w-5" />
+                <span className="text-sm font-medium">Research</span>
+              </Link>
+              <Link href="/sustainability" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <Leaf className="h-5 w-5 text-emerald-500" />
+                <span className="text-sm font-medium">Sustainability</span>
+              </Link>
+              <Link href="/privacy" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <Shield className="h-5 w-5" />
+                <span className="text-sm font-medium">Privacy</span>
+              </Link>
+              <Link href="/terms" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <FileText className="h-5 w-5" />
+                <span className="text-sm font-medium">Terms</span>
+              </Link>
+              <Link href="/request-access" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <KeyRound className="h-5 w-5" />
+                <span className="text-sm font-medium">Request Access</span>
+              </Link>
+              <Link href="/contact" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                <Mail className="h-5 w-5" />
+                <span className="text-sm font-medium">Contact</span>
+              </Link>
+            </div>
+
+            <div className="text-center md:text-right space-y-2">
+              <div className="text-sm text-muted-foreground font-medium">
+                Built by <span className="text-foreground font-semibold">Rushil Mahadevu</span>
               </div>
-              <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-0">
-                {[
-                  { href: "https://github.com/RushilMahadevu/scorpio", icon: Github, label: "GitHub", external: true },
-                  { href: "/about", icon: Info, label: "About" },
-                  { href: "/research", icon: BookOpen, label: "Research" },
-                  { href: "/sustainability", icon: Leaf, label: "Sustainability" },
-                  { href: "/request-access", icon: KeyRound, label: "Request Access" },
-                  { href: "/privacy", icon: Shield, label: "Privacy" },
-                  { href: "/terms", icon: FileText, label: "Terms" },
-                  { href: "/contact", icon: Mail, label: "Contact" },
-                ].map(({ href, icon: Icon, label, external }) => (
-                  <Link key={label} href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                    <Icon className="h-5 w-5" /><span className="text-sm font-medium">{label}</span>
-                  </Link>
-                ))}
-              </div>
-              <div className="text-center md:text-right space-y-2">
-                <div className="text-sm text-muted-foreground font-medium">Built by <span className="text-foreground font-semibold">Rushil Mahadevu</span></div>
-                <div className="text-xs text-muted-foreground">{`© ${new Date().getFullYear()} Scorpio. All rights reserved.`}</div>
+              <div className="text-xs text-muted-foreground">
+                © {new Date().getFullYear()} Scorpio. All rights reserved.
               </div>
             </div>
           </div>
-        </footer>
-      </div>
-    </>
+        </div>
+      </footer>
+    </div>
   );
 }

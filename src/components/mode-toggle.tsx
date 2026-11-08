@@ -147,7 +147,8 @@ export function ModeToggle() {
             </div>
             <div className="grid grid-cols-4 gap-1.5 pt-0.5">
               {[
-                { name: "Default", value: "default", color: "bg-foreground" },
+                { name: "Cosmic (Default)", value: "default", color: "bg-blue-600" },
+                { name: "Monochrome", value: "monochrome", color: "bg-foreground" },
                 { name: "Ocean", value: "ocean", color: "bg-sky-500" },
                 { name: "Violet", value: "violet", color: "bg-violet-500" },
                 { name: "Rose", value: "rose", color: "bg-rose-500" },

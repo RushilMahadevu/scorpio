@@ -118,7 +118,7 @@ function SidebarContent({
         >
           <motion.div
             layout
-            className="bg-primary/20 p-2 rounded-xl shadow-inner-sm flex-shrink-0"
+            className="bg-muted p-2 rounded-xl shadow-inner-sm flex-shrink-0"
           >
             <CompassLogo className="h-6 w-6 text-foreground" />
           </motion.div>
@@ -170,13 +170,13 @@ function SidebarContent({
                   className={cn(
                     "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors group w-full",
                     isActive
-                      ? "bg-muted text-primary shadow-sm"
+                      ? "bg-muted/80 text-foreground font-semibold shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
-                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                    isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                   )} />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap">{item.label}</span>
@@ -189,7 +189,7 @@ function SidebarContent({
                   {isActive && !isCollapsed && (
                     <motion.span
                       layoutId="active-pill"
-                      className="absolute left-0 w-1 h-5 bg-primary rounded-r-full"
+                      className="absolute left-0 w-1 h-5 bg-primary rounded-r-full shadow-[0_0_8px_var(--primary)]"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -209,10 +209,7 @@ function SidebarContent({
           !isCollapsed && "bg-muted/40"
         )}>
           {RoleIcon && (
-            <RoleIcon className={cn(
-              "h-4 w-4 transition-colors",
-              isCollapsed ? "text-muted-foreground" : "text-primary/70"
-            )} />
+            <RoleIcon className="h-4 w-4 text-muted-foreground transition-colors" />
           )}
           {!isCollapsed && (
             <motion.span

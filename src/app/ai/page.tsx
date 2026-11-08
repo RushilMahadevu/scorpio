@@ -75,7 +75,6 @@ function loadSessionMessages(): Message[] {
   try {
     const raw = sessionStorage.getItem(SESSION_MESSAGES_KEY);
     if (!raw) return [];
-    // Strip isStreaming flag — any in-flight stream is gone after reload
     const parsed: Message[] = JSON.parse(raw);
     return parsed.map((m) => ({ ...m, isStreaming: false }));
   } catch {
@@ -86,12 +85,11 @@ function loadSessionMessages(): Message[] {
 function saveSessionMessages(msgs: Message[]) {
   if (typeof window === "undefined") return;
   try {
-    // Only persist fully resolved messages (no in-progress streams)
     sessionStorage.setItem(
       SESSION_MESSAGES_KEY,
       JSON.stringify(msgs.map((m) => ({ ...m, isStreaming: false })))
     );
-  } catch { /* quota exceeded — silent fail */ }
+  } catch {}
 }
 
 function loadSessionQLeft(): number | null {
@@ -113,8 +111,6 @@ function clearSession() {
   localStorage.setItem(COUNT_KEY, "0");
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────────
-
 export default function AIPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -126,7 +122,6 @@ export default function AIPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Restore session on mount
   useEffect(() => {
     setMounted(true);
     const id = getOrCreateVisitorId();
@@ -142,7 +137,6 @@ export default function AIPage() {
     if (sessionQLeft !== null) {
       setQuestionsLeft(sessionQLeft);
     } else {
-      // Fall back to localStorage count if no session record yet
       const used = getLocalCount();
       setQuestionsLeft(Math.max(0, LIMIT - used));
     }
@@ -168,7 +162,6 @@ export default function AIPage() {
         scrollToBottom();
       } else {
         clearInterval(interval);
-        // Flush final text and persist to session
         setMessages((prev) => {
           const next = prev.map((m) =>
             m.id === messageId ? { ...m, content: fullText, isStreaming: false } : m
@@ -177,7 +170,7 @@ export default function AIPage() {
           return next;
         });
       }
-    }, 32);
+    }, 28);
   };
 
   const handleSend = useCallback(
@@ -205,7 +198,7 @@ export default function AIPage() {
             { id: aid, role: "assistant", content: "", isStreaming: true },
           ]);
           simulateStreaming(offlineResponse, aid);
-        }, 650);
+        }, 500);
         return;
       }
 
@@ -253,18 +246,17 @@ export default function AIPage() {
   const isLimitReached = questionsLeft <= 0;
   const isEmpty = mounted && messages.length === 0;
 
-  if (!mounted) return null; // Avoid hydration mismatch for dynamic visitor state
+  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative font-medium">
       <SpaceBackground />
-      <SiteHeader activeSection="ai" />
+      <SiteHeader />
 
       <div
         className="flex flex-col flex-1 mx-auto w-full max-w-[680px] px-5 relative z-10"
         style={{ paddingTop: "88px" }}
       >
-
         {/* ── Empty / Welcome State ─────────────────────────────────────── */}
         <AnimatePresence>
           {isEmpty && (
@@ -278,11 +270,11 @@ export default function AIPage() {
             >
               {/* Identity */}
               <div className="flex items-center gap-2.5 mb-8">
-                <div className="h-7 w-7 rounded-[7px] bg-foreground flex items-center justify-center">
-                  <RaiseLogo size={14} className="text-background" />
+                <div className="h-7 w-7 rounded-[7px] bg-primary flex items-center justify-center shadow-sm">
+                  <RaiseLogo size={14} className="text-primary-foreground" />
                 </div>
                 <span className="text-[14px] font-semibold text-foreground">Raise</span>
-                <span className="text-[11px] font-medium text-muted-foreground border border-border rounded-md px-2 py-0.5 leading-none">
+                <span className="text-[11px] font-medium text-muted-foreground border border-border/80 rounded-md px-2 py-0.5 leading-none">
                   AI Learning Assistant
                 </span>
               </div>
@@ -305,7 +297,7 @@ export default function AIPage() {
                   <button
                     key={i}
                     onClick={() => handleSend(s.prompt, s.response)}
-                    className="group w-full flex items-center justify-between gap-4 text-left px-4 py-3 rounded-lg border border-border/60 hover:border-foreground/20 hover:bg-muted/20 transition-all duration-150 cursor-pointer"
+                    className="group w-full flex items-center justify-between gap-4 text-left px-4 py-3 rounded-xl border border-border/80 bg-card/20 hover:bg-muted/40 transition-all duration-150 cursor-pointer"
                   >
                     <div className="flex items-start gap-3 min-w-0">
                       <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/50 shrink-0 pt-[3px]">
@@ -335,17 +327,16 @@ export default function AIPage() {
               >
                 {m.role === "user" ? (
                   <div className="flex justify-end">
-                    <div className="max-w-[75%] bg-muted rounded-2xl rounded-tr-sm px-4 py-3 text-[14.5px] leading-[1.65] text-foreground font-medium">
+                    <div className="max-w-[80%] sm:max-w-[75%] bg-primary rounded-2xl rounded-tr-sm px-4 py-3 text-[14.5px] leading-[1.65] text-primary-foreground font-medium shadow-sm">
                       {m.content}
                     </div>
                   </div>
                 ) : (
                   <div className="flex gap-3 items-start">
-                    <div className="h-6 w-6 rounded-[6px] bg-foreground flex items-center justify-center shrink-0 mt-[2px]">
-                      <RaiseLogo size={12} className="text-background" />
+                    <div className="h-6 w-6 rounded-[6px] bg-primary flex items-center justify-center shrink-0 mt-[2px] shadow-sm">
+                      <RaiseLogo size={12} className="text-primary-foreground" />
                     </div>
                     <div className="flex-1 min-w-0 pt-[1px]">
-                      {/* Use MarkdownRenderer for full KaTeX support */}
                       <MarkdownRenderer
                         className={cn(
                           "text-[14.5px] leading-[1.75]",
@@ -377,8 +368,8 @@ export default function AIPage() {
                 animate={{ opacity: 1 }}
                 className="flex gap-3 items-center"
               >
-                <div className="h-6 w-6 rounded-[6px] bg-foreground flex items-center justify-center shrink-0">
-                  <RaiseLogo size={12} className="text-background" />
+                <div className="h-6 w-6 rounded-[6px] bg-primary flex items-center justify-center shrink-0">
+                  <RaiseLogo size={12} className="text-primary-foreground" />
                 </div>
                 <div className="flex items-center gap-[5px]">
                   <span className="h-[5px] w-[5px] rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -394,7 +385,7 @@ export default function AIPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="border border-border rounded-xl px-5 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/20"
+                  className="border border-border rounded-2xl px-5 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/20"
                 >
                   <div>
                     <p className="text-[14px] font-semibold text-foreground mb-0.5">
@@ -412,12 +403,12 @@ export default function AIPage() {
                       <RefreshCw className="h-3 w-3" />
                       Reset
                     </button>
-                    <Link href="/signup">
-                      <Button size="sm" className="rounded-full h-8 px-4 text-[13px] font-semibold cursor-pointer">
+                    <Button asChild size="sm" className="rounded-full h-8 px-4 text-[13px] font-semibold cursor-pointer">
+                      <Link href="/signup">
                         Get access
                         <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </motion.div>
               )}
@@ -429,7 +420,6 @@ export default function AIPage() {
 
         {/* ── Input ─────────────────────────────────────────────────────── */}
         <div className={cn("sticky bottom-0 pb-5 pt-3 bg-background/80 backdrop-blur-xl", isEmpty && "mt-auto")}>
-          {/* Fade mask above input when scrolled */}
           <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
           <div
@@ -441,6 +431,7 @@ export default function AIPage() {
             )}
           >
             <Textarea
+              aria-label="Ask Raise a physics question"
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -469,6 +460,7 @@ export default function AIPage() {
                 <span>to send · Shift+Enter for new line</span>
               </div>
               <button
+                type="button"
                 onClick={() => handleSend(input)}
                 disabled={!input.trim() || isLimitReached || isTyping}
                 className={cn(

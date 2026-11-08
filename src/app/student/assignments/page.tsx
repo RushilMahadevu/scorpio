@@ -2,21 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, getDocs, query, where, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { WorkspaceHeader } from "@/components/ui/workspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { FileText, Clock, CheckCircle, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface Assignment {
   id: string;
   title: string;
   description: string;
   dueDate: Date;
-  questions: any[];
+  questions?: unknown[];
   courseId: string;
   teacherId: string;
 }
@@ -120,15 +120,11 @@ export default function StudentAssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      
-      <div>
-        <h1 className="text-3xl font-bold">Assignments</h1>
-        <p className="text-muted-foreground">View and complete your assignments</p>
-      </div>
-      <div className="flex flex-wrap gap-4 items-center">
+      <WorkspaceHeader title="Assignments" description="Open coursework and check what’s due." />
+      <div className="flex flex-wrap gap-2 items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2 min-w-[140px] cursor-pointer hover:bg-primary/90 transition-colors">
+            <Button variant="outline">
               Status: {(() => {
                 if (filter === "all") return "All";
                 if (filter === "submitted") return "Submitted";
@@ -139,23 +135,23 @@ export default function StudentAssignmentsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onSelect={() => setFilter("all")} className="cursor-pointer hover:bg-primary/90 transition-colors">
+            <DropdownMenuItem onSelect={() => setFilter("all")}>
               All
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setFilter("submitted")} className="cursor-pointer hover:bg-primary/90 transition-colors">
+            <DropdownMenuItem onSelect={() => setFilter("submitted")}>
               Submitted
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setFilter("pending")} className="cursor-pointer hover:bg-primary/90 transition-colors">
+            <DropdownMenuItem onSelect={() => setFilter("pending")}>
               Pending
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setFilter("pastDue")} className="cursor-pointer hover:bg-primary/90 transition-colors">
+            <DropdownMenuItem onSelect={() => setFilter("pastDue")}>
               Past Due
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2 min-w-[180px] cursor-pointer hover:bg-primary/90 transition-colors">
+            <Button variant="outline">
               Sort by: {(() => {
                 if (sort === "dueDateAsc") return "Due Date (Earliest)";
                 if (sort === "dueDateDesc") return "Due Date (Latest)";
@@ -166,71 +162,49 @@ export default function StudentAssignmentsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onSelect={() => setSort("dueDateAsc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Due Date (Earliest)</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setSort("dueDateDesc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Due Date (Latest)</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setSort("titleAsc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Title (A-Z)</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setSort("titleDesc")} className="cursor-pointer hover:bg-primary/90 transition-colors">Title (Z-A)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("dueDateAsc")}>Due Date (Earliest)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("dueDateDesc")}>Due Date (Latest)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("titleAsc")}>Title (A-Z)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSort("titleDesc")}>Title (Z-A)</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {loading ? (
-        <p className="text-muted-foreground">Loading...</p>
-      ) : filteredAssignments.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">No assignments found.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {filteredAssignments.map((assignment) => {
-            const isSubmitted = submissions.has(assignment.id);
-            const pastDue = isPastDue(assignment.dueDate);
-            return (
-              <Card key={assignment.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        {assignment.title}
-                      </CardTitle>
-                      <CardDescription>{assignment.description}</CardDescription>
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {loading ? (
+          <p role="status" className="p-6 text-sm text-muted-foreground">Loading assignments…</p>
+        ) : filteredAssignments.length === 0 ? (
+          <p className="p-6 text-sm text-muted-foreground">No assignments match this view.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {filteredAssignments.map((assignment) => {
+              const isSubmitted = submissions.has(assignment.id);
+              const pastDue = !isSubmitted && isPastDue(assignment.dueDate);
+              return (
+                <li key={assignment.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5">
+                  <div className="min-w-0 flex-1 basis-48 space-y-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <h2 className="min-w-0 break-words font-medium">{assignment.title}</h2>
+                      <Badge variant={pastDue ? "destructive" : isSubmitted ? "secondary" : "outline"}>
+                        {isSubmitted ? "Submitted" : pastDue ? "Past due" : "Pending"}
+                      </Badge>
                     </div>
-                    {isSubmitted ? (
-                      <Badge className="bg-green-500">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Submitted
-                      </Badge>
-                    ) : pastDue ? (
-                      <Badge variant="destructive">Past Due</Badge>
-                    ) : (
-                      <Badge variant="secondary">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Pending
-                      </Badge>
-                    )}
+                    {assignment.description && <p className="break-words text-sm text-muted-foreground">{assignment.description}</p>}
+                    <p className="text-xs text-muted-foreground">
+                      Due {assignment.dueDate.toLocaleDateString()} · {assignment.questions?.length || 0} {assignment.questions?.length === 1 ? "question" : "questions"}
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      <p>{assignment.questions?.length || 0} questions</p>
-                      <p>Due: {new Date(assignment.dueDate).toLocaleDateString()}</p>
-                    </div>
-                    <Link href={`/student/assignment-view?id=${assignment.id}`}>
-                      <Button variant={isSubmitted ? "outline" : "default"} className="cursor-pointer hover:bg-primary/90 transition-colors">
-                        {isSubmitted ? "View" : "Start"}
-                      </Button>
+                  <Button asChild size="sm" variant={isSubmitted ? "outline" : "default"}>
+                    <Link href={`/student/assignment-view?id=${assignment.id}`} aria-label={`${isSubmitted ? "View" : "Start"} ${assignment.title}`}>
+                      {isSubmitted ? "View" : "Start"}
                     </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

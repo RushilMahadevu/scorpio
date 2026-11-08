@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AuthPageNav } from "@/components/landing/auth-page-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +23,6 @@ import {
 import { SpaceBackground } from "@/components/ui/space-background";
 import Link from "next/link";
 import {
-  ArrowLeft,
   KeyRound,
   CheckCircle2,
   Building2,
@@ -91,15 +91,9 @@ export default function RequestAccessPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-dvh flex items-center justify-center px-4 pt-20 pb-8 relative overflow-hidden">
         <SpaceBackground />
-        <Link
-          href="/"
-          className="absolute top-6 left-6 z-20 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all bg-background/40 backdrop-blur-md rounded-full px-4 py-2 shadow-sm border border-white/10"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-sm font-medium">Back to Home</span>
-        </Link>
+        <AuthPageNav />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -126,12 +120,12 @@ export default function RequestAccessPage() {
                 <h2 className="text-3xl font-bold tracking-tight text-foreground">Request Received</h2>
                 <div className="space-y-2 max-w-sm mx-auto">
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Thank you, <span className="text-foreground font-semibold text-primary">{name}</span>. Your access
-                    request for <span className="text-foreground font-semibold text-primary">{institution}</span> is in our queue.
+                    Thank you, <span className="text-foreground font-semibold">{name}</span>. Your access
+                    request for <span className="text-foreground font-semibold">{institution}</span> is in our queue.
                   </p>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     Our team manually reviews every educator request. We&apos;ll reach out to{" "}
-                    <span className="text-foreground font-semibold text-primary">{email}</span> within 24–48 hours.
+                    <span className="text-foreground font-semibold">{email}</span> within 24–48 hours.
                   </p>
                 </div>
               </motion.div>
@@ -141,16 +135,16 @@ export default function RequestAccessPage() {
                 transition={{ delay: 0.5 }}
                 className="flex flex-col gap-3 w-full max-w-xs pt-4"
               >
-                <Link href="/signup">
-                  <Button className="w-full rounded-full h-11 bg-primary text-primary-foreground hover:opacity-90 transition-opacity" variant="default">
+                <Button asChild className="w-full rounded-full h-11" variant="default">
+                  <Link href="/signup">
                     Go to Sign Up
-                  </Button>
-                </Link>
-                <Link href="/">
-                  <Button className="w-full rounded-full h-11 border-border/50" variant="outline">
+                  </Link>
+                </Button>
+                <Button asChild className="w-full rounded-full h-11" variant="outline">
+                  <Link href="/">
                     Return Home
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </motion.div>
             </CardContent>
           </Card>
@@ -166,17 +160,11 @@ export default function RequestAccessPage() {
       </div>
 
       {/* Navigation */}
-      <Link
-        href="/"
-        className="absolute top-8 left-8 z-30 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all bg-background/40 backdrop-blur-md rounded-full px-4 py-2 shadow-sm border border-border/50"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm font-medium">Return Home</span>
-      </Link>
+      <AuthPageNav />
 
       <div className="flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto z-10">
         {/* Left Side: Form */}
-        <div className="flex-1 flex flex-col justify-center p-6 sm:p-12 lg:p-24 relative overflow-y-auto">
+        <div className="flex-1 flex flex-col justify-center px-6 pt-24 pb-10 sm:px-12 lg:p-24 relative overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -218,7 +206,7 @@ export default function RequestAccessPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="bg-secondary/30 border-border/50 h-11 focus:ring-primary/50 transition-all rounded-lg"
+                  className="h-11"
                 />
               </motion.div>
 
@@ -239,7 +227,7 @@ export default function RequestAccessPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-secondary/30 border-border/50 h-11 focus:ring-primary/50 transition-all rounded-lg"
+                  className="h-11"
                 />
               </motion.div>
             </div>
@@ -261,17 +249,17 @@ export default function RequestAccessPage() {
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)}
                   required
-                  className="bg-secondary/30 border-border/50 h-11 focus:ring-primary/50 transition-all rounded-lg"
+                  className="h-11"
                 />
               </div>
 
               <div className="space-y-2.5">
-                <Label className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                <Label htmlFor="req-role" className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
                   <Briefcase className="h-3.5 w-3.5" />
                   Scientific Role
                 </Label>
                 <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger className="cursor-pointer bg-secondary/30 border-border/50 h-11 focus:ring-primary/50 rounded-lg">
+                  <SelectTrigger id="req-role" className="h-11">
                     <SelectValue placeholder="Select your role…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -296,7 +284,7 @@ export default function RequestAccessPage() {
                   placeholder="How do you plan to use Scorpio in your classroom or research?"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="bg-secondary/30 border-border/50 min-h-[120px] focus:ring-primary/50 transition-all rounded-lg resize-none"
+                  className="min-h-[120px] resize-none"
                 />
               </div>
 
@@ -304,14 +292,14 @@ export default function RequestAccessPage() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-xs font-semibold text-red-100 bg-red-500/10 border border-red-500/20 p-3 rounded-lg"
+                  className="text-xs font-semibold text-destructive bg-destructive/10 border border-destructive/20 p-3 rounded-lg"
                 >
                   {error}
                 </motion.div>
               )}
 
               <Button
-                className="cursor-pointer w-full h-12 text-base font-semibold transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-primary/20 rounded-lg bg-primary text-primary-foreground"
+                className="w-full h-12 text-base font-semibold rounded-lg"
                 onClick={handleSubmit}
                 disabled={loading}
               >

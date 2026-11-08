@@ -5,7 +5,7 @@ import { RichTextEditor } from "@/components/rich-text-editor";
 export default function TestEditor() {
   const [content, setContent] = useState("<p>Hello world</p>");
   return (
-    <div className="p-10 h-screen bg-zinc-100">
+    <div className="min-h-dvh bg-background p-4 text-foreground sm:p-10">
       <RichTextEditor content={content} onChange={setContent} />
     </div>
   );

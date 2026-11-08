@@ -128,7 +128,7 @@ export function RosterImport() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button>
           <Upload className="size-4" />
           Import Roster
         </Button>
