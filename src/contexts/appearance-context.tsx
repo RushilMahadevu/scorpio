@@ -3,7 +3,11 @@
 import * as React from "react";
 
 export type FontOption = "inter" | "ibm-plex-sans" | "verdana" | "roboto-mono" | "pt-serif" | "atkinson";
-export type ThemeColor = "default" | "ocean" | "violet" | "rose" | "amber" | "emerald" | "midnight" | "monochrome" | "custom";
+
+const themeColors = ["default", "blue", "emerald", "monochrome", "custom"] as const;
+const themeClasses = themeColors.map((color) => `theme-${color}`);
+
+export type ThemeColor = (typeof themeColors)[number];
 
 interface AppearanceContextType {
   font: FontOption;
@@ -27,9 +31,10 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
       setFontState(storedFont);
     }
 
-    const storedTheme = localStorage.getItem("app-theme-color") as ThemeColor;
-    if (storedTheme && ["default", "ocean", "violet", "rose", "amber", "emerald", "midnight", "monochrome", "custom"].includes(storedTheme)) {
-      setThemeColorState(storedTheme);
+    const storedTheme = localStorage.getItem("app-theme-color");
+    const savedColor = themeColors.find((color) => color === storedTheme);
+    if (savedColor) {
+      setThemeColorState(savedColor);
     }
 
     const storedCustomColor = localStorage.getItem("app-custom-color");
@@ -73,7 +78,6 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     html.classList.add(`font-${font}`);
 
     // Manage Theme Classes
-    const themeClasses = ["theme-default", "theme-ocean", "theme-violet", "theme-rose", "theme-amber", "theme-emerald", "theme-midnight", "theme-monochrome", "theme-custom"];
     html.classList.remove(...themeClasses);
     html.classList.add(`theme-${themeColor}`);
 

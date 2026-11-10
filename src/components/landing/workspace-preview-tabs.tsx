@@ -315,9 +315,9 @@ export function NetworkPage({
             </div>
 
             <button type="button" onClick={onOpenStudentInsights} className="block group text-left">
-              <div className="flex items-center gap-3 p-2 bg-background/70 hover:bg-background border border-border/40 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all rounded-xl cursor-pointer">
-                <div className="size-7 rounded-lg sm:size-10 bg-indigo-500/10 group-hover:bg-indigo-500/20 flex items-center justify-center shrink-0 transition-colors">
-                  <GraduationCap className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <div className="flex items-center gap-3 p-2 bg-background/70 hover:bg-background border border-border/40 hover:border-primary/50 transition-all rounded-xl cursor-pointer">
+                <div className="size-7 rounded-lg sm:size-10 bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
+                  <GraduationCap className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xl font-black font-mono leading-none flex items-center justify-between">
@@ -2037,7 +2037,7 @@ export function StudentsPage({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 px-3 gap-1.5 text-xs font-semibold shrink-0 rounded-full text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 cursor-pointer"
+                              className="h-8 px-3 gap-1.5 text-xs font-semibold shrink-0 rounded-full text-primary hover:bg-primary/10 cursor-pointer"
                             >
                               <Sparkles className="h-3 w-3" />
                               View

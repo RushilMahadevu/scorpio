@@ -2,10 +2,6 @@
 
 import * as React from "react";
 import {
-  Moon,
-  Sun,
-  Laptop,
-  Sparkles,
   User,
   LogOut,
   SlidersHorizontal as SettingsIcon,
@@ -17,12 +13,11 @@ import {
   FileText,
   Mail,
   Trash2,
-  Check,
   ExternalLink,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
+import { AppearancePreferences, ThemeModeControl } from "@/components/appearance-settings";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,8 +30,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSpaceEffects } from "@/contexts/space-effects-context";
-import { useAppearance, FontOption, ThemeColor } from "@/contexts/appearance-context";
 import { useAuth } from "@/contexts/auth-context";
 import {
   logout,
@@ -87,17 +80,6 @@ function ToggleSwitch({
 }
 
 export function SettingsDialog() {
-  const { setTheme, theme } = useTheme();
-  const {
-    spaceEffectsEnabled,
-    toggleSpaceEffects,
-    spacyLevel,
-    setSpacyLevel,
-    nebulaBrightness,
-    setNebulaBrightness,
-  } = useSpaceEffects();
-  const { font, setFont, themeColor, setThemeColor, customColor, setCustomColor } =
-    useAppearance();
   const { user, role, profile } = useAuth();
   const router = useRouter();
 
@@ -439,243 +421,12 @@ export function SettingsDialog() {
               </div>
             </TabsContent>
 
-            {/* Appearance Tab */}
-            <TabsContent value="appearance" className="space-y-6 m-0 outline-none">
-              {/* Theme */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Theme Mode
-                </h4>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: "Dark", value: "dark", icon: Moon, desc: "Default dark" },
-                    { label: "Light", value: "light", icon: Sun, desc: "Clean bright" },
-                    { label: "System", value: "system", icon: Laptop, desc: "Device match" },
-                  ].map((item) => {
-                    const isSelected = theme === item.value;
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => setTheme(item.value)}
-                        className={cn(
-                          "flex flex-col items-center gap-2 p-3.5 rounded-xl border transition-all text-center cursor-pointer",
-                          isSelected
-                            ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary"
-                            : "border-border/50 hover:bg-muted/40 hover:border-border"
-                        )}
-                      >
-                        <Icon className={cn("size-5", isSelected ? "text-primary" : "text-muted-foreground")} />
-                        <div>
-                          <p className="text-xs font-semibold text-foreground leading-tight">{item.label}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+            <TabsContent value="appearance" className="m-0 space-y-4 outline-none">
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Theme mode</h3>
+                <ThemeModeControl />
               </div>
-
-              {/* Accent Color */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Accent Color
-                </h4>
-                <div className="flex flex-wrap gap-2.5 p-3 rounded-xl border border-border/40 bg-card/40">
-                  {[
-                    { name: "Cosmic", value: "default", color: "bg-blue-600" },
-                    { name: "Monochrome", value: "monochrome", color: "bg-foreground" },
-                    { name: "Ocean", value: "ocean", color: "bg-sky-500" },
-                    { name: "Violet", value: "violet", color: "bg-violet-500" },
-                    { name: "Rose", value: "rose", color: "bg-rose-500" },
-                    { name: "Amber", value: "amber", color: "bg-amber-500" },
-                    { name: "Emerald", value: "emerald", color: "bg-emerald-500" },
-                    { name: "Midnight", value: "midnight", color: "bg-slate-950" },
-                  ].map((t) => {
-                    const active = themeColor === t.value;
-                    return (
-                      <button
-                        key={t.value}
-                        type="button"
-                        onClick={() => setThemeColor(t.value as ThemeColor)}
-                        className={cn(
-                          "group relative flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer",
-                          active
-                            ? "border-primary bg-primary/10 text-primary shadow-xs"
-                            : "border-border/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-                        )}
-                        title={t.name}
-                      >
-                        <span className={cn("size-3 rounded-full shrink-0 shadow-xs", t.color)} />
-                        <span>{t.name}</span>
-                        {active && <Check className="size-3 text-primary ml-auto" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Space Effects */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Cosmic Effects
-                </h4>
-                <div className="rounded-xl border border-border/40 bg-card/40 overflow-hidden divide-y divide-border/40">
-                  <div className="flex items-center justify-between p-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="space-effects-toggle" className="text-sm font-medium text-foreground cursor-pointer">
-                        Space Particle Canvas
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Interactive celestial background and starlight effects.
-                      </p>
-                    </div>
-                    <ToggleSwitch
-                      id="space-effects-toggle"
-                      checked={spaceEffectsEnabled}
-                      onCheckedChange={toggleSpaceEffects}
-                      ariaLabel="Toggle Space Particle Canvas"
-                    />
-                  </div>
-
-                  {spaceEffectsEnabled && (
-                    <div className="p-4 space-y-4 bg-muted/20">
-                      <div>
-                        <div className="flex justify-between text-xs font-medium mb-2">
-                          <span>Starfield Density</span>
-                          <span className="text-muted-foreground">
-                            {spacyLevel === 10
-                              ? "Subtle"
-                              : spacyLevel === 25
-                              ? "Balanced"
-                              : spacyLevel === 40
-                              ? "High"
-                              : "Maximum"}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2">
-                          {[10, 25, 40, 50].map((level) => (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={() => setSpacyLevel(level)}
-                              className={cn(
-                                "py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
-                                spacyLevel === level
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "border-border/50 hover:bg-muted text-muted-foreground"
-                              )}
-                            >
-                              {level === 10 ? "Low" : level === 25 ? "Med" : level === 40 ? "High" : "Max"}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-xs font-medium mb-2">
-                          <span>Nebula Glow</span>
-                          <span className="text-muted-foreground">
-                            {nebulaBrightness === 0
-                              ? "Off"
-                              : nebulaBrightness === 10
-                              ? "Dim"
-                              : nebulaBrightness === 20
-                              ? "Mid"
-                              : "Vibrant"}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2">
-                          {[0, 10, 20, 35].map((level) => (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={() => setNebulaBrightness(level)}
-                              className={cn(
-                                "py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
-                                nebulaBrightness === level
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "border-border/50 hover:bg-muted text-muted-foreground"
-                              )}
-                            >
-                              {level === 0 ? "Off" : level === 10 ? "Dim" : level === 20 ? "Mid" : "High"}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Typography */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Typography
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {[
-                    {
-                      id: "ibm-plex-sans",
-                      name: "IBM Plex Sans",
-                      desc: "Technical & precise",
-                      style: { fontFamily: "var(--font-ibm-plex-sans)" },
-                    },
-                    {
-                      id: "atkinson",
-                      name: "Atkinson Hyperlegible",
-                      desc: "High clarity & readability",
-                      style: { fontFamily: "var(--font-atkinson), sans-serif" },
-                    },
-                    {
-                      id: "inter",
-                      name: "Inter",
-                      desc: "Modern & crisp UI",
-                      style: { fontFamily: "var(--font-inter)" },
-                    },
-                    {
-                      id: "verdana",
-                      name: "Verdana",
-                      desc: "Wide-set sans-serif",
-                      style: { fontFamily: "Verdana, sans-serif" },
-                    },
-                    {
-                      id: "pt-serif",
-                      name: "PT Serif",
-                      desc: "Scholarly serif",
-                      style: { fontFamily: "var(--font-pt-serif), serif" },
-                    },
-                    {
-                      id: "roboto-mono",
-                      name: "Roboto Mono",
-                      desc: "Scientific monospace",
-                      style: { fontFamily: "var(--font-roboto-mono)" },
-                    },
-                  ].map((item) => {
-                    const isSelected = font === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setFont(item.id as FontOption)}
-                        className={cn(
-                          "flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer",
-                          isSelected
-                            ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary"
-                            : "border-border/40 hover:bg-muted/40 hover:border-border"
-                        )}
-                      >
-                        <div style={item.style} className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
-                        </div>
-                        {isSelected && <Check className="size-4 text-primary shrink-0 ml-2" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <AppearancePreferences />
             </TabsContent>
 
             {/* About Tab */}

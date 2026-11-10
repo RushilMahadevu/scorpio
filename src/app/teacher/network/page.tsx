@@ -623,9 +623,9 @@ export default function NetworkPage() {
 
               {/* Metric 2: Enrolled Students */}
               <Link href="/teacher/students?tab=insights" className="block group">
-                <div className="flex items-center gap-3 p-2 bg-background/70 hover:bg-background border border-border/40 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all rounded-xl cursor-pointer">
-                  <div className="size-7 rounded-lg sm:size-10 bg-indigo-500/10 group-hover:bg-indigo-500/20 flex items-center justify-center shrink-0 transition-colors">
-                    <GraduationCap className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <div className="flex items-center gap-3 p-2 bg-background/70 hover:bg-background border border-border/40 hover:border-primary/50 transition-all rounded-xl cursor-pointer">
+                  <div className="size-7 rounded-lg sm:size-10 bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors">
+                    <GraduationCap className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-xl font-black font-mono leading-none flex items-center justify-between">

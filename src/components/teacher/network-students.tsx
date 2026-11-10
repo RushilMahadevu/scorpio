@@ -574,10 +574,10 @@ function StudentCard({
     <Card className={cn(
       "group relative overflow-hidden border transition-all duration-200",
       portfolio
-        ? "border-indigo-200/40 dark:border-indigo-800/30 hover:border-indigo-300/60 dark:hover:border-indigo-700/50 hover:shadow-lg hover:shadow-indigo-500/5"
+        ? "border-primary/20 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
         : "border-border/50 hover:border-border hover:shadow-sm"
     )}>
-      {portfolio && <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.03] via-transparent to-purple-500/[0.03] pointer-events-none" />}
+      {portfolio && <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-primary/[0.03] pointer-events-none" />}
       <CardContent className="p-4 relative">
         <div className="flex items-start gap-3">
           <AvatarOrb name={name} mastery={portfolio?.masteryLevel} />
@@ -601,7 +601,7 @@ function StudentCard({
               <Button variant="ghost" size="sm" className={cn(
                 "h-8 px-3 gap-1.5 text-xs font-semibold shrink-0 rounded-full transition-all cursor-pointer",
                 portfolio
-                  ? "text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700"
+                  ? "text-primary hover:bg-primary/10 hover:text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
               )}>
                 {portfolio ? (
@@ -768,8 +768,8 @@ function PortfolioDialog({
         <Button onClick={() => onGenerate(student.uid)} disabled={isGenerating} size="sm" className={cn(
           "cursor-pointer h-8 px-5 gap-2 text-xs font-bold rounded-lg transition-all shadow-sm",
           portfolio
-            ? "bg-secondary border border-border/60 text-foreground hover:bg-secondary/80 hover:border-indigo-300/50 dark:hover:border-indigo-700/50 hover:text-indigo-600 dark:hover:text-indigo-400"
-            : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/20 shadow-md"
+            ? "bg-secondary border border-border/60 text-foreground hover:bg-secondary/80 hover:border-primary/50 hover:text-primary"
+            : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-md"
         )}>
           {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
           {isGenerating ? "Synthesizing…" : portfolio ? "Refresh Synthesis" : "Generate Portfolio"}

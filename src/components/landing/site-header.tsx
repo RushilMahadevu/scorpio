@@ -57,7 +57,7 @@ type MenuItem = {
   href?: string;
 };
 
-// ─── Nav Link with Left→Right Underline ────────────────────────────────────────
+// ─── Nav Link ─────────────────────────────────────────────────────────────────
 
 function NavLink({
   item,
@@ -66,6 +66,7 @@ function NavLink({
   onMouseEnter,
   onClick,
   delay,
+  isHomePage,
 }: {
   item: NavItem;
   isActive: boolean;
@@ -73,6 +74,7 @@ function NavLink({
   onMouseEnter: () => void;
   onClick: () => void;
   delay: number;
+  isHomePage: boolean;
 }) {
   const active = isHovered || isActive;
 
@@ -80,7 +82,7 @@ function NavLink({
     <>
       <span className="flex items-center gap-1.5">
         {item.label}
-        {item.id === "ai" && (
+        {!isHomePage && item.id === "ai" && (
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
         )}
       </span>
@@ -99,28 +101,35 @@ function NavLink({
       {item.isDropdown && (
         <ChevronDown
           className={cn(
-            "h-3.5 w-3.5 opacity-50 transition-all duration-300",
+            "opacity-50 transition-transform duration-300",
+            isHomePage ? "size-3" : "size-3.5",
             isHovered ? "rotate-180 opacity-100" : ""
           )}
         />
       )}
 
-      {/* Left-to-right underline */}
-      <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
-        <span
-          className={cn(
-            "block h-full bg-foreground transition-all duration-300 ease-out",
-            active ? "w-full" : "w-0"
-          )}
-          style={{ transitionProperty: "width" }}
-        />
-      </span>
+      {!isHomePage && (
+        <span className="absolute bottom-0 left-3 right-3 h-px overflow-hidden">
+          <span
+            className={cn(
+              "block h-full bg-foreground transition-all duration-300 ease-out",
+              active ? "w-full" : "w-0"
+            )}
+            style={{ transitionProperty: "width" }}
+          />
+        </span>
+      )}
     </>
   );
 
   const sharedClassName = cn(
-    "relative group px-4 py-2 text-[13.5px] font-medium tracking-[-0.01em] cursor-pointer flex items-center gap-1.5 transition-colors duration-200",
-    active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
+    "relative group py-2 text-[13.5px] font-medium tracking-[-0.01em] cursor-pointer flex items-center gap-1.5 transition-colors duration-200",
+    isHomePage
+      ? cn(
+        "rounded-md px-3 focus-visible:outline-2 focus-visible:outline-ring",
+        active ? "bg-muted/60 text-foreground" : "text-muted-foreground hover:text-foreground"
+      )
+      : cn("px-4", active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground")
   );
 
   if (item.href && !item.isDropdown) {
@@ -329,15 +338,19 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
       <div
         className={cn(
           "absolute inset-0 pointer-events-none transition-opacity duration-300 motion-reduce:transition-none",
-          "bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm",
-          isScrolled ? "opacity-100" : "opacity-0"
+          isHomePage
+            ? "bg-background/65 backdrop-blur-lg"
+            : "bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm",
+          isScrolled ? "opacity-100" : isHomePage ? "opacity-70" : "opacity-0"
         )}
       />
 
       {/* ── Inner Row ───────────────────────────────────────────────────────── */}
       <div className={cn(
-        "relative z-10 grid grid-cols-[1fr_auto] xl:grid-cols-[auto_1fr_auto] items-center gap-6 px-4 sm:px-6 md:px-10 mx-auto w-full max-w-[1440px] transition-[height] duration-300 motion-reduce:transition-none",
-        isHomePage && "max-w-6xl px-5 sm:px-8 md:px-8",
+        "relative z-10 grid grid-cols-[1fr_auto] items-center mx-auto w-full transition-[height] duration-300 motion-reduce:transition-none",
+        isHomePage
+          ? "gap-2 px-3 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
+          : "max-w-[1440px] gap-6 px-4 sm:px-6 md:px-10 xl:grid-cols-[auto_1fr_auto]",
         isScrolled ? "h-[54px]" : "h-[64px]"
       )}>
 
@@ -351,7 +364,10 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
                 window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
               }
             }}
-            className="flex items-center gap-2.5 group shrink-0"
+            className={cn(
+              "flex items-center gap-2.5 group shrink-0",
+              isHomePage && "gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+            )}
           >
             <div className="relative">
               {!isHomePage && <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />}
@@ -378,6 +394,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
               isActive={!hoveredNav && currentActiveNav === item.id}
               isHovered={hoveredNav === item.id}
               delay={0.04 + i * 0.03}
+              isHomePage={isHomePage}
               onMouseEnter={() => {
                 cancelClose();
                 setHoveredNav(item.id);
@@ -402,15 +419,36 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
         </nav>
 
         {/* ── Right Actions ────────────────────────────────────────────────── */}
-        <div className="flex justify-end items-center gap-2">
+        <div
+          className={cn(
+            "flex justify-end items-center gap-2",
+            isHomePage && "gap-1 sm:gap-2"
+          )}
+          onMouseEnter={isHomePage ? () => setHoveredNav(null) : undefined}
+        >
           <ModeToggle />
 
-          <div className="hidden sm:block w-px h-4 bg-border/40 mx-1" />
+          <div
+            aria-hidden="true"
+            className={cn("h-4 w-px shrink-0", isHomePage ? "mx-1 bg-border/70" : "mx-1 hidden bg-border/40 sm:block")}
+          />
 
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground">
-            <Link href="/login">Login</Link>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "hidden text-muted-foreground hover:text-foreground",
+              isHomePage ? "min-[360px]:inline-flex h-9 px-2 hover:bg-transparent sm:px-3" : "sm:inline-flex"
+            )}
+          >
+            <Link href="/login">{isHomePage ? "Log in" : "Login"}</Link>
           </Button>
-          <Button asChild size="sm" variant={isHomePage ? "outline" : "default"} className={isHomePage ? "rounded-lg" : "rounded-full shadow-sm shadow-primary/10"}>
+          <Button
+            asChild
+            size="sm"
+            className={isHomePage ? "h-9 rounded-lg px-3 font-semibold sm:px-4" : "rounded-full shadow-sm shadow-primary/10"}
+          >
             <Link href="/signup">Sign up</Link>
           </Button>
 
@@ -418,7 +456,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
               <Button
-                variant="outline"
+                variant={isHomePage ? "ghost" : "outline"}
                 size="icon"
                 className="xl:hidden"
                 aria-label="Open menu"
@@ -527,7 +565,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
 
               <div className="px-5 pb-6 pt-4 border-t border-border/30 grid grid-cols-2 gap-2">
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+                  <Link href="/login" onClick={() => setMenuOpen(false)}>{isHomePage ? "Log in" : "Login"}</Link>
                 </Button>
                 <Button asChild className="w-full">
                   <Link href="/signup" onClick={() => setMenuOpen(false)}>Sign up</Link>
