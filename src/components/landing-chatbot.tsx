@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  X, Send, Sparkles, ArrowRight,
-  GraduationCap, BookOpen, BarChart2, Zap, Users, Brain
-} from 'lucide-react';
+import { X, ArrowRight, ArrowUp } from 'lucide-react';
 import { MarkdownRenderer } from './markdown-renderer';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -42,38 +39,33 @@ function incrementLocalCount() {
 interface Message {
   role: 'user' | 'assistant';
   content: string;
-  isWelcome?: boolean;
 }
 
 const suggestedPrompts = [
-  'How does Scorpio prevent cheating?',
-  'What is Inference-Time Scaffolding?',
-  "How is this different from ChatGPT?",
-  'How much does it cost?',
+  'How does Raise give hints?',
   'What are Waypoints?',
-  'How does AI grading work?',
+  'How much does Scorpio cost?',
 ];
 
 const quickLinks = [
-  { label: 'Research', icon: Brain, id: 'efficacy' },
-  { label: 'Platform', icon: GraduationCap, id: 'mission-control' },
-  { label: 'Comparison', icon: BarChart2, id: 'comparison' },
-  { label: 'Pricing', icon: Zap, id: 'pricing' },
-  { label: 'Demos', icon: BookOpen, id: 'demos' },
-  { label: 'Network', icon: Users, id: 'waypoints' },
+  { label: 'Platform', href: '#features' },
+  { label: 'Research', href: '#efficacy' },
+  { label: 'Pricing', href: '#pricing-teaser' },
 ];
 
 export function LandingChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [remaining, setRemaining] = useState<number>(LIMIT);
   const [limitReached, setLimitReached] = useState(false);
   const [visitorId, setVisitorId] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+  const hasMessages = messages.length > 0;
 
   // Init visitor ID + local count on mount
   useEffect(() => {
@@ -84,31 +76,19 @@ export function LandingChatbot() {
     if (used >= LIMIT) setLimitReached(true);
   }, []);
 
-  // Welcome message
   useEffect(() => {
-    setMessages([{
-      role: 'assistant',
-      content: `**Welcome to Raise!** 👋\n\nI'm Scorpio's AI learning assistant. Ask me anything about how Scorpio works, our research, pricing, or how we compare to other tools.\n\n_You have ${LIMIT} free messages to explore._`,
-      isWelcome: true,
-    }]);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setHasUnread(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
+    if (isOpen) closeRef.current?.focus({ preventScroll: true });
   }, [isOpen]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+    const scrollArea = scrollRef.current;
+    if (isOpen && hasMessages && scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
+  }, [isOpen, hasMessages, messages.length, isLoading]);
 
-  const scrollToSection = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  function closeChat() {
     setIsOpen(false);
-  }, []);
+    launcherRef.current?.focus({ preventScroll: true });
+  }
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -127,13 +107,9 @@ export function LandingChatbot() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 429 || data?.limitReached) {
+        if (data?.limitReached) {
           setLimitReached(true);
           setRemaining(0);
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: `**You've reached the ${LIMIT}-message demo limit.**\n\nSign up to get unlimited access to all Scorpio features, including Raise.`,
-          }]);
           return;
         }
         setMessages(prev => [...prev, { role: 'assistant', content: data?.error || 'Something went wrong.' }]);
@@ -154,206 +130,167 @@ export function LandingChatbot() {
   };
 
   return (
-    <>
-      {/* Floating Button */}
+    <div className="fixed right-4 bottom-4 z-50 sm:right-6 sm:bottom-6">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'fixed bottom-6 right-6 z-50 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 cursor-pointer',
-          'h-14 w-14 bg-zinc-900 border border-white/10 shadow-xl hover:bg-zinc-800 hover:border-white/20 hover:scale-105'
-        )}
-        aria-label="Ask Raise for help"
+        ref={launcherRef}
+        type="button"
+        onClick={() => (isOpen ? closeChat() : setIsOpen(true))}
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? 'landing-raise-chat' : undefined}
+        aria-label={isOpen ? 'Close Raise chat' : 'Ask Raise'}
+        className="flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium text-primary-foreground shadow-md transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring motion-reduce:transition-none sm:px-4"
       >
-        {isOpen
-          ? <X className="h-5 w-5 text-white" />
-          : <RaiseLogo className="h-5 w-5 text-white" />
-        }
-        {hasUnread && !isOpen && (
-          <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900 animate-pulse" />
-        )}
+        {isOpen ? <X aria-hidden="true" className="size-4" /> : <RaiseLogo size={18} aria-hidden="true" />}
+        <span className="hidden sm:inline">{isOpen ? 'Close' : 'Ask Raise'}</span>
       </button>
 
-      {/* Panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className={cn(
-              'fixed bottom-24 right-6 z-50 flex flex-col',
-              'w-[calc(100vw-48px)] sm:w-[540px] md:w-[720px] h-[600px] max-h-[calc(100vh-140px)]',
-              'bg-background border border-border/60 rounded-3xl shadow-2xl overflow-hidden'
-            )}
+            id="landing-raise-chat"
+            role="dialog"
+            aria-labelledby="landing-raise-title"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') closeChat();
+            }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: 8 }}
+            transition={{ duration: reduceMotion ? 0 : 0.16, ease: 'easeOut' }}
+            className="absolute right-0 bottom-full mb-3 flex h-[32rem] max-h-[calc(100dvh-6rem)] w-[min(25rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-xl"
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-zinc-50 dark:bg-zinc-900/60 shrink-0">
-              <div className="relative">
-                <div className="h-9 w-9 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg border border-white/5">
-                  <RaiseLogo size={18} className="text-white" />
-                </div>
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-zinc-900" />
+            <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3">
+              <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                <RaiseLogo size={19} aria-hidden="true" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-inter font-black tracking-tighter text-foreground">Raise</p>
-                <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
-                  Online · AI Learning Assistant
-                </p>
+              <div className="min-w-0 flex-1">
+                <h2 id="landing-raise-title" className="text-base font-semibold leading-tight">Raise</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">Scorpio product guide</p>
               </div>
-              <div className="flex items-center gap-2">
-                {/* Remaining counter */}
-                <span className={cn(
-                  'text-[10px] font-bold tabular-nums px-2 py-0.5 rounded-full border',
-                  remaining <= 3
-                    ? 'text-rose-500 border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-800'
-                    : 'text-muted-foreground border-border/40 bg-muted/30'
-                )}>
-                  {remaining}/{LIMIT}
-                </span>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+              <Button
+                ref={closeRef}
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={closeChat}
+                aria-label="Close chat"
+                className="size-9 rounded-lg text-muted-foreground"
+              >
+                <X aria-hidden="true" />
+              </Button>
             </div>
 
-            {/* Quick section links */}
-            <div className="shrink-0 px-4 pt-3 pb-2 border-b border-border/30">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-2">Jump To</p>
-              <div className="grid grid-cols-6 gap-1">
-                {quickLinks.map((link) => (
-                  <button
-                    key={link.id}
-                    onClick={() => scrollToSection(link.id)}
-                    className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-accent transition-colors cursor-pointer group"
-                  >
-                    <link.icon className="h-3.5 w-3.5 text-primary transition-transform group-hover:scale-110" />
-                    <span className="text-[8px] font-semibold text-muted-foreground group-hover:text-foreground transition-colors text-center leading-tight">{link.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Messages */}
             <div
+              ref={scrollRef}
               data-lenis-prevent
-              onWheel={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 overscroll-contain"
+              className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4"
             >
-              {messages.map((message, i) => (
-                <div key={i} className={cn('flex gap-2.5', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  {message.role === 'assistant' && (
-                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                      <RaiseLogo size={14} className="currentColor" />
+              {!hasMessages && (
+                <div>
+                  <p className="font-medium">How can I help?</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Ask about using Scorpio in class, how Raise gives hints, or what it costs.
+                  </p>
+                  {!limitReached && (
+                    <div className="mt-4 space-y-2">
+                      {suggestedPrompts.map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          onClick={() => sendMessage(prompt)}
+                          className="flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none"
+                        >
+                          {prompt}
+                          <ArrowRight aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+                        </button>
+                      ))}
                     </div>
                   )}
-                  <div className={cn(
-                    'max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-xs',
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                      : 'bg-muted/70 text-foreground rounded-tl-sm border border-border/40',
-                    message.isWelcome && 'border-l-2 border-l-emerald-400'
+                  <nav aria-label="Explore Scorpio" className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+                    {quickLinks.map(({ label, href }) => (
+                      <a key={href} href={href} onClick={closeChat} className="rounded-sm py-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                        {label}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+              )}
+
+              <div role="log" aria-label="Raise conversation" className="space-y-3 empty:hidden">
+                {messages.map((message, index) => (
+                  <div key={index} className={cn(
+                    'w-fit max-w-[90%] break-words rounded-xl px-3 py-2.5 text-sm leading-relaxed',
+                    message.role === 'user' ? 'ml-auto bg-primary/10' : 'bg-muted',
                   )}>
+                    <p className="mb-1 text-xs font-medium text-muted-foreground">
+                      {message.role === 'user' ? 'You' : 'Raise'}
+                    </p>
                     {message.role === 'user' ? (
-                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className="whitespace-pre-wrap">{message.content}</p>
                     ) : (
-                      <MarkdownRenderer className="text-sm prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-p:my-0 prose-ul:my-1 prose-li:my-0 max-w-none">
+                      <MarkdownRenderer className="prose prose-sm max-w-none dark:prose-invert prose-p:my-0 prose-p:leading-relaxed prose-ul:my-1">
                         {message.content}
                       </MarkdownRenderer>
                     )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
-              {/* Suggested prompts on fresh conversation */}
-              {!isLoading && messages.length <= 2 && !limitReached && (
-                <div className="space-y-1.5 ml-8">
-                  {suggestedPrompts.map((prompt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => sendMessage(prompt)}
-                      className="flex items-center gap-2 w-full text-left text-[11px] font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-accent px-3 py-2 rounded-xl transition-colors cursor-pointer border border-border/30 hover:border-border"
-                    >
-                      <Sparkles className="h-3 w-3 text-purple-400 shrink-0" />
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {isLoading && <p role="status" className="text-sm text-muted-foreground">Raise is replying…</p>}
 
-              {isLoading && (
-                <div className="flex gap-2.5">
-                  <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
-                    <RaiseLogo size={14} className="currentColor" />
-                  </div>
-                  <div className="bg-muted/70 rounded-2xl rounded-tl-sm px-4 py-3 border border-border/40">
-                    <div className="flex gap-1 items-center h-4">
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '120ms' }} />
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '240ms' }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Limit reached CTA */}
               {limitReached && (
-                <div className="ml-8 p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
-                  <p className="text-xs font-semibold text-foreground">Ready to get full access?</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">Sign up for Scorpio and unlock unlimited Raise help, notebooks, and platform features.</p>
-                  <Link href="/signup" onClick={() => setIsOpen(false)}>
-                    <Button size="sm" className="w-full rounded-full font-bold text-xs cursor-pointer h-8 mt-1">
-                      Sign up for free <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  </Link>
+                <div role="status" className="rounded-xl border border-border bg-muted/40 p-3">
+                  <p className="text-sm font-medium">You’ve reached the demo limit.</p>
+                  <Button asChild size="sm" className="mt-2 rounded-lg">
+                    <Link href="/signup" onClick={closeChat}>
+                      Sign up for free <ArrowRight aria-hidden="true" />
+                    </Link>
+                  </Button>
                 </div>
               )}
-
-              <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/30 bg-background">
-              <div className={cn(
-                'relative flex items-end gap-2 bg-muted/50 rounded-2xl px-4 py-2.5 border border-border focus-within:border-primary/50 transition-colors',
-                limitReached && 'opacity-50 pointer-events-none'
-              )}>
+            <form
+              className="shrink-0 border-t border-border px-4 py-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void sendMessage(input);
+              }}
+            >
+              <div className="flex items-end gap-2 rounded-xl border border-border bg-muted/30 p-1.5 focus-within:border-ring">
                 <Textarea
-                  ref={inputRef}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage(input);
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                      event.preventDefault();
+                      event.currentTarget.form?.requestSubmit();
                     }
                   }}
-                  placeholder={limitReached ? 'Demo limit reached — sign up for more' : 'Ask Raise anything about Scorpio...'}
-                  className="flex-1 bg-transparent border-0 resize-none p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 min-h-[24px] max-h-[80px] leading-relaxed"
+                  aria-label="Ask about Scorpio"
+                  placeholder={limitReached ? 'Demo limit reached' : 'Ask about Scorpio…'}
+                  className="max-h-24 min-h-9 min-w-0 flex-1 resize-none rounded-md border-0 px-2 py-1.5 text-base shadow-none focus-visible:ring-0 dark:bg-transparent"
                   rows={1}
-                  disabled={isLoading || limitReached}
+                  maxLength={4000}
+                  disabled={limitReached}
                 />
                 <Button
+                  type="submit"
                   size="icon"
-                  onClick={() => sendMessage(input)}
+                  aria-label="Send message"
                   disabled={!input.trim() || isLoading || limitReached}
-                  className="h-7 w-7 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-opacity cursor-pointer"
+                  className="size-9 rounded-lg"
                 >
-                  <Send className="h-3.5 w-3.5" />
+                  <ArrowUp aria-hidden="true" />
                 </Button>
               </div>
-              <p className="text-[9px] text-muted-foreground/40 text-center mt-2 font-medium tracking-wide uppercase">
-                Raise · AI Learning Assistant · {remaining} messages left
+              <p className="mt-2 text-xs text-muted-foreground">
+                {remaining} of {LIMIT} demo messages left
               </p>
-            </div>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

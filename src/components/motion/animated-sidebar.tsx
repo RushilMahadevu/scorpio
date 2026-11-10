@@ -208,6 +208,7 @@ export interface AnimatedSidebarProviderProps
   openMobile?: boolean;
   defaultOpenMobile?: boolean;
   onOpenMobileChange?: (open: boolean) => void;
+  keyboardShortcut?: boolean;
   style?: SidebarProviderStyle;
 }
 
@@ -219,6 +220,7 @@ export function AnimatedSidebarProvider({
   openMobile,
   defaultOpenMobile = false,
   onOpenMobileChange,
+  keyboardShortcut = true,
   className,
   style,
   ...props
@@ -255,6 +257,7 @@ export function AnimatedSidebarProvider({
   }, [desktopOpen, isMobile, mobileOpen, setOpen, setOpenMobile]);
 
   useEffect(() => {
+    if (!keyboardShortcut) return;
     const handleShortcut = (event: KeyboardEvent) => {
       if (
         event.key.toLowerCase() === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -267,7 +270,7 @@ export function AnimatedSidebarProvider({
 
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [toggleSidebar]);
+  }, [keyboardShortcut, toggleSidebar]);
 
   return (
     <AnimatedSidebarContext.Provider

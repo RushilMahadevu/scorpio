@@ -6,14 +6,13 @@ import {
   Upload,
   Users,
   PlusCircle,
-  BarChart3,
   ChartColumnBig,
   Building2,
   Waypoints,
   PackageCheck,
   Presentation,
 } from "lucide-react";
-import { AppSidebar, NavSection } from "./app-sidebar";
+import { AppSidebar, type AppSidebarProps, type NavSection } from "./app-sidebar";
 
 const navSections: NavSection[] = [
   {
@@ -54,10 +53,8 @@ const navSections: NavSection[] = [
 export function TeacherSidebar({
   isCollapsed,
   onToggle,
-}: {
-  isCollapsed: boolean;
-  onToggle: () => void;
-}) {
+  sample,
+}: Pick<AppSidebarProps, "isCollapsed" | "onToggle" | "sample">) {
   return (
     <AppSidebar
       roleLabel="Teacher"
@@ -65,6 +62,7 @@ export function TeacherSidebar({
       navSections={navSections}
       isCollapsed={isCollapsed}
       onToggle={onToggle}
+      sample={sample}
     />
   );
 }

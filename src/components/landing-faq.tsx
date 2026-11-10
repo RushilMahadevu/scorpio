@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Mail, Github, BookOpen, MessageCircle } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Mail, Github, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
 const faqs = [
@@ -63,10 +64,38 @@ const contactLinks = [
   { icon: BookOpen, label: "Research", href: "/research" },
 ];
 
-export function LandingFAQ() {
+export function LandingFAQ({ minimal = false }: { minimal?: boolean }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (i: number) => setOpenIndex(prev => (prev === i ? null : i));
+
+  if (minimal) {
+    return (
+      <section id="faq" aria-labelledby="faq-heading" className="mx-auto grid max-w-6xl gap-6 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_2fr] lg:gap-12">
+        <div>
+          <h2 id="faq-heading" className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Common questions</h2>
+          <p className="mt-3 max-w-xs leading-relaxed text-muted-foreground">
+            Using Scorpio in class, working with Raise, and getting your school set up.
+          </p>
+          <Link href="/contact" className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+            Contact us <ArrowUpRight aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
+        <Accordion type="single" collapsible className="min-w-0 border-y border-border motion-reduce:[&_[data-slot=accordion-content]]:animate-none">
+          {faqs.map(({ index, question, answer }) => (
+            <AccordionItem key={index} value={index}>
+              <AccordionTrigger className="cursor-pointer items-center rounded-md px-1 py-4 text-base leading-snug transition-colors hover:text-primary hover:no-underline data-[state=open]:text-primary motion-reduce:transition-none sm:px-2 [&>svg]:size-5 [&>svg]:translate-y-0 motion-reduce:[&>svg]:transition-none">
+                {question}
+              </AccordionTrigger>
+              <AccordionContent className="max-w-prose px-1 pr-8 leading-relaxed text-muted-foreground sm:pl-2">
+                {answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </section>
+    );
+  }
 
   return (
     <section id="faq" className="container mx-auto px-6 py-32 relative">

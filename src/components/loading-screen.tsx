@@ -1,189 +1,95 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Logo } from "@/components/ui/logo";
+import styles from "./loading-screen.module.css";
 
-const SWEEP_EASE = [0.16, 1, 0.3, 1] as const;
-const CHARS = "Scorpio".split("");
+const SESSION_KEY = "scorpio_splash_shown";
 
-export function LoadingScreen({ onFinish }: { onFinish?: () => void }) {
-  const [loading, setLoading] = useState(false);
+export function LoadingScreen() {
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog || window.location.hash || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
     try {
-      if (typeof window !== "undefined" && sessionStorage.getItem("scorpio_splash_shown")) {
-        onFinish?.();
-        return;
-      }
-    } catch {}
+      if (sessionStorage.getItem(SESSION_KEY)) return;
+    } catch {
+      return;
+    }
 
-    setLoading(true);
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
+
+  function finishIntro() {
+    dialogRef.current?.close();
     try {
-      sessionStorage.setItem("scorpio_splash_shown", "true");
-    } catch {}
-
-    const timer = setTimeout(() => {
-      setLoading(false);
-      setTimeout(() => onFinish?.(), 200);
-    }, 550);
-
-    return () => clearTimeout(timer);
-  }, [onFinish]);
+      sessionStorage.setItem(SESSION_KEY, "true");
+    } catch {
+      // The page is already available if storage became inaccessible.
+    }
+  }
 
   return (
-    <AnimatePresence mode="wait">
-      {loading && (
-        <motion.div
-          key="loader-root"
-          className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden"
-          exit={{ 
-            opacity: 0,
-            transition: { duration: 0.3, ease: "easeOut" }
-          }}
-        >
-          {/* Clean Mathematical Grid Background */}
-          <motion.div 
-            className="absolute inset-0 pointer-events-none"
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-          >
-            <div 
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px),
-                  linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px)
-                `,
-                backgroundSize: '48px 48px',
-                maskImage: 'radial-gradient(ellipse at center, black 15%, transparent 75%)',
-                WebkitMaskImage: 'radial-gradient(ellipse at center, black 15%, transparent 75%)'
-              }}
-            />
-          </motion.div>
+    <dialog
+      ref={dialogRef}
+      aria-label="Scorpio intro"
+      className={`${styles.splash} fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none overflow-hidden bg-background text-foreground backdrop:bg-transparent open:grid open:place-items-center`}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget) finishIntro();
+      }}
+      onCancel={(event) => {
+        event.preventDefault();
+        finishIntro();
+      }}
+    >
+      <div
+        aria-hidden="true"
+        className={`${styles.grid} pointer-events-none absolute inset-0`}
+      />
 
-          <div className="relative flex flex-col items-center gap-10">
-            {/* Centered Logo Container */}
-            <div className="relative flex items-center justify-center">
-              {/* Precision Ring Pulse instead of muddy blur */}
-              <motion.div
-                className="absolute w-[90px] h-[90px] rounded-full border border-foreground/20"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ 
-                  scale: [1, 2], 
-                  opacity: [0.6, 0] 
-                }}
-                transition={{ 
-                  duration: 2, 
-                  ease: "easeOut",
-                  repeat: Infinity,
-                  repeatDelay: 0.2
-                }}
-              />
-              
-              <Logo 
-                size={90} 
-                className="text-foreground relative z-10"
-                layoutId="hero-logo"
-                strokeWidth={3}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1,
-                  transition: { duration: 0.6, ease: SWEEP_EASE }
-                }}
+      <div className="relative flex flex-col items-center gap-8 sm:gap-10" aria-hidden="true">
+        <div className="relative grid place-items-center">
+          <span className={`${styles.ring} absolute inset-0 rounded-full border border-foreground/25`} />
+          <Logo size={90} strokeWidth={3} className={styles.logo}>
+            <circle className={styles.compass} cx="12" cy="12" r="10" pathLength={1} />
+            <path className={styles.needle} d="M16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88Z" pathLength={1} />
+          </Logo>
+        </div>
+
+        <div className="text-center">
+          <div className="flex font-inter text-5xl font-black leading-none tracking-tighter sm:text-6xl">
+            {"Scorpio".split("").map((letter, index) => (
+              <span
+                key={index}
+                className={styles.letter}
+                style={{ animationDelay: `${400 + index * 30}ms` }}
               >
-                <motion.circle 
-                  cx="12" 
-                  cy="12" 
-                  r="10" 
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ 
-                    pathLength: 1, 
-                    opacity: 1,
-                    transition: { duration: 0.8, ease: "easeInOut", delay: 0.1 }
-                  }}
-                  exit={{
-                    pathLength: 0.8,
-                    opacity: 0,
-                    transition: { duration: 0.2, ease: "easeIn" }
-                  }}
-                />
-                <motion.path 
-                  d="M16.24 7.76 L14.12 14.12 L7.76 16.24 L9.88 9.88 Z" 
-                  strokeLinejoin="round"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ 
-                    pathLength: 1, 
-                    opacity: 1,
-                    transition: { 
-                      pathLength: { duration: 0.8, ease: "easeInOut", delay: 0.2 },
-                      opacity: { duration: 0.4, delay: 0.2 }
-                    }
-                  }}
-                  exit={{
-                    pathLength: 0,
-                    opacity: 0,
-                    transition: { duration: 0.2, ease: "easeIn" }
-                  }}
-                />
-              </Logo>
-            </div>
-
-            {/* Scorpio Text Animation - Motion Blur Slide from Left */}
-            <div className="flex flex-col items-center gap-2 pt-2">
-              <div className="flex h-16 items-center" aria-label="Scorpio">
-                {CHARS.map((char, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ x: -25, opacity: 0, filter: "blur(24px)" }}
-                    animate={{ 
-                      x: 0, 
-                      opacity: 1,
-                      filter: "blur(0px)",
-                      transition: { 
-                        duration: 0.4, 
-                        ease: SWEEP_EASE,
-                        delay: 0.4 + i * 0.03 
-                      }
-                    }}
-                    exit={{
-                      x: 10,
-                      opacity: 0,
-                      filter: "blur(4px)",
-                      transition: { duration: 0.2, ease: "easeIn" }
-                    }}
-                    className="inline-block font-inter text-5xl md:text-6xl font-black text-foreground tracking-tighter px-[0.01em]"
-                  >
-                    {char}
-                  </motion.span>
-                ))}
-              </div>
-              
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: 0.4, 
-                  transition: { delay: 0.8, duration: 0.4 }
-                }}
-                className="text-[10px] font-black tracking-[0.4em] text-foreground/60"
-              >
-                Physics LMS 
-              </motion.div>
-            </div>
+                {letter}
+              </span>
+            ))}
           </div>
+          <p className={`${styles.caption} mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground`}>
+            Physics LMS
+          </p>
+        </div>
+      </div>
 
-          <div className="absolute bottom-0 left-0 w-full h-[3px] bg-muted/10 overflow-hidden">
-            <motion.div 
-              className="h-full bg-primary"
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 0.8, ease: "linear" }}
-            />
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[3px] bg-border/50">
+        <div className={`${styles.progress} h-full origin-left bg-primary`} />
+      </div>
+
+      <button
+        type="button"
+        className="absolute right-4 top-4 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:right-6 sm:top-6"
+        onClick={finishIntro}
+      >
+        Skip intro
+      </button>
+    </dialog>
   );
 }

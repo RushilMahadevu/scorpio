@@ -64,6 +64,11 @@ export interface AppSidebarProps {
   navSections: NavSection[];
   isCollapsed: boolean;
   onToggle: () => void;
+  sample?: {
+    activeHref: string;
+    targets: Partial<Record<string, string>>;
+    onSelect: (href: string) => void;
+  };
 }
 
 function SustainabilityDialogItem({ label }: { label: string }) {
@@ -172,7 +177,7 @@ function SidebarFooterSection({
               >
                 The landing page is disabled while{" "}
                 <span className="text-primary italic font-semibold">
-                  "Auto-Portal Redirect"
+                  &ldquo;Auto-Portal Redirect&rdquo;
                 </span>{" "}
                 is ON. Disable it in settings to visit the Landing page.
               </TooltipContent>
@@ -223,16 +228,17 @@ function SidebarFooterSection({
 
 export function AppSidebar({
   roleLabel,
-  roleIcon: _roleIcon,
   navSections,
   isCollapsed,
   onToggle,
+  sample,
 }: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
     <AnimatedSidebarProvider
       open={!isCollapsed}
+      keyboardShortcut={!sample}
       onOpenChange={(nextOpen) => {
         if (nextOpen === isCollapsed) {
           onToggle();
@@ -259,7 +265,9 @@ export function AppSidebar({
         ariaLabel={`${roleLabel} workspace`}
         collapsible="icon"
         className="min-h-0"
-        panelClassName="h-dvh border-border/40 bg-card/60 backdrop-blur-xl"
+        panelClassName={sample
+          ? "static h-full border-border/40 bg-card"
+          : "h-dvh border-border/40 bg-card/60 backdrop-blur-xl"}
       >
         {/* Minimal, clean top header without slop */}
         <AnimatedSidebarHeader className="p-4 pb-3">
@@ -286,12 +294,7 @@ export function AppSidebar({
                 <AnimatedSidebarMenu>
                   {section.items.map((item) => {
                     if ("dialog" in item) {
-                      return (
-                        <SustainabilityDialogItem
-                          key={item.dialog}
-                          label={item.label}
-                        />
-                      );
+                      return <SustainabilityDialogItem key={item.dialog} label={item.label} />;
                     }
 
                     const isRootRoute =
@@ -306,12 +309,15 @@ export function AppSidebar({
                       : false;
 
                     const Icon = item.icon;
+                    const sampleTarget = sample?.targets[item.href];
 
                     return (
                       <AnimatedSidebarMenuItem key={item.href}>
                         <AnimatedSidebarMenuButton
-                          href={item.href}
-                          isActive={isActive}
+                          href={sample ? undefined : item.href}
+                          isActive={sample ? sample.activeHref === item.href : isActive}
+                          disabled={!!sample && !sampleTarget}
+                          onSelect={sample ? () => sample.onSelect(item.href) : undefined}
                           icon={<Icon className="size-5" />}
                           badge={
                             item.badge ? (
@@ -332,10 +338,64 @@ export function AppSidebar({
           ))}
         </AnimatedSidebarContent>
 
-        <SidebarFooterSection
-          roleLabel={roleLabel}
-          isCollapsed={isCollapsed}
-        />
+        {sample ? (
+          <AnimatedSidebarFooter className="gap-2.5 border-t border-border/30 p-3">
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <div className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-xs text-muted-foreground/60 bg-muted/20 cursor-help group-data-[state=collapsed]/sidebar:justify-center">
+                    <DoorClosedLocked className="size-4.5 shrink-0 text-muted-foreground/60" />
+                    <span className="truncate group-data-[state=collapsed]/sidebar:hidden font-medium">
+                      Landing Locked
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="max-w-[220px] text-xs font-medium p-3 bg-background border-border/50 text-foreground"
+                >
+                  The landing page is disabled while{" "}
+                  <span className="text-primary italic font-semibold">
+                    &ldquo;Auto-Portal Redirect&rdquo;
+                  </span>{" "}
+                  is ON. Disable it in settings to visit the Landing page.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <div className="flex items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-muted/40 group-data-[state=collapsed]/sidebar:justify-center">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-xs font-bold text-primary">
+                MC
+              </span>
+              <div className="min-w-0 flex-1 group-data-[state=collapsed]/sidebar:hidden">
+                <p className="truncate text-sm font-semibold text-foreground leading-tight">
+                  Dr. Maya Chen
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  mchen@sageridge.org
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 border-t border-border/20 group-data-[state=collapsed]/sidebar:flex-col group-data-[state=collapsed]/sidebar:gap-2">
+              <div className="flex items-center gap-1 group-data-[state=collapsed]/sidebar:flex-col">
+                <SettingsDialog />
+              </div>
+              <AnimatedSidebarTrigger
+                className="size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {isCollapsed ? (
+                  <PanelLeftOpen className="size-4.5" />
+                ) : (
+                  <PanelLeftClose className="size-4.5" />
+                )}
+              </AnimatedSidebarTrigger>
+            </div>
+          </AnimatedSidebarFooter>
+        ) : (
+          <SidebarFooterSection roleLabel={roleLabel} isCollapsed={isCollapsed} />
+        )}
 
         <AnimatedSidebarRail />
       </AnimatedSidebar>

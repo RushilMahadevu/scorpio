@@ -26,8 +26,6 @@ import {
   Info,
   BookOpen,
   Mail,
-  Shield,
-  FileText,
   AlertCircle,
   Lightbulb,
   PlayCircle,
@@ -261,9 +259,9 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
       pathname === "/request-access"
     ) return "resources";
     if (isHomePage) {
-      if (activeSection === "problem" || activeSection === "solution" || activeSection === "efficacy") return "platform";
+      if (activeSection === "features" || activeSection === "problem" || activeSection === "solution" || activeSection === "efficacy") return "platform";
       if (activeSection === "faq") return "resources";
-      if (activeSection === "pricing") return "pricing";
+      if (activeSection === "pricing-teaser") return "pricing";
       return "";
     }
     return "";
@@ -287,7 +285,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
     const el = document.getElementById(id);
     if (el) {
       const y = el.getBoundingClientRect().top + window.scrollY - 64;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      window.scrollTo({ top: y, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
     }
   };
 
@@ -303,8 +301,8 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
     { href: "/features", label: "Platform Features", desc: "4-layer Socratic scaffolding, KaTeX engine, and telemetry.", icon: Layers },
     { href: "/demos", label: "System Demos", desc: "Interactive module studio, video walkthroughs, and workflows.", icon: PlayCircle },
     { target: "solution", label: "How Raise Works", desc: "Diagnostic query, conceptual priming, and guided derivation.", icon: Lightbulb },
-    { target: "problem", label: "The Problem", desc: "Why passive homework solvers destroy physics comprehension.", icon: AlertCircle },
-    { target: "efficacy", label: "Research & Efficacy", desc: "Ph.D. blinded scoring and 125-response ablation metrics.", icon: BarChart3 },
+    { target: "features", label: "Classroom workflow", desc: "Post assignments, give hints, and review class progress.", icon: AlertCircle },
+    { target: "efficacy", label: "Research & Efficacy", desc: "What we tested and how often Raise gave away the answer.", icon: BarChart3 },
   ];
 
   const resourcesItems: MenuItem[] = [
@@ -330,7 +328,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
       {/* ── Backdrop ────────────────────────────────────────────────────────── */}
       <div
         className={cn(
-          "absolute inset-0 pointer-events-none transition-all duration-300",
+          "absolute inset-0 pointer-events-none transition-opacity duration-300 motion-reduce:transition-none",
           "bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm",
           isScrolled ? "opacity-100" : "opacity-0"
         )}
@@ -338,7 +336,8 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
 
       {/* ── Inner Row ───────────────────────────────────────────────────────── */}
       <div className={cn(
-        "relative z-10 grid grid-cols-[1fr_auto] xl:grid-cols-[auto_1fr_auto] items-center gap-6 px-4 sm:px-6 md:px-10 mx-auto w-full max-w-[1440px] transition-all duration-300",
+        "relative z-10 grid grid-cols-[1fr_auto] xl:grid-cols-[auto_1fr_auto] items-center gap-6 px-4 sm:px-6 md:px-10 mx-auto w-full max-w-[1440px] transition-[height] duration-300 motion-reduce:transition-none",
+        isHomePage && "max-w-6xl px-5 sm:px-8 md:px-8",
         isScrolled ? "h-[54px]" : "h-[64px]"
       )}>
 
@@ -349,13 +348,13 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
             onClick={(e) => {
               if (isHomePage) {
                 e.preventDefault();
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
               }
             }}
             className="flex items-center gap-2.5 group shrink-0"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
+              {!isHomePage && <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />}
               <Logo
                 size={22}
                 className="text-foreground relative z-10 group-hover:rotate-[20deg] transition-transform duration-400"
@@ -411,7 +410,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground">
             <Link href="/login">Login</Link>
           </Button>
-          <Button asChild size="sm" className="rounded-full shadow-sm shadow-primary/10">
+          <Button asChild size="sm" variant={isHomePage ? "outline" : "default"} className={isHomePage ? "rounded-lg" : "rounded-full shadow-sm shadow-primary/10"}>
             <Link href="/signup">Sign up</Link>
           </Button>
 

@@ -9,7 +9,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Only enable smooth scrolling for the main landing page
-    if (pathname !== "/") {
+    if (pathname !== "/" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
@@ -23,17 +23,18 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       touchMultiplier: 2,
     });
 
-    function raf(time: number) {
+    let frame = requestAnimationFrame(function tick(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      frame = requestAnimationFrame(tick);
+    });
+
+    // Keep the browser's position when a URL targets a section.
+    if (!window.location.hash) {
+      lenis.scrollTo(0, { immediate: true });
     }
 
-    requestAnimationFrame(raf);
-
-    // Scroll to top on pathname change
-    lenis.scrollTo(0, { immediate: true });
-
     return () => {
+      cancelAnimationFrame(frame);
       lenis.destroy();
     };
   }, [pathname]);

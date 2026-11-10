@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
@@ -10,7 +9,7 @@ interface TeacherGradingProgressProps {
   completedSubmissions: number;
   pendingSubmissions: number;
   totalAssignments: number;
-  totalStudents: number;
+  showGradebookLink?: boolean;
   dataReady: boolean;
 }
 
@@ -18,7 +17,7 @@ export function TeacherGradingProgress({
   completedSubmissions,
   pendingSubmissions,
   totalAssignments,
-  totalStudents,
+  showGradebookLink = true,
   dataReady,
 }: TeacherGradingProgressProps) {
   const totalSubmissions = completedSubmissions + pendingSubmissions;
@@ -35,12 +34,14 @@ export function TeacherGradingProgress({
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
           Grading & Review Status
         </h2>
-        <Link
-          href="/teacher/grades"
-          className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Open Gradebook <ArrowRight className="size-3.5" />
-        </Link>
+        {showGradebookLink && (
+          <Link
+            href="/teacher/grades"
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Open Gradebook <ArrowRight className="size-3.5" />
+          </Link>
+        )}
       </CardHeader>
 
       <CardContent className="p-5">

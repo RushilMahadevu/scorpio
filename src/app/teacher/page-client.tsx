@@ -2,10 +2,9 @@
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy, limit, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,9 +14,9 @@ import { toast } from "sonner";
 import { ArrowRight, FileText, RotateCcw, Users, PlusCircle, Upload, GraduationCap, Trash2, Copy, Building2, Waypoints, PackageCheck, LayoutDashboard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
-import { TeacherPageHeader, TeacherSummary } from "@/components/teacher/workspace";
+import { TeacherPageHeader } from "@/components/teacher/workspace";
 import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
-import { TeacherGradingProgress } from "@/components/dashboard/teacher-grading-progress";
+import { TeacherDashboardContent, type TeacherDashboardStats } from "@/components/teacher/dashboard-content";
 
 interface Submission {
   id: string;
@@ -35,25 +34,34 @@ interface Course {
   name: string;
   code: string;
   teacherId: string;
-  createdAt: any;
 }
 
-interface Stats {
-  totalAssignments: number;
-  totalStudents: number;
-  completedSubmissions: number;
-  pendingSubmissions: number;
+interface RecentAssignment {
+  id: string;
+  title?: string;
+  dueDate?: string | number | Date | { seconds: number };
+}
+
+const emptySnapshot = { docs: [], size: 0 };
+
+function assignmentDueLabel(dueDate: RecentAssignment["dueDate"]) {
+  if (!dueDate) return "No due date";
+
+  const date = typeof dueDate === "object" && "seconds" in dueDate
+    ? new Date(dueDate.seconds * 1000)
+    : new Date(dueDate);
+  return `Due ${date.toLocaleDateString()}`;
 }
 
 export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }) {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({
+  const [stats, setStats] = useState<TeacherDashboardStats>({
     totalAssignments: 0,
     totalStudents: 0,
     completedSubmissions: 0,
     pendingSubmissions: 0,
   });
-  const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
+  const [recentAssignments, setRecentAssignments] = useState<RecentAssignment[]>([]);
   const [pendingGrading, setPendingGrading] = useState<PendingSubmission[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseName, setNewCourseName] = useState("");
@@ -75,27 +83,26 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
       try {
         // 1. Fetch courses first (including legacy) to resolve course-based student counts
         const [cSnap1, cSnap2] = await Promise.all([
-           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))).catch(() => ({docs:[]} as any)),
-           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), where("code", "==", user.uid))).catch(() => ({docs:[]} as any))
+           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))).catch(() => emptySnapshot),
+           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), where("code", "==", user.uid))).catch(() => emptySnapshot)
         ]);
         
         const courseDocs = [...cSnap1.docs, ...cSnap2.docs];
         const myCourseIdsArr = Array.from(new Set(courseDocs.map(d => d.id))).slice(0, 30);
-        const myCodesArr = Array.from(new Set(courseDocs.map(d => d.data().code))).filter(code => !!code).slice(0, 30);
         
         // 2. Fetch all relevant data snapshots
         // Fetch data with individual error handling to avoid one query failure blocking everything
         const [assignmentsSnap, unifiedSnap, unifiedByCourseSnap] = await Promise.all([
-          getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid))).catch(e => ({ docs: [], size: 0 } as any)),
-          getDocs(query(collection(db, "users"), where("teacherId", "==", user.uid), where("role", "==", "student"))).catch(e => ({ docs: [], size: 0 } as any)),
+          getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid))).catch(() => emptySnapshot),
+          getDocs(query(collection(db, "users"), where("teacherId", "==", user.uid), where("role", "==", "student"))).catch(() => emptySnapshot),
           (myCourseIdsArr.length > 0 
-            ? getDocs(query(collection(db, "users"), where("courseId", "in", myCourseIdsArr), where("role", "==", "student"))).catch(e => ({ docs: [], size: 0 } as any))
-            : Promise.resolve({ docs: [], size: 0 } as any))
+            ? getDocs(query(collection(db, "users"), where("courseId", "in", myCourseIdsArr), where("role", "==", "student"))).catch(() => emptySnapshot)
+            : Promise.resolve(emptySnapshot))
         ]);
 
         const uniqueStudentIds = new Set([
-          ...unifiedSnap.docs.map((d: any) => d.id),
-          ...unifiedByCourseSnap.docs.map((d: any) => d.id)
+          ...unifiedSnap.docs.map(d => d.id),
+          ...unifiedByCourseSnap.docs.map(d => d.id)
         ]);
         
         // Auto-migrate the legacy course records found
@@ -110,7 +117,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
 
         // We can't query submissions by teacherId directly unless we add it to the submission.
         // Instead, filter submissions by checking if assignmentId belongs to one of our assignments.
-        const myAssignmentIds = new Set(assignmentsSnap.docs.map((d: any) => d.id));
+        const myAssignmentIds = new Set(assignmentsSnap.docs.map(d => d.id));
         
         // CHUNKED FETCHING: Only fetch submissions for teacher's assignments
         // This is critical for security (prevent leaking all submissions) and performance.
@@ -120,7 +127,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
             subChunks.push(myAssignmentIdsArr.slice(i, i + 30));
         }
         
-        let submissions: Submission[] = [];
+        const submissions: Submission[] = [];
         if (subChunks.length > 0) {
             const subResults = await Promise.all(subChunks.map(chunk => 
                 getDocs(query(collection(db, "submissions"), where("assignmentId", "in", chunk)))
@@ -157,10 +164,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         const pendingSubs = pending.slice(0, 3);
         
         // Get assignment titles
-        const assignmentsMap: Record<string, any> = {};
-        assignmentsSnap.docs.forEach((doc: any) => {
-          assignmentsMap[doc.id] = doc.data();
-        });
+        const assignmentsMap = new Map(assignmentsSnap.docs.map((doc) => [doc.id, doc.data()]));
 
         // Only include pending submissions whose assignmentId exists in assignmentsMap
         const pendingWithDetails = pendingSubs
@@ -168,7 +172,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
             const assignmentId = sub.assignmentId;
             if (!assignmentId) return null;
 
-            const assignment = assignmentsMap[assignmentId];
+            const assignment = assignmentsMap.get(assignmentId);
             if (!assignment) return null;
 
             return {
@@ -310,99 +314,56 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         </Button>
       </TeacherPageHeader>
 
-      <TeacherSummary
-        label="Classroom overview"
-        items={[
-          { label: "Assignments", value: dataReady ? stats.totalAssignments : "—" },
-          { label: "Students", value: dataReady ? stats.totalStudents : "—" },
-          { label: "Graded", value: dataReady ? stats.completedSubmissions : "—" },
-          { label: "To grade", value: dataReady ? stats.pendingSubmissions : "—" },
-        ]}
-      />
-
-      <TeacherGradingProgress
-        completedSubmissions={stats.completedSubmissions}
-        pendingSubmissions={stats.pendingSubmissions}
-        totalAssignments={stats.totalAssignments}
-        totalStudents={stats.totalStudents}
+      <TeacherDashboardContent
+        stats={stats}
         dataReady={dataReady}
-      />
-
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <div className="grid min-w-0 gap-5">
-          <Card className="gap-0 py-0 shadow-none overflow-hidden">
-            <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
-              <h2 className="text-sm font-semibold tracking-tight text-foreground">To grade</h2>
-              <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
-                <Link href="/teacher/grades">Gradebook <ArrowRight className="size-3.5" /></Link>
+        pending={{
+          action: (
+            <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
+              <Link href="/teacher/grades">Gradebook <ArrowRight className="size-3.5" /></Link>
+            </Button>
+          ),
+          rows: pendingGrading.map((submission) => (
+            <li key={submission.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-medium text-foreground">{submission.assignmentTitle}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{submission.studentName || "Student submission"}</p>
+              </div>
+              <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                <Link href={`/teacher/submission/grade?id=${submission.id}`} aria-label={`Grade ${submission.assignmentTitle}`}>
+                  Grade <ArrowRight className="size-3.5" />
+                </Link>
               </Button>
-            </CardHeader>
-            <CardContent className="p-0 bg-card">
-              {pendingGrading.length > 0 ? (
-                <ul className="divide-y divide-border">
-                  {pendingGrading.map((submission) => (
-                    <li key={submission.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
-                      <div className="min-w-0">
-                        <p className="break-words text-sm font-medium text-foreground">{submission.assignmentTitle}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{submission.studentName || "Student submission"}</p>
-                      </div>
-                      <Button asChild size="sm" variant="outline" className="h-8 text-xs">
-                        <Link href={`/teacher/submission/grade?id=${submission.id}`} aria-label={`Grade ${submission.assignmentTitle}`}>
-                          Grade <ArrowRight className="size-3.5" />
-                        </Link>
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="px-5 py-6 text-sm text-muted-foreground">
-                  {dataReady ? "No submissions waiting for a grade." : "Loading submissions…"}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="gap-0 py-0 shadow-none overflow-hidden">
-            <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
-              <h2 className="text-sm font-semibold tracking-tight text-foreground">Recent assignments</h2>
-              <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
-                <Link href="/teacher/assignments">All Assignments <ArrowRight className="size-3.5" /></Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="p-0 bg-card">
-              {recentAssignments.length > 0 ? (
-                <ul className="divide-y divide-border">
-                  {recentAssignments.map((assignment) => (
-                    <li key={assignment.id}>
-                      <Link
-                        href={`/teacher/assignment-view?id=${assignment.id}`}
-                        className="group flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-muted/30 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-                      >
-                        <div className="min-w-0">
-                          <span className="block break-words text-sm font-medium text-foreground transition-colors group-hover:text-primary">
-                            {assignment.title || "Untitled"}
-                          </span>
-                          <span className="mt-0.5 block text-xs text-muted-foreground">
-                            {assignment.dueDate ? `Due ${new Date(assignment.dueDate.seconds ? assignment.dueDate.seconds * 1000 : assignment.dueDate).toLocaleDateString()}` : "No due date"}
-                          </span>
-                        </div>
-                        <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="px-5 py-6 text-sm text-muted-foreground">
-                  {dataReady ? "No assignments yet." : "Loading assignments…"}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="min-w-0 gap-0 py-0 shadow-none overflow-hidden">
-          <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-5 py-3.5">
-            <h2 className="text-sm font-semibold tracking-tight text-foreground">My classes</h2>
+            </li>
+          )),
+        }}
+        assignments={{
+          action: (
+            <Button variant="ghost" size="sm" asChild className="h-7 text-xs text-muted-foreground hover:text-foreground">
+              <Link href="/teacher/assignments">All Assignments <ArrowRight className="size-3.5" /></Link>
+            </Button>
+          ),
+          rows: recentAssignments.map((assignment) => (
+            <li key={assignment.id}>
+              <Link
+                href={`/teacher/assignment-view?id=${assignment.id}`}
+                className="group flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-muted/30 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+              >
+                <div className="min-w-0">
+                  <span className="block break-words text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                    {assignment.title || "Untitled"}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {assignmentDueLabel(assignment.dueDate)}
+                  </span>
+                </div>
+                <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+              </Link>
+            </li>
+          )),
+        }}
+        classes={{
+          action: (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="h-7 text-xs">
@@ -449,54 +410,44 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </CardHeader>
-          <CardContent className="p-0 bg-card">
-            {courses.length > 0 ? (
-              <ul className="divide-y divide-border">
-                {courses.map((course) => (
-                  <li key={course.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
-                    <div className="min-w-0">
-                      <p className="break-words text-sm font-medium text-foreground">{course.name}</p>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span className="font-mono font-medium text-foreground/80">{course.code}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="size-6 text-muted-foreground hover:text-foreground"
-                          aria-label={`Copy class code for ${course.name}`}
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(course.code);
-                              toast.success("Code copied!");
-                            } catch {
-                              toast.error("Could not copy the class code.");
-                            }
-                          }}
-                        >
-                          <Copy className="size-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="size-7 text-muted-foreground hover:text-destructive"
-                      aria-label={`Delete class ${course.name}`}
-                      onClick={() => setCourseToDelete(course.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="px-5 py-6 text-sm text-muted-foreground">
-                {dataReady ? "Create a class to get a code to share with students." : "Loading classes…"}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          ),
+          rows: courses.map((course) => (
+            <li key={course.id} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-medium text-foreground">{course.name}</p>
+                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="font-mono font-medium text-foreground/80">{course.code}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="size-6 text-muted-foreground hover:text-foreground"
+                    aria-label={`Copy class code for ${course.name}`}
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(course.code);
+                        toast.success("Code copied!");
+                      } catch {
+                        toast.error("Could not copy the class code.");
+                      }
+                    }}
+                  >
+                    <Copy className="size-3" />
+                  </Button>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="size-7 text-muted-foreground hover:text-destructive"
+                aria-label={`Delete class ${course.name}`}
+                onClick={() => setCourseToDelete(course.id)}
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            </li>
+          )),
+        }}
+      />
 
       <nav aria-label="Classroom tools" className="flex flex-wrap gap-2">
         <Button variant="outline" asChild><Link href="/teacher/uploads"><Upload /> Upload PDF</Link></Button>
