@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { inviteAuthPath } from "@/lib/onboarding-links";
 import { register } from "@/lib/firebase";
 import { AuthPageNav } from "@/components/landing/auth-page-nav";
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,23 @@ import { Logo } from "@/components/ui/logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function SignupPage() {
+  return <Suspense fallback={<p className="p-8">Loading sign up…</p>}><SignupForm /></Suspense>;
+}
+
+function SignupForm() {
+  const params = useSearchParams();
+  const teacherInvite = params.get("teacherInvite") || "";
+  const classInvite = params.get("classCode") || "";
+  const signInPath = teacherInvite ? inviteAuthPath("login", "network", teacherInvite)
+    : classInvite ? inviteAuthPath("login", "class", classInvite) : "/login";
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showAccessCode, setShowAccessCode] = useState(false);
-  const [accessCode, setAccessCode] = useState(""); // Add state for access code
+  const [accessCode, setAccessCode] = useState(teacherInvite);
+  const [classCode, setClassCode] = useState(classInvite);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,8 +58,6 @@ export default function SignupPage() {
       setError("Please fill in all fields");
       return;
     }
-
-    let codeOrganizationId: string | null = null;
 
     // Validate teacher invite code server-side before creating the account
     if (role === "teacher") {
@@ -95,8 +104,6 @@ export default function SignupPage() {
           return;
         }
 
-        // Capture the organization ID if the code is pre-linked
-        codeOrganizationId = validateData.organizationId || null;
       } catch (err: any) {
         // 3. Catch actual network failures (e.g. ERR_CONNECTION_REFUSED)
         console.error("Invite code verification failed:", err);
@@ -115,7 +122,7 @@ export default function SignupPage() {
         password, 
         role, 
         name, 
-        accessCode.trim()
+        (role === "teacher" ? accessCode : classCode).trim()
       );
       const idToken = await userCredential.user.getIdToken();
 
@@ -165,7 +172,7 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <TooltipProvider>
-              <Tabs defaultValue="student" className="w-full">
+              <Tabs defaultValue={teacherInvite ? "teacher" : "student"} className="w-full" onValueChange={() => setError("")}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
                     <GraduationCap className="h-4 w-4" />
@@ -286,8 +293,8 @@ export default function SignupPage() {
                       <Input
                         id="student-code"
                         placeholder="e.g. CLASS123"
-                        value={accessCode}
-                        onChange={(e) => setAccessCode(e.target.value)}
+                        value={classCode}
+                        onChange={(e) => setClassCode(e.target.value)}
                         aria-label="Class Code"
                       />
                     </motion.div>
@@ -486,7 +493,7 @@ export default function SignupPage() {
 
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href={signInPath} className="text-primary hover:underline">
                 Sign in
               </Link>
             </div>

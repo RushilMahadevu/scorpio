@@ -1,4 +1,5 @@
 "use client";
+import { networkInvitePath } from "@/lib/onboarding-links";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useState, useEffect, useMemo } from "react";
@@ -30,7 +31,6 @@ import {
   Loader2,
   TrendingUp,
   NotebookPen,
-  ShieldCheck,
   CheckCircle2,
   MoreHorizontal,
   Crown,
@@ -40,7 +40,6 @@ import {
   HelpCircle,
   Send,
   Pencil,
-  Mail,
   Share2,
   Check,
   Sliders,
@@ -105,7 +104,9 @@ export default function NetworkPage() {
   // Invite modal state
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedId, setCopiedId] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState("");
+  const [creatingInvite, setCreatingInvite] = useState(false);
+  const [inviteError, setInviteError] = useState("");
 
   // Active Tab
   const [activeTab, setActiveTab] = useState("faculty");
@@ -279,30 +280,41 @@ export default function NetworkPage() {
     }
   };
 
-  const copyInviteLink = async () => {
-    if (!organization?.id) return;
-    const url = `${window.location.origin}/join/${organization.id}`;
+  async function createInvite() {
+    setCreatingInvite(true);
+    setInviteError("");
     try {
-      await navigator.clipboard.writeText(url);
+      const response = await authenticatedFetch("/api/teacher/network/invites", { method: "POST", body: "{}" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not create an invite.");
+      setInviteUrl(new URL(networkInvitePath(result.code), window.location.origin).href);
+      setCopiedLink(false);
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : "Could not create an invite. Try again.");
+    } finally {
+      setCreatingInvite(false);
+    }
+  }
+
+  async function copyInviteLink() {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
       setCopiedLink(true);
       toast.success("Invite link copied.");
-      setTimeout(() => setCopiedLink(false), 2500);
     } catch {
       toast.error("Couldn’t copy the invite link. Select the link to copy it manually.");
     }
-  };
+  }
 
-  const copyOrgId = async () => {
-    if (!organization?.id) return;
-    try {
-      await navigator.clipboard.writeText(organization.id);
-      setCopiedId(true);
-      toast.success("Department ID copied.");
-      setTimeout(() => setCopiedId(false), 2500);
-    } catch {
-      toast.error("Couldn’t copy the department ID. Select the ID to copy it manually.");
+  function changeInviteDialog(open: boolean) {
+    if (!open && creatingInvite) return;
+    setInviteModalOpen(open);
+    if (!open) {
+      setInviteUrl("");
+      setCopiedLink(false);
+      setInviteError("");
     }
-  };
+  }
 
   const transferOwnership = async (newOwnerId: string, newOwnerName: string) => {
     if (!user || !organization || user.uid !== organization.ownerId) return;
@@ -482,16 +494,6 @@ export default function NetworkPage() {
   const budgetPercentUsed = budgetCapDollars > 0 ? Math.min((spentDollars / budgetCapDollars) * 100, 100) : 0;
   const budgetRemaining = Math.max(budgetCapDollars - spentDollars, 0);
 
-  const inviteUrl = typeof window !== "undefined" && organization?.id
-    ? `${window.location.protocol}//${window.location.host}/join/${organization.id}`
-    : "";
-
-  const emailSubject = encodeURIComponent(`Invitation to join ${organization?.name || "Physics Department"} on Scorpio`);
-  const emailBody = encodeURIComponent(
-    `Hi,\n\nI'd like to invite you to join our department network (${organization?.name || "Physics"}) on Scorpio.\n\nJoining allows us to share Waypoints curriculum resources, coordinate student AI limits, and view collective learning analytics.\n\nClick here to join: ${inviteUrl}\nDepartment ID: ${organization?.id}\n\nBest regards,`
-  );
-  const mailtoLink = `mailto:?subject=${emailSubject}&body=${emailBody}`;
-
   if (loading || authLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -505,6 +507,8 @@ export default function NetworkPage() {
 
   const isFreePlan = organization?.planId === "free";
   const isOwner = user?.uid === organization?.ownerId;
+  const inviteEmailBody = `Join ${organization?.name || "our Network"} on Scorpio to share teaching resources.\n\n${inviteUrl}`;
+  const inviteEmailDraft = `mailto:?subject=Invitation%20to%20join%20Scorpio&body=${encodeURIComponent(inviteEmailBody)}`;
 
   return (
     <TooltipProvider>
@@ -576,13 +580,12 @@ export default function NetworkPage() {
             <div className="flex items-center gap-2.5 flex-wrap">
               {organization && (
                 <>
-                  <Button
-                    onClick={() => setInviteModalOpen(true)}
-                    className="h-9 gap-2 text-xs font-bold shadow-sm rounded-xl px-4"
-                  >
-                    <UserPlus className="h-3.5 w-3.5" />
-                    Invite Colleague
-                  </Button>
+                  {isOwner && (
+                    <Button onClick={() => changeInviteDialog(true)} className="h-9 gap-2 text-xs font-bold shadow-sm rounded-xl px-4">
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Invite Colleague
+                    </Button>
+                  )}
                   {isOwner && (
                     <Button asChild variant="outline" size="sm" className="h-9 gap-2 text-xs font-semibold rounded-xl cursor-pointer">
                       <Link href="/teacher/network/billing">
@@ -738,10 +741,10 @@ export default function NetworkPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="org-id" className="text-xs font-bold uppercase text-muted-foreground">Department Invite Code or ID</Label>
+                    <Label htmlFor="org-id" className="text-xs font-bold uppercase text-muted-foreground">Department invite code</Label>
                     <Input
                       id="org-id"
-                      placeholder="Paste ID or invite code..."
+                      placeholder="Paste an invite code"
                       value={joiningOrgId}
                       onChange={(e) => setJoiningOrgId(e.target.value)}
                       className="h-11"
@@ -811,14 +814,12 @@ export default function NetworkPage() {
                         All educators sharing this network's curriculum and AI pool.
                       </CardDescription>
                     </div>
-                    <Button
-                      size="sm"
-                      className="text-xs font-semibold rounded-xl"
-                      onClick={() => setInviteModalOpen(true)}
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                      Add Teacher
-                    </Button>
+                    {isOwner && (
+                      <Button size="sm" className="text-xs font-semibold rounded-xl" onClick={() => changeInviteDialog(true)}>
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Add Teacher
+                      </Button>
+                    )}
                   </CardHeader>
                   <CardContent className="p-0">
                     <Table>
@@ -903,38 +904,19 @@ export default function NetworkPage() {
 
                 {/* Right Side Column: Quick Invite & Department Info */}
                 <div className="space-y-5">
-                  {/* Quick Share Card */}
-                  <Card className="border-primary/20 bg-primary/5 shadow-sm">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <Share2 className="h-4 w-4 text-primary" />
-                        Invite Fellow Teachers
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        Colleagues gain immediate access to shared Waypoints and department AI.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-2 p-2.5 bg-background border rounded-xl text-xs font-mono">
-                        <span className="flex-1 truncate text-muted-foreground select-all">{inviteUrl}</span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Copy invite link" onClick={copyInviteLink}>
-                          {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                        </Button>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1 h-9 text-xs font-bold cursor-pointer gap-2" onClick={copyInviteLink}>
-                          {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                          {copiedLink ? "Copied!" : "Copy Link"}
-                        </Button>
-                        <Button asChild variant="outline" className="flex-1 h-9 text-xs font-bold">
-                          <a href={mailtoLink}>
-                            <Mail className="h-3.5 w-3.5" />
-                            Email Draft
-                          </a>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {isOwner && (
+                    <Card className="border-primary/20 bg-primary/5 shadow-sm">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-sm">
+                          <Share2 className="size-4 text-primary" /> Invite fellow teachers
+                        </CardTitle>
+                        <CardDescription>Share Waypoints and teaching resources with a colleague.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button size="sm" onClick={() => changeInviteDialog(true)}>Invite a colleague</Button>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Plan / Subscription Summary Card */}
                   {isOwner && (
@@ -1373,74 +1355,44 @@ export default function NetworkPage() {
           </Tabs>
         )}
 
-        {/* ─── Invite Colleague Dialog ────────────────────────────── */}
-        <Dialog open={inviteModalOpen} onOpenChange={setInviteModalOpen}>
-          <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden border-border/60 rounded-3xl">
-            <DialogHeader className="p-6 bg-secondary/30 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-primary/10 rounded-2xl">
-                  <UserPlus className="h-6 w-6 text-primary" />
+        {isOwner && (
+          <Dialog open={inviteModalOpen} onOpenChange={changeInviteDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Invite a colleague</DialogTitle>
+                <DialogDescription>
+                  Each link can be used once and expires after seven days. Create a separate link for each teacher.
+                </DialogDescription>
+              </DialogHeader>
+              {inviteUrl && (
+                <div className="space-y-2">
+                  <Label htmlFor="network-invite-link">Invitation link</Label>
+                  <Input id="network-invite-link" readOnly value={inviteUrl} onFocus={event => event.target.select()} />
                 </div>
-                <div>
-                  <DialogTitle className="text-lg font-black tracking-tight">Invite Teachers to Department</DialogTitle>
-                  <DialogDescription className="text-xs">
-                    Collaborate with physics teachers across your school or district.
-                  </DialogDescription>
-                </div>
-              </div>
-            </DialogHeader>
-
-            <div className="p-6 space-y-5">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-muted-foreground">Department Invitation Link</Label>
-                <div className="flex items-center gap-2 p-2.5 bg-secondary/30 border rounded-xl text-xs font-mono">
-                  <span className="flex-1 truncate select-all">{inviteUrl}</span>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Copy invite link" onClick={copyInviteLink}>
-                    {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+              )}
+              {inviteError && <p role="alert" className="text-sm text-destructive">{inviteError}</p>}
+              <div className="flex flex-wrap justify-end gap-2">
+                {inviteUrl ? (
+                  <>
+                    <Button asChild variant="outline">
+                      <a href={inviteEmailDraft}>
+                        Email draft
+                      </a>
+                    </Button>
+                    <Button onClick={copyInviteLink}>
+                      {copiedLink ? <Check className="size-4" /> : <Copy className="size-4" />}
+                      {copiedLink ? "Link copied" : "Copy link"}
+                    </Button>
+                  </>
+                ) : (
+                  <Button onClick={createInvite} disabled={creatingInvite}>
+                    {creatingInvite ? "Creating link…" : "Create invite link"}
                   </Button>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Teachers who click this link are automatically enrolled into your department network.
-                </p>
+                )}
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-muted-foreground">Department Identifier (ID)</Label>
-                <div className="flex items-center gap-2 p-2.5 bg-secondary/30 border rounded-xl text-xs font-mono">
-                  <span className="flex-1 truncate select-all">{organization?.id}</span>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="Copy department ID" onClick={copyOrgId}>
-                    {copiedId ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-2xl space-y-1.5">
-                <p className="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4" />
-                  What new members receive:
-                </p>
-                <ul className="text-[11px] text-blue-800 dark:text-blue-300 space-y-1 pl-4 list-disc">
-                  <li>Instant access to all shared Waypoints & curriculum benchmarks</li>
-                  <li>Pooled student AI tutoring and research notebook quotas</li>
-                  <li>Unified learning analytics and diagnostic radar views</li>
-                </ul>
-              </div>
-
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button className="flex-1 h-10 font-bold cursor-pointer gap-2" onClick={copyInviteLink}>
-                  {copiedLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  {copiedLink ? "Link Copied!" : "Copy Link"}
-                </Button>
-                <Button asChild variant="outline" className="flex-1 h-10 font-bold">
-                  <a href={mailtoLink}>
-                    <Mail className="h-4 w-4" />
-                    Email Template
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* ─── Limits Assistant Dialog ────────────────────────────── */}
         <Dialog open={limitsOpen} onOpenChange={setLimitsOpen}>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { classInvitePath, inviteAuthPath, networkInvitePath } from "@/lib/onboarding-links";
 import { login, logout, db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/auth-context";
@@ -19,7 +20,15 @@ import { Logo } from "@/components/ui/logo";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LoginPage() {
-  const router = useRouter();
+  return <Suspense fallback={<LoadingSpinner fullPage />}><LoginForm /></Suspense>;
+}
+
+function LoginForm() {
+  const params = useSearchParams();
+  const teacherInvite = params.get("teacherInvite") || "";
+  const classCode = params.get("classCode") || "";
+  const signUpPath = teacherInvite ? inviteAuthPath("signup", "network", teacherInvite)
+    : classCode ? inviteAuthPath("signup", "class", classCode) : "/signup";
   const { user, role, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -65,7 +74,9 @@ export default function LoginPage() {
       console.log(`[Login] Redirecting to: ${role === "teacher" ? "/teacher" : "/student"}`);
       // Hard redirect is safer for ensuring middleware catches the new session
       const sessionData = await response.json();
-      const target = sessionData.role === "teacher" ? "/teacher" : "/student";
+      const target = sessionData.role === "teacher"
+        ? teacherInvite ? networkInvitePath(teacherInvite) : "/teacher"
+        : classCode ? classInvitePath(classCode) : "/student";
       window.location.href = target;
     } catch (err: any) {
       console.error("[Login] Detailed Error:", err);
@@ -215,7 +226,7 @@ export default function LoginPage() {
             <CardDescription>Sign in to Scorpio</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="student" className="w-full">
+            <Tabs defaultValue={teacherInvite ? "teacher" : "student"} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="student" className="flex items-center gap-2 cursor-pointer">
                   <GraduationCap className="h-4 w-4" />
@@ -402,7 +413,7 @@ export default function LoginPage() {
 
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
+              <Link href={signUpPath} className="text-primary hover:underline">
                 Sign up
               </Link>
             </div>

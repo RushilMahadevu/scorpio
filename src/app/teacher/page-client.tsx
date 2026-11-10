@@ -2,7 +2,7 @@
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy, limit, deleteDoc, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { ArrowRight, FileText, RotateCcw, Users, PlusCircle, Upload, GraduationCap, Trash2, Copy, Building2, Waypoints, PackageCheck, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileText, RotateCcw, Users, PlusCircle, Upload, GraduationCap, Trash2, Copy, Link2, Building2, Waypoints, PackageCheck, LayoutDashboard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
 import { TeacherPageHeader } from "@/components/teacher/workspace";
-import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { classInvitePath } from "@/lib/onboarding-links";
 import { TeacherDashboardContent, type TeacherDashboardStats } from "@/components/teacher/dashboard-content";
 
 interface Submission {
@@ -54,7 +55,14 @@ function assignmentDueLabel(dueDate: RecentAssignment["dueDate"]) {
 }
 
 export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const networkId = profile?.organizationId;
+  const [network, setNetwork] = useState<{ id: string; name: string } | null>(null);
+  const [networkError, setNetworkError] = useState(false);
+  const [setupError, setSetupError] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const [classAssignmentIds, setClassAssignmentIds] = useState<string[]>([]);
+  const [courseError, setCourseError] = useState("");
   const [stats, setStats] = useState<TeacherDashboardStats>({
     totalAssignments: 0,
     totalStudents: 0,
@@ -78,43 +86,46 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
   }, [dataReady, onLoaded]);
 
   useEffect(() => {
+    if (!networkId) return;
+    let active = true;
+    getDoc(doc(db, "organizations", networkId)).then(snapshot => {
+      if (!snapshot.exists()) throw new Error("Network unavailable");
+      if (active) setNetwork({ id: networkId, name: snapshot.data().name || "Your Network" });
+    }).catch(() => {
+      if (active) setNetworkError(true);
+    });
+    return () => { active = false; };
+  }, [networkId, retry]);
+
+  useEffect(() => {
+    let active = true;
     async function fetchStats() {
       if (!user) return;
       try {
-        // 1. Fetch courses first (including legacy) to resolve course-based student counts
-        const [cSnap1, cSnap2] = await Promise.all([
-           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))).catch(() => emptySnapshot),
-           getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), where("code", "==", user.uid))).catch(() => emptySnapshot)
+        const [courseSnapshot, assignmentsSnap] = await Promise.all([
+          getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid))),
+          getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid))),
         ]);
-        
-        const courseDocs = [...cSnap1.docs, ...cSnap2.docs];
-        const myCourseIdsArr = Array.from(new Set(courseDocs.map(d => d.id))).slice(0, 30);
-        
-        // 2. Fetch all relevant data snapshots
-        // Fetch data with individual error handling to avoid one query failure blocking everything
-        const [assignmentsSnap, unifiedSnap, unifiedByCourseSnap] = await Promise.all([
-          getDocs(query(collection(db, "assignments"), where("teacherId", "==", user.uid))).catch(() => emptySnapshot),
+        if (!active) return;
+
+        const courseDocs = courseSnapshot.docs;
+        setCourses(courseDocs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
+        setClassAssignmentIds(assignmentsSnap.docs.map(doc => doc.data().courseId).filter(Boolean));
+
+        const myCourseIdsArr = courseDocs.slice(0, 30).map(doc => doc.id);
+        const [unifiedSnap, unifiedByCourseSnap] = await Promise.all([
           getDocs(query(collection(db, "users"), where("teacherId", "==", user.uid), where("role", "==", "student"))).catch(() => emptySnapshot),
-          (myCourseIdsArr.length > 0 
+          myCourseIdsArr.length > 0
             ? getDocs(query(collection(db, "users"), where("courseId", "in", myCourseIdsArr), where("role", "==", "student"))).catch(() => emptySnapshot)
-            : Promise.resolve(emptySnapshot))
+            : Promise.resolve(emptySnapshot),
         ]);
+        if (!active) return;
 
         const uniqueStudentIds = new Set([
           ...unifiedSnap.docs.map(d => d.id),
           ...unifiedByCourseSnap.docs.map(d => d.id)
         ]);
         
-        // Auto-migrate the legacy course records found
-        for (const d of cSnap2.docs) {
-           if (d.data().teacherId !== user.uid) {
-                try {
-                  await setDoc(doc(db, "courses", d.id), { teacherId: user.uid }, { merge: true });
-                } catch (e) { console.warn("Failed to auto-migrate course record", e); }
-           }
-        }
-        setCourses(courseDocs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
-
         // We can't query submissions by teacherId directly unless we add it to the submission.
         // Instead, filter submissions by checking if assignmentId belongs to one of our assignments.
         const myAssignmentIds = new Set(assignmentsSnap.docs.map(d => d.id));
@@ -130,7 +141,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         const submissions: Submission[] = [];
         if (subChunks.length > 0) {
             const subResults = await Promise.all(subChunks.map(chunk => 
-                getDocs(query(collection(db, "submissions"), where("assignmentId", "in", chunk)))
+                getDocs(query(collection(db, "submissions"), where("assignmentId", "in", chunk))).catch(() => emptySnapshot)
             ));
             subResults.forEach(snap => {
                 snap.docs.forEach(doc => {
@@ -140,6 +151,7 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         }
 
 
+        if (!active) return;
         const submitted = submissions.filter((s) => s.status !== "draft");
         const pending = submitted.filter((s) => !s.graded);
 
@@ -157,7 +169,8 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
           orderBy("createdAt", "desc"),
           limit(3)
         );
-        const recentSnap = await getDocs(recentQuery);
+        const recentSnap = await getDocs(recentQuery).catch(() => emptySnapshot);
+        if (!active) return;
         setRecentAssignments(recentSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
         // Pending grading (ungraded submissions from MY assignments)
@@ -186,34 +199,36 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
 
       } catch (error) {
         console.error("Error fetching stats:", error);
+        if (active) setSetupError(true);
       } finally {
-        setDataReady(true);
+        if (active) setDataReady(true);
       }
     }
 
     fetchStats();
-  }, [user]);
+    return () => { active = false; };
+  }, [user, retry]);
 
   const handleCreateCourse = async () => {
-    if (!user || !newCourseName || !newCourseCode) return;
+    if (!user || !newCourseName.trim() || !newCourseCode.trim()) return;
+    setCourseError("");
     setIsCreatingCourse(true);
     const code = newCourseCode.trim();
     try {
       const response = await authenticatedFetch('/api/courses', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newCourseName, code }),
       });
-      if (!response.ok) throw new Error((await response.json()).error);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not create the class.");
 
+      const course = { id: result.id, name: newCourseName.trim().slice(0, 120), code, teacherId: user.uid };
+      setCourses(current => [course, ...current]);
       setNewCourseName("");
       setNewCourseCode("");
       toast.success("Class created successfully!");
-      setDialogOpen(false); // Close dialog after creation
-      // Refresh courses
-      const coursesSnap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", user.uid), orderBy("createdAt", "desc")));
-      setCourses(coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
+      setDialogOpen(false);
     } catch (error) {
-      console.error("Error creating course:", error);
-      toast.error("Failed to create course");
+      setCourseError(error instanceof Error ? error.message : "Could not create the class. Try again.");
     } finally {
       setIsCreatingCourse(false);
     }
@@ -230,16 +245,39 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
     }
   };
 
-  const generateCourseCode = () => {
-    // Generate a random code of 4-6 uppercase letters/numbers
-    const length = Math.floor(Math.random() * 3) + 4; // 4 to 6 characters
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < length; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+  function generateCourseCode() {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    setNewCourseCode(Array.from(bytes, byte => alphabet[byte % alphabet.length]).join(""));
+    setCourseError("");
+  }
+
+  function changeClassDialog(open: boolean) {
+    if (open && !newCourseCode) generateCourseCode();
+    if (!open) setCourseError("");
+    setDialogOpen(open);
+  }
+
+  async function copyClassInvite(course: Course, link: boolean) {
+    const text = link ? new URL(classInvitePath(course.code), window.location.origin).href : course.code;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(link ? "Student invite link copied." : "Class code copied.");
+    } catch {
+      toast.error(link ? "Could not copy the link. You can still share the class code." : "Could not copy the class code.");
     }
-    setNewCourseCode(code);
-  };
+  }
+
+  function retrySetup() {
+    setNetworkError(false);
+    setSetupError(false);
+    setDataReady(false);
+    setRetry(value => value + 1);
+  }
+
+  const firstClass = courses[0];
+  const hasClassAssignment = courses.some(course => classAssignmentIds.includes(course.id));
+  const networkName = network?.id === networkId ? network?.name : null;
 
   return (
     <div className="space-y-6">
@@ -314,6 +352,47 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         </Button>
       </TeacherPageHeader>
 
+      {networkName && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3">
+          <div className="min-w-0">
+            <p className="break-words text-sm font-medium">{networkName}</p>
+            <p className="text-sm text-muted-foreground">Share teaching resources and collaborate with colleagues.</p>
+          </div>
+          <Button asChild variant="outline" size="sm"><Link href="/teacher/network">View Network</Link></Button>
+        </div>
+      )}
+
+      {setupError || networkError ? (
+        <Card className="shadow-none">
+          <CardHeader><CardTitle>Couldn’t load your setup</CardTitle></CardHeader>
+          <CardContent><Button variant="outline" onClick={retrySetup}>Try again</Button></CardContent>
+        </Card>
+      ) : !profile || (networkId && (!networkName || !dataReady)) ? (
+        <p role="status" className="text-sm text-muted-foreground">Loading your classroom setup…</p>
+      ) : !networkId || !hasClassAssignment ? (
+        <Card className="shadow-none">
+          <CardHeader>
+            <CardTitle className="break-words">{!networkId ? "Set up your Network" : firstClass ? `Get ${firstClass.name} ready` : "Create your first class"}</CardTitle>
+            <CardDescription>
+              {!networkId ? "Create or join a Network to start teaching and share resources with colleagues."
+                : firstClass ? "Share your class with students and give them their first assignment."
+                : "Give your class a name. Scorpio will generate a code students can use to join."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {!networkId ? (
+              <Button asChild><Link href="/teacher/network">Set up your Network</Link></Button>
+            ) : firstClass ? (
+              <>
+                <Button asChild><Link href={`/teacher/create?courseId=${encodeURIComponent(firstClass.id)}`}>Create your first assignment</Link></Button>
+                <Button variant="outline" onClick={() => copyClassInvite(firstClass, true)}>Copy student invite link</Button>
+                <Button variant="outline" onClick={() => copyClassInvite(firstClass, false)}>Copy class code</Button>
+              </>
+            ) : <Button onClick={() => changeClassDialog(true)}>Create your first class</Button>}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <TeacherDashboardContent
         stats={stats}
         dataReady={dataReady}
@@ -364,9 +443,9 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         }}
         classes={{
           action: (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={dialogOpen} onOpenChange={changeClassDialog}>
               <DialogTrigger asChild>
-                <Button size="sm" className="h-7 text-xs">
+                <Button size="sm" className="h-7 text-xs" disabled={!networkId || !dataReady || setupError}>
                   <PlusCircle className="size-3.5" />
                   Create Class
                 </Button>
@@ -394,17 +473,21 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
                       id="code"
                       placeholder="e.g. PHYS101"
                       value={newCourseCode}
-                      onChange={(e) => setNewCourseCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                      onChange={(e) => {
+                        setNewCourseCode(e.target.value.toUpperCase());
+                        setCourseError("");
+                      }}
                     />
                     <Button variant="outline" size="sm" onClick={generateCourseCode} className="cursor-pointer">
                       <RotateCcw className="h-4 w-4" />
                       Generate Code
                     </Button>
-                    <p className="text-xs text-muted-foreground">This is the code students will use to join.</p>
+                    <p className="text-xs text-muted-foreground">Use 6–64 letters, numbers, dashes, or underscores.</p>
                   </div>
                 </div>
+                {courseError && <p role="alert" className="text-sm text-destructive">{courseError}</p>}
                 <DialogFooter>
-                  <Button onClick={handleCreateCourse} disabled={isCreatingCourse || !newCourseName || !newCourseCode} className="cursor-pointer">
+                  <Button onClick={handleCreateCourse} disabled={isCreatingCourse || !newCourseName.trim() || !newCourseCode.trim()} className="cursor-pointer">
                     {isCreatingCourse ? "Creating..." : "Create Class"}
                   </Button>
                 </DialogFooter>
@@ -422,16 +505,18 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
                     size="icon-sm"
                     className="size-6 text-muted-foreground hover:text-foreground"
                     aria-label={`Copy class code for ${course.name}`}
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(course.code);
-                        toast.success("Code copied!");
-                      } catch {
-                        toast.error("Could not copy the class code.");
-                      }
-                    }}
+                    onClick={() => copyClassInvite(course, false)}
                   >
                     <Copy className="size-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="size-6 text-muted-foreground hover:text-foreground"
+                    aria-label={`Copy student invite link for ${course.name}`}
+                    onClick={() => copyClassInvite(course, true)}
+                  >
+                    <Link2 className="size-3" />
                   </Button>
                 </div>
               </div>
@@ -453,11 +538,6 @@ export default function TeacherDashboard({ onLoaded }: { onLoaded?: () => void }
         <Button variant="outline" asChild><Link href="/teacher/uploads"><Upload /> Upload PDF</Link></Button>
         <Button variant="outline" asChild><Link href="/teacher/vault"><PackageCheck /> Vault Controls</Link></Button>
       </nav>
-
-      <OnboardingChecklist
-        userRole="teacher"
-        metadata={{ courseCount: courses.length, assignmentCount: stats.totalAssignments }}
-      />
 
       <ConfirmDialog
         open={!!courseToDelete}

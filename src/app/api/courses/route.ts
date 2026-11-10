@@ -4,7 +4,8 @@ import { adminDb } from '@/lib/firebase-admin';
 export const POST = withAuthorizedRequest(async req => {
   const caller = (await authenticateRequest(req))!;
   const { name, code } = await req.json();
-  if (typeof name !== 'string' || !name.trim() || typeof code !== 'string' || !/^[A-Za-z0-9_-]{6,64}$/.test(code)) return NextResponse.json({ error: 'Use a class code of 6–64 letters, numbers, dashes, or underscores' }, { status: 400 });
+  if (typeof name !== 'string' || !name.trim()) return NextResponse.json({ error: 'Enter a class name' }, { status: 400 });
+  if (typeof code !== 'string' || !/^[A-Za-z0-9_-]{6,64}$/.test(code)) return NextResponse.json({ error: 'Use a class code of 6–64 letters, numbers, dashes, or underscores' }, { status: 400 });
   const profile = (await adminDb.collection('users').doc(caller.uid).get()).data()!;
   if (!profile.organizationId) return NextResponse.json({ error: 'Join a network first' }, { status: 400 });
   try {

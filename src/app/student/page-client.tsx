@@ -17,7 +17,6 @@ import { FileText, FileCheck, ArrowRight, PackageOpen, LayoutDashboard, Graduati
 import { RaiseLogo } from "@/components/ui/raise-logo";
 import Link from "next/link";
 import { RundownDialog } from "@/components/ui/rundown-dialog";
-import { OnboardingChecklist } from "@/components/ui/onboarding-checklist";
 import { StudentProgressChart } from "@/components/dashboard/student-progress-chart";
 
 interface Stats {
@@ -59,6 +58,11 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
   const [leaving, setLeaving] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [enrollmentReady, setEnrollmentReady] = useState(false);
+  const [dashboardError, setDashboardError] = useState(false);
+  const [enrollmentError, setEnrollmentError] = useState(false);
+  const [firstSubmissionDone, setFirstSubmissionDone] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     if (dataReady && onLoaded) {
@@ -66,61 +70,50 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
     }
   }, [dataReady, onLoaded]);
 
+  const profileCourseId = profile?.courseId;
+  const profileTeacherId = profile?.teacherId;
+  const hasProfile = !!profile;
   useEffect(() => {
-    async function syncTeacherId() {
-      if (!user) return;
+    if (!user || !hasProfile) return;
+    let active = true;
+
+    async function loadEnrollment() {
       try {
-        // First try the unified profile from AuthContext (cached/fast)
-        if (profile?.courseId) {
-          setCourseId(profile.courseId);
-          setTeacherId(profile.teacherId || null);
-
-          try {
-            const courseDoc = await getDoc(doc(db, "courses", profile.courseId));
-            if (courseDoc.exists()) {
-              setCourseName(courseDoc.data().name);
-              setCourseCode(courseDoc.data().code);
-            }
-          } catch (e) { console.error("Error fetching course", e); }
-          return;
-        }
-
-        // Fallback: Legacy profile
-        const studentDoc = await getDoc(doc(db, "students", user.uid));
-        if (studentDoc.exists()) {
-          const data = studentDoc.data();
-          let resolvedTid = data.teacherId || null;
-          let resolvedCid = data.courseId || null;
-
-          setTeacherId(resolvedTid);
-          setCourseId(resolvedCid);
-
-          if (resolvedCid) {
-            try {
-              const courseDoc = await getDoc(doc(db, "courses", resolvedCid));
-              if (courseDoc.exists()) {
-                setCourseName(courseDoc.data().name);
-                setCourseCode(courseDoc.data().code);
-              }
-            } catch (e) { console.error("Error fetching course", e); }
-          }
-        }
+        const legacy = !profileCourseId && user ? (await getDoc(doc(db, "students", user.uid))).data() : null;
+        const nextCourseId = profileCourseId || legacy?.courseId || null;
+        const nextTeacherId = profileTeacherId || legacy?.teacherId || null;
+        const course = nextCourseId ? (await getDoc(doc(db, "courses", nextCourseId))).data() : null;
+        if (!active) return;
+        setCourseId(nextCourseId);
+        setTeacherId(nextTeacherId);
+        setCourseName(course?.name || null);
+        setCourseCode(course?.code || null);
+        setEnrollmentReady(true);
       } catch (error) {
         console.error("Error syncing profile:", error);
+        if (active) {
+          setEnrollmentError(true);
+          setDataReady(true);
+        }
       }
     }
-    syncTeacherId();
-  }, [user, profile]);
+
+    loadEnrollment();
+    return () => { active = false; };
+  }, [user, hasProfile, profileCourseId, profileTeacherId, retry]);
 
   useEffect(() => {
+    if (!user || !enrollmentReady) return;
+    let active = true;
+
     async function fetchDashboardData() {
       if (!user) return;
+      setDataReady(false);
+      setDashboardError(false);
       try {
         if (teacherId) {
-          const teacherDoc = await getDoc(doc(db, "teachers", teacherId));
-          if (teacherDoc.exists()) {
-            setTeacherName(teacherDoc.data().name);
-          }
+          const teacherDoc = await getDoc(doc(db, "teachers", teacherId)).catch(() => null);
+          if (active) setTeacherName(teacherDoc?.data()?.name || null);
         } else {
           setTeacherName(null);
         }
@@ -204,6 +197,8 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
           })
           .slice(0, 3);
 
+        if (!active) return;
+        setFirstSubmissionDone(submittedAssignmentIds.size > 0);
         setStats({
           totalAssignments,
           completedAssignments,
@@ -214,12 +209,24 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         setDataReady(true);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setDataReady(true); // Still ready even if error
+        if (active) {
+          setDashboardError(true);
+          setDataReady(true);
+        }
       }
     }
 
     fetchDashboardData();
-  }, [user, teacherId, courseId]);
+    return () => { active = false; };
+  }, [user, enrollmentReady, teacherId, courseId, retry]);
+
+  function retryDashboard() {
+    setEnrollmentError(false);
+    setDashboardError(false);
+    setEnrollmentReady(false);
+    setDataReady(false);
+    setRetry(value => value + 1);
+  }
 
   const handleJoinClass = async () => {
     if (!user || !classCode) return;
@@ -229,6 +236,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: classCode.trim() }),
       });
       if (!response.ok) throw new Error((await response.json()).error);
+      setClassCode("");
       toast.success('Joined class successfully');
       router.refresh(); // Refresh to pick up new claims without full reload
     } catch (error: any) {
@@ -248,10 +256,6 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'leave' }),
       });
       if (!response.ok) throw new Error((await response.json()).error);
-      setTeacherId(null);
-      setTeacherName(null);
-      setCourseId(null);
-      setCourseName(null);
       setClassCode("");
       toast.success("Successfully left class.");
       router.refresh(); // Refresh to clear context without full reload
@@ -262,6 +266,8 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
       setLeaving(false);
     }
   };
+
+  const firstAssignment = recentAssignments.find(assignment => !assignment.isSubmitted);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -326,11 +332,18 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         />
       </WorkspaceHeader>
 
-      {!courseId ? (
+      {enrollmentError ? (
+        <Card className="shadow-none">
+          <CardHeader><CardTitle>Couldn’t load your enrollment</CardTitle></CardHeader>
+          <CardContent><Button variant="outline" onClick={retryDashboard}>Try again</Button></CardContent>
+        </Card>
+      ) : !enrollmentReady ? (
+        <p role="status" className="text-sm text-muted-foreground">Checking your enrollment…</p>
+      ) : !courseId ? (
         <Card className="shadow-none">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
-              Enroll in Class
+              Join your class
             </CardTitle>
             <CardDescription className="text-base">
               {teacherId ?
@@ -339,17 +352,20 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-2 max-w-md">
+            <form className="flex flex-col sm:flex-row gap-2 max-w-md" onSubmit={event => {
+              event.preventDefault();
+              handleJoinClass();
+            }}>
               <Input
                 placeholder="Class Code (e.g. PHYS101)"
                 value={classCode}
-                onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+                onChange={(e) => setClassCode(e.target.value)}
                 aria-label="Class code"
               />
-              <Button onClick={handleJoinClass} disabled={joining || !classCode}>
+              <Button type="submit" disabled={joining || !classCode.trim()}>
                 {joining ? "Enrolling..." : "Enroll"}
               </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
       ) : (
@@ -367,6 +383,31 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
             </Button>
           </CardHeader>
         </Card>
+      )}
+
+      {!enrollmentError && enrollmentReady && courseId && (
+        dashboardError ? (
+          <Card className="shadow-none">
+            <CardHeader><CardTitle>Couldn’t load your assignments</CardTitle></CardHeader>
+            <CardContent><Button variant="outline" onClick={retryDashboard}>Try again</Button></CardContent>
+          </Card>
+        ) : !dataReady ? (
+          <p role="status" className="text-sm text-muted-foreground">Loading your assignments…</p>
+        ) : !firstSubmissionDone ? (
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle>{firstAssignment ? "Start your first assignment" : "You’re enrolled"}</CardTitle>
+              <CardDescription className="break-words">{firstAssignment?.title || "Your teacher hasn’t posted an assignment yet."}</CardDescription>
+            </CardHeader>
+            {firstAssignment && (
+              <CardContent>
+                <Button asChild>
+                  <Link href={`/student/assignment-view?id=${encodeURIComponent(firstAssignment.id)}`}>Start your first assignment</Link>
+                </Button>
+              </CardContent>
+            )}
+          </Card>
+        ) : null
       )}
 
       <ConfirmDialog
@@ -426,7 +467,7 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
             </ul>
           ) : (
             <p className="px-5 py-6 text-sm text-muted-foreground">
-              {dataReady ? "No coursework assigned yet." : "Loading coursework…"}
+              {dashboardError || enrollmentError ? "Coursework is unavailable." : dataReady ? "No coursework assigned yet." : "Loading coursework…"}
             </p>
           )}
         </CardContent>
@@ -499,10 +540,6 @@ export default function StudentDashboard({ onLoaded }: { onLoaded?: () => void }
         </div>
       </section>
 
-      <OnboardingChecklist
-        userRole="student"
-        metadata={{ completedCount: stats.completedAssignments, enrolled: !!courseId }}
-      />
     </div>
   );
 }

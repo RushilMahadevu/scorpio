@@ -4,12 +4,16 @@ jest.mock('../../src/lib/firebase-admin',()=>{
  const admin=require('firebase-admin');
  if(!process.env.FIRESTORE_EMULATOR_HOST)throw new Error('Emulator required');
  if(!admin.apps.length)admin.initializeApp({projectId:'demo-scorpio-security'});
- return {adminDb:admin.firestore(),adminAuth:{verifyIdToken:async(token:string)=>({uid:token,email:`${token}@example.test`,auth_time:Math.floor(Date.now()/1000)}),deleteUser:jest.fn(async()=>undefined)}};
+ return {adminDb:admin.firestore(),adminFieldWithValue:admin.firestore.FieldValue,adminAuth:{verifyIdToken:async(token:string)=>({uid:token,email:`${token}@example.test`,auth_time:Math.floor(Date.now()/1000)}),deleteUser:jest.fn(async()=>undefined)}};
 });
 import { POST as register } from '../../src/app/api/auth/register/route';
 import { POST as createAssignment, GET as teacherAssignment } from '../../src/app/api/assignments/route';
 import { POST as submit } from '../../src/app/api/submissions/route';
 import { DELETE as deleteAccount, GET as exportAccount } from '../../src/app/api/account/route';
+import { POST as issueNetworkInvite } from '../../src/app/api/teacher/network/invites/route';
+import { POST as changeMembership } from '../../src/app/api/teacher/network/membership/route';
+import { POST as createCourse } from '../../src/app/api/courses/route';
+import { findClassByCode } from '../../src/lib/class-enrollment';
 import { POST as enroll } from '../../src/app/api/student/enrollment/route';
 import { reserveBudget,settleBudget } from '../../functions/src/metering';
 import { adminDb } from '../../src/lib/firebase-admin';
@@ -77,4 +81,49 @@ test('account export and deletion cover all learning-record collections',async()
  const deleted=await deleteAccount(req('account','delete-me',{}));expect(deleted.status).toBe(200);
  for(const collection of ['submissions','practice_history','notebooks','tutor_sessions','portfolios'])expect((await adminDb.collection(collection).doc('delete-record').get()).exists).toBe(false);
  expect((await adminDb.collection('users').doc('delete-me').get()).exists).toBe(false);
+});
+
+test('only the Network owner can issue single-use colleague invites', async () => {
+  await adminDb.collection('users').doc('colleague-member').set({ role: 'teacher', organizationId: 'worg' });
+  await adminDb.collection('users').doc('colleague-existing').set({ role: 'teacher', organizationId: null });
+  expect((await issueNetworkInvite(req('teacher/network/invites', 'colleague-member', {}))).status).toBe(403);
+
+  const issued = await issueNetworkInvite(req('teacher/network/invites', 'wt', { organizationId: 'ignored' }));
+  expect(issued.status).toBe(201);
+  const { code } = await issued.json();
+  const inviteRef = adminDb.collection('teacherInviteCodes').doc(code);
+  const invite = (await inviteRef.get()).data()!;
+  expect(invite.organizationId).toBe('worg');
+  expect(invite.expiresAt.toMillis()).toBeGreaterThan(Date.now());
+
+  expect((await changeMembership(req('teacher/network/membership', 'colleague-member', { action: 'join', code }))).status).toBe(400);
+  expect((await changeMembership(req('teacher/network/membership', 'colleague-existing', { action: 'join', code }))).status).toBe(200);
+  expect((await inviteRef.get()).data()?.usedBy).toBe('colleague-existing');
+  expect((await register(req('auth/register', 'colleague-reused', { role: 'teacher', name: 'Reused', code }))).status).toBe(400);
+
+  const expired = await issueNetworkInvite(req('teacher/network/invites', 'wt', {}));
+  const { code: expiredCode } = await expired.json();
+  await adminDb.collection('teacherInviteCodes').doc(expiredCode).update({ expiresAt: new Date(0) });
+  expect((await register(req('auth/register', 'colleague-expired', { role: 'teacher', name: 'Expired', code: expiredCode }))).status).toBe(400);
+});
+
+test('class invite lookup supports legacy codes and enrollment cannot silently switch classes', async () => {
+  const course = adminDb.collection('courses').doc('legacy-invite-course');
+  await course.set({ name: 'Legacy class', teacherId: 'wt', code: 'Lab-1' });
+  const student = 'legacy-invite-student';
+  expect((await register(req('auth/register', student, { role: 'student', name: 'Returning student' }))).status).toBe(200);
+  expect(await findClassByCode('Lab-1')).toMatchObject({ courseId: course.id, name: 'Legacy class' });
+  expect(await findClassByCode('workflow')).toMatchObject({ courseId: 'wc' });
+  expect((await enroll(req('student/enrollment', student, { code: 'Lab-1' }))).status).toBe(200);
+  expect((await enroll(req('student/enrollment', student, { code: 'WORKFLOW' }))).status).toBe(409);
+  expect((await adminDb.collection('users').doc(student).get()).data()?.courseId).toBe(course.id);
+  await course.delete();
+  expect(await findClassByCode('Lab-1')).toBeNull();
+  expect((await register(req('auth/register', 'deleted-invite-student', { role: 'student', name: 'Student', code: 'Lab-1' }))).status).toBe(400);
+});
+
+test('a duplicate class code returns the actionable error', async () => {
+  const duplicate = await createCourse(req('courses', 'wt', { name: 'Duplicate', code: 'WORKFLOW' }));
+  expect(duplicate.status).toBe(400);
+  expect((await duplicate.json()).error).toBe('Class code already exists');
 });

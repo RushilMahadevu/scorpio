@@ -78,10 +78,12 @@ function CreateAssignmentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const forkId = searchParams?.get("fork");
+  const initialCourseId = searchParams?.get("courseId");
   const { user, profile, loading: authLoading } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+  const [chosenCourseId, setChosenCourseId] = useState("");
+  const selectedCourseId = chosenCourseId || courses.find(course => course.id === initialCourseId)?.id || "";
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -489,7 +491,7 @@ function CreateAssignmentForm() {
               <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8rem]">
                 <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                   <Label htmlFor="course">Class</Label>
-                  <Select value={selectedCourseId} onValueChange={setSelectedCourseId} required>
+                  <Select value={selectedCourseId} onValueChange={setChosenCourseId} required>
                     <SelectTrigger id="course" className="w-full">
                       <SelectValue placeholder="Choose a class" />
                     </SelectTrigger>
