@@ -71,7 +71,7 @@ export function LandingFAQ({ minimal = false }: { minimal?: boolean }) {
 
   if (minimal) {
     return (
-      <section id="faq" aria-labelledby="faq-heading" className="mx-auto grid max-w-6xl gap-6 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_2fr] lg:gap-12">
+      <section id="faq" data-scroll-reveal aria-labelledby="faq-heading" className="mx-auto grid max-w-6xl gap-6 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_2fr] lg:gap-12">
         <div>
           <h2 id="faq-heading" className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Common questions</h2>
           <p className="mt-3 max-w-xs leading-relaxed text-muted-foreground">

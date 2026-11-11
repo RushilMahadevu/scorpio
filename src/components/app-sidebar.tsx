@@ -14,7 +14,6 @@ import {
   PlaneLanding,
 } from "lucide-react";
 import { CompassLogo } from "@/components/ui/compass-logo";
-import { SettingsDialog } from "@/components/settings-dialog";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/auth-context";
@@ -44,6 +43,8 @@ const SustainabilityContent = dynamic(() => import("@/components/sustainability-
   ),
 });
 
+const SettingsDialog = dynamic(() => import("@/components/settings-dialog").then((module) => module.SettingsDialog));
+
 interface NavLink {
   href: string;
   label: string;
@@ -66,7 +67,6 @@ export interface AppSidebarProps {
   onToggle: () => void;
   sample?: {
     activeHref: string;
-    targets: Partial<Record<string, string>>;
     onSelect: (href: string) => void;
   };
 }
@@ -309,14 +309,11 @@ export function AppSidebar({
                       : false;
 
                     const Icon = item.icon;
-                    const sampleTarget = sample?.targets[item.href];
-
                     return (
                       <AnimatedSidebarMenuItem key={item.href}>
                         <AnimatedSidebarMenuButton
                           href={sample ? undefined : item.href}
                           isActive={sample ? sample.activeHref === item.href : isActive}
-                          disabled={!!sample && !sampleTarget}
                           onSelect={sample ? () => sample.onSelect(item.href) : undefined}
                           icon={<Icon className="size-5" />}
                           badge={
@@ -340,29 +337,6 @@ export function AppSidebar({
 
         {sample ? (
           <AnimatedSidebarFooter className="gap-2.5 border-t border-border/30 p-3">
-            <TooltipProvider>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <div className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-xs text-muted-foreground/60 bg-muted/20 cursor-help group-data-[state=collapsed]/sidebar:justify-center">
-                    <DoorClosedLocked className="size-4.5 shrink-0 text-muted-foreground/60" />
-                    <span className="truncate group-data-[state=collapsed]/sidebar:hidden font-medium">
-                      Landing Locked
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="right"
-                  className="max-w-[220px] text-xs font-medium p-3 bg-background border-border/50 text-foreground"
-                >
-                  The landing page is disabled while{" "}
-                  <span className="text-primary italic font-semibold">
-                    &ldquo;Auto-Portal Redirect&rdquo;
-                  </span>{" "}
-                  is ON. Disable it in settings to visit the Landing page.
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
             <div className="flex items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-muted/40 group-data-[state=collapsed]/sidebar:justify-center">
               <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-xs font-bold text-primary">
                 MC
@@ -372,15 +346,12 @@ export function AppSidebar({
                   Dr. Maya Chen
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  mchen@sageridge.org
+                  Sample teacher
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1 border-t border-border/20 group-data-[state=collapsed]/sidebar:flex-col group-data-[state=collapsed]/sidebar:gap-2">
-              <div className="flex items-center gap-1 group-data-[state=collapsed]/sidebar:flex-col">
-                <SettingsDialog />
-              </div>
+            <div className="hidden items-center justify-end border-t border-border/20 pt-1 md:flex group-data-[state=collapsed]/sidebar:justify-center">
               <AnimatedSidebarTrigger
                 className="size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}

@@ -1,26 +1,16 @@
-"use client";
-
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { ClassroomBento } from "@/components/landing/classroom-bento";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Comparison } from "@/components/landing/comparison";
+import { HomeChatbot, HomeHeader, HomeScrollReveal } from "@/components/landing/home-interactions";
+import reveal from "@/components/landing/home-reveal.module.css";
 import { LandingHero } from "@/components/landing/LandingHero";
-import { SiteHeader } from "@/components/landing/site-header";
+import { LandingFAQ } from "@/components/landing-faq";
 import { LoadingScreen } from "@/components/loading-screen";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { SpaceBackground } from "@/components/ui/space-background";
-
-const LandingFAQ = dynamic(() => import("@/components/landing-faq").then((m) => m.LandingFAQ));
-const LandingChatbot = dynamic(
-  () => import("@/components/landing-chatbot").then((m) => m.LandingChatbot),
-  { ssr: false }
-);
-
-const HOME_SECTIONS = ["home", "partners", "features", "solution", "problem", "efficacy", "pricing-teaser", "faq", "cta"];
 
 const footerLinks = [
   { label: "About", href: "/about" },
@@ -33,42 +23,18 @@ const footerLinks = [
 ];
 
 export default function Home() {
-  const [activeNav, setActiveNav] = useState("home");
-
-  useEffect(() => {
-    let frame: number;
-    const updateActiveSection = () => {
-      const activeSection = HOME_SECTIONS.find((id) => {
-        const bounds = document.getElementById(id)?.getBoundingClientRect();
-        return bounds && bounds.top <= 100 && bounds.bottom > 100;
-      });
-      if (activeSection) setActiveNav(activeSection);
-    };
-
-    const handleScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(updateActiveSection);
-    };
-
-    updateActiveSection();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      cancelAnimationFrame(frame);
-    };
-  }, []);
-
   return (
-    <div className="relative isolate min-h-screen">
+    <div id="home-page" className={`${reveal.scope} relative isolate min-h-screen`}>
       <LoadingScreen />
       <SpaceBackground />
-      <SiteHeader activeSection={activeNav} />
+      <HomeHeader />
 
       <main className="overflow-x-clip [&>section]:scroll-mt-20">
+        <HomeScrollReveal />
         <LandingHero />
 
         <section id="partners" className="mx-auto max-w-6xl px-5 sm:px-8" aria-labelledby="partners-heading">
-          <div className="flex flex-col items-start gap-5 border-y border-border py-7 sm:flex-row sm:items-center sm:justify-between sm:gap-12 sm:py-9">
+          <div data-scroll-reveal className="flex flex-col items-start gap-5 border-y border-border py-7 sm:flex-row sm:items-center sm:justify-between sm:gap-12 sm:py-9">
             <div>
               <p className="text-sm text-muted-foreground">School partner</p>
               <h2 id="partners-heading" className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Sage Ridge School</h2>
@@ -95,12 +61,12 @@ export default function Home() {
 
         <ClassroomBento />
 
-        <section id="efficacy" aria-labelledby="research-heading">
+        <section id="efficacy" data-scroll-reveal aria-labelledby="research-heading">
           <Comparison />
         </section>
 
         <section id="pricing-teaser" className="mx-auto max-w-6xl px-5 sm:px-8">
-          <div className="flex flex-col gap-4 border-y border-border py-7 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
+          <div data-scroll-reveal className="flex flex-col gap-4 border-y border-border py-7 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">One subscription for all your students</h2>
               <p className="mt-2 text-muted-foreground">Compare plans and see how AI usage is billed.</p>
@@ -114,14 +80,14 @@ export default function Home() {
         <LandingFAQ minimal />
 
         <section id="cta" aria-labelledby="cta-heading" className="mx-auto max-w-6xl px-5 pb-14 sm:px-8 sm:pb-20">
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-12 text-center sm:px-10 sm:py-16 lg:py-20">
+          <div data-scroll-reveal className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-12 text-center sm:px-10 sm:py-16 lg:py-20">
             <h2 id="cta-heading" className="mx-auto max-w-3xl text-balance text-4xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl lg:text-6xl">Try Scorpio with your class</h2>
             <p className="mx-auto mt-4 max-w-lg text-pretty leading-relaxed text-muted-foreground sm:text-lg">
               Start with an assignment you already teach. Scorpio works alongside your existing LMS.
             </p>
             <div className="mx-auto mt-8 flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center">
               <Button asChild className="group h-12 rounded-lg px-6 text-base motion-reduce:transition-none sm:h-14">
-                <Link href="/signup">
+                <Link href="/signup" prefetch={false}>
                   Get faculty access
                   <ArrowRight aria-hidden="true" className="size-4 motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5 motion-safe:group-focus-visible:translate-x-0.5" />
                 </Link>
@@ -135,7 +101,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-7 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
+        <div data-scroll-reveal className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-7 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
           <span className="flex items-center gap-2 text-sm font-semibold">
             <Logo size={18} aria-hidden="true" /> Scorpio
           </span>
@@ -153,7 +119,7 @@ export default function Home() {
         </div>
       </footer>
 
-      <LandingChatbot />
+      <HomeChatbot />
     </div>
   );
 }

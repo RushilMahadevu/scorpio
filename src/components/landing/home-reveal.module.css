@@ -1,0 +1,73 @@
+@media (prefers-reduced-motion: no-preference) {
+  .enter,
+  .scope [data-scroll-reveal] {
+    animation: reveal 520ms ease-out var(--reveal-delay, 0ms) backwards;
+  }
+
+  .scope [data-reveal-pending] {
+    animation: none;
+    opacity: 0;
+  }
+
+  .scope [data-revealed] {
+    animation: reveal 1s cubic-bezier(0.32, 0, 0.35, 1);
+  }
+
+  .description {
+    --reveal-delay: 65ms;
+  }
+
+  .actions {
+    --reveal-delay: 125ms;
+  }
+
+  .preview {
+    animation: reveal-preview 1s ease-out 185ms backwards;
+  }
+
+  .scope :global(#scorpio-intro[open]) ~ * :is(.enter, .preview, [data-scroll-reveal]) {
+    animation-play-state: paused;
+  }
+
+  .scope:has(:target) :is(.enter, .preview),
+  .scope [data-scroll-reveal]:is(:target, :has(:target)),
+  .scope :target [data-scroll-reveal] {
+    animation: none;
+    opacity: 1;
+  }
+
+  .enter:focus-within,
+  .preview:focus-visible,
+  .scope [data-scroll-reveal]:focus-within {
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@keyframes reveal {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  60% {
+    filter: blur(0);
+  }
+  to {
+    filter: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-preview {
+  from {
+    filter: blur(5px);
+    opacity: 0;
+  }
+  to {
+    filter: none;
+    opacity: 1;
+  }
+}

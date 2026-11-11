@@ -36,6 +36,7 @@ import {
   Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import reveal from "./home-reveal.module.css";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -349,7 +350,7 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
       <div className={cn(
         "relative z-10 grid grid-cols-[1fr_auto] items-center mx-auto w-full transition-[height] duration-300 motion-reduce:transition-none",
         isHomePage
-          ? "gap-2 px-3 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
+          ? cn(reveal.enter, "gap-2 px-3 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]")
           : "max-w-[1440px] gap-6 px-4 sm:px-6 md:px-10 xl:grid-cols-[auto_1fr_auto]",
         isScrolled ? "h-[54px]" : "h-[64px]"
       )}>
@@ -442,14 +443,14 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
               isHomePage ? "min-[360px]:inline-flex h-9 px-2 hover:bg-transparent sm:px-3" : "sm:inline-flex"
             )}
           >
-            <Link href="/login">{isHomePage ? "Log in" : "Login"}</Link>
+            <Link href="/login" prefetch={isHomePage ? false : undefined}>{isHomePage ? "Log in" : "Login"}</Link>
           </Button>
           <Button
             asChild
             size="sm"
             className={isHomePage ? "h-9 rounded-lg px-3 font-semibold sm:px-4" : "rounded-full shadow-sm shadow-primary/10"}
           >
-            <Link href="/signup">Sign up</Link>
+            <Link href="/signup" prefetch={isHomePage ? false : undefined}>Sign up</Link>
           </Button>
 
           {/* Mobile hamburger */}
@@ -565,10 +566,10 @@ export function SiteHeader({ activeSection }: SiteHeaderProps) {
 
               <div className="px-5 pb-6 pt-4 border-t border-border/30 grid grid-cols-2 gap-2">
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/login" onClick={() => setMenuOpen(false)}>{isHomePage ? "Log in" : "Login"}</Link>
+                  <Link href="/login" prefetch={isHomePage ? false : undefined} onClick={() => setMenuOpen(false)}>{isHomePage ? "Log in" : "Login"}</Link>
                 </Button>
                 <Button asChild className="w-full">
-                  <Link href="/signup" onClick={() => setMenuOpen(false)}>Sign up</Link>
+                  <Link href="/signup" prefetch={isHomePage ? false : undefined} onClick={() => setMenuOpen(false)}>Sign up</Link>
                 </Button>
               </div>
             </SheetContent>

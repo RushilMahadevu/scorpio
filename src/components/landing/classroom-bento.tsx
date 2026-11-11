@@ -19,7 +19,7 @@ const workflowSteps = [
 export function ClassroomBento() {
   return (
     <section id="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24" aria-labelledby="features-heading">
-      <div className="mb-7 flex flex-wrap items-end justify-between gap-4 sm:mb-9">
+      <div data-scroll-reveal className="mb-7 flex flex-wrap items-end justify-between gap-4 sm:mb-9">
         <div>
           <p className="mb-2 text-sm font-medium text-primary">The classroom workflow</p>
           <h2 id="features-heading" className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">How Scorpio fits into a physics class</h2>
@@ -29,7 +29,7 @@ export function ClassroomBento() {
         </Link>
       </div>
 
-      <ol role="list" className="grid list-none divide-y divide-border border-y border-border lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+      <ol data-scroll-reveal role="list" className="grid list-none divide-y divide-border border-y border-border lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         {workflowSteps.map(({ title, description }, index) => (
           <li key={title} className="flex items-start gap-3 py-4 lg:p-5">
             <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
@@ -43,7 +43,7 @@ export function ClassroomBento() {
         ))}
       </ol>
 
-      <figure id="solution" className="mx-auto mt-6 max-w-3xl scroll-mt-20 overflow-hidden rounded-xl border border-border bg-card sm:mt-8">
+      <figure id="solution" data-scroll-reveal className="mx-auto mt-6 max-w-3xl scroll-mt-20 overflow-hidden rounded-xl border border-border bg-card sm:mt-8">
         <figcaption id="problem" className="scroll-mt-20 border-b border-border px-4 py-3 text-sm font-medium sm:px-5">
           Raise tutoring session <span aria-hidden="true" className="px-1.5 text-muted-foreground">·</span>{" "}
           <span className="text-muted-foreground">Forces and motion</span>

@@ -1,7 +1,38 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, IBM_Plex_Sans, Roboto_Mono, PT_Serif, Atkinson_Hyperlegible } from "next/font/google";
+import {
+  Atkinson_Hyperlegible,
+  IBM_Plex_Mono,
+  IBM_Plex_Sans,
+  Inter,
+  Lora,
+  Plus_Jakarta_Sans,
+  PT_Serif,
+  Roboto_Mono,
+} from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: false,
+});
+
+const lora = Lora({
+  variable: "--font-lora",
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: false,
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: false,
+});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -113,7 +144,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${plusJakarta.variable} ${lora.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

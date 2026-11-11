@@ -1,107 +1,94 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { onAuthChange, db } from "@/lib/firebase";
-import { UserProfile, UserRole } from "@/lib/types";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import type { User } from "firebase/auth";
+import type { UserProfile, UserRole } from "@/lib/types";
 
-// UserRole redefined for the context if necessary, but we'll use the type from types.ts
 type AuthRole = UserRole | "checking" | null;
 
-interface AuthContextType {
+interface AuthState {
   user: User | null;
   role: AuthRole;
   profile: UserProfile | null;
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({
+const initialState: AuthState = {
   user: null,
   role: null,
   profile: null,
   loading: true,
-});
+};
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<AuthRole>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+const AuthContext = createContext(initialState);
+
+export function AuthProvider({ children, needsAuth }: { children: ReactNode; needsAuth: boolean }) {
+  const [state, setState] = useState(initialState);
+  const [started, setStarted] = useState(needsAuth);
+
+  // After an app route starts auth, keep the session listener across navigation.
+  if (needsAuth && !started) setStarted(true);
 
   useEffect(() => {
-    let profileUnsubscribe: (() => void) | null = null;
-    
-    const authUnsubscribe = onAuthChange(async (firebaseUser) => {
-      try {
-        setUser(firebaseUser);
-        
-        // Cleanup previous profile listener
-        if (profileUnsubscribe) {
-          profileUnsubscribe();
-          profileUnsubscribe = null;
+    if (!started) return;
+
+    let disposed = false;
+    let authUnsubscribe: (() => void) | undefined;
+    let profileUnsubscribe: (() => void) | undefined;
+
+    async function connect() {
+      const [{ onAuthChange, db, auth }, { doc, onSnapshot }] = await Promise.all([
+        import("@/lib/firebase"),
+        import("firebase/firestore"),
+      ]);
+      if (disposed) return;
+
+      authUnsubscribe = onAuthChange((user) => {
+        profileUnsubscribe?.();
+        profileUnsubscribe = undefined;
+
+        if (!user) {
+          setState({ ...initialState, loading: false });
+          fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
+          return;
         }
 
-        if (firebaseUser) {
-          if (!role || role === "checking") {
-            setRole("checking");
+        setState({ user, role: "checking", profile: null, loading: true });
+        profileUnsubscribe = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
+          const profile = snapshot.exists() ? (snapshot.data() as UserProfile) : null;
+          setState({ user, role: profile?.role ?? null, profile, loading: false });
+
+          if (profile) {
+            user.getIdToken().then((idToken) => {
+              if (disposed || auth.currentUser !== user) return;
+              return fetch("/api/auth/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken, role: profile.role, organizationId: profile.organizationId }),
+              });
+            }).catch(() => {});
           }
-          
-          // Use onSnapshot for real-time profile updates (includes preferences)
-          const userDocRef = doc(db, "users", firebaseUser.uid);
-                    profileUnsubscribe = onSnapshot(userDocRef, async (userSnap: any) => {
-            if (userSnap.exists()) {
-              const userData = userSnap.data() as UserProfile;
-              setRole(userData.role);
-              setProfile(userData);
-              setLoading(false);
+        }, (error) => {
+          if (error.code !== "permission-denied") console.error("Profile snapshot error:", error);
+          setState({ user, role: null, profile: null, loading: false });
+        });
+      });
+    }
 
-              // Auto-sync session cookie for middleware
-              firebaseUser.getIdToken().then((idToken) => {
-                fetch('/api/auth/session', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ idToken, role: userData.role, organizationId: userData.organizationId }),
-                }).catch(() => {});
-              }).catch(() => {});
-            } else {
-              setRole(null);
-              setProfile(null);
-              setLoading(false);
-            }
-                    }, (err: any) => {
-            if (err.code !== 'permission-denied') {
-              console.error("Profile snapshot error:", err);
-            }
-            setLoading(false);
-          });
-        } else {
-          setRole(null);
-          setProfile(null);
-          setLoading(false);
-          // Clean up session cookie on logout
-          fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
-        }
-      } catch (error: any) {
-        if (error?.code !== 'permission-denied') {
-          console.error("Error setting up auth listener:", error);
-        }
-        setRole(null);
-        setLoading(false);
-      }
+    connect().catch((error) => {
+      if (disposed) return;
+      console.error("Error setting up auth listener:", error);
+      setState({ ...initialState, loading: false });
     });
 
     return () => {
-      authUnsubscribe();
-      if (profileUnsubscribe) profileUnsubscribe();
+      disposed = true;
+      authUnsubscribe?.();
+      profileUnsubscribe?.();
     };
-  }, []);
+  }, [started]);
 
-  return (
-    <AuthContext.Provider value={{ user, role, profile, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

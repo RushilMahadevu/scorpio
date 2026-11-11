@@ -1,21 +1,20 @@
-"use client";
-
+import { DoorOpen } from "lucide-react";
 import Link from "next/link";
+import { TeacherDemoLink } from "@/components/landing/teacher-demo-link";
 import { Button } from "@/components/ui/button";
-import { RaiseLogo } from "@/components/ui/raise-logo";
-import { WorkspacePreview } from "@/components/landing/workspace-preview";
+import reveal from "./home-reveal.module.css";
 
 export function LandingHero() {
   return (
     <section id="home" className="pb-16 pt-28 sm:pb-24 sm:pt-36">
       <div className="mx-auto max-w-4xl px-5 text-center sm:px-8">
-        <h1 className="mx-auto max-w-[20ch] text-balance text-[clamp(2.4rem,6vw,5rem)] font-semibold leading-[1.02] tracking-[-0.06em]">
+        <h1 className={`${reveal.enter} mx-auto max-w-[20ch] text-balance text-[clamp(2.4rem,6vw,5rem)] font-semibold leading-[1.02] tracking-[-0.06em]`}>
           The workspace for physics teachers
         </h1>
-        <p className="mx-auto mt-5 max-w-xl text-pretty leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg">
+        <p className={`${reveal.enter} ${reveal.description} mx-auto mt-5 max-w-xl text-pretty leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg`}>
           Post assignments, see where your class gets stuck, and give students hints they can work through on their own.
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:mt-8 sm:gap-4">
+        <div className={`${reveal.enter} ${reveal.actions} mt-6 flex flex-wrap items-center justify-center gap-2 sm:mt-8 sm:gap-4`}>
           <Button
             asChild
             className="group relative isolate h-12 gap-2 rounded-xl pl-4 pr-1.5 shadow-sm shadow-primary/20 hover:bg-primary dark:bg-primary/80 dark:hover:bg-primary/80 motion-safe:active:scale-[0.98] motion-reduce:transition-none"
@@ -51,25 +50,25 @@ export function LandingHero() {
             variant="outline"
             className="group h-12 rounded-xl pl-2 pr-4 motion-safe:active:scale-[0.98] motion-reduce:transition-none"
           >
-            <Link href="/ai">
+            <TeacherDemoLink>
               <div
                 aria-hidden="true"
                 className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20 group-focus-visible:bg-primary/20 motion-reduce:transition-none"
               >
-                <RaiseLogo size={16} />
+                <DoorOpen className="size-4" />
               </div>
-              Try a physics hint
-            </Link>
+              Open sample workspace
+            </TeacherDemoLink>
           </Button>
         </div>
       </div>
 
-      <div className="relative isolate mx-auto mt-12 max-w-[86rem] px-4 sm:mt-16 sm:px-8 lg:mt-20 lg:px-12">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -inset-x-12 -bottom-14 top-1/3 -z-10 bg-[radial-gradient(ellipse_56%_24%_at_50%_76%,var(--color-muted-foreground),transparent)] opacity-15 sm:-bottom-20 dark:opacity-30"
+      <div className="mx-auto mt-12 max-w-[86rem] px-4 sm:mt-16 sm:px-8 lg:mt-20 lg:px-12">
+        <TeacherDemoLink
+          id="dashboard-preview"
+          aria-label="Explore the sample teacher dashboard"
+          className={`${reveal.preview} mx-auto block aspect-[358/590] max-w-md scroll-mt-20 rounded-xl border border-border bg-card bg-[url('/demos/teacher-dashboard-mobile-light.webp')] bg-cover bg-center transition-colors hover:border-primary/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring motion-reduce:transition-none dark:bg-[url('/demos/teacher-dashboard-mobile-dark.webp')] md:aspect-[16/9] md:max-w-none md:bg-[url('/demos/teacher-dashboard-light.webp')] dark:md:bg-[url('/demos/teacher-dashboard-dark.webp')]`}
         />
-        <WorkspacePreview />
       </div>
     </section>
   );

@@ -80,10 +80,6 @@ const PREVIEW_PATHS = [
 
 export type PreviewPathname = (typeof PREVIEW_PATHS)[number];
 
-const PREVIEW_TARGETS: Partial<Record<string, string>> = Object.fromEntries(
-  PREVIEW_PATHS.map((p) => [p, "#dashboard-preview"])
-);
-
 function isPreviewPathname(path: string): path is PreviewPathname {
   return (PREVIEW_PATHS as readonly string[]).includes(path);
 }
@@ -359,18 +355,13 @@ export function WorkspacePreview() {
   };
 
   return (
-    <div
-      id="dashboard-preview"
-      data-lenis-prevent-wheel
-      className="scroll-mt-20 overflow-hidden rounded-xl border border-border bg-card text-left shadow-xl shadow-black/10 dark:shadow-black/40"
-    >
-      <div className="flex h-[clamp(30rem,74svh,42rem)] flex-col overflow-hidden md:h-[clamp(36rem,82svh,52rem)] md:flex-row">
+    <div id="dashboard-preview" className="flex min-h-0 flex-1 flex-col bg-card">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <TeacherSidebar
           isCollapsed={isSidebarCollapsed}
           onToggle={() => setIsSidebarCollapsed((v) => !v)}
           sample={{
             activeHref: activePath,
-            targets: PREVIEW_TARGETS,
             onSelect: navigate,
           }}
         />
@@ -416,7 +407,7 @@ export function WorkspacePreview() {
                         {
                           title: "4. Automated Grading & Analytics",
                           description:
-                            "Submissions are evaluated step-by-step against your custom rubric. Review AI reasoning and student work in the Grading Terminal, or open Student Insights to inspect 6-axis cognitive radar portfolios.",
+                            "Submissions are evaluated step-by-step against your custom rubric. Review AI reasoning and student work in the Grading Terminal, or open Learning insights to review student strengths and focus areas.",
                           icon: HelpCircle,
                         },
                       ]}
@@ -784,7 +775,7 @@ export function WorkspacePreview() {
         open={!!courseToDelete}
         onOpenChange={(open) => !open && setCourseToDelete(null)}
         title="Delete class?"
-        description={`This permanently removes "${courseToDelete?.name}" (${courseToDelete?.code}) from your workspace.`}
+        description={`This removes "${courseToDelete?.name}" (${courseToDelete?.code}) from this sample workspace.`}
         confirmText="Delete"
         variant="destructive"
         onConfirm={handleDeleteCourse}

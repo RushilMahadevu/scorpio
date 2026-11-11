@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 import { RaiseLogo } from './ui/raise-logo';
+import reveal from './landing/home-reveal.module.css';
 
 const LIMIT = 10;
 const VISITOR_KEY = 'scorpio_landing_visitor_id';
@@ -138,7 +139,7 @@ export function LandingChatbot() {
         aria-expanded={isOpen}
         aria-controls={isOpen ? 'landing-raise-chat' : undefined}
         aria-label={isOpen ? 'Close Raise chat' : 'Ask Raise'}
-        className="flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium text-primary-foreground shadow-md transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring motion-reduce:transition-none sm:px-4"
+        className={cn(reveal.enter, "flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium text-primary-foreground shadow-md transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring motion-reduce:transition-none sm:px-4")}
       >
         {isOpen ? <X aria-hidden="true" className="size-4" /> : <RaiseLogo size={18} aria-hidden="true" />}
         <span className="hidden sm:inline">{isOpen ? 'Close' : 'Ask Raise'}</span>
@@ -182,7 +183,6 @@ export function LandingChatbot() {
 
             <div
               ref={scrollRef}
-              data-lenis-prevent
               className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4"
             >
               {!hasMessages && (

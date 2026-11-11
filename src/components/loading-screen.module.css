@@ -1,6 +1,5 @@
 .splash[open] {
-  /* The caption and progress line both finish at 1.2 s. */
-  animation: fade-out 180ms ease-out 1300ms both;
+  animation: fade-out 120ms ease-out 620ms both;
 }
 
 .grid {
@@ -13,33 +12,33 @@
 
 .splash[open] .grid,
 .splash[open] .logo {
-  animation: settle 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: settle 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .splash[open] .compass,
 .splash[open] .needle {
   stroke-dasharray: 1;
-  animation: draw 800ms ease-in-out 100ms both;
+  animation: draw 420ms ease-in-out 50ms both;
 }
 
 .splash[open] .needle {
-  animation-delay: 200ms;
+  animation-delay: 130ms;
 }
 
 .splash[open] .ring {
-  animation: expand 1100ms ease-out both;
+  animation: expand 560ms ease-out both;
 }
 
 .splash[open] .letter {
-  animation: reveal-letter 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: reveal-letter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .splash[open] .caption {
-  animation: reveal-caption 400ms ease-out 800ms both;
+  animation: reveal-caption 230ms ease-out 320ms both;
 }
 
 .splash[open] .progress {
-  animation: fill-progress 1200ms linear both;
+  animation: fill-progress 590ms linear both;
 }
 
 @keyframes settle {
@@ -58,8 +57,8 @@
 }
 
 @keyframes reveal-letter {
-  from { transform: translateX(-25px); opacity: 0; filter: blur(24px); }
-  to { transform: translateX(0); opacity: 1; filter: blur(0); }
+  from { transform: translateX(-12px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes reveal-caption {
