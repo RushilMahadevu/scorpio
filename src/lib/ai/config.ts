@@ -45,12 +45,21 @@ async function callGeminiDirect(request: any) {
   };
 
   const context = billingContext.getStore();
-  if (!context?.organizationId) throw new Error('An authenticated network is required for AI');
+  const isExempt = context?.type === 'landing' || context?.type === 'research';
+  if (!context?.organizationId && !isExempt) throw new Error('An authenticated network is required for AI');
   const payloadText = JSON.stringify(payload);
   const inputBytes = Buffer.byteLength(payloadText);
   if (inputBytes > 100000) throw new Error('Conversation is too long; start a new conversation');
-  const reservation = await reserveBudget(adminDb, context.organizationId, context.type, context.userId,
-    estimateMaximumCost(inputBytes, payload.generationConfig.maxOutputTokens));
+  let reservation: string | null = null;
+  if (context?.organizationId) {
+    try {
+      reservation = await reserveBudget(adminDb, context.organizationId, context.type, context.userId,
+        estimateMaximumCost(inputBytes, payload.generationConfig.maxOutputTokens));
+    } catch (budgetErr) {
+      if (!isExempt) throw budgetErr;
+      console.warn(`[AI] ${context.type} reservation skipped:`, budgetErr instanceof Error ? budgetErr.message : budgetErr);
+    }
+  }
   // On transport uncertainty the reservation remains held for reconciliation, preventing overspend.
   const res = await fetch(url, {
     method: "POST",
@@ -63,14 +72,17 @@ async function callGeminiDirect(request: any) {
   });
 
   if (!res.ok) {
-    await settleBudget(adminDb, reservation, 0, 0);
+    if (reservation) await settleBudget(adminDb, reservation, 0, 0);
     throw new Error(`AI provider returned ${res.status}`);
   }
 
   const data = await res.json();
-  if (!data.usageMetadata) throw new Error('Provider did not return usage; reservation retained for reconciliation');
-  await settleBudget(adminDb, reservation, data.usageMetadata.promptTokenCount || 0,
-    (data.usageMetadata.candidatesTokenCount || 0) + (data.usageMetadata.thoughtsTokenCount || 0));
+  if (!data.usageMetadata) {
+    if (reservation) throw new Error('Provider did not return usage; reservation retained for reconciliation');
+  } else if (reservation) {
+    await settleBudget(adminDb, reservation, data.usageMetadata.promptTokenCount || 0,
+      (data.usageMetadata.candidatesTokenCount || 0) + (data.usageMetadata.thoughtsTokenCount || 0));
+  }
   const candidate = data.candidates?.[0];
   const text = candidate?.content?.parts?.map((p: any) => p.text).join("") || "";
 

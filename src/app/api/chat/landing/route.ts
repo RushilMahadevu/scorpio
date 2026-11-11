@@ -16,7 +16,7 @@ const LANDING_LIMIT = 10;
 // Developer's org ID from env — all landing page AI costs are billed here
 const LANDING_ORG_ID = process.env.LANDING_ORG_ID;
 
-const LANDING_SYSTEM_PROMPT = `You are Raise, Scorpio's AI learning assistant and expert product guide embedded in the Scorpio Physics LMS public landing page. Your role is to help prospective teachers and institutions understand Scorpio's value, answer questions about features, research, pricing, and guide visitors toward signing up.
+const LANDING_SYSTEM_PROMPT = `You are Raise, Scorpio's AI learning assistant and expert product guide embedded in the Scorpio Physics LMS public landing page and Try AI playground. Your role is to help prospective teachers, students, and institutions understand Scorpio's value, answer questions about features, research, pricing, and demonstrate Scorpio's signature Socratic physics tutoring.
 
 ABOUT SCORPIO:
 Scorpio is the world's only AI Physics LMS. It was built around a 4-layer Socratic scaffolding architecture that makes "homework cheating" structurally impossible — the AI never answers questions directly; it guides students through the derivation process step by step.
@@ -49,6 +49,13 @@ PRICING:
 - Contact rushil@scorpioedu.org for institutional or departmental pricing
 - Sign up at scorpioedu.org/signup — teachers create a Scorpio Network after onboarding
 
+SOCRATIC TUTORING (PHYSICS QUESTIONS / DEMO / TRY AI):
+When a visitor asks a physics question, conceptual problem, homework question, or derivation:
+- Embody Raise, Scorpio's Socratic physics learning assistant.
+- NEVER give direct numerical answers, final formulas, or complete solutions.
+- Guide the student step by step using targeted Socratic questions, prompting them to identify relevant physical principles, draw free-body diagrams, break down forces into components, and write governing equations.
+- Format all mathematical notation, formulas, variables, and units using clean LaTeX ($...$ inline, $$...$$ block).
+
 TONE: Be warm, confident, and genuinely helpful. You're excited about Scorpio because you know it actually works. Keep most answers to 2–4 sentences. Use markdown formatting (bold, bullets) for clarity. When referencing paths, ALWAYS use clickable markdown links with scorpioedu.org as the base, e.g., [scorpioedu.org/research](https://scorpioedu.org/research). Guide interested visitors specifically toward scorpioedu.org/signup. Never make up features that don't exist.`;
 
 export async function POST(req: NextRequest) {
@@ -59,16 +66,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (!adminDb) {
-      return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
-    }
-
     const rate = await checkRateLimit(req, null, 'landing', { windowMs: 60000, maxRequests: 5 });
     if (!rate.allowed) return NextResponse.json({ error: rate.error }, { status: 429 });
-    // Check and increment per-visitor usage in Firestore
-    const visitorRef = adminDb.collection('landing_visitors').doc(visitorId);
-    const visitorDoc = await visitorRef.get();
-    const currentCount = visitorDoc.exists ? (visitorDoc.data()?.messageCount ?? 0) : 0;
+
+    let currentCount = 0;
+    let visitorRef: any = null;
+    if (adminDb && typeof adminDb.collection === 'function') {
+      try {
+        visitorRef = adminDb.collection('landing_visitors').doc(visitorId);
+        const visitorDoc = await visitorRef.get();
+        currentCount = visitorDoc.exists ? (visitorDoc.data()?.messageCount ?? 0) : 0;
+      } catch (dbErr) {
+        console.warn('[Landing Chat] Firestore visitor check failed:', dbErr);
+      }
+    }
 
     if (currentCount >= LANDING_LIMIT) {
       return NextResponse.json({
@@ -77,13 +88,18 @@ export async function POST(req: NextRequest) {
       }, { status: 429 });
     }
 
-    // Increment usage atomically
-    await visitorRef.set({
-      messageCount: currentCount + 1,
-      lastMessageAt: new Date(),
-      visitorId,
-      ...(currentCount === 0 ? { firstMessageAt: new Date() } : {}),
-    }, { merge: true });
+    if (visitorRef) {
+      try {
+        await visitorRef.set({
+          messageCount: currentCount + 1,
+          lastMessageAt: new Date(),
+          visitorId,
+          ...(currentCount === 0 ? { firstMessageAt: new Date() } : {}),
+        }, { merge: true });
+      } catch (dbErr) {
+        console.warn('[Landing Chat] Firestore visitor increment failed:', dbErr);
+      }
+    }
 
     // Generate AI response (server-side direct REST call — avoids firebase/ai client SDK in Cloud Run)
     const result = await billingContext.run({ organizationId: LANDING_ORG_ID || "", type: "landing" }, () => callGeminiDirect(`${LANDING_SYSTEM_PROMPT}\n\nVisitor question: ${message}`));

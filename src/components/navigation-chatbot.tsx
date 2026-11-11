@@ -8,7 +8,8 @@ import {
   X, Send, Home, FileText, BarChart,
   Upload, Users, BookOpen, Rocket, Zap,
   NotebookPen, Building2, LifeBuoy,
-  Compass, ArrowRight, Image as ImageIcon, Trash2, Hand
+  Compass, ArrowRight, Image as ImageIcon, Trash2, Hand,
+  Maximize2, Minimize2
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -35,6 +36,7 @@ interface Message {
   content: string;
   navigation?: NavDestination[];
   isWelcome?: boolean;
+  isTyping?: boolean;
 }
 
 interface QuickAction {
@@ -84,6 +86,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>('nav');
 
   // Support Form State
@@ -98,11 +101,19 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(
     userRole === 'teacher' ? teacherSuggested : studentSuggested
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearInterval(typingTimerRef.current);
+    };
+  }, []);
 
   const quickActions = userRole === 'student' ? studentQuickActions : teacherQuickActions;
 
@@ -282,11 +293,49 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
       }
 
       const navDestinations = extractAllNavigationPaths(data.text);
+      const fullText = data.text;
+      const tokens = fullText.split(/(\s+)/);
+      let i = 0;
+      let accumulated = '';
+      setIsTyping(true);
+
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: data.text,
+        content: '',
         navigation: navDestinations.length > 0 ? navDestinations : undefined,
+        isTyping: true,
       }]);
+
+      if (typingTimerRef.current) clearInterval(typingTimerRef.current);
+
+      typingTimerRef.current = setInterval(() => {
+        if (i < tokens.length) {
+          accumulated += tokens[i];
+          i++;
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last && last.role === 'assistant') {
+              next[next.length - 1] = { ...last, content: accumulated, isTyping: true };
+            }
+            return next;
+          });
+        } else {
+          if (typingTimerRef.current) {
+            clearInterval(typingTimerRef.current);
+            typingTimerRef.current = null;
+          }
+          setIsTyping(false);
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last && last.role === 'assistant') {
+              next[next.length - 1] = { ...last, content: fullText, isTyping: false };
+            }
+            return next;
+          });
+        }
+      }, 18);
 
       if (data.suggestedPrompts?.length) {
         setSuggestedPrompts(data.suggestedPrompts);
@@ -329,53 +378,75 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
 
       {/* Panel */}
       {isOpen && (
-        <div className={cn(
-          "fixed bottom-[74px] sm:bottom-20 right-3 sm:right-6 z-50 flex flex-col",
-          "w-[calc(100vw-1.5rem)] sm:w-[480px] h-[560px] max-h-[calc(100vh-6.5rem)]",
-          "bg-background border border-border rounded-2xl shadow-2xl overflow-hidden",
-          "animate-in fade-in-0 zoom-in-95 duration-150"
-        )}>
-          {/* Header */}
-          <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 border-b border-border/70 bg-muted/30 shrink-0">
-            {/* Tab Switcher: Nav Help first, Support / Ticket after Nav Help */}
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-full">
-              <button
-                type="button"
-                onClick={() => setActiveTab('nav')}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                  activeTab === 'nav'
-                    ? "bg-background text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Compass className="h-3.5 w-3.5" />
-                <span>Nav Help</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('support')}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                  activeTab === 'support'
-                    ? "bg-background text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <LifeBuoy className="h-3.5 w-3.5" />
-                <span>Support / Ticket</span>
-              </button>
-            </div>
+        <>
+          {isExpanded && (
+            <div
+              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+              onClick={() => setIsExpanded(false)}
+              aria-hidden="true"
+            />
+          )}
+          <div className={cn(
+            "z-50 flex flex-col bg-background border border-border rounded-2xl shadow-2xl overflow-hidden transition-all duration-200",
+            isExpanded
+              ? "fixed inset-3 sm:inset-6 md:inset-8 w-auto h-auto max-w-4xl mx-auto my-auto"
+              : "fixed bottom-[74px] sm:bottom-20 right-3 sm:right-6 w-[calc(100vw-1.5rem)] sm:w-[480px] h-[560px] max-h-[calc(100vh-6.5rem)] animate-in fade-in-0 zoom-in-95 duration-150"
+          )}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 border-b border-border/70 bg-muted/30 shrink-0">
+              {/* Tab Switcher: Nav Help first, Support / Ticket after Nav Help */}
+              <div className="flex items-center gap-1 bg-muted p-1 rounded-full">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('nav')}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                    activeTab === 'nav'
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  <span>Nav Help</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('support')}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                    activeTab === 'support'
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <LifeBuoy className="h-3.5 w-3.5" />
+                  <span>Support / Ticket</span>
+                </button>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              aria-label="Close dialog"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                  aria-label={isExpanded ? "Collapse dialog" : "Expand to fullscreen"}
+                  title={isExpanded ? "Collapse" : "Expand"}
+                >
+                  {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsExpanded(false);
+                    setIsOpen(false);
+                  }}
+                  className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                  aria-label="Close dialog"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
 
           {/* TAB 1: NAV HELP */}
           {activeTab === 'nav' && (
@@ -420,12 +491,20 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                         {m.role === 'user' ? (
                           <p className="whitespace-pre-wrap break-words">{m.content}</p>
                         ) : (
-                          <MarkdownRenderer
-                            onLinkClick={(href) => handleNavigation(href)}
-                            className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed prose-p:my-1 prose-p:leading-relaxed prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-1.5 prose-headings:text-xs prose-headings:font-bold prose-code:text-[11px] prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:my-1.5 prose-pre:p-2 prose-pre:bg-background/80 overflow-hidden break-words"
-                          >
-                            {formatMessageWithLinks(m.content)}
-                          </MarkdownRenderer>
+                          <div className="relative">
+                            <MarkdownRenderer
+                              onLinkClick={(href) => handleNavigation(href)}
+                              className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed prose-p:my-1 prose-p:leading-relaxed prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-1.5 prose-headings:text-xs prose-headings:font-bold prose-code:text-[11px] prose-code:bg-background/60 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:my-1.5 prose-pre:p-2 prose-pre:bg-background/80 overflow-hidden break-words"
+                            >
+                              {formatMessageWithLinks(m.content)}
+                            </MarkdownRenderer>
+                            {m.isTyping && (
+                              <span
+                                className="inline-block w-1.5 h-3 ml-1 bg-primary align-baseline animate-pulse"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -451,7 +530,7 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 ))}
 
                 {/* Suggested Questions */}
-                {!isLoading && messages.length <= 2 && (
+                {!isLoading && !isTyping && messages.length <= 2 && (
                   <div className="space-y-1 pt-1 ml-8">
                     {suggestedPrompts.map((p, i) => (
                       <button
@@ -468,12 +547,15 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
                 )}
 
                 {isLoading && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center" role="status">
                     <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
                       <RaiseLogo size={12} className="currentColor" />
                     </div>
-                    <div className="bg-muted rounded-xl px-3 py-2 text-xs text-muted-foreground">
-                      Typing...
+                    <div className="bg-muted rounded-xl px-3 py-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                      <span className="size-1.5 rounded-full bg-primary/70 animate-bounce [animation-delay:-0.3s]" />
+                      <span className="size-1.5 rounded-full bg-primary/70 animate-bounce [animation-delay:-0.15s]" />
+                      <span className="size-1.5 rounded-full bg-primary/70 animate-bounce" />
+                      <span className="sr-only">Raise is thinking...</span>
                     </div>
                   </div>
                 )}
@@ -642,7 +724,8 @@ export function NavigationChatbot({ userRole }: NavigationChatbotProps) {
             </div>
           )}
         </div>
-      )}
+      </>
+    )}
     </>
   );
 }

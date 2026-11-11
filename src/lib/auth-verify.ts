@@ -70,7 +70,14 @@ export function withAuthorizedRequest(handler: Handler, options: {
         }
       }
       const feature = req.nextUrl.pathname.includes('/student/tutor') ? 'tutor' : req.nextUrl.pathname.includes('/notebook/') ? 'notebook' : options.resource === 'submission' ? 'grading' : options.resource === 'portfolio' ? 'portfolio' : 'navigation';
-      const execute = () => billingContext.run({ organizationId: profile.organizationId || '', userId: caller.uid, type: feature }, () => handler(req));
+      let effectiveOrgId = profile.organizationId;
+      if (!effectiveOrgId && profile.teacherId) {
+        const teacher = (await adminDb.collection("users").doc(profile.teacherId).get()).data();
+        if (teacher?.organizationId) {
+          effectiveOrgId = teacher.organizationId;
+        }
+      }
+      const execute = () => billingContext.run({ organizationId: effectiveOrgId || '', userId: caller.uid, type: feature }, () => handler(req));
       if (options.resource === "submission") {
         const ref = adminDb.collection("submissions").doc(body.submissionId);
         const lockRef = adminDb.collection("grading_locks").doc(body.submissionId);
