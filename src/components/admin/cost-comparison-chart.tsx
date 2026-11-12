@@ -16,7 +16,7 @@ import { useState, useEffect } from "react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const NETWORK_FEE = 4.99;
+const NETWORK_FEE = 10;
 const AI_COSTS     = [0.65, 3.24, 6.48, 16.20];
 const STUDENTS     = [10, 50, 100, 250];
 
@@ -110,7 +110,7 @@ export default function CostComparisonChart() {
           <span className="text-muted-foreground font-medium">Our AI vs Industry Education AI</span>
         </h3>
         <p className="text-sm text-muted-foreground font-medium pt-1">
-          Flat $4.99 network fee vs per-student pricing ($5–$12/student)
+          Flat $10/mo network fee vs per-student pricing ($5–$12/student)
         </p>
       </div>
 

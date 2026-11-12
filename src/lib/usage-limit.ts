@@ -10,7 +10,7 @@ export async function checkBudget(
   userId?: string
 ): Promise<{ allowed: boolean; error?: string }> {
   if (!organizationId) {
-    return { allowed: false, error: "AI Features require a Standard subscription." };
+    return { allowed: false, error: "AI Features require a Department License." };
   }
 
   if (!adminDb) return { allowed: false, error: "Database not initialized" };
@@ -35,7 +35,7 @@ export async function checkBudget(
       if (budgetLimit <= 0 || currentUsage >= budgetLimit) {
         return { 
           allowed: false, 
-          error: "Free starter AI budget reached. Upgrade to a Standard subscription in Network settings for unlimited AI access." 
+          error: "Free starter AI budget reached. Upgrade to a Department License in Network settings for unlimited AI access." 
         };
       }
     } else if (budgetLimit > 0 && currentUsage >= budgetLimit) {

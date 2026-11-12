@@ -15,7 +15,7 @@ export default function AboutClient() {
       icon: Brain,
       title: "Socratic Tutoring",
       description: "Moving beyond 'Answer Engines' to true pedagogical guidance. Our AI doesn't just solve problems; it helps students through the conceptual struggle.",
-      tag: "Gemini 2.5 Flash"
+      tag: "Gemini 3.8 Flash"
     },
     {
       icon: SquareFunction,

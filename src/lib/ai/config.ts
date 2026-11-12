@@ -13,7 +13,7 @@ function resolveApiKey(): string {
 
 async function callGeminiDirect(request: any) {
   const apiKey = resolveApiKey();
-  const modelName = "gemini-2.5-flash";
+  const modelName = "gemini-3.8-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
   let contents: any[] = [];

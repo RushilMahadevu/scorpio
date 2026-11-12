@@ -37,11 +37,11 @@ export function AICostCalculator() {
   const [avgOutputTokens, setAvgOutputTokens] = useState<number>(400);
   const [planType, setPlanType] = useState<"monthly" | "yearly">("yearly");
 
-  // Gemini 2.5 Flash Rates in Dollars per 1M tokens
-  const INPUT_RATE_USD = 0.30 / 1_000_000;
-  const OUTPUT_RATE_USD = 2.50 / 1_000_000;
+  // Gemini 3.8 Flash Rates in Dollars per 1M tokens
+  const INPUT_RATE_USD = 0.75 / 1_000_000;
+  const OUTPUT_RATE_USD = 3.75 / 1_000_000;
   
-  const BASE_FEE = planType === "monthly" ? 4.99 : 2.49; 
+  const BASE_FEE = planType === "monthly" ? 10 : 8.33; 
 
   const results = useMemo(() => {
     const totalQueries = students * queriesPerStudent;
@@ -142,7 +142,7 @@ export function AICostCalculator() {
                 "text-[10px] py-1.5 rounded-md transition-all font-medium flex items-center justify-center gap-1 cursor-pointer flex items-center justify-center gap-1",
                 planType === "yearly" ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
               )}
-            >Yearly <Badge variant="secondary" className="text-[8px] px-1 py-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none">-50%</Badge></button>
+            >Yearly <Badge variant="secondary" className="text-[8px] px-1 py-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none">2 Mo Free</Badge></button>
           </div>
         </div>
 
@@ -287,7 +287,7 @@ export function AICostCalculator() {
           <Info className="h-3.5 w-3.5 text-zinc-400 mt-0.5 shrink-0" />
           <p className="text-[10px] text-zinc-500 leading-relaxed font-medium">
             Scorpio operates on a <span className="text-zinc-900 dark:text-zinc-200 font-bold">Zero-Margin Pass-Through</span> model. 
-            AI costs are calculated at raw Google Cloud rates ($0.30/$2.50 per 1M tokens) and billed directly via Polar with no platform surcharge.
+            AI costs are calculated at raw Google Cloud rates ($0.75/$3.75 per 1M tokens) and billed directly via Polar with no platform surcharge.
           </p>
         </div>
       </CardContent>

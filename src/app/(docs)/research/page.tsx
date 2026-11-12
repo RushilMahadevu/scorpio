@@ -51,7 +51,7 @@ export default function ResearchPage() {
   const constraintLevels = [
     {
       level: "NONE",
-      description: "Baseline Gemini 2.5 Flash, no constraints",
+      description: "Baseline Gemini 3.8 Flash, no constraints",
       domainAdherence: "100.0%",
       directAnswerRate: "100.0%",
       pedagogicalQuality: "4.38",
@@ -102,7 +102,7 @@ export default function ResearchPage() {
     { category: "Difficulty Levels", count: "4 tiers", breakdown: "Basic, Intermediate, Advanced, College" },
     { category: "Evaluator Stats", count: "625 assessments", breakdown: "125 responses × 5 blinded criteria passes" },
     { category: "Expert Validation", count: "Ph.D. Audit", breakdown: "Blinded holistic scoring on stratified 30-item subset" },
-    { category: "AI Model", count: "Gemini 2.5 Flash", breakdown: "Inference-time constraint layering (no fine-tuning)" }
+    { category: "AI Model", count: "Gemini 3.8 Flash", breakdown: "Inference-time constraint layering (no fine-tuning)" }
   ];
 
   return (
@@ -225,7 +225,7 @@ export default function ResearchPage() {
                   Zero Markup
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  $0.15/1M input and $0.60/1M output tokens — fixed at Google DeepMind Gemini 2.5 Flash rates.
+                  $0.75/1M input and $3.75/1M output tokens — fixed at Google DeepMind Gemini 3.8 Flash rates.
                 </p>
               </div>
               <div className="p-6 rounded-2xl border border-border/50 bg-card space-y-4">

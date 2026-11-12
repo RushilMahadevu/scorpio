@@ -252,7 +252,7 @@ export function NetworkPage({
                 )}
 
                 <Badge className="bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider">
-                  Standard Plan
+                  Department License
                 </Badge>
               </div>
 

@@ -30,7 +30,7 @@ import { Info, ShieldCheck, Zap, Brain } from "lucide-react";
 
 const data = [
   {
-    // NONE: Baseline Gemini 2.5 Flash, no constraints
+    // NONE: Baseline Gemini 3.8 Flash, no constraints
     // DAR=100% → refusal=0  |  latex=0.22 → 1.20  |  avgQ=1.00 → 4.00  |  ped=4.38
     name: "NONE",
     "Answer Refusal":  0.00,

@@ -352,7 +352,7 @@ export default function FeaturesPage() {
                 { capability: "LaTeX Notation Density", footnote: "Per 100 words, ablation study", scorpio: { val: "0.92" }, chatgpt: { val: "0.22¹", dim: true }, khan: { val: "Limited", dim: true }, human: { val: "Whiteboard" } },
                 { capability: "Socratic Questions / Response", footnote: "Avg. across 125-response study", scorpio: { val: "1.25" }, chatgpt: { val: "1.00¹", dim: true }, khan: { val: "~0.8", dim: true }, human: { val: "~1.5" } },
                 { capability: "Constraint Architecture", footnote: "Inference-time, verifiable", scorpio: { val: "4-Layer Enforced" }, chatgpt: { val: "None", dim: true }, khan: { val: "Prompt-only", dim: true }, human: { val: "Implicit" } },
-                { capability: "Cost Transparency", footnote: "Per-student visibility", scorpio: { val: "$4.99 flat / mo" }, chatgpt: { val: "$20 / student", dim: true }, khan: { val: "$4 / student", dim: true }, human: { val: "$40–120 / hr", dim: true } },
+                { capability: "Cost Transparency", footnote: "Per-student visibility", scorpio: { val: "$10 flat / mo" }, chatgpt: { val: "$20 / student", dim: true }, khan: { val: "$4 / student", dim: true }, human: { val: "$40–120 / hr", dim: true } },
                 { capability: "Verifiable & Auditable", footnote: "Published methodology, reproducible", scorpio: { val: "Open Methodology" }, chatgpt: { val: "No", dim: true }, khan: { val: "No", dim: true }, human: { val: "Subjective" } },
               ].map((row, i) => (
                 <div
@@ -389,7 +389,7 @@ export default function FeaturesPage() {
 
             <div className="mt-4 px-2 space-y-1">
               <p className="text-[11px] text-muted-foreground/60">
-                ¹ Baseline Gemini 2.5 Flash (unconstrained level) from Scorpio ablation study.
+                ¹ Baseline Gemini 3.8 Flash (unconstrained level) from Scorpio ablation study.
               </p>
               <p className="text-[11px] text-muted-foreground/60">
                 Full methodology, blinded rubrics, and raw ablation outputs published at{" "}

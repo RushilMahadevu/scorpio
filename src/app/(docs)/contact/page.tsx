@@ -113,7 +113,7 @@ export default function ContactPage() {
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-foreground">What AI models are supported?</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              We currently optimize for Gemini 2.5 Flash, but our constraint architecture is model-agnostic.
+              We currently optimize for Gemini 3.8 Flash, but our constraint architecture is model-agnostic.
             </p>
           </div>
         </div>

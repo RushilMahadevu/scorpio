@@ -11,7 +11,7 @@ export const deliverBillingUsage = onDocumentCreated({ document: 'billing_outbox
  await polar.events.ingest({ events: [{
   externalId: event.params.eventId, customerId: current.customerId, name: 'ai_usage', timestamp: current.timestamp.toDate(),
   metadata: { event_name: 'ai_usage', input_tokens: current.inputTokens, output_tokens: current.outputTokens,
-    costUSD: current.costCents / 100, organizationId: current.organizationId, type: current.type, vendor: 'google', model: 'gemini-2.5-flash' },
+    costUSD: current.costCents / 100, organizationId: current.organizationId, type: current.type, vendor: 'google', model: 'gemini-3.8-flash' },
  }] });
  await ref.update({ status: 'delivered', deliveredAt: new Date() });
 });

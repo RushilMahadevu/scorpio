@@ -27,7 +27,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function PricingPage() {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
 
   return (
     <div className="min-h-screen relative font-medium scroll-smooth bg-background text-foreground">
@@ -51,7 +51,7 @@ export default function PricingPage() {
           </h1>
 
           <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            No per-student fees. No markup on AI compute. One flat subscription covers your entire classroom network.
+            No per-student fees. One flat $10/mo subscription + at-cost AI compute metering. Covers your entire physics department.
           </p>
 
           {/* Billing Switcher Toggle */}
@@ -141,7 +141,7 @@ export default function PricingPage() {
               </Button>
             </div>
 
-            {/* 2. Classroom Pro (Featured) */}
+            {/* 2. Department License (Featured) */}
             <div className="p-7 sm:p-8 rounded-3xl border-2 border-primary bg-gradient-to-b from-primary/[0.06] via-card/50 to-background backdrop-blur-xl flex flex-col justify-between space-y-6 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] px-3.5 py-1 font-black uppercase tracking-widest rounded-bl-xl shadow-sm">
                 Most Popular
@@ -149,7 +149,7 @@ export default function PricingPage() {
 
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-bold text-foreground">Classroom Pro</h3>
+                  <h3 className="text-lg font-bold text-foreground">Department License</h3>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                     Full Socratic AI scaffolding and analytics for your entire student cohort.
                   </p>
@@ -158,12 +158,17 @@ export default function PricingPage() {
                 <div className="pt-2 pb-1 border-y border-primary/20">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
-                      {isAnnual ? "$2.49" : "$4.99"}
+                      {isAnnual ? "$100" : "$10"}
                     </span>
-                    <span className="text-xs font-semibold text-muted-foreground">/ month</span>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {isAnnual ? "/ year ($8.33/mo)" : "/ month"}
+                    </span>
                   </div>
-                  <p className="text-[11px] text-primary font-medium mt-1">
-                    {isAnnual ? "Billed annually ($29.88/year) — covers all students" : "Billed monthly — cancel anytime"}
+                  <div className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold">
+                    <span>Flat $10/mo + raw AI metering</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {isAnnual ? "Flat $100/yr department subscription + at-cost AI tokens" : "Flat $10/mo department subscription + at-cost AI tokens"}
                   </p>
                 </div>
 
@@ -176,7 +181,7 @@ export default function PricingPage() {
                     "AI-assisted grading & rubric synthesis",
                     "Student derivation tracking & portfolios",
                     "Hard monthly spend caps & controls",
-                    "Direct raw compute pass-through ($0.15/1M tokens)",
+                    "Direct raw compute pass-through ($0.75/$3.75 per 1M tokens)",
                     "Priority faculty support",
                   ].map((feat) => (
                     <li key={feat} className="flex items-start gap-2.5 text-foreground font-medium">
@@ -194,13 +199,13 @@ export default function PricingPage() {
               </Button>
             </div>
 
-            {/* 3. Department / Institution */}
+            {/* 3. District / Multi-School */}
             <div className="p-7 sm:p-8 rounded-3xl border border-border/70 bg-card/30 backdrop-blur-xl flex flex-col justify-between space-y-6 shadow-sm">
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-bold text-foreground">Department</h3>
+                  <h3 className="text-lg font-bold text-foreground">District</h3>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    For high school departments, universities, and multi-campus districts.
+                    For multi-school districts, universities, and centralized procurement.
                   </p>
                 </div>
 
@@ -213,9 +218,9 @@ export default function PricingPage() {
 
                 <ul className="space-y-3 text-xs sm:text-[13px]">
                   {[
-                    "Everything in Classroom Pro",
+                    "Everything in Department License",
                     "Canvas, Blackboard & Schoology LTI integration",
-                    "Centralized multi-teacher administration",
+                    "Centralized multi-school administration",
                     "FERPA & COPPA compliance agreements",
                     "Custom school procurement (PO / Invoice / ACH)",
                     "Dedicated instructor onboarding & SLA",
@@ -229,7 +234,7 @@ export default function PricingPage() {
               </div>
 
               <Button asChild variant="outline" className="w-full py-5 rounded-2xl font-semibold">
-                <Link href="/request-access">Request Institution License</Link>
+                <Link href="/request-access">Request District License</Link>
               </Button>
             </div>
           </div>
@@ -259,7 +264,7 @@ export default function PricingPage() {
               </div>
               <h3 className="font-bold text-sm text-foreground">Direct Compute Pass-Through</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Raw Google DeepMind Gemini rates ($0.15 / 1M input tokens). We pass API costs through with zero middleman markup.
+                Raw Gemini 3.8 Flash rates ($0.75 / 1M input, $3.75 / 1M output). We pass API costs through with zero middleman markup.
               </p>
             </div>
 
@@ -284,32 +289,35 @@ export default function PricingPage() {
 
           <div className="rounded-2xl border border-border/60 bg-card/20 backdrop-blur-xl overflow-hidden shadow-sm">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_80px_100px_100px] sm:grid-cols-[1fr_120px_140px_140px] px-5 py-3.5 bg-muted/30 border-b border-border/50 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="grid grid-cols-[1fr_80px_130px_90px] sm:grid-cols-[1fr_110px_190px_120px] px-5 py-3.5 bg-muted/30 border-b border-border/50 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               <div>Feature</div>
-              <div className="text-center">Starter</div>
-              <div className="text-center text-primary">Pro</div>
-              <div className="text-center">Department</div>
+              <div className="text-center">Starter ($0)</div>
+              <div className="text-center text-primary">Department ($10 + metering)</div>
+              <div className="text-center">District</div>
             </div>
 
             {/* Rows */}
             {[
               { category: "Core Platform" },
-              { name: "Student & Instructor Accounts", starter: true, pro: true, dept: true },
-              { name: "Assignment Builder with LaTeX", starter: true, pro: true, dept: true },
-              { name: "Student Derivation Portfolios", starter: false, pro: true, dept: true },
-              { name: "Waypoints Curriculum Network", starter: "1 Module", pro: "Unlimited", dept: "Unlimited" },
+              { name: "Student & Instructor Accounts", starter: true, dept: true, district: true },
+              { name: "Assignment Builder with LaTeX", starter: true, dept: true, district: true },
+              { name: "Student Derivation Portfolios", starter: false, dept: true, district: true },
+              { name: "Waypoints Curriculum Network", starter: "1 Module", dept: "Unlimited", district: "Unlimited" },
               { category: "Socratic AI & Grading" },
-              { name: "Raise 4-Layer Socratic Assistant", starter: false, pro: true, dept: true },
-              { name: "Anti-Solver Derivation Enforcement", starter: false, pro: true, dept: true },
-              { name: "AI-Assisted Grading & Rubrics", starter: false, pro: true, dept: true },
-              { name: "Classroom Mastery Analytics", starter: false, pro: true, dept: true },
-              { category: "Governance & Infrastructure" },
-              { name: "Hard Monthly Spend Caps", starter: false, pro: true, dept: true },
-              { name: "Google Gemini Compute at Raw Rates", starter: false, pro: true, dept: true },
-              { name: "Canvas / Blackboard / Schoology LTI", starter: false, pro: false, dept: true },
-              { name: "Central District Administration", starter: false, pro: false, dept: true },
-              { name: "FERPA / COPPA Data Agreements", starter: false, pro: false, dept: true },
-              { name: "Invoice & PO Payment Options", starter: false, pro: false, dept: true },
+              { name: "Raise 4-Layer Socratic Assistant", starter: false, dept: true, district: true },
+              { name: "Anti-Solver Derivation Enforcement", starter: false, dept: true, district: true },
+              { name: "AI-Assisted Grading & Rubrics", starter: false, dept: true, district: true },
+              { name: "Classroom Mastery Analytics", starter: false, dept: true, district: true },
+              { category: "Pricing & Metering" },
+              { name: "Base Department Fee", starter: "$0", dept: "$10/mo or $100/yr", district: "Custom" },
+              { name: "Zero-Markup AI Metering (Gemini 3.8 Flash)", starter: false, dept: "$0.75 / $3.75 per 1M", district: "Included / Custom" },
+              { name: "Hard Monthly Spend Caps", starter: false, dept: true, district: true },
+              { category: "Institutional Infrastructure" },
+              { name: "Itemized PDF P-Card Receipts", starter: false, dept: true, district: true },
+              { name: "Canvas / Blackboard / Schoology LTI", starter: false, dept: false, district: true },
+              { name: "Central District Administration", starter: false, dept: false, district: true },
+              { name: "FERPA / COPPA Data Agreements", starter: false, dept: false, district: true },
+              { name: "Invoice & PO Payment Options", starter: false, dept: false, district: true },
             ].map((row, i) => {
               if (row.category) {
                 return (
@@ -331,14 +339,14 @@ export default function PricingPage() {
               return (
                 <div
                   key={row.name}
-                  className={`grid grid-cols-[1fr_80px_100px_100px] sm:grid-cols-[1fr_120px_140px_140px] px-5 py-3 border-b border-border/20 last:border-0 items-center text-xs sm:text-sm ${
+                  className={`grid grid-cols-[1fr_80px_130px_90px] sm:grid-cols-[1fr_110px_190px_120px] px-5 py-3 border-b border-border/20 last:border-0 items-center text-xs sm:text-sm ${
                     i % 2 === 0 ? "bg-transparent" : "bg-muted/5"
                   }`}
                 >
                   <div className="font-medium text-foreground/90 pr-2">{row.name}</div>
                   <div className="text-center">{renderValue(row.starter)}</div>
-                  <div className="text-center bg-primary/[0.02] py-1">{renderValue(row.pro)}</div>
-                  <div className="text-center">{renderValue(row.dept)}</div>
+                  <div className="text-center bg-primary/[0.02] py-1">{renderValue(row.dept)}</div>
+                  <div className="text-center">{renderValue(row.district)}</div>
                 </div>
               );
             })}

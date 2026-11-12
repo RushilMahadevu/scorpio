@@ -560,7 +560,7 @@ export default function NetworkPage() {
                     "text-xs font-bold uppercase tracking-wider",
                     isFreePlan ? "text-muted-foreground border-border" : "bg-emerald-600 text-white"
                   )}>
-                    {isFreePlan ? "Free Plan" : "Standard Plan"}
+                    {isFreePlan ? "Free Plan" : "Department License"}
                   </Badge>
                 )}
               </div>

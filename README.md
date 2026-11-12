@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-12-FFCA28?style=flat&logo=firebase)](https://firebase.google.com/)
-[![Gemini 2.5](https://img.shields.io/badge/Gemini_2.5_Flash-AI-8E75B2?style=flat&logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+[![Gemini 3.8](https://img.shields.io/badge/Gemini_3.8_Flash-AI-8E75B2?style=flat&logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 [![Polar](https://img.shields.io/badge/Polar-Subscription-blue?style=flat)](https://polar.sh/)
 
 ![Scorpio Header](./public/og-image.png)
@@ -53,7 +53,7 @@ graph TD
     end
 
     subgraph External ["External Services"]
-        Gemini[Google Gemini 2.5 Flash]:::external
+        Gemini[Google Gemini 3.8 Flash]:::external
         Polar[Polar.sh - Subscriptions]:::external
         Resend[Resend API - Email]:::external
         Vertex[Vertex AI - Enterprise ML]:::external
@@ -190,7 +190,7 @@ Scorpio includes a dedicated research dashboard to monitor the performance of it
 | **Monetization**| [Polar.sh](https://polar.sh/)                                   | Developer-first subscriptions and billing              |
 | **Motion**     | [Framer Motion](https://www.framer.com/motion/)                  | Physics-based animations and gesture handling          |
 | **Backend**    | [Firebase 12](https://firebase.google.com/)                      | Auth, Firestore (NoSQL), Functions, Storage            |
-| **AI Model**   | [Gemini 2.5 Flash](https://deepmind.google/technologies/gemini/) | Multimodal reasoning and constraint adherence          |
+| **AI Model**   | [Gemini 3.8 Flash](https://deepmind.google/technologies/gemini/) | Multimodal reasoning and constraint adherence          |
 
 ---
 

@@ -57,7 +57,7 @@ RESPONSE GUIDELINES:
 - Recommend realistic values based on class size when asked (e.g., "For ${ctx.studentCount} students I'd suggest…").
 - If the teacher asks how to change a setting, explain it's in the "Capacities & Limits" section above.
 - Do NOT mention internal field names like "aiNotebookLimitPerStudent". Use plain labels instead.
-- If the plan is free, gently mention that most limits require a Standard subscription.
+- If the plan is free, gently mention that most limits require a Department License.
 - Always end with a short actionable tip if relevant.`;
 
     const chatHistoryContext = chatHistory.length > 0 

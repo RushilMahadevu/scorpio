@@ -38,7 +38,7 @@ def update_readme(file_path):
     end
 
     subgraph External ["External Services"]
-        Gemini[Google Gemini 2.5 Flash]:::external
+        Gemini[Google Gemini 3.8 Flash]:::external
         Polar[Polar.sh - Subscriptions]:::external
         Resend[Resend API - Email]:::external
         Vertex[Vertex AI - Enterprise ML]:::external

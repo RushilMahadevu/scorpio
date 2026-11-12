@@ -47,7 +47,7 @@ export default function SustainabilityContent() {
 
   const [copiedDisclosure, setCopiedDisclosure] = useState(false);
 
-  // Student metrics calculations (Accurate empirical data based on Gemini 2.5 Flash on Google TPUs)
+  // Student metrics calculations (Accurate empirical data based on Gemini 3.8 Flash on Google TPUs)
   // Avg Scorpio Socratic hint: ~0.20 Wh = 720 Joules of energy (approx 60-80 output tokens)
   // Traditional 1 sheet of 20lb paper: ~16 Wh of manufacturing energy, ~10 L of water (EPN data)
   // Equivalent 10W LED bulb: 10 Wh / hr = 0.166 Wh / min

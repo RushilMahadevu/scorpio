@@ -112,7 +112,7 @@ async function gradeResponseAI(
     const reservation = await reserveBudget(admin.firestore(), organizationId, 'grading', undefined, estimateMaximumCost(Buffer.byteLength(prompt), 1024));
     // Modern @google/genai syntax
     const result = await client.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash",
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         maxOutputTokens: 1024,

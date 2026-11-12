@@ -44,8 +44,8 @@ RESEARCH:
 - Scorpio: 0.92 LaTeX density | ChatGPT: 0.18 | Khanmigo: 0.31
 
 PRICING:
-- Standard plan for institutional use — teachers pay the actual Gemini API cost with zero markup
-- Polar metered billing: Input tokens $0.15/M, Output tokens $0.60/M (a full tutor session costs fractions of a cent)
+- Department License for institutional use ($10/month or $100/year flat for the whole department) — teachers pay the actual Gemini API cost with zero markup
+- Polar metered billing: Input tokens $0.75/M, Output tokens $3.75/M (Gemini 3.8 Flash raw pass-through rates)
 - Contact rushil@scorpioedu.org for institutional or departmental pricing
 - Sign up at scorpioedu.org/signup — teachers create a Scorpio Network after onboarding
 

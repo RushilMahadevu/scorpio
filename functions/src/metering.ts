@@ -1,10 +1,21 @@
 import type { firestore } from 'firebase-admin';
 import { randomUUID } from 'node:crypto';
 
-// Gemini 2.5 Flash text rates, cents/token. Includes thinking in output usage.
-export const TOKEN_RATES = { input: 0.00003, output: 0.00025 };
+// Gemini 3.8 Flash text rates in cents/token.
+// Introductory through Dec 31, 2026: $0.75/1M input, $3.75/1M output
+// Standard starting Jan 1, 2027: $1.50/1M input, $7.50/1M output
+export function getActiveTokenRates(): { input: number; output: number } {
+  const isStandardPost2026 = Date.now() >= 1798761600000; // 2027-01-01T00:00:00.000Z
+  return isStandardPost2026
+    ? { input: 0.00015, output: 0.00075 }
+    : { input: 0.000075, output: 0.000375 };
+}
+
+export const TOKEN_RATES = getActiveTokenRates();
+
 export function estimateMaximumCost(inputBytes: number, outputTokens: number) {
-  return (inputBytes + 1024) * TOKEN_RATES.input + outputTokens * TOKEN_RATES.output;
+  const rates = getActiveTokenRates();
+  return (inputBytes + 1024) * rates.input + outputTokens * rates.output;
 }
 export async function reserveBudget(db: firestore.Firestore, organizationId: string, type: string, userId: string | undefined, maxCost: number) {
   if (!organizationId || !Number.isFinite(maxCost) || maxCost <= 0) throw new Error('Invalid AI budget reservation');
@@ -40,7 +51,8 @@ export async function settleBudget(db: firestore.Firestore, id: string, inputTok
     const orgRef = db.collection('organizations').doc(reservation.organizationId);
     const org = (await tx.get(orgRef)).data();
     if (!org) throw new Error('Network missing during usage settlement');
-    const costCents = inputTokens * TOKEN_RATES.input + outputTokens * TOKEN_RATES.output;
+    const rates = getActiveTokenRates();
+    const costCents = inputTokens * rates.input + outputTokens * rates.output;
     tx.update(orgRef, { aiUsageReserved: Math.max(0,(org.aiUsageReserved || 0)-reservation.maxCost), aiUsageCurrent: (org.aiUsageCurrent || 0)+costCents, aiUsageTotalCents: (org.aiUsageTotalCents || 0)+costCents, lastAiUsageAt: new Date() });
     tx.update(ref, { status: 'settled', costCents, settledAt: new Date() });
     tx.create(db.collection('usage_analytics').doc(id), { organizationId: reservation.organizationId, userId: reservation.userId, type: reservation.type, inputTokens, outputTokens, costCents, timestamp: new Date() });

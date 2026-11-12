@@ -78,7 +78,7 @@ export function Pricing() {
           >
             One flat subscription. Unlimited students. Zero markup on AI. While competitors charge{" "}
             <span className="text-foreground font-bold">$5–$12 per student per month</span>, Scorpio charges{" "}
-            <span className="text-emerald-500 font-bold">$4.99 total</span>.
+            <span className="text-emerald-500 font-bold">$10 a month flat + at-cost AI metering</span>.
           </motion.p>
         </div>
 
@@ -157,11 +157,14 @@ export function Pricing() {
                 Monthly
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-black tracking-tighter">$4.99</span>
+                <span className="text-5xl font-black tracking-tighter">$10</span>
                 <span className="text-muted-foreground text-base font-medium">/mo</span>
               </div>
-              <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-                Full access, cancel anytime.
+              <p className="text-xs font-bold text-primary mt-1">
+                Flat $10/mo + at-cost AI metering
+              </p>
+              <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+                Full department access, cancel anytime.
               </p>
             </div>
             <ul className="space-y-2.5 flex-1 text-sm">
@@ -200,11 +203,14 @@ export function Pricing() {
                 Annual
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black tracking-tighter">$29.88</span>
+                <span className="text-5xl font-black tracking-tighter">$100</span>
                 <span className="text-muted-foreground text-base font-medium">/yr</span>
               </div>
-              <p className="text-sm text-primary font-bold mt-2 flex items-center gap-1.5">
-                <Zap className="h-4 w-4" /> $2.49/mo — save $30 a year
+              <p className="text-xs font-bold text-primary mt-1">
+                Flat $100/yr + at-cost AI metering
+              </p>
+              <p className="text-sm text-primary font-bold mt-1 flex items-center gap-1.5">
+                <Zap className="h-4 w-4" /> $8.33/mo — save $20 a year (2 months free)
               </p>
             </div>
             <ul className="space-y-2.5 flex-1 text-sm">
@@ -231,7 +237,7 @@ export function Pricing() {
           </motion.div>
         </motion.div>
 
-        {/* ── Free vs Standard Feature Comparison ── */}
+        {/* ── Free vs Department License Feature Comparison ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -247,8 +253,8 @@ export function Pricing() {
             <div className="w-28 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-muted-foreground border-l border-border/30">
               Free
             </div>
-            <div className="w-32 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-primary border-l border-border/30 bg-primary/5">
-              Standard
+            <div className="w-40 px-4 py-4 text-center text-xs font-black uppercase tracking-widest text-primary border-l border-border/30 bg-primary/5">
+              Department License
             </div>
           </div>
 
@@ -334,16 +340,16 @@ export function Pricing() {
             </p>
             <div className="flex gap-6 pt-1">
               <div>
-                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.30</p>
+                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$0.75</p>
                 <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Input</p>
               </div>
               <div className="w-px bg-border self-stretch" />
               <div>
-                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$2.50</p>
+                <p className="text-2xl font-black font-mono tracking-tighter text-primary">$3.75</p>
                 <p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-widest">1M Output</p>
               </div>
             </div>
-            <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Google DeepMind Gemini 2.5 Flash rates</p>
+            <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Google DeepMind Gemini 3.8 Flash rates</p>
           </div>
           <div className="p-6 bg-zinc-100/50 dark:bg-zinc-900/50 rounded-2xl text-white space-y-4 overflow-hidden relative group">
             <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
