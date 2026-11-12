@@ -26,5 +26,5 @@ export function splitAssignmentQuestions(questions: Record<string, unknown>[]) {
   return { publicQuestions, answers };
 }
 export function mergeAnswerKey(assignment: AssignmentRecord, key?: AnswerKey) {
-  return { ...assignment, rubric: key?.rubric || assignment.rubric || '', questions: (assignment.questions || []).map(q => ({ ...q, correctAnswer: key?.answers?.[q.id] ?? q.correctAnswer ?? '' })) };
+  return { ...assignment, rubric: key?.rubric || assignment.rubric || '', questions: (assignment.questions || []).map(q => ({ ...q, correctAnswer: key?.answers?.[q.id] ?? q.correctAnswer ?? ((q as Record<string, unknown>).answer as string | undefined) ?? '' })) };
 }

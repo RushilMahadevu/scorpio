@@ -5,27 +5,27 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   PackageOpen,
-  Check,
-  ChevronRight,
   Shield,
   Lock,
   Unlock,
   Filter,
   Plus,
   Trash2,
-  Variable,
   RotateCcw,
-  AlertTriangle,
-  HelpCircle
+  HelpCircle,
+  Sparkles
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { useDepartmentPlan } from "@/hooks/use-department-plan";
+import { DepartmentUpgradeDialog } from "@/components/teacher/department-upgrade-dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { InlineMath, BlockMath } from "react-katex";
+import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -103,6 +103,7 @@ interface Course {
 
 export default function TeacherVault() {
   const { user } = useAuth();
+  const { isFreePlan, hasNoOrg } = useDepartmentPlan();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [restrictedIds, setRestrictedIds] = useState<string[]>([]);
@@ -111,6 +112,9 @@ export default function TeacherVault() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // Upgrade modal state
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState<"vault-custom" | "vault-lock">("vault-custom");
   // New Formula State
   const [isAddingFormula, setIsAddingFormula] = useState(false);
   const [newFormula, setNewFormula] = useState({
@@ -125,10 +129,10 @@ export default function TeacherVault() {
 
   // Unsaved Changes Detection Logic
   const selectedCourse = courses.find(c => c.id === selectedCourseId);
-  const hasUnsavedChanges = selectedCourse ? (
+  const hasUnsavedChanges = isFreePlan ? false : (selectedCourse ? (
     JSON.stringify([...restrictedIds].sort()) !== JSON.stringify([...(selectedCourse.restrictedFormulaIds || [])].sort()) ||
     JSON.stringify(customFormulas) !== JSON.stringify(selectedCourse.customFormulas || [])
-  ) : false;
+  ) : false);
 
   // 1. Handle Browser Close/Refresh (standard beforeunload)
   useEffect(() => {
@@ -206,12 +210,17 @@ export default function TeacherVault() {
   useEffect(() => {
     const selectedCourse = courses.find(c => c.id === selectedCourseId);
     if (selectedCourse) {
-      setRestrictedIds(selectedCourse.restrictedFormulaIds || []);
+      setRestrictedIds(isFreePlan ? [] : (selectedCourse.restrictedFormulaIds || []));
       setCustomFormulas(selectedCourse.customFormulas || []);
     }
-  }, [selectedCourseId, courses]);
+  }, [selectedCourseId, courses, isFreePlan]);
 
   const toggleFormula = (id: string) => {
+    if (isFreePlan) {
+      setUpgradeFeature("vault-lock");
+      setIsUpgradeOpen(true);
+      return;
+    }
     setRestrictedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
@@ -264,6 +273,13 @@ export default function TeacherVault() {
   };
 
   const handleAddCustomFormula = async () => {
+    if (isFreePlan) {
+      setIsAddingFormula(false);
+      setUpgradeFeature("vault-custom");
+      setIsUpgradeOpen(true);
+      return;
+    }
+
     if (!newFormula.name || !newFormula.latex) {
       toast.error("Name and LaTeX formula are required");
       return;
@@ -319,64 +335,103 @@ export default function TeacherVault() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Dialog open={isAddingFormula} onOpenChange={setIsAddingFormula}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus />
-                Add Formula
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black">Add Custom Equation</DialogTitle>
-                <DialogDescription className="font-medium">
-                  Create a new formula to appear in this class's vault.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-6 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="formula-name" className="font-bold ml-1">Equation Name</Label>
-                  <Input
-                    id="formula-name"
-                    placeholder="e.g. Einstein's Energy"
-                    className="h-11 rounded-xl"
-                    value={newFormula.name}
-                    onChange={(e) => setNewFormula({ ...newFormula, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="formula-latex" className="font-bold ml-1">LaTeX Expression</Label>
-                  <Textarea
-                    id="formula-latex"
-                    placeholder="e.g. E = mc^2"
-                    className="font-mono rounded-xl min-h-[100px]"
-                    value={newFormula.latex}
-                    onChange={(e) => setNewFormula({ ...newFormula, latex: e.target.value })}
-                  />
-                  <div className="bg-muted/40 border border-border p-6 rounded-2xl flex items-center justify-center min-h-[80px] shadow-inner">
-                    {newFormula.latex ? <BlockMath math={newFormula.latex} /> : <span className="text-muted-foreground text-sm italic">Live preview</span>}
+          {isFreePlan ? (
+            <Button
+              onClick={() => {
+                setUpgradeFeature("vault-custom");
+                setIsUpgradeOpen(true);
+              }}
+              className="gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              Add Formula
+              <Lock className="h-3.5 w-3.5 opacity-80" />
+            </Button>
+          ) : (
+            <Dialog open={isAddingFormula} onOpenChange={setIsAddingFormula}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus />
+                  Add Formula
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-black">Add Custom Equation</DialogTitle>
+                  <DialogDescription className="font-medium">
+                    Create a new formula to appear in this class&apos;s vault.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-6 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="formula-name" className="font-bold ml-1">Equation Name</Label>
+                    <Input
+                      id="formula-name"
+                      placeholder="e.g. Einstein's Energy"
+                      className="h-11 rounded-xl"
+                      value={newFormula.name}
+                      onChange={(e) => setNewFormula({ ...newFormula, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="formula-latex" className="font-bold ml-1">LaTeX Expression</Label>
+                    <Textarea
+                      id="formula-latex"
+                      placeholder="e.g. E = mc^2"
+                      className="font-mono rounded-xl min-h-[100px]"
+                      value={newFormula.latex}
+                      onChange={(e) => setNewFormula({ ...newFormula, latex: e.target.value })}
+                    />
+                    <div className="bg-muted/40 border border-border p-6 rounded-2xl flex items-center justify-center min-h-[80px] shadow-inner">
+                      {newFormula.latex ? <BlockMath math={newFormula.latex} /> : <span className="text-muted-foreground text-sm italic">Live preview</span>}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="formula-category" className="font-bold ml-1">Category</Label>
+                    <Select value={newFormula.category} onValueChange={(v) => setNewFormula({ ...newFormula, category: v })}>
+                      <SelectTrigger id="formula-category" className="h-11 rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {CATEGORIES.filter(c => c.id !== "all").map(cat => (
+                          <SelectItem key={cat.id} value={cat.id} className="rounded-lg">{cat.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="formula-category" className="font-bold ml-1">Category</Label>
-                  <Select value={newFormula.category} onValueChange={(v) => setNewFormula({ ...newFormula, category: v })}>
-                    <SelectTrigger id="formula-category" className="h-11 rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      {CATEGORIES.filter(c => c.id !== "all").map(cat => (
-                        <SelectItem key={cat.id} value={cat.id} className="rounded-lg">{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter className="mt-4">
-                <Button onClick={handleAddCustomFormula} className="w-full h-12 rounded-xl font-bold cursor-pointer">Add to Vault</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter className="mt-4">
+                  <Button onClick={handleAddCustomFormula} className="w-full h-12 rounded-xl font-bold cursor-pointer">Add to Vault</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </TeacherPageHeader>
+
+        {isFreePlan && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20 text-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 shrink-0">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">Free Plan:</span>
+                <span className="text-muted-foreground ml-1.5">
+                  All 24 core physics equations are active in student vaults. Locking formulas for exams and adding custom formulas require a Department License.
+                </span>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              className="bg-purple-600 hover:bg-purple-700 text-white shrink-0 font-bold"
+              asChild
+            >
+              <Link href={hasNoOrg ? "/teacher/network" : "/teacher/network/billing"}>
+                View Department Plan
+              </Link>
+            </Button>
+          </div>
+        )}
 
         <div className="bg-muted/50 p-2 rounded-[2rem] border border-border flex flex-col lg:flex-row items-center gap-2 mb-4">
           <div className="w-full lg:w-72">
@@ -470,7 +525,7 @@ export default function TeacherVault() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredFormulas.map(formula => {
-          const isRestricted = restrictedIds.includes(formula.id);
+          const isRestricted = isFreePlan ? false : restrictedIds.includes(formula.id);
           const isCustom = formula.isCustom;
           return (
             <Card
@@ -479,7 +534,9 @@ export default function TeacherVault() {
                 ? "bg-red-50 dark:bg-red-950/20 ring-1 ring-red-200 dark:ring-red-900/50"
                 : isCustom
                   ? "bg-primary/5 ring-1 ring-primary/20"
-                  : "bg-muted/40 hover:ring-2 hover:ring-primary/50"
+                  : isFreePlan
+                    ? "bg-muted/40 hover:ring-2 hover:ring-purple-500/30"
+                    : "bg-muted/40 hover:ring-2 hover:ring-primary/50"
                 }`}
               onClick={() => toggleFormula(formula.id)}
             >
@@ -494,6 +551,11 @@ export default function TeacherVault() {
                       {isCustom && (
                         <Badge variant="secondary" className="bg-primary/20 text-primary border-none text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-md">
                           Custom
+                        </Badge>
+                      )}
+                      {isFreePlan && (
+                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md">
+                          Active
                         </Badge>
                       )}
                     </div>
@@ -519,8 +581,8 @@ export default function TeacherVault() {
                       size="icon-sm"
                       aria-label={`Visible to students: ${formula.name}`}
                       aria-pressed={!isRestricted}
-                      title={isRestricted ? "Show formula" : "Hide formula"}
-                      className={isRestricted ? "text-destructive" : "text-primary"}
+                      title={isFreePlan ? "Active for all students. Locking requires Department License." : (isRestricted ? "Show formula" : "Hide formula")}
+                      className={isFreePlan ? "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10" : (isRestricted ? "text-destructive" : "text-primary")}
                       onClick={(event) => {
                         event.stopPropagation();
                         toggleFormula(formula.id);
@@ -565,6 +627,13 @@ export default function TeacherVault() {
         onConfirm={confirmNavigation}
         confirmText="Leave Page"
         cancelText="Stay in Vault Controls"
+      />
+
+      <DepartmentUpgradeDialog
+        open={isUpgradeOpen}
+        onOpenChange={setIsUpgradeOpen}
+        feature={upgradeFeature}
+        hasNoOrg={hasNoOrg}
       />
     </>
   );

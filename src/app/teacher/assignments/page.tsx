@@ -5,6 +5,7 @@ import Link from "next/link";
 import { collection, getDocs, deleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
+import { getTeacherAssignment } from "@/lib/authenticated-fetch";
 import { getAssignmentPoints } from "@/lib/assignment-points";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -88,15 +89,29 @@ export default function AssignmentsPage() {
     }
   }
 
-  function handleDuplicate(assignment: Assignment) {
+  async function handleDuplicate(assignment: Assignment) {
     if (!user) return;
-    const { id, courseName, ...rest } = assignment;
-    const waypointData = {
-      ...rest,
-      title: `${assignment.title}`,
-    };
-    sessionStorage.setItem("forked_assignment", JSON.stringify(waypointData));
-    router.push("/teacher/create?fork=true");
+    try {
+      const full = await getTeacherAssignment(assignment.id);
+      const fullData = full.data();
+      const waypointData = {
+        ...fullData,
+        title: `${assignment.title} (Copy)`,
+      };
+      sessionStorage.setItem("forked_assignment", JSON.stringify(waypointData));
+      router.push("/teacher/create?fork=true");
+    } catch {
+      const waypointData = {
+        title: `${assignment.title} (Copy)`,
+        description: assignment.description,
+        dueDate: assignment.dueDate,
+        questions: assignment.questions,
+        visibility: assignment.visibility,
+        lockdownMode: assignment.lockdownMode,
+      };
+      sessionStorage.setItem("forked_assignment", JSON.stringify(waypointData));
+      router.push("/teacher/create?fork=true");
+    }
   }
 
   async function handleDelete(id: string) {

@@ -6,6 +6,7 @@ import { SpaceBackground } from "@/components/ui/space-background";
 import { NavigationChatbot } from "@/components/navigation-chatbot";
 import { useSidebarState } from "@/hooks/use-sidebar-state";
 import { PageTransition } from "@/components/page-transition";
+import { DepartmentBanner } from "@/components/department-banner";
 
 export default function TeacherLayout({
   children,
@@ -23,6 +24,7 @@ export default function TeacherLayout({
           onToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-background/50">
+          <DepartmentBanner />
           <div className="w-full px-4 pb-24 sm:px-6 md:p-8">
             <div className="max-w-7xl mx-auto">
               <PageTransition>

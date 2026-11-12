@@ -4,11 +4,12 @@ import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { collection, addDoc, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/auth-context";
 import { parseQuestionsManually } from "@/lib/assignment-parser";
 import { getAssignmentPoints, splitAssignmentPoints } from "@/lib/assignment-points";
+import { validateQuestionAnswers } from "@/lib/assignment-validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +20,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ChevronDown, Eye, FileDown, Loader2, Lock, Plus, Settings2, Sparkles, Trash2, PlusCircle } from "lucide-react";
+import { ArrowLeft, ChevronDown, Eye, FileDown, Loader2, Lock, Plus, Settings2, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Organization } from "@/lib/types";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -59,6 +60,25 @@ interface Question {
   points: number;
 }
 
+interface RawQuestion {
+  id?: string;
+  type?: string;
+  text?: string;
+  options?: string[];
+  correctAnswer?: unknown;
+  answer?: unknown;
+  expectedAnswer?: unknown;
+  points?: number;
+  [key: string]: unknown;
+}
+
+interface CourseItem {
+  id: string;
+  name?: string;
+  code?: string;
+  [key: string]: unknown;
+}
+
 const QUESTION_TYPES = [
   { type: "text", label: "Free Response" },
   { type: "short-answer", label: "Short Answer" },
@@ -80,7 +100,7 @@ function CreateAssignmentForm() {
   const forkId = searchParams?.get("fork");
   const initialCourseId = searchParams?.get("courseId");
   const { user, profile, loading: authLoading } = useAuth();
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<CourseItem[]>([]);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [chosenCourseId, setChosenCourseId] = useState("");
   const selectedCourseId = chosenCourseId || courses.find(course => course.id === initialCourseId)?.id || "";
@@ -144,11 +164,58 @@ function CreateAssignmentForm() {
             setAllowAIHelp(!!assignment.allowAIHelp);
           }
           if (assignment.questions?.length) {
-            const copiedQuestions = assignment.questions.map((question: Question) => ({
-              ...question,
-              id: crypto.randomUUID(),
-              points: question.points || 10,
-            }));
+            const copiedQuestions = assignment.questions.map((question: RawQuestion) => {
+              // 1. Resolve correctAnswer from all possible fields
+              let resolvedAnswer = (question.correctAnswer ?? question.answer ?? question.expectedAnswer ?? "").toString();
+
+              // 2. Normalize question type
+              let normalizedType = question.type;
+              if (normalizedType === "free-response") normalizedType = "text";
+              if (normalizedType === "numerical") normalizedType = "short-answer";
+              if (!normalizedType || !["text", "multiple-choice", "true-false", "short-answer"].includes(normalizedType)) {
+                normalizedType = question.options?.length ? "multiple-choice" : "short-answer";
+              }
+
+              // 3. For true-false, normalize to "True" or "False"
+              if (normalizedType === "true-false") {
+                const lower = resolvedAnswer.trim().toLowerCase();
+                if (lower === "true" || lower === "t") resolvedAnswer = "True";
+                else if (lower === "false" || lower === "f") resolvedAnswer = "False";
+              }
+
+              // 4. For multiple-choice, match against options
+              const cleanOptions = Array.isArray(question.options) ? question.options : [];
+              if (normalizedType === "multiple-choice" && cleanOptions.length) {
+                const exactMatch = cleanOptions.find((opt: string) => opt.trim() === resolvedAnswer.trim());
+                if (exactMatch) {
+                  resolvedAnswer = exactMatch;
+                } else {
+                  const ciMatch = cleanOptions.find((opt: string) => opt.trim().toLowerCase() === resolvedAnswer.trim().toLowerCase());
+                  if (ciMatch) {
+                    resolvedAnswer = ciMatch;
+                  } else if (/^[A-D]$/i.test(resolvedAnswer.trim())) {
+                    const letterIndex = resolvedAnswer.trim().toUpperCase().charCodeAt(0) - 65;
+                    if (cleanOptions[letterIndex]) {
+                      resolvedAnswer = cleanOptions[letterIndex];
+                    }
+                  } else if (/^[0-3]$/.test(resolvedAnswer.trim())) {
+                    const numIndex = parseInt(resolvedAnswer.trim(), 10);
+                    if (cleanOptions[numIndex]) {
+                      resolvedAnswer = cleanOptions[numIndex];
+                    }
+                  }
+                }
+              }
+
+              return {
+                ...question,
+                id: crypto.randomUUID(),
+                type: normalizedType,
+                options: cleanOptions,
+                correctAnswer: resolvedAnswer,
+                points: question.points || 10,
+              };
+            });
             setQuestions(copiedQuestions);
             setAssignmentPoints(assignment.totalPoints ?? getAssignmentPoints(copiedQuestions));
             setCustomPoints(true);
@@ -194,7 +261,7 @@ function CreateAssignmentForm() {
     }
     setImportLoading(true);
     try {
-      let parsedQuestions: any[] = [];
+      let parsedQuestions: RawQuestion[] = [];
       // Try manual parser first
       try {
         parsedQuestions = parseQuestionsManually(importText);
@@ -217,7 +284,7 @@ function CreateAssignmentForm() {
           try {
             const err = await res.json();
             errMsg = err.error || errMsg;
-          } catch (e) {
+          } catch {
             errMsg = `Parsing error (${res.status})`;
           }
           throw new Error(errMsg);
@@ -226,21 +293,22 @@ function CreateAssignmentForm() {
         const result = await res.json();
         parsedQuestions = result.questions;
       }
-      const newQuestions = parsedQuestions.map((q: any) => ({
+      const newQuestions: Question[] = parsedQuestions.map((q: RawQuestion) => ({
         id: crypto.randomUUID(),
-        text: q.text,
-        type: q.type,
+        text: (q.text || "").toString(),
+        type: (q.type as Question["type"]) || "short-answer",
         options: q.options || [],
-        correctAnswer: q.correctAnswer ?? "",
-        points: 10,
+        correctAnswer: (q.correctAnswer ?? "").toString(),
+        points: typeof q.points === "number" ? q.points : 10,
       }));
       setQuestions((current) => [...current, ...newQuestions]);
       setImportOpen(false);
       setImportText("");
       toast.success(`Successfully imported ${newQuestions.length} questions!`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to import questions", error);
-      toast.error(error.message || "Failed to import questions. Please try again.");
+      const msg = error instanceof Error ? error.message : "Failed to import questions. Please try again.";
+      toast.error(msg);
     } finally {
       setImportLoading(false);
     }
@@ -313,7 +381,7 @@ function CreateAssignmentForm() {
         try {
           const errData = await res.json();
           errMsg = errData.error || errMsg;
-        } catch (e) {
+        } catch {
           errMsg = `Rubric synthesis error (${res.status})`;
         }
         throw new Error(errMsg);
@@ -321,9 +389,10 @@ function CreateAssignmentForm() {
 
       const { rubric } = await res.json();
       updateQuestion(questionId, { correctAnswer: rubric });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error.message || "Failed to generate rubric.");
+      const msg = error instanceof Error ? error.message : "Failed to generate rubric.";
+      toast.error(msg);
     } finally {
       setAiGenerating(null);
     }
@@ -351,7 +420,7 @@ function CreateAssignmentForm() {
         try {
           const errData = await res.json();
           errMsg = errData.error || errMsg;
-        } catch (e) {
+        } catch {
           errMsg = `AI Generation API error (${res.status})`;
         }
         throw new Error(errMsg);
@@ -359,22 +428,23 @@ function CreateAssignmentForm() {
 
       const result = await res.json();
       const generatedQuestions = result.questions;
-      const newQuestions = generatedQuestions.map((q: any) => ({
+      const newQuestions: Question[] = generatedQuestions.map((q: RawQuestion) => ({
         id: crypto.randomUUID(),
-        text: q.text,
-        type: q.type,
+        text: (q.text || "").toString(),
+        type: (q.type as Question["type"]) || "short-answer",
         options: q.options || [],
-        correctAnswer: q.correctAnswer ?? "",
-        points: q.points || 10,
+        correctAnswer: (q.correctAnswer ?? "").toString(),
+        points: typeof q.points === "number" ? q.points : 10,
       }));
 
       setQuestions((current) => [...current, ...newQuestions]);
       setAiOpen(false);
       setAiTopic("");
       toast.success(`Successfully generated ${newQuestions.length} questions!`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to generate questions", error);
-      toast.error(error.message || "Failed to generate questions. Please try again.");
+      const msg = error instanceof Error ? error.message : "Failed to generate questions. Please try again.";
+      toast.error(msg);
     } finally {
       setAiLoading(false);
     }
@@ -415,6 +485,17 @@ function CreateAssignmentForm() {
     }
     if (timeLimit !== "" && timeLimit < 0) {
       toast.error("Enter a time limit of 0 or more minutes in Advanced settings.");
+      return;
+    }
+
+    // Validate that every question has a correct answer specified
+    const validation = validateQuestionAnswers(questions);
+    if (!validation.valid) {
+      toast.error(validation.error || "Please select a correct answer.");
+      if (validation.questionIndex !== undefined) {
+        const qId = questions[validation.questionIndex]?.id;
+        if (qId) document.getElementById(`question-${qId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
     setLoading(true);
@@ -786,7 +867,9 @@ function CreateAssignmentForm() {
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <Label htmlFor={`answer-${question.id}`}>
                             {question.type === "text" ? "Grading guide" : "Expected answer"}
-                            <span className="font-normal text-muted-foreground">(optional)</span>
+                            <span className="font-normal text-muted-foreground ml-1">
+                              {question.type === "text" ? "(optional)" : "(required for grading)"}
+                            </span>
                           </Label>
                           <Button
                             type="button"
@@ -811,7 +894,14 @@ function CreateAssignmentForm() {
 
                     {question.type === "multiple-choice" && (
                       <fieldset className="min-w-0 space-y-3">
-                        <legend className="mb-1 text-sm font-medium">Answer choices</legend>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <legend className="text-sm font-medium">Answer choices</legend>
+                          {(!question.correctAnswer || !question.options?.some(opt => opt.trim() && opt === question.correctAnswer)) && (
+                            <span className="text-[11px] font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">
+                              Select a correct answer
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">Select the radio button next to the correct answer.</p>
                         {question.options?.map((option, optionIndex) => (
                           <div key={optionIndex} className="flex items-start gap-3">
@@ -847,7 +937,14 @@ function CreateAssignmentForm() {
                     )}
                     {question.type === "true-false" && (
                       <fieldset className="space-y-2">
-                        <legend className="text-sm font-medium">Correct answer</legend>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <legend className="text-sm font-medium">Correct answer</legend>
+                          {(!question.correctAnswer || (question.correctAnswer !== "True" && question.correctAnswer !== "False")) && (
+                            <span className="text-[11px] font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">
+                              Select True or False
+                            </span>
+                          )}
+                        </div>
                         <RadioGroup
                           aria-label="Correct answer"
                           value={typeof question.correctAnswer === "string" ? question.correctAnswer.trim().toLowerCase() : ""}
